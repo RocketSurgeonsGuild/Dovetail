@@ -1,0 +1,20 @@
+[
+  {
+    Type: ServiceDovetail,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Include_Unit_Test_Dovetails(Rocket.Surgery.Dovetails.IDovetailContext, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {},
+  {},
+  {
+    Type: ServiceDovetail,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Include_Unit_Test_Dovetails(Rocket.Surgery.Dovetails.IDovetailContext, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {},
+  {
+    Type: ServiceDovetail,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Include_Unit_Test_Dovetails(Rocket.Surgery.Dovetails.IDovetailContext, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  }
+]

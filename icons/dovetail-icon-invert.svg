@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" role="img"
+  aria-label="Dovetail icon">
+  <path d="M14,0 V80 A14,14 0 0 1 0,66 V14 A14,14 0 0 1 14,0 Z" fill="#e4b931"></path>
+  <path d="M14,0 H40 A40,40 0 0 1 40,80 H14 Z M30,16 H40 A24,24 0 0 1 40,64 H30 Z" fill="#1290b1" fill-rule="evenodd">
+  </path>
+  <path d="M14,34 L24,26 L24,54 L14,46 Z" fill="#e4b931"></path>
+</svg>

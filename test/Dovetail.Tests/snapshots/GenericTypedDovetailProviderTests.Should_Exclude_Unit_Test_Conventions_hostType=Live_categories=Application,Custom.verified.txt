@@ -1,0 +1,20 @@
+﻿[
+  {
+    Type: ServiceJoint,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Exclude_Unit_Test_Dovetails(Dovetail.IDovetailContext, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {},
+  {},
+  {
+    Type: ServiceJoint,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Exclude_Unit_Test_Dovetails(Dovetail.IDovetailContext, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {
+    Type: ServiceJoint,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Exclude_Unit_Test_Dovetails(Dovetail.IDovetailContext, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {}
+]

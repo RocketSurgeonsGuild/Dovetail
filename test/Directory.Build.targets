@@ -1,0 +1,17 @@
+<Project>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Testing.Extensions.CrashDump" />
+        <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
+        <PackageReference Include="Rocket.Surgery.Extensions.Testing.FakeItEasy" />
+        <PackageReference Include="Bogus" />
+        <PackageReference Include="FakeItEasy" />
+        <PackageReference Include="Shouldly" />
+        <PackageReference Include="Rocket.Surgery.Extensions.Testing.TUnit" />
+        <PackageReference Include="TUnit" />
+        <PackageReference Include="Verify.TUnit" />
+        <Using Include="Shouldly" />
+        <ProjectReference Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.targets" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

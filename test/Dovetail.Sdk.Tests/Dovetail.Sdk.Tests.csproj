@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\sample\Sample.DependencyOne\Sample.DependencyOne.csproj" />
+    <ProjectReference Include="..\..\sample\Sample.DependencyThree\Sample.DependencyThree.csproj" />
+    <ProjectReference Include="..\..\sample\Sample.DependencyTwo\Sample.DependencyTwo.csproj" />
+    <ProjectReference Include="..\..\src\Dovetail.Serilog\Dovetail.Serilog.csproj" />
+    <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MSBuild.ProjectCreation" />
+    <PackageReference Include="MSBuild.StructuredLogger.Utils" />
+    <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="System.Interactive" />
+    <PackageReference Include="Verify.DiffPlex" />
+  </ItemGroup>
+
+  <!--
+      These tests scaffold throwaway consumer projects that restore Dovetail packages from
+      artifacts/nuget(-local) (see SdkTestProject.cs / Config.NugetArtifactsDirectory), so the
+      packages need to exist and be current before the tests run. Repack every src/*.csproj
+      (recursively) on every build of this test project rather than requiring a separate manual
+      pack step; projects with IsPackable=false (e.g. the Dovetail.Analyzers.supports roslynX.Y
+      helper projects) simply no-op since NuGet's own Pack target is gated on that flag.
+  -->
+  <ItemGroup>
+    <_DovetailSrcProject Include="$(MSBuildThisFileDirectory)..\..\src\**\*.csproj" />
+  </ItemGroup>
+
+  <Target Name="PackDovetailSourcePackages" BeforeTargets="Build">
+    <!--
+        artifacts/nuget-local also accumulates packages from other pack invocations (e.g. a
+        Release/CI-style GitVersion-numbered pack run locally). SdkTestProject picks up every
+        Dovetail.* nupkg it finds there and hands the highest version to the scaffolded consumer's
+        global.json, so a stale higher-SemVer leftover silently wins over the package this target
+        is about to rebuild from current source - masking real fixes/regressions. Clear old ones
+        first so only this run's fresh packages are ever visible to the tests.
+    -->
+    <ItemGroup>
+      <_StaleDovetailPackage Include="$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Dovetail*.nupkg;$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Dovetail*.snupkg" />
+    </ItemGroup>
+    <Delete Files="@(_StaleDovetailPackage)" />
+    <MSBuild
+      Projects="@(_DovetailSrcProject)"
+      Targets="Restore;Pack"
+      Properties="Configuration=$(Configuration)"
+      BuildInParallel="true"
+    />
+  </Target>
+</Project>

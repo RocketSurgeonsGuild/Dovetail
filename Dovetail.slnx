@@ -1,0 +1,115 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/.build/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <Project Path="benchmarks/Hosting.Benchmarks/Hosting.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/config/">
+    <File Path=".build/.editorconfig" />
+    <File Path=".codecov.yml" />
+    <File Path=".config/dotnet-tools.json" />
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path=".gitmodules" />
+    <File Path="build.cmd" />
+    <File Path="build.ps1" />
+    <File Path="build.sh" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Directory.Packages.support.props" />
+    <File Path="dotnet-tools.json" />
+    <File Path="GitReleaseManager.yaml" />
+    <File Path="GitVersion.yml" />
+    <File Path="LICENSE" />
+    <File Path="NuGet.config" />
+    <File Path="package.json" />
+    <File Path="Readme.md" />
+  </Folder>
+  <Folder Name="/config/.github/">
+    <File Path="labels.yml" />
+    <File Path="release.yml" />
+    <File Path="renovate.json" />
+  </Folder>
+  <Folder Name="/config/.github/workflows/">
+    <File Path="ci-ignore.yml" />
+    <File Path="ci.yml" />
+    <File Path="close-milestone.yml" />
+    <File Path="dependabot-merge.yml" />
+    <File Path="draft-release.yml" />
+    <File Path="lint.yml" />
+    <File Path="publish-docs.yml" />
+    <File Path="publish-nuget.yml" />
+    <File Path="sync-labels.yml" />
+    <File Path="update-milestone.yml" />
+  </Folder>
+  <Folder Name="/config/.husky/">
+    <File Path="pre-commit" />
+    <File Path="task-runner.json" />
+  </Folder>
+  <Folder Name="/config/.vscode/">
+    <File Path="launch.json" />
+    <File Path="settings.json" />
+    <File Path="tasks.json" />
+  </Folder>
+  <Folder Name="/sample/">
+    <File Path="sample/Directory.Build.props" />
+    <File Path="sample/Directory.Build.targets" />
+    <Project Path="sample/AspireSample/AspireSample.csproj" />
+    <Project Path="sample/Sample.BlazorWasm/Sample.BlazorWasm.csproj" />
+    <Project Path="sample/Sample.Core.Tests/Sample.Core.Tests.csproj" />
+    <Project Path="sample/Sample.Core/Sample.Core.csproj" />
+    <Project Path="sample/Sample.DependencyOne/Sample.DependencyOne.csproj" />
+    <Project Path="sample/Sample.DependencyThree/Sample.DependencyThree.csproj" />
+    <Project Path="sample/Sample.DependencyTwo/Sample.DependencyTwo.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/.editorconfig" />
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Build.targets" />
+    <Project Path="src/Dovetail.Aspire.Testing/Dovetail.Aspire.Testing.csproj" />
+    <Project Path="src/Dovetail.Aspire/Dovetail.Aspire.csproj" />
+    <Project Path="src/Dovetail.Analyzers/Dovetail.Analyzers.csproj" />
+    <Project Path="src/Dovetail.Autofac/Dovetail.Autofac.csproj" />
+    <Project Path="src/Dovetail.Configuration.Json/Dovetail.Configuration.Json.csproj" />
+    <Project Path="src/Dovetail.Configuration.Yaml/Dovetail.Configuration.Yaml.csproj" />
+    <Project Path="src/Dovetail.Configuration.Toml/Dovetail.Configuration.Toml.csproj" />
+    <Project Path="src/Dovetail.DryIoc/Dovetail.DryIoc.csproj" />
+    <Project Path="src/Dovetail.OpenTelemetry/Dovetail.OpenTelemetry.csproj" />
+    <Project Path="src/Dovetail.Serilog/Dovetail.Serilog.csproj" />
+    <Project Path="src/Dovetail.Testing/Dovetail.Testing.csproj" />
+    <Project Path="src/Dovetail/Dovetail.csproj" />
+    <Project Path="src/Dovetail.Hosting.Web/Dovetail.Hosting.Web.csproj" />
+    <Project Path="src/Dovetail.Hosting.WebAssembly/Dovetail.Hosting.WebAssembly.csproj" />
+    <Project Path="src/Dovetail.Hosting/Dovetail.Hosting.csproj" />
+    <Project Path="src/Dovetail.Sdk/Dovetail.Sdk.csproj" />
+  </Folder>
+  <Folder Name="/src/Dovetail.Analyzers.supports/">
+    <Project Path="src/Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.0.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <File Path="test/.editorconfig" />
+    <File Path="test/Directory.Build.props" />
+    <File Path="test/Directory.Build.targets" />
+    <Project Path="test/Dovetail.Analyzers.Tests/Dovetail.Analyzers.Tests.csproj" />
+    <Project Path="test/Dovetail.Aspire.Tests/Dovetail.Aspire.Tests.csproj" />
+    <Project Path="test/Dovetail.Autofac.Tests/Dovetail.Autofac.Tests.csproj" />
+    <Project Path="test/Dovetail.Configuration.Runtime.Tests/Dovetail.Configuration.Runtime.Tests.csproj" />
+    <Project Path="test/Dovetail.Sdk.Tests/Dovetail.Sdk.Tests.csproj" />
+    <Project Path="test/Dovetail.Tests/Dovetail.Tests.csproj" />
+    <Project Path="test/Dovetail.DryIoc.Tests/Dovetail.DryIoc.Tests.csproj" />
+    <Project Path="test/Dovetail.Hosting.AspNetCore.Tests/Dovetail.Hosting.AspNetCore.Tests.csproj" />
+    <Project Path="test/Dovetail.OpenTelemetry.Tests/Dovetail.OpenTelemetry.Tests.csproj" />
+    <Project Path="test/Dovetail.Hosting.Tests/Dovetail.Hosting.Tests.csproj" />
+    <Project Path="test/Dovetail.WebAssembly.Hosting.Tests/Dovetail.WebAssembly.Hosting.Tests.csproj" />
+  </Folder>
+</Solution>

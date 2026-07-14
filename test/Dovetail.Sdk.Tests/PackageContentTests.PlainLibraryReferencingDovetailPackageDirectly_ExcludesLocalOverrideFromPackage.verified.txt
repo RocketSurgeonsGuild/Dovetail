@@ -1,0 +1,53 @@
+﻿{
+  Projects: [
+    {
+      Name: lib.csproj,
+      Configuration: Release,
+      Platform: AnyCPU,
+      TargetFramework: net10.0,
+      Properties: {
+        AssemblyName: lib,
+        BaseIntermediateOutputPath: obj\,
+        BaseOutputPath: bin\,
+        CustomAfterMicrosoftCommonTargets: /opt/homebrew/Cellar/dotnet/10.0.301/libexec/sdk/{dotnet-sdk-version}/vCurrent/Custom.After.Microsoft.Common.targets,
+        DefineConstants: TRACE;RELEASE,
+        EnableDefaultCompileItems: false,
+        GenerateDocumentationFile: false,
+        IsPackable: true,
+        NoWarn: 1701;1702,
+        PackageOutputPath: bin\Release/,
+        RootNamespace: lib,
+        TargetFramework: net10.0
+      },
+      AdditionalFiles: [],
+      PackageReference: {
+        Dovetail: {
+          Version: Version_0
+        }
+      },
+      DovetailJoint: {},
+      DovetailHost: {},
+      Using: [],
+      Imports: [
+        {TempPath}sdk-tests/{id}/lib/lib.csproj
+      ],
+      NoImports: [],
+      GeneratedFiles: [],
+      OutputFiles: [
+        lib.local.yaml,
+        lib.yaml
+      ]
+    }
+  ],
+  Packages: [
+    {
+      PackageId: lib,
+      Version: {sdk-version},
+      Files: [
+        contentFiles/any/any/configuration/lib.yaml,
+        lib.nuspec,
+        lib/net10.0/lib.dll
+      ]
+    }
+  ]
+}

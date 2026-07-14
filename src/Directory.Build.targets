@@ -1,0 +1,23 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail/build/Dovetail.targets" />
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dovetail.Aspire.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Autofac.Tests" />
+    <InternalsVisibleTo Include="Dovetail.DryIoc.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Hosting.AspNetCore.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Hosting.Tests" />
+    <InternalsVisibleTo Include="Dovetail.WebAssembly.Hosting.Tests" />
+    <InternalsVisibleTo Include="Dovetail.OpenTelemetry.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Tests" />
+    <ProjectReference
+      Include="$(MSBuildThisFileDirectory)Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+      IncludeAssets="analyzers;build;buildMultitargeting;buildTransitive"
+      ExcludeAssets="compile;runtime;native"
+      PrivateAssets="contentfiles;build;buildMultitargeting;buildTransitive"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+      Condition="'$(MSBuildProjectName)' != 'Dovetail' and '$(MSBuildProjectName)' != 'Dovetail.Analyzers' and '$(MSBuildProjectName)' != 'Dovetail.Analyzers.roslyn5.0' and '$(MSBuildProjectName)' != 'Dovetail.Sdk'"
+    />
+  </ItemGroup>
+</Project>

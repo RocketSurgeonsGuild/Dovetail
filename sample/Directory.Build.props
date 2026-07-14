@@ -1,0 +1,10 @@
+<Project>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Configuration.Json/build/Dovetail.Configuration.Json.props" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Configuration.Yaml/build/Dovetail.Configuration.Yaml.props" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.props" />
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <NoWarn>$(NoWarn);CA1050</NoWarn>
+    </PropertyGroup>
+</Project>

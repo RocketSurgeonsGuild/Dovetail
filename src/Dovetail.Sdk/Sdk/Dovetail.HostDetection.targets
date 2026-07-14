@@ -1,0 +1,131 @@
+<Project>
+  <!--
+      Registered via CustomAfterMicrosoftCommonTargets (see Sdk.props) instead of living inline in
+      Sdk.targets. Sdk.targets is imported by Directory.Build.props's own trailing SDK-targets slot,
+      which runs BEFORE the consuming project's own body (e.g. a worker.csproj's <OutputType>Exe</OutputType>)
+      is ever evaluated - so a Choose block reading $(OutputType) there always sees it empty. Deferring
+      via CustomAfterMicrosoftCommonTargets runs this after the whole project body (and Directory.Build.targets)
+      has been evaluated, while still being early enough (pure evaluation, no Target execution yet) for the
+      DovetailSdkImplicitPackageReference items below to reach NuGet restore.
+  -->
+  <Choose>
+    <When Condition=" '$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' or '$(UsingMicrosoftNETSdkWebAssembly)'=='true' ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="WebAssembly" HostBuilderType="global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder" HostBuilderName="builder" HostType="Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost"/>
+        <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting.WebAssembly" Version="$(DovetailHostingWebAssemblyVersion)" />
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(UsingMicrosoftNETSdkRazor)'=='true' or '$(UsingMicrosoftNETSdkWeb)'=='true' ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="WebApplication" HostBuilderType="global::Microsoft.AspNetCore.Builder.WebApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.AspNetCore.Builder.WebApplication" HelperName="global::Dovetail.DovetailHostApplicationHelpers"/>
+        <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting.Web" Version="$(DovetailHostingWebVersion)" />
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(UsingMicrosoftNETSdkWorker)'=='true' or ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe') ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="HostApplication" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Dovetail.DovetailHostApplicationHelpers"/>
+        <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
+      </ItemGroup>
+    </When>
+    <!--    <When Condition=" '$(UsingMicrosoftMauiSdk)'=='true' ">-->
+    <!--      <PropertyGroup>-->
+    <!--        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>-->
+    <!--      </PropertyGroup>-->
+    <!--      <ItemGroup>-->
+    <!--        <DovetailHost-->
+    <!--          Include="Maui"-->
+    <!--          HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder"-->
+    <!--          HostBuilderName="builder"-->
+    <!--          HostType="global::Microsoft.Maui.Hosting.MauiApp"-->
+    <!--        />-->
+    <!--        <PackageReference-->
+    <!--          Include="Dovetail.Hosting.Maui"-->
+    <!--          Version="TODO"-->
+    <!--          Condition="@(PackageReference->AnyHaveMetadataValue('Identity', 'Dovetail.Hosting.Maui')) != 'true'"-->
+    <!--          IsImplicitlyDefined="true"-->
+    <!--          PrivateAssets="all"-->
+    <!--          IncludeAssets="runtime; build; native; contentfiles; analyzers"-->
+    <!--        />-->
+    <!--      </ItemGroup>-->
+    <!--    </When>-->
+    <!--    <When Condition=" '$(UsingUnoSdk)'=='true' ">-->
+    <!--      <PropertyGroup>-->
+    <!--        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>-->
+    <!--      </PropertyGroup>-->
+    <!--      <ItemGroup>-->
+    <!--        <DovetailHost-->
+    <!--          Include="Uno"-->
+    <!--          HostBuilderType="global::Uno.UI.Hosting.IUnoPlatformHostBuilder"-->
+    <!--          HostBuilderName="builder"-->
+    <!--          HostType="global::Uno.UI.Hosting.UnoPlatformHost"-->
+    <!--        />-->
+    <!--        <DovetailSdkImplicitPackageReference-->
+    <!--          Include="Dovetail.Hosting.Uno"-->
+    <!--          Version="TODO"-->
+    <!--          Condition="@(PackageReference->AnyHaveMetadataValue('Identity', 'Dovetail.Hosting.Uno')) != 'true'"-->
+    <!--          PrivateAssets="all"-->
+    <!--          IncludeAssets="runtime; build; native; contentfiles; analyzers"-->
+    <!--        />-->
+    <!--      </ItemGroup>-->
+    <!--    </When>-->
+    <Otherwise>
+      <PropertyGroup>
+        <_DovetailApplicationDetected>false</_DovetailApplicationDetected>
+      </PropertyGroup>
+    </Otherwise>
+    <!-- leaving aspire out for the moment -->
+    <!-- <When Condition=" '$(IsAspireHost)'=='true' ">
+            <ItemGroup>
+                <DovetailHost Include="Aspire" HostBuilderType="Aspire.Hosting.IDistributedApplicationBuilder" HostBuilderName="builder" HostType="Aspire.Hosting.DistributedApplication" />
+            </ItemGroup>
+        </When> -->
+  </Choose>
+  <PropertyGroup>
+    <DovetailEnableAutofac Condition="'$(DovetailEnableAutofac)' == ''">false</DovetailEnableAutofac>
+    <DovetailEnableDryIoc Condition="'$(DovetailEnableDryIoc)' == ''">false</DovetailEnableDryIoc>
+    <DovetailEnableSerilog Condition="'$(DovetailEnableSerilog)' == ''">false</DovetailEnableSerilog>
+    <DovetailEnableOpenTelemetry Condition="'$(DovetailEnableOpenTelemetry)' == ''">false</DovetailEnableOpenTelemetry>
+    <DovetailEnableHosting Condition="'$(DovetailEnableHosting)' == ''">false</DovetailEnableHosting>
+    <DovetailEnableHostingWeb Condition="'$(DovetailEnableHostingWeb)' == ''">false</DovetailEnableHostingWeb>
+    <DovetailEnableAspire Condition="'$(DovetailEnableAspireHosting)' == ''">false</DovetailEnableAspire>
+    <DovetailEnableAspireTesting Condition="'$(DovetailEnableAspireHostingTesting)' == ''">false</DovetailEnableAspireTesting>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.Configuration.targets" Condition="'$(DovetailEnableConfiguration)' == 'true'"/>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">false</ExportDovetailAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_DovetailApplicationDetected)' == 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_DovetailApplicationDetected)' != 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">false</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
+
+  <!-- Flag-gated optional package references -->
+  <ItemGroup>
+    <DovetailSdkImplicitPackageReference Include="Dovetail" Version="$(DovetailVersion)"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.Autofac" Version="$(DovetailAutofacVersion)" Condition="'$(DovetailEnableAutofac)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac')) == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.DryIoc" Version="$(DovetailDryIocVersion)" Condition="'$(DovetailEnableDryIoc)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc')) == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.Serilog" Version="$(DovetailSerilogVersion)" Condition="'$(DovetailEnableSerilog)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Serilog')) == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.OpenTelemetry" Version="$(DovetailOpenTelemetryVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true'"/>
+  </ItemGroup>
+  <!-- Imported last: expands every RsgSdkImplicitPackageReference declared above (and in this
+         file's own SBOM ItemGroup) into a real PackageReference. -->
+  <Import Project="$(MSBuildThisFileDirectory)ImplicitPackageReferences.targets"/>
+</Project>

@@ -1,0 +1,8 @@
+﻿[
+  {
+    Type: ServiceJoint,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Leave_Delegates_In_Place_Order_Delegates(Dovetail.IDovetailContext, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {}
+]

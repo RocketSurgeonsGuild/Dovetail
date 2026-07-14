@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <ImportDovetailAssembly>true</ImportDovetailAssembly>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Testing.Extensions.CrashDump" />
+        <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
+        <PackageReference Include="TUnit" />
+        <ProjectReference
+            Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+            IncludeAssets="all"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false"
+        />
+        <DovetailHost
+            Include="HostApplication"
+            HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Extensions.Hosting.IHost"
+            HelperName="global::Dovetail.DovetailHostApplicationHelpers"
+        />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Sample\Sample.csproj" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,69 @@
+<Project>
+  <PropertyGroup>
+    <DovetailMetadata Condition="'$(DovetailMetadata)' == ''">false</DovetailMetadata>
+<!--    <DovetailCategory Condition="'$(DovetailCategory)' == ''"></DovetailCategory>-->
+<!--    <DovetailHostType Condition="'$(DovetailHostType)' == ''"></DovetailHostType>-->
+    <DovetailAssignExternal Condition="'$(DovetailAssignExternal)' == ''">false</DovetailAssignExternal>
+
+    <DovetailImportNamespace Condition="'$(DovetailImportNamespace)' == ''">$(RootNamespace)</DovetailImportNamespace>
+    <DovetailImportClassName Condition="'$(DovetailImportClassName)' == ''">Imports</DovetailImportClassName>
+    <DovetailImportMethodName Condition="'$(DovetailImportMethodName)' == ''">Ashlar</DovetailImportMethodName>
+
+    <DovetailExportNamespace Condition="'$(DovetailExportNamespace)' == ''">$(RootNamespace).Tectum</DovetailExportNamespace>
+    <DovetailExportClassName Condition="'$(DovetailExportClassName)' == ''">Exports</DovetailExportClassName>
+    <DovetailExportMethodName Condition="'$(DovetailExportMethodName)' == ''">Ashlar</DovetailExportMethodName>
+  </PropertyGroup>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RootNamespace"/>
+    <CompilerVisibleProperty Include="IsTestProject"/>
+
+    <CompilerVisibleProperty Include="DovetailMetadata"/>
+    <CompilerVisibleProperty Include="DovetailCategory"/>
+    <CompilerVisibleProperty Include="DovetailHostType"/>
+    <CompilerVisibleProperty Include="DovetailAssignExternal"/>
+
+    <CompilerVisibleProperty Include="DovetailImportNamespace"/>
+    <CompilerVisibleProperty Include="DovetailImportClassName"/>
+    <CompilerVisibleProperty Include="DovetailImportMethodName"/>
+
+    <CompilerVisibleProperty Include="DovetailExportNamespace"/>
+    <CompilerVisibleProperty Include="DovetailExportClassName"/>
+    <CompilerVisibleProperty Include="DovetailExportMethodName"/>
+  </ItemGroup>
+
+
+  <!-- DovetailJoint item metadata schema -->
+  <ItemDefinitionGroup>
+    <DovetailJoint>
+      <Namespace></Namespace>
+      <ProvideConfiguration></ProvideConfiguration>
+      <ProvideServices></ProvideServices>
+      <ParameterType></ParameterType>
+      <ParameterName></ParameterName>
+      <BuilderMethodName></BuilderMethodName>
+      <GenericParameter></GenericParameter>
+      <GenericConstraint></GenericConstraint>
+      <GenericVariance></GenericVariance>
+      <IsAsync></IsAsync>
+      <RegisterJointsAsync></RegisterJointsAsync>
+    </DovetailJoint>
+  </ItemDefinitionGroup>
+
+  <!-- DovetailHost item metadata schema -->
+  <ItemDefinitionGroup>
+    <DovetailHost>
+      <Namespace></Namespace>
+      <HostBuilderType></HostBuilderType>
+      <HostBuilderName></HostBuilderName>
+      <HostType></HostType>
+      <HelperName></HelperName>
+      <HasBuildExpression></HasBuildExpression>
+      <BuildExpression></BuildExpression>
+    </DovetailHost>
+  </ItemDefinitionGroup>
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.Joints.targets" Condition="'$(_DovetailJointTargetsImported)' != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.ContextBuilder.targets" Condition="'$(_DovetailContextBuilderTargetsImported)' != 'true'"/>
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.Hosts.targets" Condition="'$(_DovetailHostsTargetsImported)' != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.Metadata.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.PackConfiguration.targets" />
+</Project>

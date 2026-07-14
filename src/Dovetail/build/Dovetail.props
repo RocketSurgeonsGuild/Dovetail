@@ -1,0 +1,10 @@
+<Project>
+  <!--
+  Since this could get loaded transitively, I've split out the configuration and the using so that we're not intrusive to consumers.
+
+  We're already intrusive enough because we're loaded transitively in the first place... but that's part of the charm?! 🙃
+  -->
+  <ItemGroup Condition="'$(ImplicitUsings)' == 'true' Or '$(ImplicitUsings)' == 'enable'">
+    <Using Include="Dovetail" />
+  </ItemGroup>
+</Project>

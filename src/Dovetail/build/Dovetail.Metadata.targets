@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup Condition="'$(DovetailMetadata)' == 'true'">
+
+  </ItemGroup>
+</Project>

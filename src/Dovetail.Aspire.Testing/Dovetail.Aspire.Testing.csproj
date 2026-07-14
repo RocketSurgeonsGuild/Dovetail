@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <PackageDescription>
+            Adds helpers to easily bootstrap an application using conventions by
+            just using the correct extension method. This adds command line operations, additional
+            configuration, logging and service injections by convention.
+        </PackageDescription>
+        <PackageTags>$(PackageTags);hosting;generic host</PackageTags>
+        <RootNamespace>Dovetail.Testing</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../src/Dovetail/Dovetail.csproj" />
+        <ProjectReference Include="../../src/Dovetail.Aspire/Dovetail.Aspire.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Aspire.Hosting.Tests" />
+        <PackageReference Include="Aspire.Hosting.Testing" />
+    </ItemGroup>
+    <ItemGroup>
+        <DovetailJoint
+            Include="DistributedApplicationTesting"
+            NMAmespace="Dovetail.Testing.Joints"
+            ParameterType="global::Aspire.Hosting.Testing.IDistributedApplicationTestingBuilder"
+            ParameterName="builder"
+        />
+    </ItemGroup>
+</Project>

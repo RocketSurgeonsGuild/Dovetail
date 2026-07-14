@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <PackageDescription>Provides Autofac support for a Rocket Surgery Application</PackageDescription>
+        <PackageTags>$(PackageTags);autofac</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+        <DovetailJoint Include="Autofac" Namespace="Dovetail.Joints" ParameterType="global::Autofac.ContainerBuilder" ParameterName="builder" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Dovetail\Dovetail.csproj" />
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" />
+        <InternalsVisibleTo Include="Rocket.Surgery.Extensions.Autofac.Tests" />
+    </ItemGroup>
+</Project>

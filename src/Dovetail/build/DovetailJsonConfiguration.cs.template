@@ -1,0 +1,15 @@
+using Dovetail;
+using Dovetail.Attributes;
+using Dovetail.Joints;
+using Microsoft.Extensions.Configuration;
+
+[DovetailExport]
+internal class JsonAppSettingsConfiguration : IConfigurationJoint
+{
+    public void Register(IDovetailContext context, IConfigurationBuilder builder)
+    {
+        builder.AddJsonFile("{{ProjectName}}.json", optional: false, reloadOnChange: false);
+        builder.AddJsonFile($"{{ProjectName}}.{context.Get<string>("EnvironmentName") ?? "Production"}.json", optional: true, reloadOnChange: false);
+        builder.AddJsonFile("{{ProjectName}}.local.json", optional: true, reloadOnChange: false);
+    }
+}

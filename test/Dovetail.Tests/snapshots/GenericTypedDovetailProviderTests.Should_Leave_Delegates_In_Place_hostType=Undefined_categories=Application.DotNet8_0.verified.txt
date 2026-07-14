@@ -1,0 +1,18 @@
+[
+  {
+    Type: ServiceDovetail,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Leave_Delegates_In_Place(Rocket.Surgery.Dovetails.IDovetailContext, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {},
+  {
+    Type: ServiceDovetail,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Leave_Delegates_In_Place(Rocket.Surgery.Dovetails.IDovetailContext, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  },
+  {
+    Type: ServiceDovetail,
+    Target: GenericTypedDovetailProviderTests.<>c,
+    Method: Void Should_Leave_Delegates_In_Place(Rocket.Surgery.Dovetails.IDovetailContext, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  }
+]

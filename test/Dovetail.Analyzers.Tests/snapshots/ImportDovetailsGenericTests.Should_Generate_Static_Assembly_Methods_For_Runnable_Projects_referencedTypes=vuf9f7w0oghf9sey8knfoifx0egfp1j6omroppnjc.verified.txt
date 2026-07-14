@@ -1,0 +1,34 @@
+﻿{
+  FinalDiagnostics: [],
+  GeneratorDiagnostics: {
+    Dovetail.DovetailAttributesGenerator: []
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: 
+  },
+  References: [
+    <in-memory assembly>,
+    <in-memory assembly>,
+    <in-memory assembly>,
+    Aspire.Hosting.dll,
+    Dovetail.Aspire.dll,
+    Dovetail.dll,
+    Dovetail.dll,
+    FluentValidation.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    Serilog.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Private.CoreLib.dll,
+    System.Runtime.dll
+  ]
+}

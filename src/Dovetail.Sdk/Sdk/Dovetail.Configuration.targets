@@ -1,0 +1,37 @@
+<Project>
+
+  <PropertyGroup>
+    <DovetailEnableJsonConfiguration Condition="'$(DovetailEnableJsonConfiguration)' == ''">false</DovetailEnableJsonConfiguration>
+    <DovetailEnableYamlConfiguration Condition="'$(DovetailEnableYamlConfiguration)' == ''">true</DovetailEnableYamlConfiguration>
+    <DovetailEnableTomlConfiguration Condition="'$(DovetailEnableTomlConfiguration)' == ''">false</DovetailEnableTomlConfiguration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DovetailEnableConfiguration Condition="'$(DovetailEnableConfiguration)' == '' and ('$(DovetailEnableJsonConfiguration)' == 'true' or '$(DovetailEnableYamlConfiguration)' == 'true' or '$(DovetailEnableTomlConfiguration)' == 'true')">true</DovetailEnableConfiguration>
+    <DovetailEnableConfiguration Condition="'$(DovetailEnableConfiguration)' == ''">false</DovetailEnableConfiguration>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(DovetailEnableConfiguration)' == 'true'">
+    <DovetailSdkImplicitPackageReference Include="Dovetail.Configuration.Json" Version="$(DovetailConfigurationJsonVersion)" Condition="'$(DovetailEnableJsonConfiguration)' == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.Configuration.Yaml" Version="$(DovetailConfigurationYamlVersion)" Condition="'$(DovetailEnableYamlConfiguration)' == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.Configuration.Toml" Version="$(DovetailConfigurationTomlVersion)" Condition="'$(DovetailEnableTomlConfiguration)' == 'true'"/>
+  </ItemGroup>
+
+  <!--
+    .gitignore warning (task 1.6): appsettings.local.{ext} is a developer-machine-only
+    override layer (design.md Decision 8) and must never be committed. Warn instead of
+    writing to the project's .gitignore, so the developer stays in control of that file.
+  -->
+  <Target Name="_DovetailScaffoldLocalConfigurationGitIgnore"
+          Condition="'$(DovetailEnableConfiguration)' == 'true'"
+          BeforeTargets="Build;Restore">
+    <PropertyGroup>
+      <_DovetailGitIgnorePath>$(MSBuildProjectDirectory)\.gitignore</_DovetailGitIgnorePath>
+      <_DovetailGitIgnoreExistingContent Condition="Exists('$(_DovetailGitIgnorePath)')">$([System.IO.File]::ReadAllText('$(_DovetailGitIgnorePath)'))</_DovetailGitIgnoreExistingContent>
+      <_DovetailGitIgnoreNeedsEntry Condition="'$(_DovetailGitIgnoreExistingContent)' == '' or !$(_DovetailGitIgnoreExistingContent.Contains('appsettings.local.'))">true</_DovetailGitIgnoreNeedsEntry>
+    </PropertyGroup>
+    <Warning
+      Text="DovetailConfiguration: '$(_DovetailGitIgnorePath)' does not appear to ignore appsettings.local.{json,yaml,yml,toml}. Add those patterns to your .gitignore so local-only configuration overrides are never committed."
+      Condition="'$(_DovetailGitIgnoreNeedsEntry)' == 'true'"/>
+  </Target>
+</Project>

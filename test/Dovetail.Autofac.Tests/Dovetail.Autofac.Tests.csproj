@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <ProjectReference Include="..\..\src\Dovetail.Autofac\Dovetail.Autofac.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+        <!-- <ProjectReference Include="..\..\src\Dovetail.CommandLine\Dovetail.CommandLine.csproj" /> -->
+        <ProjectReference Include="..\..\src\Dovetail.Hosting\Dovetail.Hosting.csproj" />
+
+        <DovetailHost
+            Include="HostApplication"
+            HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Extensions.Hosting.IHost"
+            HelperName="global::Dovetail.DovetailHostApplicationHelpers"
+        />
+        <DovetailHost
+            Include="WebApplication"
+            HostBuilderType="global::Microsoft.AspNetCore.Builder.WebApplicationBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.AspNetCore.Builder.WebApplication"
+            HelperName="global::Dovetail.DovetailHostApplicationHelpers"
+        />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,17 @@
+namespace Dovetail.Infrastructure;
+
+/// <summary>
+///     A dependency for a given convention
+/// </summary>
+public interface IDovetailDependency
+{
+    /// <summary>
+    ///     The type
+    /// </summary>
+    Type Type { get; }
+
+    /// <summary>
+    ///     The direction
+    /// </summary>
+    DependencyDirection Direction { get; }
+}

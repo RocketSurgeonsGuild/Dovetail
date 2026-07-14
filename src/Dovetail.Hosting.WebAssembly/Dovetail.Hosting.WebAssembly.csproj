@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net10.0-browser</TargetFrameworks>
+        <PackageDescription>
+            Adds helpers to easily bootstrap an application using conventions by just using the correct extension method. This adds command line
+            operations, additional configuration, logging and service injections by convention.
+        </PackageDescription>
+        <PackageTags>$(PackageTags);hosting;generic host</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+        <DovetailJoint
+            Include="WebAssemblyHostBuilder"
+            Namespace="Dovetail.Joints"
+            ParameterType="global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder"
+            ParameterName="builder"
+        />
+        <DovetailJoint
+            Include="WebAssemblyHost"
+            Namespace="Dovetail.Joints"
+            ParameterType="global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost"
+            ParameterName="host"
+        />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+        <ProjectReference Include="../Dovetail/Dovetail.csproj" />
+        <ProjectReference Include="../Dovetail.OpenTelemetry/Dovetail.OpenTelemetry.csproj" />
+        <InternalsVisibleTo Include="Dovetail.WebAssembly.Hosting.Tests" />
+    </ItemGroup>
+    <ItemGroup />
+</Project>

@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <_DovetailContextBuilderTargetsImported>true</_DovetailContextBuilderTargetsImported>
+    <_DovetailContextBuilderTemplateFile>$(MSBuildThisFileDirectory)DovetailContextBuilder.cs.template</_DovetailContextBuilderTemplateFile>
+  </PropertyGroup>
+
+  <!-- Batched once per DovetailContextBuilder item via Outputs -->
+  <Target Name="_DovetailGenerateContextBuilderSources"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="_DovetailPrepareHostItems"
+    Condition="'@(DovetailHost)' != ''"
+    Outputs="$(_DovetailContextBuilderOutputFile)">
+    <PropertyGroup>
+      <_DovetailContextBuilderImportExpression>(ImportHelpers.Tectum ?? global::$(DovetailImportNamespace).$(DovetailImportClassName).$(DovetailImportMethodName))</_DovetailContextBuilderImportExpression>
+      <_DovetailContextBuilderContent>$([System.IO.File]::ReadAllText('$(_DovetailContextBuilderTemplateFile)'))</_DovetailContextBuilderContent>
+      <_DovetailContextBuilderContent>$(_DovetailContextBuilderContent.Replace('{ImportsExpression}', '$(_DovetailContextBuilderImportExpression)'))</_DovetailContextBuilderContent>
+      <_DovetailContextBuilderOutputFile>$(IntermediateOutputPath)DovetailContextBuilder.g.cs</_DovetailContextBuilderOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailContextBuilderOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailContextBuilderContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_DovetailContextBuilderOutputFile)" />
+      <FileWrites Include="$(_DovetailContextBuilderOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

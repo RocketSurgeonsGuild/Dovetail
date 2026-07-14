@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+        <ProjectReference
+            Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+            IncludeAssets="all"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false"
+        />
+        <DovetailJoint Include="DatabaseConfigurator" Namespace="Dovetail.Joints" ParameterType="Sample.Core.Databases.IDatabaseConfigurator" ParameterName="builder" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
+</Project>

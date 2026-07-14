@@ -1,0 +1,70 @@
+<Project>
+  <!--
+        Dovetail.Abstractions.Host.targets
+        Expands DovetailHost.cs.template once per declared <DovetailHost> item and adds the
+        result to the compilation. Replaces the generator-based part stamping — no source
+        generator is required for part interfaces/delegates.
+
+        DovetailHost metadata:
+          Namespace             — namespace for the generated types (default: Dovetail)
+          HostBuilderType       - The type of the host builder
+          HostBuilderName       - The name of the host builder
+          HostType              - The type of the host
+
+        Each part generates: The extension methods for the given hostbuilder type, for bootstrapping
+          and will wire in Dovetail.
+    -->
+  <PropertyGroup>
+    <_DovetailHostsTargetsImported>true</_DovetailHostsTargetsImported>
+    <_DovetailHostTemplateFile>$(MSBuildThisFileDirectory)DovetailHost.cs.template</_DovetailHostTemplateFile>
+  </PropertyGroup>
+
+  <Target Name="_DovetailPrepareHostItems" Condition="'@(DovetailHost)' != ''">
+    <ItemGroup>
+      <DovetailHost>
+        <Visible>false</Visible>
+        <Namespace Condition="'%(DovetailHost.Namespace)' == ''">$(RootNamespace)</Namespace>
+      </DovetailHost>
+    </ItemGroup>
+  </Target>
+
+  <!-- Batched once per DovetailHost item via Outputs -->
+  <Target Name="_DovetailGenerateHostSources"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="_DovetailPrepareHostItems"
+    Condition="'@(DovetailHost)' != ''"
+    Outputs="%(DovetailHost.Identity)">
+    <PropertyGroup>
+      <_DovetailHostName>%(DovetailHost.Identity)</_DovetailHostName>
+      <_DovetailHostNamespace>%(DovetailHost.Namespace)</_DovetailHostNamespace>
+      <_DovetailHostBuilderType>%(DovetailHost.HostBuilderType)</_DovetailHostBuilderType>
+      <_DovetailHostBuilderName>%(DovetailHost.HostBuilderName)</_DovetailHostBuilderName>
+      <_DovetailHelperName>%(DovetailHost.HelperName)</_DovetailHelperName>
+      <_DovetailHelperName Condition="'$(_DovetailHelperName)' == ''">Dovetail$(_DovetailHostName)Helpers</_DovetailHelperName>
+      <_DovetailBuildExpression>%(DovetailHost.BuildExpression)</_DovetailBuildExpression>
+      <_DovetailBuildExpression Condition="'$(_DovetailBuildExpression)' == ''">, static b => b.Build()</_DovetailBuildExpression>
+      <_DovetailHasBuildExpression>%(DovetailHost.HasBuildExpression)</_DovetailHasBuildExpression>
+      <_DovetailHasBuildExpression Condition="'$(_DovetailHasBuildExpression)' == ''">true</_DovetailHasBuildExpression>
+      <_DovetailBuildExpression Condition="'$(_DovetailHasBuildExpression)' != 'true'"></_DovetailBuildExpression>
+      <_DovetailHostType>%(DovetailHost.HostType)</_DovetailHostType>
+      <_DovetailHostContent>$([System.IO.File]::ReadAllText('$(_DovetailHostTemplateFile)'))</_DovetailHostContent>
+      <_DovetailHostContent>$(_DovetailHostContent.Replace('{HostName}', '$(_DovetailHostName)'))</_DovetailHostContent>
+      <_DovetailHostContent>$(_DovetailHostContent.Replace('{Namespace}','$(_DovetailHostNamespace)'))</_DovetailHostContent>
+      <_DovetailHostContent>$(_DovetailHostContent.Replace('{HostBuilderType}', '$(_DovetailHostBuilderType)'))</_DovetailHostContent>
+      <_DovetailHostContent>$(_DovetailHostContent.Replace('{HostBuilderName}', '$(_DovetailHostBuilderName)'))</_DovetailHostContent>
+      <_DovetailHostContent>$(_DovetailHostContent.Replace('{HostType}', '$(_DovetailHostType)'))</_DovetailHostContent>
+      <_DovetailHostContent>$(_DovetailHostContent.Replace('{HelperName}', '$(_DovetailHelperName)'))</_DovetailHostContent>
+      <_DovetailHostContent>$(_DovetailHostContent.Replace('{BuildExpression}', '$(_DovetailBuildExpression)'))</_DovetailHostContent>
+      <_DovetailHostOutputFile>$(IntermediateOutputPath)DovetailHost.$(_DovetailHostName).g.cs</_DovetailHostOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailHostOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailHostContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_DovetailHostOutputFile)" />
+      <FileWrites Include="$(_DovetailHostOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

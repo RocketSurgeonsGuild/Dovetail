@@ -1,0 +1,131 @@
+using FakeItEasy;
+
+#pragma warning disable CA1040, CA1034
+
+namespace Dovetail.Tests;
+
+public class DovetailContextExtensionsTests
+{
+    [Test]
+    public async Task Should_Get_Item_By_Type()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType = A.Fake<IMyType>();
+        context.Set(myType);
+
+        context.Get<IMyType>().ShouldBeSameAs(myType);
+    }
+
+    [Test]
+    public async Task Should_Get_Item_By_Name()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType = A.Fake<IMyType>();
+        context.Set("value", myType);
+        context.Get<IMyType>("value").ShouldBeSameAs(myType);
+    }
+
+    [Test]
+    public async Task Should_Require_Item_By_Type()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType = A.Fake<IMyType>();
+        context.Set(myType);
+
+        context.Require<IMyType>().ShouldBeSameAs(myType);
+    }
+
+    [Test]
+    public async Task Should_Require_Item_By_Name()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType = A.Fake<IMyType>();
+        context.Set("value", myType);
+        context.Require<IMyType>("value").ShouldBeSameAs(myType);
+    }
+
+    [Test]
+    public async Task Should_Fail_To_Require_Item_By_Type()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType = A.Fake<IMyType>();
+        Action a = () => context.Require<IMyType>();
+        a.ShouldThrow<KeyNotFoundException>();
+    }
+
+    [Test]
+    public async Task Should_Fail_To_Require_Item_By_Name()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType = A.Fake<IMyType>();
+        Action a = () => context.Require<IMyType>("value");
+        a.ShouldThrow<KeyNotFoundException>();
+    }
+
+    [Test]
+    public async Task Should_Get_IsUnitTestHost()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        context.Set(DovetailHostType.UnitTest);
+
+        context.IsUnitTestHost().ShouldBeTrue();
+    }
+
+    [Test]
+    public async Task Should_Not_IsUnitTestHost()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        context.Set(DovetailHostType.Live);
+
+        context.IsUnitTestHost().ShouldBeFalse();
+    }
+
+    [Test]
+    public async Task Should_GetOrAdd_Item_By_Type_Get()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType1 = A.Fake<IMyType>();
+        var myType2 = A.Fake<IMyType>();
+        context.Set(myType1);
+        context.GetOrAdd(() => myType2).ShouldNotBeSameAs(myType2);
+    }
+
+    [Test]
+    public async Task Should_GetOrAdd_Item_By_Name_Get()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType1 = A.Fake<IMyType>();
+        var myType2 = A.Fake<IMyType>();
+        context.Set("value", myType1);
+        context.GetOrAdd("value", () => myType2).ShouldNotBeSameAs(myType2);
+    }
+
+    [Test]
+    public async Task Should_GetOrAdd_Item_By_Type_Add()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType2 = A.Fake<IMyType>();
+        context.GetOrAdd(() => myType2).ShouldBeSameAs(myType2);
+    }
+
+    [Test]
+    public async Task Should_GetOrAdd_Item_By_Name_Add()
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        var myType2 = A.Fake<IMyType>();
+        context.GetOrAdd("value", () => myType2).ShouldBeSameAs(myType2);
+    }
+
+    [Test]
+    [Arguments(DovetailHostType.Undefined)]
+    [Arguments(DovetailHostType.Live)]
+    [Arguments(DovetailHostType.UnitTest)]
+    public async Task Should_Get_HostType(DovetailHostType hostType)
+    {
+        var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []));
+        context.Set(hostType);
+        context.GetHostType().ShouldBe(hostType);
+    }
+
+    public interface IMyType;
+}

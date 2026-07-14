@@ -1,0 +1,4 @@
+﻿[
+  DovetailPkgTestLib1.yaml,
+  DovetailPkgTestLib2.json
+]

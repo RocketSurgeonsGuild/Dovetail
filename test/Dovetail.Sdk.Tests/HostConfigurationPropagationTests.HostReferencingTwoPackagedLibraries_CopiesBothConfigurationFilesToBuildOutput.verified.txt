@@ -1,0 +1,259 @@
+﻿[
+  {
+    Name: DovetailPkgTestLib1.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: net10.0,
+    Properties: {
+      _DovetailApplicationDetected: false,
+      AssemblyName: DovetailPkgTestLib1,
+      BaseIntermediateOutputPath: obj/,
+      BaseOutputPath: bin/,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
+      DefineConstants: TRACE;DEBUG,
+      DovetailAspireTestingVersion: {sdk-version},
+      DovetailAspireVersion: {sdk-version},
+      DovetailAutofacVersion: {sdk-version},
+      DovetailCommandLineVersion: {sdk-version},
+      DovetailConfigurationJsonVersion: {sdk-version},
+      DovetailConfigurationTomlVersion: {sdk-version},
+      DovetailConfigurationYamlVersion: {sdk-version},
+      DovetailDryIocVersion: {sdk-version},
+      DovetailEnableAspire: false,
+      DovetailEnableAspireTesting: false,
+      DovetailEnableAutofac: false,
+      DovetailEnableDryIoc: false,
+      DovetailEnableHosting: false,
+      DovetailEnableHostingWeb: false,
+      DovetailEnableOpenTelemetry: false,
+      DovetailEnableSerilog: false,
+      DovetailHostingVersion: {sdk-version},
+      DovetailHostingWebAssemblyVersion: {sdk-version},
+      DovetailHostingWebVersion: {sdk-version},
+      DovetailOpenTelemetryVersion: {sdk-version},
+      DovetailSdkVersion: {sdk-version},
+      DovetailSerilogVersion: {sdk-version},
+      DovetailTestingVersion: {sdk-version},
+      DovetailVersion: {sdk-version},
+      EnableDefaultCompileItems: false,
+      ExportDovetailAssembly: true,
+      GenerateDocumentationFile: false,
+      ImportDovetailAssembly: false,
+      IsPackable: true,
+      NoWarn: 1701;1702,
+      PackageOutputPath: bin/Debug/,
+      RootNamespace: DovetailPkgTestLib1,
+      TargetFramework: net10.0
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Dovetail: {
+        IsImplicitlyDefined: true,
+        Version: Version_0
+      }
+    },
+    DovetailJoint: {},
+    DovetailHost: {},
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/lib1/DovetailPkgTestLib1.csproj,
+      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/Directory.Build.props
+    ],
+    NoImports: [
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Dovetail.Configuration.targets,
+            Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      }
+    ],
+    GeneratedFiles: [],
+    OutputFiles: [
+      DovetailPkgTestLib1.yaml,
+      DovetailPkgTestLib1.yaml
+    ]
+  },
+  {
+    Name: DovetailPkgTestLib2.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: net10.0,
+    Properties: {
+      _DovetailApplicationDetected: false,
+      AssemblyName: DovetailPkgTestLib2,
+      BaseIntermediateOutputPath: obj/,
+      BaseOutputPath: bin/,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
+      DefineConstants: TRACE;DEBUG,
+      DovetailAspireTestingVersion: {sdk-version},
+      DovetailAspireVersion: {sdk-version},
+      DovetailAutofacVersion: {sdk-version},
+      DovetailCommandLineVersion: {sdk-version},
+      DovetailConfigurationJsonVersion: {sdk-version},
+      DovetailConfigurationTomlVersion: {sdk-version},
+      DovetailConfigurationYamlVersion: {sdk-version},
+      DovetailDryIocVersion: {sdk-version},
+      DovetailEnableAspire: false,
+      DovetailEnableAspireTesting: false,
+      DovetailEnableAutofac: false,
+      DovetailEnableDryIoc: false,
+      DovetailEnableHosting: false,
+      DovetailEnableHostingWeb: false,
+      DovetailEnableOpenTelemetry: false,
+      DovetailEnableSerilog: false,
+      DovetailHostingVersion: {sdk-version},
+      DovetailHostingWebAssemblyVersion: {sdk-version},
+      DovetailHostingWebVersion: {sdk-version},
+      DovetailOpenTelemetryVersion: {sdk-version},
+      DovetailSdkVersion: {sdk-version},
+      DovetailSerilogVersion: {sdk-version},
+      DovetailTestingVersion: {sdk-version},
+      DovetailVersion: {sdk-version},
+      EnableDefaultCompileItems: false,
+      ExportDovetailAssembly: true,
+      GenerateDocumentationFile: false,
+      ImportDovetailAssembly: false,
+      IsPackable: true,
+      NoWarn: 1701;1702,
+      PackageOutputPath: bin/Debug/,
+      RootNamespace: DovetailPkgTestLib2,
+      TargetFramework: net10.0
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Dovetail: {
+        IsImplicitlyDefined: true,
+        Version: Version_0
+      }
+    },
+    DovetailJoint: {},
+    DovetailHost: {},
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/lib2/DovetailPkgTestLib2.csproj,
+      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/Directory.Build.props
+    ],
+    NoImports: [
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Dovetail.Configuration.targets,
+            Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      }
+    ],
+    GeneratedFiles: [],
+    OutputFiles: [
+      DovetailPkgTestLib2.json,
+      DovetailPkgTestLib2.json
+    ]
+  },
+  {
+    Name: host.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: net10.0,
+    Properties: {
+      _DovetailApplicationDetected: true,
+      AssemblyName: host,
+      BaseIntermediateOutputPath: obj\,
+      BaseOutputPath: bin\,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
+      DefineConstants: TRACE;DEBUG,
+      DovetailAspireTestingVersion: {sdk-version},
+      DovetailAspireVersion: {sdk-version},
+      DovetailAutofacVersion: {sdk-version},
+      DovetailCommandLineVersion: {sdk-version},
+      DovetailConfigurationJsonVersion: {sdk-version},
+      DovetailConfigurationTomlVersion: {sdk-version},
+      DovetailConfigurationYamlVersion: {sdk-version},
+      DovetailDryIocVersion: {sdk-version},
+      DovetailEnableAspire: false,
+      DovetailEnableAspireTesting: false,
+      DovetailEnableAutofac: false,
+      DovetailEnableDryIoc: false,
+      DovetailEnableHosting: false,
+      DovetailEnableHostingWeb: false,
+      DovetailEnableOpenTelemetry: false,
+      DovetailEnableSerilog: false,
+      DovetailHostingVersion: {sdk-version},
+      DovetailHostingWebAssemblyVersion: {sdk-version},
+      DovetailHostingWebVersion: {sdk-version},
+      DovetailOpenTelemetryVersion: {sdk-version},
+      DovetailSdkVersion: {sdk-version},
+      DovetailSerilogVersion: {sdk-version},
+      DovetailTestingVersion: {sdk-version},
+      DovetailVersion: {sdk-version},
+      EnableDefaultCompileItems: false,
+      ExportDovetailAssembly: true,
+      GenerateDocumentationFile: false,
+      ImportDovetailAssembly: true,
+      IsPackable: true,
+      NoWarn: 1701;1702,
+      PackageOutputPath: bin\Debug/,
+      RootNamespace: host,
+      TargetFramework: net10.0
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Dovetail: {
+        IsImplicitlyDefined: true,
+        Version: Version_0
+      },
+      Dovetail.Hosting: {
+        IsImplicitlyDefined: true,
+        Version: Version_0
+      },
+      DovetailPkgTestLib1: {
+        Version: Version_0
+      },
+      DovetailPkgTestLib2: {
+        Version: Version_0
+      }
+    },
+    DovetailJoint: {},
+    DovetailHost: {
+      HostApplication: {
+        HelperName: global::Dovetail.DovetailHostApplicationHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.Extensions.Hosting.HostApplicationBuilder,
+        HostType: global::Microsoft.Extensions.Hosting.IHost
+      }
+    },
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/host/host.csproj,
+      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/Directory.Build.props
+    ],
+    NoImports: [
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Dovetail.Configuration.targets,
+            Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      }
+    ],
+    GeneratedFiles: [
+      DovetailContextBuilder.g.cs,
+      DovetailHost.HostApplication.g.cs
+    ],
+    OutputFiles: [
+      DovetailPkgTestLib1.yaml,
+      DovetailPkgTestLib2.json
+    ]
+  }
+]

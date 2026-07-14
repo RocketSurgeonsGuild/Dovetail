@@ -1,0 +1,16 @@
+using Dovetail;
+using Dovetail.Attributes;
+using Dovetail.Configuration.Yaml;
+using Dovetail.Joints;
+using Microsoft.Extensions.Configuration;
+
+[DovetailExport]
+internal class YmlAppSettingsConfiguration : IConfigurationJoint
+{
+    public void Register(IDovetailContext context, IConfigurationBuilder builder)
+    {
+        builder.AddYamlFile("{{ProjectName}}.yml", optional: false, reloadOnChange: false);
+        builder.AddYamlFile($"{{ProjectName}}.{context.Get<string>("EnvironmentName") ?? "Production"}.yml", optional: true, reloadOnChange: false);
+        builder.AddYamlFile("{{ProjectName}}.local.yml", optional: true, reloadOnChange: false);
+    }
+}

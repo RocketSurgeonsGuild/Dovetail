@@ -1,0 +1,16 @@
+using Dovetail;
+using Dovetail.Attributes;
+using Dovetail.Configuration.Toml;
+using Dovetail.Joints;
+using Microsoft.Extensions.Configuration;
+
+[DovetailExport]
+internal class TomlAppSettingsConfiguration : IConfigurationJoint
+{
+    public void Register(IDovetailContext context, IConfigurationBuilder builder)
+    {
+        builder.AddTomlFile("{{ProjectName}}.toml", optional: false, reloadOnChange: false);
+        builder.AddTomlFile($"{{ProjectName}}.{context.Get<string>("EnvironmentName") ?? "Production"}.toml", optional: true, reloadOnChange: false);
+        builder.AddTomlFile("{{ProjectName}}.local.toml", optional: true, reloadOnChange: false);
+    }
+}

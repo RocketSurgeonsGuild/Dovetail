@@ -1,0 +1,49 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+using Rocket.Surgery.Dovetail.CommandLine;
+using Rocket.Surgery.Dovetail.Hosting;
+using Spectre.Console;
+using Spectre.Console.Cli;
+
+// [assembly: Convention(typeof(Program))]
+
+namespace Diagnostics;
+
+public static partial class Program
+{
+    public static async Task<int> Main(string[] args) => await ( await CreateHostBuilder(args) ).RunConsoleAppAsync();
+
+    public static async Task<IHost> CreateHostBuilder(string[] args) => await Host.CreateApplicationBuilder(args).ConfigureDovetail();
+}
+
+[DovetailExport]
+internal class Convention : ICommandLineConvention, IServiceJoint
+{
+    public void Register(IDovetailContext context, IConfigurator app)
+    {
+        app.AddDelegate(
+            "test",
+            (_, _) => 1
+        );
+        app.AddCommand<MyCommand>("dump");
+    }
+
+    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services) { }
+}
+
+internal class MyCommand(IHostBuilder hostBuilder, IAnsiConsole console) : AsyncCommand<AppSettings>
+{
+    private readonly IHostBuilder _hostBuilder = hostBuilder;
+    private readonly IAnsiConsole _console = console;
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, AppSettings settings, CancellationToken token)
+    {
+        using var host = _hostBuilder.Build();
+        await host.StartAsync(token);
+        if (host.Services.GetRequiredService<IConfiguration>() is IConfigurationRoot root) _console.WriteLine(root.GetDebugView());
+
+        return 0;
+    }
+}

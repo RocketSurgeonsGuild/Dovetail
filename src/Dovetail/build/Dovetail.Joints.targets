@@ -1,0 +1,205 @@
+<Project>
+  <!--
+    Dovetail.Abstractions.Joint.targets
+    Expands DovetailJoint.cs.template once per declared <DovetailJoint> item and adds the
+    result to the compilation. Replaces the generator-based part stamping — no source
+    generator is required for part interfaces/delegates.
+
+    DovetailJoint metadata:
+      Namespace             — namespace for the generated types (default: Dovetail)
+      ProvideConfiguration  — adds an IConfiguration parameter (default: false)
+      ProvideServices       — adds an IServiceCollection parameter (default: false)
+      ParameterType         — optional trailing parameter type (unprefixed, e.g. Serilog.LoggerConfiguration)
+      ParameterName         — name for the trailing parameter (default: parameter)
+      BuilderMethodName     — override for the generated DovetailContextBuilder extension method name
+                              (default: Configure{Identity})
+      GenericParameter      — type parameter name that makes the part generic (e.g. TBuilder).
+                              ParameterType may reference it (e.g. ParameterType="TBuilder"), in which
+                              case it is not global::-prefixed.
+      GenericConstraint     — unprefixed constraint type for the parameter
+                              (e.g. Microsoft.Extensions.Hosting.IHostApplicationBuilder)
+      GenericVariance       — variance modifier used on the interface/delegate declarations (default: in)
+
+    Generic parts expand the template placeholders {GenericParam} (declaration, e.g. &lt;in TBuilder&gt;),
+    {GenericArg} (usage, e.g. &lt;TBuilder&gt;) and {GenericConstraint} (e.g. where TBuilder : IHostApplicationBuilder);
+    all three are empty for non-generic parts.
+
+    Each part generates: I{Joint}Joint / {Joint}Joint / I{Joint}AsyncJoint / {Joint}AsyncJoint with a
+    Register method, plus a {Joint}JointExtensions.ApplyDovetailsAsync extension whose subject
+    is the custom parameter (if any), otherwise the service collection, otherwise the context.
+
+    Every part except the bare-context one (i.e. the one whose subject is the IDovetailContext
+    itself, which cannot access context.Configuration from Dovetail.Abstractions) also gets a
+    Configure{Joint}-style set of DovetailContextBuilder builder-method overloads generated
+    automatically — no opt-in flag required.
+-->
+  <PropertyGroup>
+    <_DovetailJointTargetsImported>true</_DovetailJointTargetsImported>
+    <_DovetailJointTemplateFile>$(MSBuildThisFileDirectory)DovetailJoint.cs.template</_DovetailJointTemplateFile>
+    <_DovetailJointAsyncTemplateFile>$(MSBuildThisFileDirectory)DovetailJointAsync.cs.template</_DovetailJointAsyncTemplateFile>
+  </PropertyGroup>
+
+  <Target Name="_DovetailPrepareJointItems" Condition="'@(DovetailJoint)' != ''">
+    <ItemGroup>
+      <DovetailJoint>
+        <Visible>false</Visible>
+        <Namespace Condition="'%(DovetailJoint.Namespace)' == ''">$(RootNamespace).Joints</Namespace>
+        <IsAsync Condition="'%(DovetailJoint.IsAsync)' == ''">true</IsAsync>
+        <ParameterName Condition="'%(DovetailJoint.ParameterType)' != '' and '%(DovetailJoint.ParameterName)' == ''">parameter</ParameterName>
+        <GenericVariance Condition="'%(DovetailJoint.GenericParameter)' != '' and '%(DovetailJoint.GenericVariance)' == ''">in</GenericVariance>
+      </DovetailJoint>
+      <!-- Generic expansion: {GenericParam} for declarations, {GenericArg} for usages, {GenericConstraint} for where clauses -->
+      <DovetailJoint>
+        <_GenericParam Condition="'%(DovetailJoint.GenericParameter)' != ''">&lt;%(DovetailJoint.GenericVariance) %(DovetailJoint.GenericParameter)&gt;</_GenericParam>
+        <_GenericArg Condition="'%(DovetailJoint.GenericParameter)' != ''">&lt;%(DovetailJoint.GenericParameter)&gt;</_GenericArg>
+        <_GenericConstraint Condition="'%(DovetailJoint.GenericParameter)' != '' and '%(DovetailJoint.GenericConstraint)' != ''">where %(DovetailJoint.GenericParameter) : %(DovetailJoint.GenericConstraint)</_GenericConstraint>
+      </DovetailJoint>
+      <!-- When ParameterType is the generic parameter itself it must not be global::-prefixed -->
+      <DovetailJoint>
+        <_ConfigParam Condition="'%(DovetailJoint.ProvideConfiguration)' == 'true'">, global::Microsoft.Extensions.Configuration.IConfiguration configuration</_ConfigParam>
+        <_ServicesParam Condition="'%(DovetailJoint.ProvideServices)' == 'true'">, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services</_ServicesParam>
+        <_CustomParam Condition="'%(DovetailJoint.ParameterType)' != ''">, %(DovetailJoint._CustomParamPrefix)%(DovetailJoint.ParameterType) %(DovetailJoint.ParameterName)</_CustomParam>
+        <_ConfigArg Condition="'%(DovetailJoint.ProvideConfiguration)' == 'true'">, context.Configuration</_ConfigArg>
+        <_ServicesArg Condition="'%(DovetailJoint.ProvideServices)' == 'true'">, services</_ServicesArg>
+        <_CustomArg Condition="'%(DovetailJoint.ParameterType)' != ''">, %(DovetailJoint.ParameterName)</_CustomArg>
+      </DovetailJoint>
+      <!-- Extension subject: custom parameter > service collection > context -->
+      <DovetailJoint>
+        <_SubjectType Condition="'%(DovetailJoint.ParameterType)' != ''">%(DovetailJoint._CustomParamPrefix)%(DovetailJoint.ParameterType)</_SubjectType>
+        <_SubjectName Condition="'%(DovetailJoint.ParameterType)' != ''">%(DovetailJoint.ParameterName)</_SubjectName>
+        <_SubjectType Condition="'%(DovetailJoint.ParameterType)' == '' and '%(DovetailJoint.ProvideServices)' == 'true'">global::Microsoft.Extensions.DependencyInjection.IServiceCollection</_SubjectType>
+        <_SubjectName Condition="'%(DovetailJoint.ParameterType)' == '' and '%(DovetailJoint.ProvideServices)' == 'true'">services</_SubjectName>
+        <_SubjectType Condition="'%(DovetailJoint.ParameterType)' == '' and '%(DovetailJoint.ProvideServices)' != 'true'">global::Dovetail.IDovetailContext</_SubjectType>
+        <_SubjectName Condition="'%(DovetailJoint.ParameterType)' == '' and '%(DovetailJoint.ProvideServices)' != 'true'">context</_SubjectName>
+      </DovetailJoint>
+      <DovetailJoint>
+        <_ExtContextParam Condition="'%(DovetailJoint._SubjectName)' != 'context'">, global::Dovetail.IDovetailContext context</_ExtContextParam>
+        <_ExtServicesParam Condition="'%(DovetailJoint.ProvideServices)' == 'true' and '%(DovetailJoint.ParameterType)' != ''">, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services</_ExtServicesParam>
+        <!-- Builder methods are generated for every part except the bare-context one -->
+        <!-- <_HasBuilderMethods Condition="'%(DovetailJoint._SubjectName)' == 'context'">false</_HasBuilderMethods>
+        <_HasBuilderMethods Condition="'%(DovetailJoint._SubjectName)' != 'context'">true</_HasBuilderMethods> -->
+        <_BuilderMethodName Condition="'%(DovetailJoint.BuilderMethodName)' == ''">Configure%(DovetailJoint.Identity)</_BuilderMethodName>
+        <_BuilderMethodName Condition="'%(DovetailJoint.BuilderMethodName)' != ''">%(DovetailJoint.BuilderMethodName)</_BuilderMethodName>
+      </DovetailJoint>
+      <DovetailJoint>
+        <_SyncParams>global::Dovetail.IDovetailContext context%(DovetailJoint._ConfigParam)%(DovetailJoint._ServicesParam)%(DovetailJoint._CustomParam)</_SyncParams>
+        <_ExtensionParams>this %(DovetailJoint._SubjectType) %(DovetailJoint._SubjectName)%(DovetailJoint._ExtContextParam)%(DovetailJoint._ExtServicesParam), global::System.Threading.CancellationToken cancellationToken = default</_ExtensionParams>
+        <_SyncArgs>context%(DovetailJoint._ConfigArg)%(DovetailJoint._ServicesArg)%(DovetailJoint._CustomArg)</_SyncArgs>
+        <!-- Builder-method lambda parameter names (as opposed to _SyncArgs/_AsyncArgs, which are call-forwarding expressions) -->
+        <_ParamNameConfig Condition="'%(DovetailJoint.ProvideConfiguration)' == 'true'">, configuration</_ParamNameConfig>
+        <_ParamNameServices Condition="'%(DovetailJoint.ProvideServices)' == 'true'">, services</_ParamNameServices>
+        <_ParamNameCustom Condition="'%(DovetailJoint.ParameterType)' != ''">, %(DovetailJoint.ParameterName)</_ParamNameCustom>
+        <_ConfigExpr Condition="'%(DovetailJoint.ProvideConfiguration)' == 'true'">configuration</_ConfigExpr>
+        <_ConfigExpr Condition="'%(DovetailJoint.ProvideConfiguration)' != 'true'">context.Configuration</_ConfigExpr>
+        <_BuilderPlainConfigName Condition="'%(DovetailJoint.ProvideConfiguration)' == 'true'">, _</_BuilderPlainConfigName>
+      </DovetailJoint>
+      <DovetailJoint>
+        <_AsyncParams>%(DovetailJoint._SyncParams), global::System.Threading.CancellationToken cancellationToken = default</_AsyncParams>
+        <_AsyncArgs>%(DovetailJoint._SyncArgs), cancellationToken</_AsyncArgs>
+        <_SyncParamNames>context%(DovetailJoint._ParamNameConfig)%(DovetailJoint._ParamNameServices)%(DovetailJoint._ParamNameCustom)</_SyncParamNames>
+        <_BuilderPlainParamNames>context%(DovetailJoint._BuilderPlainConfigName)%(DovetailJoint._ParamNameServices)%(DovetailJoint._ParamNameCustom)</_BuilderPlainParamNames>
+      </DovetailJoint>
+      <DovetailJoint>
+        <_AsyncParamNames>%(DovetailJoint._SyncParamNames), cancellationToken</_AsyncParamNames>
+        <_BuilderPlainAsyncParamNames>%(DovetailJoint._BuilderPlainParamNames), cancellationToken</_BuilderPlainAsyncParamNames>
+        <_ReturnContext Condition="'%(DovetailJoint.ReturnFirstArgument)' == 'true'">&lt;%(DovetailJoint._SubjectType)&gt;</_ReturnContext>
+      </DovetailJoint>
+    </ItemGroup>
+  </Target>
+
+  <!-- Batched once per DovetailJoint item via Outputs -->
+  <Target Name="_DovetailGenerateJointSources"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="_DovetailPrepareJointItems"
+    Condition="'@(DovetailJoint)' != ''"
+    Outputs="%(DovetailJoint.Identity)">
+    <PropertyGroup>
+      <_DovetailJointName>%(DovetailJoint.Identity)</_DovetailJointName>
+      <_DovetailJointNamespace>%(DovetailJoint.Namespace)</_DovetailJointNamespace>
+      <_DovetailJointSyncParams>%(DovetailJoint._SyncParams)</_DovetailJointSyncParams>
+      <_DovetailJointAsyncParams>%(DovetailJoint._AsyncParams)</_DovetailJointAsyncParams>
+      <_DovetailJointSubjectType>%(DovetailJoint._SubjectType)</_DovetailJointSubjectType>
+      <_DovetailJointSubjectName>%(DovetailJoint._SubjectName)</_DovetailJointSubjectName>
+      <_DovetailJointExtensionParams>%(DovetailJoint._ExtensionParams)</_DovetailJointExtensionParams>
+      <_DovetailJointSyncArgs>%(DovetailJoint._SyncArgs)</_DovetailJointSyncArgs>
+      <_DovetailJointAsyncArgs>%(DovetailJoint._AsyncArgs)</_DovetailJointAsyncArgs>
+      <!-- <_DovetailJointHasBuilderMethods>%(DovetailJoint._HasBuilderMethods)</_DovetailJointHasBuilderMethods> -->
+      <_DovetailJointBuilderMethodName>%(DovetailJoint._BuilderMethodName)</_DovetailJointBuilderMethodName>
+      <_DovetailJointSyncParamNames>%(DovetailJoint._SyncParamNames)</_DovetailJointSyncParamNames>
+      <_DovetailJointAsyncParamNames>%(DovetailJoint._AsyncParamNames)</_DovetailJointAsyncParamNames>
+      <_DovetailJointConfigExpr>%(DovetailJoint._ConfigExpr)</_DovetailJointConfigExpr>
+      <_DovetailJointBuilderPlainParamNames>%(DovetailJoint._BuilderPlainParamNames)</_DovetailJointBuilderPlainParamNames>
+      <_DovetailJointBuilderPlainAsyncParamNames>%(DovetailJoint._BuilderPlainAsyncParamNames)</_DovetailJointBuilderPlainAsyncParamNames>
+      <_DovetailJointGenericParam>%(DovetailJoint._GenericParam)</_DovetailJointGenericParam>
+      <_DovetailJointGenericArg>%(DovetailJoint._GenericArg)</_DovetailJointGenericArg>
+      <_DovetailJointReturnContext>%(DovetailJoint._ReturnContext)</_DovetailJointReturnContext>
+      <_DovetailJointGenericConstraint>%(DovetailJoint._GenericConstraint)</_DovetailJointGenericConstraint>
+      <_DovetailHandlerMethods><![CDATA[global::Dovetail.DovetailContextExtensions.RegisterJoints(context, e => e.AddHandler<I{JointName}Joint{GenericArg}>(part => part.Register({SyncArgs})))]]></_DovetailHandlerMethods>
+      <_DovetailHandlerMethods Condition="'%(DovetailJoint.IsAsync)' == 'true'"><![CDATA[return global::Dovetail.DovetailContextExtensions.RegisterJointsAsync(context, e => e.AddHandler<I{JointName}Joint{GenericArg}>(part => part.Register({SyncArgs})).AddHandler<I{JointName}AsyncJoint{GenericArg}>(part => part.Register({AsyncArgs})), cancellationToken)]]></_DovetailHandlerMethods>
+      <_DovetailHandlerMethods Condition="'%(DovetailJoint.ReturnFirstArgument)' == 'true'">$(_DovetailHandlerMethods.Replace('RegisterJoints', 'RegisterJointsWithContext'))</_DovetailHandlerMethods>
+      <_DovetailJointContent>$([System.IO.File]::ReadAllText('$(_DovetailJointTemplateFile)'))</_DovetailJointContent>
+      <_DovetailJointContent Condition="'%(DovetailJoint.IsAsync)' != 'true'">$(_DovetailJointContent.Replace('static global::System.Threading.Tasks.ValueTask{ReturnContext} Apply', 'static void Apply'))</_DovetailJointContent>
+      <_DovetailJointContent Condition="'%(DovetailJoint.IsAsync)' != 'true'">$(_DovetailJointContent.Replace(', global::System.Threading.CancellationToken cancellationToken = default', ''))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{HandlerMethods}', '$(_DovetailHandlerMethods)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{JointName}', '$(_DovetailJointName)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{Namespace}', '$(_DovetailJointNamespace)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{SyncParams}', '$(_DovetailJointSyncParams)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{ReturnContext}', '$(_DovetailJointReturnContext)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{AsyncParams}', '$(_DovetailJointAsyncParams)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{SubjectType}', '$(_DovetailJointSubjectType)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{SubjectName}', '$(_DovetailJointSubjectName)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{ExtensionParams}', '$(_DovetailJointExtensionParams)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{SyncArgs}', '$(_DovetailJointSyncArgs)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{AsyncArgs}', '$(_DovetailJointAsyncArgs)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{BuilderMethodName}', '$(_DovetailJointBuilderMethodName)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{SyncParamNames}', '$(_DovetailJointSyncParamNames)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{AsyncParamNames}', '$(_DovetailJointAsyncParamNames)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{ConfigExpr}', '$(_DovetailJointConfigExpr)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{BuilderPlainParamNames}', '$(_DovetailJointBuilderPlainParamNames)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{BuilderPlainAsyncParamNames}', '$(_DovetailJointBuilderPlainAsyncParamNames)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{GenericParam}', '$(_DovetailJointGenericParam)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{GenericArg}', '$(_DovetailJointGenericArg)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{GenericConstraint}', '$(_DovetailJointGenericConstraint)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{HandlerMethods}', '$(_DovetailHandlerMethods)'))</_DovetailJointContent>
+      <_DovetailJointAsyncContent>$([System.IO.File]::ReadAllText('$(_DovetailJointAsyncTemplateFile)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{JointName}', '$(_DovetailJointName)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{Namespace}', '$(_DovetailJointNamespace)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{SyncParams}', '$(_DovetailJointSyncParams)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{AsyncParams}', '$(_DovetailJointAsyncParams)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{SubjectType}', '$(_DovetailJointSubjectType)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{SubjectName}', '$(_DovetailJointSubjectName)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{ExtensionParams}', '$(_DovetailJointExtensionParams)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{SyncArgs}', '$(_DovetailJointSyncArgs)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{AsyncArgs}', '$(_DovetailJointAsyncArgs)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{BuilderMethodName}', '$(_DovetailJointBuilderMethodName)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{SyncParamNames}', '$(_DovetailJointSyncParamNames)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{AsyncParamNames}', '$(_DovetailJointAsyncParamNames)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{ConfigExpr}', '$(_DovetailJointConfigExpr)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{BuilderPlainParamNames}', '$(_DovetailJointBuilderPlainParamNames)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{BuilderPlainAsyncParamNames}', '$(_DovetailJointBuilderPlainAsyncParamNames)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{GenericParam}', '$(_DovetailJointGenericParam)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{GenericArg}', '$(_DovetailJointGenericArg)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{GenericConstraint}', '$(_DovetailJointGenericConstraint)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{HandlerMethods}', '$(_DovetailHandlerMethods)'))</_DovetailJointAsyncContent>
+      <_DovetailJointOutputFile>$(IntermediateOutputPath)DovetailJoint.$(_DovetailJointName).g.cs</_DovetailJointOutputFile>
+      <_DovetailJointAsyncOutputFile>$(IntermediateOutputPath)DovetailJointAsync.$(_DovetailJointName).g.cs</_DovetailJointAsyncOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailJointOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailJointContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile
+      File="$(_DovetailJointAsyncOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailJointAsyncContent)))"
+      Overwrite="true"
+      Condition="'%(DovetailJoint.IsAsync)' == 'true'"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_DovetailJointOutputFile)" />
+      <Compile Condition="'%(DovetailJoint.IsAsync)' == 'true'" Include="$(_DovetailJointAsyncOutputFile)" />
+      <FileWrites Include="$(_DovetailJointOutputFile)" />
+      <FileWrites Condition="'%(DovetailJoint.IsAsync)' == 'true'" Include="$(_DovetailJointAsyncOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>
