@@ -1,6 +1,6 @@
 ---
 title: Unit Tests
-description: How to write unit tests for your conventions using DovetailContextBuilder and TestHost.
+description: How to write unit tests for your joints using DovetailContextBuilder and TestHost.
 ---
 
 # Unit Testing with Dovetails
@@ -11,7 +11,7 @@ Unit Tests can be written many different ways.
 
 ## Use <xref:Dovetail.DovetailContextBuilder> directly
 
-You can make use of the <xref:Dovetail.DovetailContextBuilder> by itself, and apply all the conventions. This requires more manual configuration but gives the greatest flexibility.
+You can make use of the <xref:Dovetail.DovetailContextBuilder> by itself, and apply all the joints. This requires more manual configuration but gives the greatest flexibility.
 
 [!code-c#[Sample Test](../../sample/Sample.Core.Tests/SampleTests.cs?name=codeblock)]
 
@@ -27,7 +27,7 @@ The <xref:Dovetail.Hosting.TestHost> can be used to create a `IHostBuilder` conf
 ## Logging
 
 Some unit testing frameworks have the ability to capture log output for a given test, this can be handy for helping identify any problems. If you provide a `ILogger` or a `ILoggerFactory` into the
-<xref:Dovetail.DovetailContextBuilder> or <xref:Dovetail.IDovetailContext> it will be used during the convention scanning process and spit out diagnostic logs that may be useful.
+<xref:Dovetail.DovetailContextBuilder> or <xref:Dovetail.IDovetailContext> it will be used during the joint scanning process and spit out diagnostic logs that may be useful.
 
 > [!TIP]
 > In XUnit this is the `ITestOutputHelper`

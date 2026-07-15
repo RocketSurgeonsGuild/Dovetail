@@ -8,7 +8,7 @@ tags: [opentelemetry, observability, tracing, metrics, logging]
 
 `Dovetail.OpenTelemetry` exposes OpenTelemetry's configuration surface — the resource builder, the
 tracer/meter/logger providers, and the top-level `IOpenTelemetryBuilder` — as ordinary Dovetail
-[parts](/concepts/defining-conventions/). Any library can contribute an activity source, a meter,
+[parts](/concepts/defining-joints). Any library can contribute an activity source, a meter,
 a log processor, or a resource attribute without taking a direct dependency on how (or whether) the
 host wires up OpenTelemetry.
 

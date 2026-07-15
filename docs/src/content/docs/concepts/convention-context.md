@@ -1,19 +1,19 @@
 ---
 title: Dovetail Context
-description: The context object passed to every convention — how to create, configure, and query it.
+description: The context object passed to every joint — how to create, configure, and query it.
 ---
 
 # Dovetail Contexts
 
-The convention context is the the result of collecting all the known conventions for a given set of assembly. How those assemblies are collected can diff
-depending on on the convention context is created. Generally the convention context is created using the <xref:Dovetail.DovetailContextBuilder>
+The joint context is the the result of collecting all the known joints for a given set of assembly. How those assemblies are collected can diff
+depending on on the joint context is created. Generally the joint context is created using the <xref:Dovetail.DovetailContextBuilder>
 however you can implement your own <xref:Dovetail.IDovetailContext> if you wish.
 
 ## Builder
 
-A convention context is created from a <xref:Dovetail.DovetailContextBuilder>. This class is used during the bootstrapping phase of your application.
+A joint context is created from a <xref:Dovetail.DovetailContextBuilder>. This class is used during the bootstrapping phase of your application.
 
-You can add conventions manually, you can add them via attribute scanning, you can disable attribute scanning if you wish as well.
+You can add joints manually, you can add them via attribute scanning, you can disable attribute scanning if you wish as well.
 
 > [!NOTE]
 > The assemblies used during scanning can be added by using an AppDomain, DependencyContext, or List of assemblies.
