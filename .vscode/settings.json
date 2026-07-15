@@ -20,7 +20,13 @@
         "statusBarItem.hoverBackground": "#6060d6",
         "statusBarItem.remoteBackground": "#3737cc",
         "statusBarItem.remoteForeground": "#e7e7e7",
-        "tab.activeBorder": "#8989e0"
+        "tab.activeBorder": "#8989e0",
+        "commandCenter.border": "#e7e7e799",
+        "titleBar.activeBackground": "#3737cc",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.border": "#3737cc",
+        "titleBar.inactiveBackground": "#3737cc99",
+        "titleBar.inactiveForeground": "#e7e7e799"
     },
     "peacock.color": "#6060d6"
 }

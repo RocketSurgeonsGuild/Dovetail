@@ -9,7 +9,7 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 # Managed Configuration
 
 Dovetail extends the same "compile-time discovery + generated wiring" approach it already uses for
-[Dovetail](/concepts/introduction/) to **configuration**. A library drops an `appsettings`-style
+[Dovetail](./introduction) to **configuration**. A library drops an `appsettings`-style
 file into its project, and Dovetail takes care of the rest: packaging the file into the NuGet
 package, copying it into a same-solution host application during development, generating a
 strongly-typed configuration class, and registering it with `IOptions<T>` — all without a single
@@ -157,7 +157,7 @@ A library's own configuration dependencies flow to its dependents without redecl
 `LibraryA` references `LibraryB`, and `LibraryB` declares configuration, a host application that
 only references `LibraryA` still sees `LibraryB`'s configuration in its manifest and export set —
 the generator reuses the same reference-graph walk already used to flatten transitive
-[Dovetail exports](/concepts/source-generation/).
+[Dovetail exports](./source-generation).
 
 ## MSBuild Surface Reference
 
