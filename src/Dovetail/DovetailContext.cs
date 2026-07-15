@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Dovetail.Infrastructure;
-using Dovetail.Joints;
 
 namespace Dovetail;
 
@@ -16,9 +15,10 @@ public sealed class DovetailContext : IDovetailContext
     /// <summary>
     ///     Create a context from a given builder
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="builder">The builder to create the context from.</param>
+    /// <param name="cancellationToken">The cancellation token used during setup.</param>
+    /// <returns>The newly created and set up <see cref="IDovetailContext" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static ValueTask<IDovetailContext> FromAsync(DovetailContextBuilder builder, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(builder);

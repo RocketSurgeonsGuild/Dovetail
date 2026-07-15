@@ -2,17 +2,17 @@ namespace Dovetail.Infrastructure;
 
 /// <summary>
 ///     IServiceProviderDictionary
-///     Implements the <see cref="IDictionary{TKey,TValue}" />
+///     Implements the <see cref="IReadOnlyDictionary{TKey,TValue}" />
 ///     Implements the <see cref="IServiceProvider" />
 /// </summary>
-/// <seealso cref="IDictionary{Object, Object}" />
+/// <seealso cref="IReadOnlyDictionary{Object, Object}" />
 /// <seealso cref="IServiceProvider" />
-public interface IReadOnlyDovetailDictionary : IReadOnlyDictionary<object, object>, IServiceProvider
+internal interface IReadOnlyDovetailDictionary : IReadOnlyDictionary<object, object>, IServiceProvider
 {
     /// <summary>
     ///     Get a value by type from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <returns>T.</returns>
     T? Get<T>() where T : notnull => TryGetValue(typeof(T), out var value) && value is T t
         ? t
@@ -21,7 +21,7 @@ public interface IReadOnlyDovetailDictionary : IReadOnlyDictionary<object, objec
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <returns>T.</returns>
     T Require<T>()
         where T : notnull => TryGetValue(typeof(T), out var value) && value is T t
@@ -31,7 +31,7 @@ public interface IReadOnlyDovetailDictionary : IReadOnlyDictionary<object, objec
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
     T? Get<T>(string key)
@@ -42,7 +42,7 @@ public interface IReadOnlyDovetailDictionary : IReadOnlyDictionary<object, objec
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
     T Require<T>(string key)

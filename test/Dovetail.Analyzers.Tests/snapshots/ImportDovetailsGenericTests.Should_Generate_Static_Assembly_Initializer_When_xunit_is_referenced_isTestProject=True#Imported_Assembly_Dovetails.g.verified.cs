@@ -40,7 +40,7 @@ internal static partial class Imports
     internal static void Init()
     {
         Environment.SetEnvironmentVariable("DOVETAIL__HOSTTYPE", "UnitTest");
-        ImportHelpers.Tectum = Rivet;
+        ImportHelpers.Rivets = Rivet;
     }
 };
 #pragma warning restore CA1002, CA1034, CA1822, CS0105, CS1573, CS8602, CS8603, CS8618, CS8669

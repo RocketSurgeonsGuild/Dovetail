@@ -8,6 +8,7 @@ namespace Dovetail.Infrastructure;
 /// <param name="context">The convention context</param>
 /// <param name="services">The service collection</param>
 /// <param name="cancellationToken">The cancellation token</param>
+/// <returns>The <see cref="IServiceProviderFactory{TContainerBuilder}" /> to use to build the service provider.</returns>
 public delegate ValueTask<IServiceProviderFactory<object>> ServiceProviderFactoryAdapter(
     IDovetailContext context,
     IServiceCollection services,

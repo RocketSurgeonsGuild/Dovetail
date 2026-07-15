@@ -10,10 +10,11 @@ namespace Dovetail.Configuration.Yaml;
 /// <remarks>
 ///     The yaml configuration provider
 /// </remarks>
-/// <param name="source"></param>
+/// <param name="source">The source settings used to load the YAML file.</param>
 public class YamlConfigurationProvider(YamlConfigurationSource source) : FileConfigurationProvider(source)
 {
     /// <inheritdoc />
+    /// <exception cref="FormatException">The YAML content in <paramref name="stream" /> could not be parsed.</exception>
     public override void Load(Stream stream)
     {
         var parser = new YamlConfigurationStreamParser();

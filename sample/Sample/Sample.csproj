@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <ItemGroup>
-        <!-- <ProjectReference Include="..\..\src\Dovetail.CommandLine\Dovetail.CommandLine.csproj" /> -->
+  <ItemGroup>
         <ProjectReference Include="..\..\src\Dovetail.Hosting\Dovetail.Hosting.csproj" />
         <ProjectReference Include="..\Sample.Core\Sample.Core.csproj" />
         <DovetailHost

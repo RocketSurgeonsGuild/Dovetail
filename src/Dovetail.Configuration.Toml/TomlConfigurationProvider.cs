@@ -10,10 +10,11 @@ namespace Dovetail.Configuration.Toml;
 /// <remarks>
 ///     The toml configuration provider
 /// </remarks>
-/// <param name="source"></param>
+/// <param name="source">The source settings used to load the TOML file.</param>
 public class TomlConfigurationProvider(TomlConfigurationSource source) : FileConfigurationProvider(source)
 {
     /// <inheritdoc />
+    /// <exception cref="FormatException">The TOML content in <paramref name="stream" /> could not be parsed.</exception>
     public override void Load(Stream stream)
     {
         var parser = new TomlConfigurationStreamParser();

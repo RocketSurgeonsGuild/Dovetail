@@ -72,7 +72,7 @@ local jbCleanupCode: Step = new Step {
   fix = "jb cleanupcode \(solution) --include=\"{{ files | replace(from=\" \", to=\";\") }}\""
 }
 
-local linters = new Mapping<String, Step> {
+local linters = new Mapping<Smistring, Step> {
   ["mise"] = Builtins.mise
   ["biome"] = Builtins.biome
   ["tombi"] = Builtins.tombi
@@ -90,7 +90,7 @@ local linters = new Mapping<String, Step> {
   ["detect-private-key"] = Builtins.detect_private_key
   ["large-files"] = Builtins.check_added_large_files
   ["dotnet-format"] = dotnetFormat
-  ["oxfmt"] = Builtins.oxfmt
+  // ["oxfmt"] = Builtins.oxfmt
   // ["jb-cleanupcode"] = jbCleanupCode
 }
 

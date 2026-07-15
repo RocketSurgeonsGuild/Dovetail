@@ -40,6 +40,7 @@ public static class DovetailConfigurationOptionsExtensions
     /// <param name="configuration">The root configuration to bind from.</param>
     /// <param name="sectionKey">The configuration section key that maps to <typeparamref name="TOptions" />.</param>
     /// <returns>The <see cref="OptionsBuilder{TOptions}" /> for further configuration.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="services" />, <paramref name="configuration" />, or <paramref name="sectionKey" /> is <see langword="null" />.</exception>
     /// <remarks>
     ///     <para>
     ///         This calls into <c>Microsoft.Extensions.Options.ConfigurationExtensions</c>'

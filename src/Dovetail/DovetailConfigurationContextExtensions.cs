@@ -13,6 +13,7 @@ public static class DovetailConfigurationContextExtensions
         /// <summary>
         ///     The underlying configuration. Populated from ConfigurationManager on web hosts.
         /// </summary>
+        /// <exception cref="InvalidOperationException"><see cref="IConfiguration" /> has not been registered in the context's properties.</exception>
         public IConfiguration Configuration =>
             context.Properties.Get<IConfiguration>()
             ?? throw new InvalidOperationException(

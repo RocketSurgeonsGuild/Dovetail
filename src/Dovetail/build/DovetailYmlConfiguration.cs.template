@@ -4,9 +4,17 @@ using Dovetail.Configuration.Yaml;
 using Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 
+/// <summary>
+///     Default YAML (<c>.yml</c>) app-settings convention for this project.
+/// </summary>
 [DovetailExport]
 internal class YmlAppSettingsConfiguration : IConfigurationJoint
 {
+    /// <summary>
+    ///     Adds the project's <c>{{ProjectName}}.yml</c>, environment-specific, and local YAML app-settings files to the configuration.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add the YAML sources to.</param>
     public void Register(IDovetailContext context, IConfigurationBuilder builder)
     {
         builder.AddYamlFile("{{ProjectName}}.yml", optional: false, reloadOnChange: false);

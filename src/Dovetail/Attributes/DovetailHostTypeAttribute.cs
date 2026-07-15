@@ -1,6 +1,6 @@
 namespace Dovetail.Attributes;
 /// <summary>
-///     Defines the category of a given convention
+///     Defines the host type of a given convention
 /// </summary>
 [PublicAPI]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]

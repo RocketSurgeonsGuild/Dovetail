@@ -5,7 +5,7 @@ namespace Dovetail;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
-///     Extension members for IDovetailContext configuration access.
+///     Extension members for <see cref="IDovetailContext" /> host environment access.
 /// </summary>
 [PublicAPI]
 public static class DovetailHostingContextExtensions
@@ -13,8 +13,9 @@ public static class DovetailHostingContextExtensions
     extension(IDovetailContext context)
     {
         /// <summary>
-        ///     The underlying configuration. Populated from ConfigurationManager on web hosts.
+        ///     The underlying host environment. Populated by the host during startup.
         /// </summary>
+        /// <exception cref="InvalidOperationException"><see cref="IHostEnvironment" /> has not been registered in the context's properties.</exception>
         public IHostEnvironment Environment =>
             context.Properties.Get<IHostEnvironment>()
             ?? throw new InvalidOperationException(

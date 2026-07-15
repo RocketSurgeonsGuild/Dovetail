@@ -11,7 +11,7 @@
     Condition="'@(DovetailHost)' != ''"
     Outputs="$(_DovetailContextBuilderOutputFile)">
     <PropertyGroup>
-      <_DovetailContextBuilderImportExpression>(ImportHelpers.Tectum ?? global::$(DovetailImportNamespace).$(DovetailImportClassName).$(DovetailImportMethodName))</_DovetailContextBuilderImportExpression>
+      <_DovetailContextBuilderImportExpression>(ImportHelpers.Rivets ?? global::$(DovetailImportNamespace).$(DovetailImportClassName).$(DovetailImportMethodName))</_DovetailContextBuilderImportExpression>
       <_DovetailContextBuilderContent>$([System.IO.File]::ReadAllText('$(_DovetailContextBuilderTemplateFile)'))</_DovetailContextBuilderContent>
       <_DovetailContextBuilderContent>$(_DovetailContextBuilderContent.Replace('{ImportsExpression}', '$(_DovetailContextBuilderImportExpression)'))</_DovetailContextBuilderContent>
       <_DovetailContextBuilderOutputFile>$(IntermediateOutputPath)DovetailContextBuilder.g.cs</_DovetailContextBuilderOutputFile>

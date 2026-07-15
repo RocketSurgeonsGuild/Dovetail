@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Dovetail.Hosting;
 using Dovetail.Infrastructure;
 using Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
@@ -12,10 +11,27 @@ using Microsoft.Extensions.Hosting;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Dovetail;
 
+/// <summary>
+///     Shared helpers used by host-specific integration packages (e.g. web, WebAssembly) to wire an
+///     <see cref="IHostApplicationBuilder" /> up to a Dovetail <see cref="IDovetailContext" />. Not intended to be
+///     called directly by consumers; hidden from IntelliSense via <see cref="EditorBrowsableState.Never" />.
+/// </summary>
 [PublicAPI]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class DovetailHostApplicationHelpers
 {
+    /// <summary>
+    ///     Populates the context, applies shared host configuration, services, and logging, wires up the
+    ///     service provider factory (if one was registered), and builds the host.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="IHostApplicationBuilder" /> type being configured.</typeparam>
+    /// <typeparam name="THost">The <see cref="IHost" /> type produced by <paramref name="buildHost" />.</typeparam>
+    /// <param name="builder">The host application builder to configure.</param>
+    /// <param name="buildHost">A callback that builds the host from the configured builder.</param>
+    /// <param name="contextBuilder">The context builder used to create the <see cref="IDovetailContext" />.</param>
+    /// <param name="cancellationToken">The cancellation token used while applying configuration and building the host.</param>
+    /// <returns>The built and configured <typeparamref name="THost" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="buildHost" /> or <paramref name="contextBuilder" /> is <see langword="null" />.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static async ValueTask<THost> Configure<T, THost>(
         T builder,

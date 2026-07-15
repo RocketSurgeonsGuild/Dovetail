@@ -9,7 +9,7 @@ using Tomlyn;
 namespace Dovetail.Configuration.Toml;
 
 /// <summary>
-///     Extension methods for adding <see cref="TomlConfigurationExtensions" />.
+///     Extension methods for adding TOML configuration sources to an <see cref="IConfigurationBuilder" />.
 /// </summary>
 public static class TomlConfigurationExtensions
 {
@@ -22,6 +22,8 @@ public static class TomlConfigurationExtensions
     ///     <see cref="IConfigurationBuilder.Properties" /> of <paramref name="builder" />.
     /// </param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddTomlFile(this IConfigurationBuilder builder, string path) => AddTomlFile(builder, null, path, false, false);
 
     /// <summary>
@@ -34,6 +36,8 @@ public static class TomlConfigurationExtensions
     /// </param>
     /// <param name="optional">Whether the file is optional.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddTomlFile(this IConfigurationBuilder builder, string path, bool optional) => AddTomlFile(builder, null, path, optional, false);
 
     /// <summary>
@@ -47,6 +51,8 @@ public static class TomlConfigurationExtensions
     /// <param name="optional">Whether the file is optional.</param>
     /// <param name="reloadOnChange">Whether the configuration should be reloaded if the file changes.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddTomlFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange) => AddTomlFile(builder, null, path, optional, reloadOnChange);
 
     /// <summary>
@@ -61,6 +67,8 @@ public static class TomlConfigurationExtensions
     /// <param name="optional">Whether the file is optional.</param>
     /// <param name="reloadOnChange">Whether the configuration should be reloaded if the file changes.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddTomlFile(
         this IConfigurationBuilder builder,
         IFileProvider? provider,
@@ -99,6 +107,8 @@ public static class TomlConfigurationExtensions
     /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add to.</param>
     /// <param name="stream">The <see cref="Stream" /> to read the toml configuration data from.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="FormatException">The TOML content in <paramref name="stream" /> could not be parsed.</exception>
     public static IConfigurationBuilder AddTomlStream(this IConfigurationBuilder builder, Stream stream)
     {
         ArgumentNullException.ThrowIfNull(builder);

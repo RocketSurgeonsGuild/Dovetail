@@ -14,7 +14,6 @@
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
       DovetailAutofacVersion: {sdk-version},
-      DovetailCommandLineVersion: {sdk-version},
       DovetailConfigurationJsonVersion: {sdk-version},
       DovetailConfigurationTomlVersion: {sdk-version},
       DovetailConfigurationYamlVersion: {sdk-version},
@@ -93,7 +92,6 @@
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
       DovetailAutofacVersion: {sdk-version},
-      DovetailCommandLineVersion: {sdk-version},
       DovetailConfigurationJsonVersion: {sdk-version},
       DovetailConfigurationTomlVersion: {sdk-version},
       DovetailConfigurationYamlVersion: {sdk-version},
@@ -172,7 +170,6 @@
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
       DovetailAutofacVersion: {sdk-version},
-      DovetailCommandLineVersion: {sdk-version},
       DovetailConfigurationJsonVersion: {sdk-version},
       DovetailConfigurationTomlVersion: {sdk-version},
       DovetailConfigurationYamlVersion: {sdk-version},
@@ -214,10 +211,10 @@
         Version: Version_0
       },
       DovetailPkgTestLib1: {
-        Version: Version_0
+        Version: Version_2
       },
       DovetailPkgTestLib2: {
-        Version: Version_0
+        Version: Version_2
       }
     },
     DovetailJoint: {},

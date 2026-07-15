@@ -45,6 +45,7 @@ public static partial class {JointName}JointExtensions
     ///     Applies the registered {JointName} parts.
     /// </summary>
     /// <returns>The <see cref="{SubjectType}" /> for chaining.</returns>
+    /// <exception cref="global::System.ArgumentNullException"><c>context</c> is <see langword="null" />.</exception>
     public static global::System.Threading.Tasks.ValueTask{ReturnContext} Apply{JointName}{GenericArg}({ExtensionParams}) {GenericConstraint}
     {
         global::System.ArgumentNullException.ThrowIfNull(context);
@@ -76,7 +77,8 @@ public static partial class {JointName}HostBuilderExtensions
         /// <param name="priority">The priority.</param>
         /// <param name="category">The category.</param>
         /// <param name="hostType">The host type.</param>
-        /// <returns><see cref="global::Dovetail.DovetailContextBuilder" />.</returns>
+        /// <returns>The <see cref="global::Dovetail.DovetailContextBuilder" />, for chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="container" /> is <see langword="null" />.</exception>
         public global::Dovetail.DovetailContextBuilder {BuilderMethodName}{GenericArg}({JointName}Joint{GenericArg} @delegate, int priority = 0, DovetailCategory? category = null, DovetailHostType hostType = DovetailHostType.Undefined, [CallerArgumentExpression("delegate")] string? expression = null) {GenericConstraint}
         {
             ArgumentNullException.ThrowIfNull(container);

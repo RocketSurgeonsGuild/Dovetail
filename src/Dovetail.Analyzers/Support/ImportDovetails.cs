@@ -45,7 +45,7 @@ internal static class ImportDovetails
                                 )
                         )
                        .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword))),
-                    // The parameterless factory delegate assigned to ImportHelpers.Tectum. It seeds a builder to
+                    // The parameterless factory delegate assigned to ImportHelpers.Rivets. It seeds a builder to
                     // resolve any convention dependencies, then materializes the final builder from the imported parts.
                     MethodDeclaration(IdentifierName("DovetailContextBuilder"), Identifier("CreateDovetailContextBuilder"))
                        .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.StaticKeyword)))
@@ -162,7 +162,7 @@ internal static class ImportDovetails
                                             MemberAccessExpression(
                                                 SyntaxKind.SimpleMemberAccessExpression,
                                                 IdentifierName("ImportHelpers"),
-                                                IdentifierName("Tectum")
+                                                IdentifierName("Rivets")
                                             ),
                                             IdentifierName(request.BuildConfig.ImportConfiguration.MethodName)
                                         )

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration.Json;
 namespace Dovetail.Configuration.Json;
 
 /// <summary>
-///     Json configuraiton conventions
+///     Json configuration conventions
 /// </summary>
 [DovetailExport]
 internal class JsonJoint : IConfigurationJoint

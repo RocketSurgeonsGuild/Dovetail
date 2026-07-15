@@ -9,7 +9,7 @@
         AssemblyName: lib,
         BaseIntermediateOutputPath: obj\,
         BaseOutputPath: bin\,
-        CustomAfterMicrosoftCommonTargets: /opt/homebrew/Cellar/dotnet/10.0.301/libexec/sdk/{dotnet-sdk-version}/vCurrent/Custom.After.Microsoft.Common.targets,
+        CustomAfterMicrosoftCommonTargets: /usr/local/share/dotnet/sdk/{dotnet-sdk-version}/vCurrent/Custom.After.Microsoft.Common.targets,
         DefineConstants: TRACE;RELEASE,
         EnableDefaultCompileItems: false,
         GenerateDocumentationFile: false,
@@ -42,7 +42,7 @@
   Packages: [
     {
       PackageId: lib,
-      Version: {sdk-version},
+      Version: 1.0.0,
       Files: [
         contentFiles/any/any/configuration/lib.yaml,
         lib.nuspec,

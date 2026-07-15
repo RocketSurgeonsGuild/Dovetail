@@ -9,7 +9,7 @@ namespace Dovetail.Attributes;
 ///     The type to be used with the convention type
 /// </remarks>
 /// <param name="type">The type.</param>
-/// <exception cref="NotSupportedException">Type must inherit from " + nameof(IDovetailJoint)</exception>
+/// <exception cref="NotSupportedException">Type must inherit from <see cref="IDovetailJoint" /></exception>
 [PublicAPI]
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public sealed class BeforeJointAttribute(
@@ -27,6 +27,7 @@ public sealed class BeforeJointAttribute(
 ///     An attribute that ensures the convention runs before the given <see cref="IDovetailJoint" />
 /// </summary>
 /// <seealso cref="Attribute" />
+/// <typeparam name="T">The <see cref="IDovetailJoint" /> that this convention must run before.</typeparam>
 [PublicAPI]
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public sealed class BeforeJointAttribute<

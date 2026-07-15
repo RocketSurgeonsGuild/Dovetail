@@ -15,7 +15,6 @@
         DovetailAspireTestingVersion: {sdk-version},
         DovetailAspireVersion: {sdk-version},
         DovetailAutofacVersion: {sdk-version},
-        DovetailCommandLineVersion: {sdk-version},
         DovetailConfigurationJsonVersion: {sdk-version},
         DovetailConfigurationTomlVersion: {sdk-version},
         DovetailConfigurationYamlVersion: {sdk-version},
@@ -82,7 +81,7 @@
   Packages: [
     {
       PackageId: lib,
-      Version: {sdk-version},
+      Version: 1.0.0,
       Files: [
         contentFiles/any/any/configuration/lib.toml,
         lib.nuspec,

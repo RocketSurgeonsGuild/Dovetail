@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 namespace Dovetail;
 
 /// <summary>
-///     Extension members for IDovetailContext configuration access.
+///     Extension members for <see cref="IDovetailContext" /> WebAssembly host environment access.
 /// </summary>
 [PublicAPI]
 public static class DovetailWebAssemblyContextExtensions
@@ -13,8 +13,9 @@ public static class DovetailWebAssemblyContextExtensions
     extension(IDovetailContext context)
     {
         /// <summary>
-        ///     The underlying configuration. Populated from ConfigurationManager on web hosts.
+        ///     The underlying WebAssembly host environment. Populated by the host during startup.
         /// </summary>
+        /// <exception cref="InvalidOperationException"><see cref="IWebAssemblyHostEnvironment" /> has not been registered in the context's properties.</exception>
         public IWebAssemblyHostEnvironment Configuration =>
             context.Get<IWebAssemblyHostEnvironment>()
             ?? throw new InvalidOperationException(

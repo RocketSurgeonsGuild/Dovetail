@@ -23,15 +23,15 @@ public sealed class DovetailCategory(string name)
     /// <summary>
     ///     Implicitly convert to a string
     /// </summary>
-    /// <param name="category"></param>
-    /// <returns></returns>
+    /// <param name="category">The category to convert.</param>
+    /// <returns>The underlying string value of the category.</returns>
     public static implicit operator string(DovetailCategory category) => category._value;
 
     /// <summary>
     ///     Implicitly convert from a string
     /// </summary>
-    /// <param name="category"></param>
-    /// <returns></returns>
+    /// <param name="category">The string value to wrap.</param>
+    /// <returns>A new <see cref="DovetailCategory" /> wrapping the given value.</returns>
     public static implicit operator DovetailCategory(string category) => new(category);
 
     /// <summary>

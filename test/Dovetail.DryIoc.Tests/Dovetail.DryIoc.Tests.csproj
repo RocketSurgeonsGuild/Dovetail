@@ -6,8 +6,7 @@
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <ProjectReference Include="..\..\src\Dovetail.DryIoc\Dovetail.DryIoc.csproj" />
-        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
-        <!-- <ProjectReference Include="..\..\src\Dovetail.CommandLine\Dovetail.CommandLine.csproj" /> -->
+    <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Hosting\Dovetail.Hosting.csproj" />
 
         <DovetailHost

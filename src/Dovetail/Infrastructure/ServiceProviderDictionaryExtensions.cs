@@ -9,10 +9,11 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by type from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <returns>T.</returns>
-    public static T? Get<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary)
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
+    internal static T? Get<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary)
         where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -24,10 +25,12 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <returns>T.</returns>
-    public static T Require<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary)
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found in the context.</exception>
+    internal static T Require<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary)
         where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -39,11 +42,12 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
-    public static T? Get<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary, string key)
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
+    internal static T? Get<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary, string key)
         where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -55,11 +59,13 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
-    public static T Require<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary, string key)
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found at <paramref name="key" />.</exception>
+    internal static T Require<T>(this IReadOnlyDovetailDictionary serviceProviderDictionary, string key)
         where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -72,9 +78,10 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by type from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static T? Get<T>(this IDovetailDictionary serviceProviderDictionary)
         where T : notnull
     {
@@ -87,9 +94,11 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found in the context.</exception>
     internal static T Require<T>(this IDovetailDictionary serviceProviderDictionary)
         where T : notnull
     {
@@ -102,10 +111,11 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static T? Get<T>(this IDovetailDictionary serviceProviderDictionary, string key)
         where T : notnull
     {
@@ -118,10 +128,12 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found at <paramref name="key" />.</exception>
     internal static T Require<T>(this IDovetailDictionary serviceProviderDictionary, string key)
         where T : notnull
     {
@@ -134,10 +146,11 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="factory">The factory method in the event the type is not found</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> or <paramref name="factory" /> is <see langword="null" />.</exception>
     internal static T GetOrAdd<T>(this IDovetailDictionary serviceProviderDictionary, Func<T> factory)
         where T : class
     {
@@ -154,11 +167,12 @@ public static class ServiceProviderDictionaryExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="factory">The factory method in the event the type is not found</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> or <paramref name="factory" /> is <see langword="null" />.</exception>
     internal static T GetOrAdd<T>(this IDovetailDictionary serviceProviderDictionary, string key, Func<T> factory)
         where T : notnull
     {
@@ -178,6 +192,7 @@ public static class ServiceProviderDictionaryExtensions
     /// <typeparam name="T">The type of the value</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static IDovetailDictionary Set<T>(this IDovetailDictionary serviceProviderDictionary, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -192,6 +207,7 @@ public static class ServiceProviderDictionaryExtensions
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static IDovetailDictionary Set(this IDovetailDictionary serviceProviderDictionary, Type key, object value)
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -207,6 +223,7 @@ public static class ServiceProviderDictionaryExtensions
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static IDovetailDictionary Set<T>(this IDovetailDictionary serviceProviderDictionary, string key, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -221,6 +238,7 @@ public static class ServiceProviderDictionaryExtensions
     /// <typeparam name="T">The type of the value</typeparam>
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static IDovetailDictionary AddIfMissing<T>(this IDovetailDictionary serviceProviderDictionary, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -238,6 +256,7 @@ public static class ServiceProviderDictionaryExtensions
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static IDovetailDictionary AddIfMissing(this IDovetailDictionary serviceProviderDictionary, Type key, object value)
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);
@@ -256,6 +275,7 @@ public static class ServiceProviderDictionaryExtensions
     /// <param name="serviceProviderDictionary">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceProviderDictionary" /> is <see langword="null" />.</exception>
     internal static IDovetailDictionary AddIfMissing<T>(this IDovetailDictionary serviceProviderDictionary, string key, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(serviceProviderDictionary);

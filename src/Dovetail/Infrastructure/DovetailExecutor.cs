@@ -6,15 +6,15 @@ namespace Dovetail.Infrastructure;
 /// <remarks>
 ///     This class uses <see cref="DovetailExceptionPolicyDelegate" /> to handle exceptions
 /// </remarks>
-/// <param name="context"></param>
+/// <param name="context">The context whose joints will be executed.</param>
 public class DovetailExecutor(IDovetailContext context)
 {
     /// <summary>
     ///     Add a synchronous convention
     /// </summary>
-    /// <param name="action"></param>
-    /// <typeparam name="TDovetail"></typeparam>
-    /// <returns></returns>
+    /// <param name="action">The action to run against each matching <typeparamref name="TDovetail" /> joint.</param>
+    /// <typeparam name="TDovetail">The <see cref="IDovetailJoint" /> type to handle.</typeparam>
+    /// <returns>This <see cref="DovetailExecutor" />, for chaining.</returns>
     public DovetailExecutor AddHandler<TDovetail>(Action<TDovetail> action) where TDovetail : IDovetailJoint
     {
         _conventionHandlers.Add(
@@ -37,9 +37,9 @@ public class DovetailExecutor(IDovetailContext context)
     /// <summary>
     ///     Add an asynchronous convention
     /// </summary>
-    /// <param name="action"></param>
-    /// <typeparam name="TDovetail"></typeparam>
-    /// <returns></returns>
+    /// <param name="action">The asynchronous action to run against each matching <typeparamref name="TDovetail" /> joint.</param>
+    /// <typeparam name="TDovetail">The <see cref="IDovetailJoint" /> type to handle.</typeparam>
+    /// <returns>This <see cref="DovetailExecutor" />, for chaining.</returns>
     public DovetailExecutor AddHandler<TDovetail>(Func<TDovetail, ValueTask> action) where TDovetail : IDovetailJoint
     {
         _asyncDovetailHandlers.Add(
@@ -62,9 +62,9 @@ public class DovetailExecutor(IDovetailContext context)
     /// <summary>
     ///     Add an asynchronous convention
     /// </summary>
-    /// <param name="action"></param>
-    /// <typeparam name="TDovetail"></typeparam>
-    /// <returns></returns>
+    /// <param name="action">The asynchronous, cancellable action to run against each matching <typeparamref name="TDovetail" /> joint.</param>
+    /// <typeparam name="TDovetail">The <see cref="IDovetailJoint" /> type to handle.</typeparam>
+    /// <returns>This <see cref="DovetailExecutor" />, for chaining.</returns>
     public DovetailExecutor AddHandler<TDovetail>(Func<TDovetail, CancellationToken, ValueTask> action) where TDovetail : IDovetailJoint
     {
         _asyncDovetailHandlers.Add(
@@ -102,6 +102,7 @@ public class DovetailExecutor(IDovetailContext context)
     /// <summary>
     ///     Run all the conventions
     /// </summary>
+    /// <returns>The context the conventions were executed against.</returns>
     public IDovetailContext ExecuteWithContext()
     {
         foreach (var convention in context.Joints)
@@ -118,7 +119,8 @@ public class DovetailExecutor(IDovetailContext context)
     /// <summary>
     ///     Run all the conventions
     /// </summary>
-    /// <param name="cancellationToken"></param>
+    /// <param name="cancellationToken">The cancellation token used while executing the conventions.</param>
+    /// <returns>A <see cref="ValueTask" /> representing the asynchronous execution of the conventions.</returns>
     public async ValueTask ExecuteAsync(CancellationToken cancellationToken)
     {
         foreach (var convention in context.Joints)
@@ -139,8 +141,8 @@ public class DovetailExecutor(IDovetailContext context)
     /// <summary>
     ///     Run all the conventions
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="cancellationToken">The cancellation token used while executing the conventions.</param>
+    /// <returns>A <see cref="ValueTask{TResult}" /> producing the context the conventions were executed against.</returns>
     public async ValueTask<IDovetailContext> ExecuteWithContextAsync(CancellationToken cancellationToken)
     {
         foreach (var convention in context.Joints)

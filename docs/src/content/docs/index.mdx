@@ -1,10 +1,10 @@
 ---
 title: Dovetail — Dovetail-Driven Wiring for .NET
-description: Dovetail-driven application wiring for .NET. AOT-safe, zero runtime reflection. Replaces assembly scanning with compile-time source generation.
+description: Convention-driven application wiring for .NET. AOT-safe, zero runtime reflection. Replaces assembly scanning with compile-time source generation.
 template: splash
 hero:
     title: Dovetail
-    tagline: Dovetail-driven application wiring for .NET. AOT-safe, zero runtime reflection.
+    tagline: Convention-driven application wiring for .NET. AOT-safe, zero runtime reflection.
     actions:
         - text: Get Started
           link: guides/
@@ -16,32 +16,22 @@ hero:
           variant: minimal
     banner:
         content: |
-            Dovetail supports .NET 8 and .NET 10.
             <a href="https://github.com/RocketSurgeonsGuild/Dovetail/releases">See releases →</a>
 ---
 
 import { CardGrid, Card, Icon } from "@astrojs/starlight/components";
-
-<p>
-    <Icon name="github" /> Follow development on GitHub.
-</p>
 
 <CardGrid stagger>
     <Card title="AOT & Trim Safe" icon="rocket">
         Generated code requires zero runtime reflection — fully compatible with
         .NET Native AOT and IL trimming.
     </Card>
-    <Card title="Dovetail-Driven Wiring" icon="setting">
-        Express services, configuration, logging, and hosting as assembly-level
-        conventions resolved at build time by a Roslyn incremental source
-        generator.
+    <Card title="Module Wiring" icon="setting">
+        Define services, configuration, logging, and hosting as assembly-level
+        conventions resolved at build time by a Roslyn source generator.
     </Card>
-    <Card title="Composable Integrations" icon="puzzle">
+    <Card title="Composable" icon="puzzle">
         First-class support for Generic Host, ASP.NET Core, Autofac, DryIoc,
-        Serilog, and .NET Aspire — all wired via conventions.
-    </Card>
-    <Card title="Zero Runtime Reflection" icon="document">
-        Dovetail resolution serialized at compile time — every scan is AOT and
-        IL-trimming safe with no runtime discovery cost.
+        Serilog, and .NET Aspire — all wired automagically.
     </Card>
 </CardGrid>

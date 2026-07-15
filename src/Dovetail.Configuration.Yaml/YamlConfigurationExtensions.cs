@@ -9,7 +9,7 @@ using YamlDotNet.Core;
 namespace Dovetail.Configuration.Yaml;
 
 /// <summary>
-///     Extension methods for adding <see cref="YamlConfigurationExtensions" />.
+///     Extension methods for adding YAML configuration sources to an <see cref="IConfigurationBuilder" />.
 /// </summary>
 public static class YamlConfigurationExtensions
 {
@@ -22,6 +22,8 @@ public static class YamlConfigurationExtensions
     ///     <see cref="IConfigurationBuilder.Properties" /> of <paramref name="builder" />.
     /// </param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path) => AddYamlFile(builder, null, path, false, false);
 
     /// <summary>
@@ -34,6 +36,8 @@ public static class YamlConfigurationExtensions
     /// </param>
     /// <param name="optional">Whether the file is optional.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path, bool optional) => AddYamlFile(builder, null, path, optional, false);
 
     /// <summary>
@@ -47,6 +51,8 @@ public static class YamlConfigurationExtensions
     /// <param name="optional">Whether the file is optional.</param>
     /// <param name="reloadOnChange">Whether the configuration should be reloaded if the file changes.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange) => AddYamlFile(builder, null, path, optional, reloadOnChange);
 
     /// <summary>
@@ -61,6 +67,8 @@ public static class YamlConfigurationExtensions
     /// <param name="optional">Whether the file is optional.</param>
     /// <param name="reloadOnChange">Whether the configuration should be reloaded if the file changes.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="path" /> is <see langword="null" /> or empty.</exception>
     public static IConfigurationBuilder AddYamlFile(
         this IConfigurationBuilder builder,
         IFileProvider? provider,
@@ -99,6 +107,8 @@ public static class YamlConfigurationExtensions
     /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add to.</param>
     /// <param name="stream">The <see cref="Stream" /> to read the yaml configuration data from.</param>
     /// <returns>The <see cref="IConfigurationBuilder" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="FormatException">The YAML content in <paramref name="stream" /> could not be parsed.</exception>
     public static IConfigurationBuilder AddYamlStream(this IConfigurationBuilder builder, Stream stream)
     {
         ArgumentNullException.ThrowIfNull(builder);

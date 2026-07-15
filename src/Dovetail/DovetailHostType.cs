@@ -10,7 +10,7 @@ namespace Dovetail;
 public enum DovetailHostType
 {
     /// <summary>
-    ///     No hast type has been defined
+    ///     No host type has been defined
     /// </summary>
     Undefined,
 

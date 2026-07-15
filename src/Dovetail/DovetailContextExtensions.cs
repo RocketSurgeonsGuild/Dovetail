@@ -16,6 +16,8 @@ public static class DovetailContextExtensions
     /// <typeparam name="T">The type of the value</typeparam>
     /// <param name="context">The context</param>
     /// <param name="value">The value to save</param>
+    /// <returns>The <paramref name="context" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static IDovetailContext AddIfMissing<T>(this IDovetailContext context, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -29,6 +31,8 @@ public static class DovetailContextExtensions
     /// <param name="context">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <returns>The <paramref name="context" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static IDovetailContext AddIfMissing(this IDovetailContext context, Type key, object value)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -43,6 +47,8 @@ public static class DovetailContextExtensions
     /// <param name="context">The properties</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <returns>The <paramref name="context" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static IDovetailContext AddIfMissing<T>(this IDovetailContext context, string key, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -53,9 +59,10 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Get a value by type from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static T? Get<T>(this IDovetailContext context) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -65,10 +72,11 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static T? Get<T>(this IDovetailContext context, string key) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -76,9 +84,11 @@ public static class DovetailContextExtensions
     }
 
     /// <summary>
-    ///     Check if this is a test host (to allow conventions to behave differently during unit tests)
+    ///     Get the host type the context is currently running under
     /// </summary>
     /// <param name="context">The context</param>
+    /// <returns>The <see cref="DovetailHostType" /> for the context, or <see cref="DovetailHostType.Undefined" /> if none was registered.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static DovetailHostType GetHostType(this IDovetailContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -91,10 +101,11 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <param name="factory">The factory method in the event the type is not found</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="factory" /> is <see langword="null" />.</exception>
     public static T GetOrAdd<T>(this IDovetailContext context, Func<T> factory)
         where T : class
     {
@@ -106,11 +117,12 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="factory">The factory method in the event the type is not found</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="factory" /> is <see langword="null" />.</exception>
     public static T GetOrAdd<T>(this IDovetailContext context, string key, Func<T> factory)
         where T : class
     {
@@ -123,6 +135,8 @@ public static class DovetailContextExtensions
     ///     Check if this is a test host (to allow conventions to behave differently during unit tests)
     /// </summary>
     /// <param name="context">The context</param>
+    /// <returns><see langword="true" /> if <paramref name="context" /> is running under <see cref="DovetailHostType.UnitTest" />; otherwise, <see langword="false" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static bool IsUnitTestHost(this IDovetailContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -132,9 +146,9 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Register a set of conventions
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="configure"></param>
-    /// <returns>The return value after executing the conventions</returns>
+    /// <param name="context">The context to execute the conventions against.</param>
+    /// <param name="configure">A callback used to configure which joints the <see cref="DovetailExecutor" /> should execute.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="configure" /> is <see langword="null" />.</exception>
     public static void RegisterJoints(this IDovetailContext context, Action<DovetailExecutor> configure)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -147,9 +161,10 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Register a set of conventions
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="configure"></param>
-    /// <returns>The return value after executing the conventions</returns>
+    /// <param name="context">The context to execute the conventions against.</param>
+    /// <param name="configure">A callback used to configure which joints the <see cref="DovetailExecutor" /> should execute.</param>
+    /// <returns>The <paramref name="context" /> after executing the conventions.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="configure" /> is <see langword="null" />.</exception>
     public static IDovetailContext RegisterJointsWithContext(this IDovetailContext context, Action<DovetailExecutor> configure)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -163,10 +178,11 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Register a set of conventions
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="configure"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>The return value after executing the conventions</returns>
+    /// <param name="context">The context to execute the conventions against.</param>
+    /// <param name="configure">A callback used to configure which joints the <see cref="DovetailExecutor" /> should execute.</param>
+    /// <param name="cancellationToken">The cancellation token used during execution.</param>
+    /// <returns>A <see cref="ValueTask" /> representing the asynchronous execution of the conventions.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="configure" /> is <see langword="null" />.</exception>
     public static ValueTask RegisterJointsAsync(this IDovetailContext context, Action<DovetailExecutor> configure, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -180,10 +196,11 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Register a set of conventions
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="configure"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>The return value after executing the conventions</returns>
+    /// <param name="context">The context to execute the conventions against.</param>
+    /// <param name="configure">A callback used to configure which joints the <see cref="DovetailExecutor" /> should execute.</param>
+    /// <param name="cancellationToken">The cancellation token used during execution.</param>
+    /// <returns>A <see cref="ValueTask{TResult}" /> producing the <paramref name="context" /> after executing the conventions.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="configure" /> is <see langword="null" />.</exception>
     public static ValueTask<IDovetailContext> RegisterJointsWithContextAsync(this IDovetailContext context, Action<DovetailExecutor> configure, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -196,9 +213,11 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found in the context.</exception>
     public static T Require<T>(this IDovetailContext context)
         where T : notnull
     {
@@ -212,10 +231,12 @@ public static class DovetailContextExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found at <paramref name="key" />.</exception>
     public static T Require<T>(this IDovetailContext context, string key)
         where T : notnull
     {
@@ -232,6 +253,7 @@ public static class DovetailContextExtensions
     /// <typeparam name="T">The type of the value</typeparam>
     /// <param name="context">The context</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="value" /> is <see langword="null" />.</exception>
     public static IDovetailContext Set<T>(this IDovetailContext context, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -247,6 +269,7 @@ public static class DovetailContextExtensions
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> or <paramref name="key" /> is <see langword="null" />.</exception>
     public static IDovetailContext Set(this IDovetailContext context, Type key, object value)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -263,6 +286,8 @@ public static class DovetailContextExtensions
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />, or <paramref name="key" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key" /> is empty or consists only of white-space characters.</exception>
     public static IDovetailContext Set<T>(this IDovetailContext context, string key, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(context);

@@ -19,10 +19,10 @@ public sealed class DovetailContextBuilder
     /// <summary>
     ///     Create a default context builder
     /// </summary>
-    /// <param name="conventions"></param>
-    /// <param name="properties"></param>
-    /// <param name="categories"></param>
-    /// <returns></returns>
+    /// <param name="conventions">The joints to seed the builder with.</param>
+    /// <param name="properties">The initial set of properties to populate the context with.</param>
+    /// <param name="categories">The categories the resulting context should be scoped to.</param>
+    /// <returns>A new <see cref="DovetailContextBuilder" />.</returns>
     public static DovetailContextBuilder Create(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType properties, IEnumerable<DovetailCategory> categories) =>
         new(conventions, properties, categories);
 
@@ -34,9 +34,9 @@ public sealed class DovetailContextBuilder
     /// <summary>
     ///     Create a context builder with a set of properties
     /// </summary>
-    /// <param name="conventions"></param>
-    /// <param name="properties"></param>
-    /// <param name="categories"></param>
+    /// <param name="conventions">The joints to seed the builder with.</param>
+    /// <param name="properties">The initial set of properties to populate the context with.</param>
+    /// <param name="categories">The categories the resulting context should be scoped to.</param>
     private DovetailContextBuilder(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType? properties, IEnumerable<DovetailCategory> categories)
     {
         Properties = new DovetailDictionary(properties ?? new PropertiesDictionary());
@@ -188,7 +188,8 @@ public sealed class DovetailContextBuilder
     /// <summary>
     ///     Create a new <see cref="IDovetailContext"/>
     /// </summary>
-    /// <returns></returns>
+    /// <param name="cancellationToken">The cancellation token used during setup.</param>
+    /// <returns>The newly created and set up <see cref="IDovetailContext" />.</returns>
     public async ValueTask<IDovetailContext> CreateAsync(CancellationToken cancellationToken = default)
     {
         var context = new DovetailContext(

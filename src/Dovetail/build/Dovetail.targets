@@ -9,7 +9,7 @@
     <DovetailImportClassName Condition="'$(DovetailImportClassName)' == ''">Imports</DovetailImportClassName>
     <DovetailImportMethodName Condition="'$(DovetailImportMethodName)' == ''">Ashlar</DovetailImportMethodName>
 
-    <DovetailExportNamespace Condition="'$(DovetailExportNamespace)' == ''">$(RootNamespace).Tectum</DovetailExportNamespace>
+    <DovetailExportNamespace Condition="'$(DovetailExportNamespace)' == ''">$(RootNamespace).Rivets</DovetailExportNamespace>
     <DovetailExportClassName Condition="'$(DovetailExportClassName)' == ''">Exports</DovetailExportClassName>
     <DovetailExportMethodName Condition="'$(DovetailExportMethodName)' == ''">Ashlar</DovetailExportMethodName>
   </PropertyGroup>

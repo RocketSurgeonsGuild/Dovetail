@@ -3,9 +3,17 @@ using Dovetail.Attributes;
 using Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 
+/// <summary>
+///     Default JSON app-settings convention for this project.
+/// </summary>
 [DovetailExport]
 internal class JsonAppSettingsConfiguration : IConfigurationJoint
 {
+    /// <summary>
+    ///     Adds the project's <c>{{ProjectName}}.json</c>, environment-specific, and local JSON app-settings files to the configuration.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add the JSON sources to.</param>
     public void Register(IDovetailContext context, IConfigurationBuilder builder)
     {
         builder.AddJsonFile("{{ProjectName}}.json", optional: false, reloadOnChange: false);

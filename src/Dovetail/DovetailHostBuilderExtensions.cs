@@ -14,10 +14,10 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Set the service provider factory to be used for hosting or other systems.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="serviceProviderFactory"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="builder">The context builder to configure.</param>
+    /// <param name="serviceProviderFactory">The service provider factory to use.</param>
+    /// <returns>The <paramref name="builder" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder UseServiceProviderFactory<TContainerBuilder>(
         this DovetailContextBuilder builder,
         IServiceProviderFactory<TContainerBuilder> serviceProviderFactory
@@ -31,10 +31,10 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Set the service provider factory to be used for hosting or other systems.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="serviceProviderFactory"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="builder">The context builder to configure.</param>
+    /// <param name="serviceProviderFactory">A factory method that asynchronously produces the service provider factory to use.</param>
+    /// <returns>The <paramref name="builder" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder UseServiceProviderFactory<TContainerBuilder>(
         this DovetailContextBuilder builder,
         Func<IDovetailContext, IServiceCollection, CancellationToken, ValueTask<IServiceProviderFactory<TContainerBuilder>>> serviceProviderFactory
@@ -48,10 +48,10 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Set the service provider factory to be used for hosting or other systems.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="serviceProviderFactory"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="builder">The context builder to configure.</param>
+    /// <param name="serviceProviderFactory">A factory method that asynchronously produces the service provider factory to use.</param>
+    /// <returns>The <paramref name="builder" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder UseServiceProviderFactory<TContainerBuilder>(
         this DovetailContextBuilder builder,
         Func<IDovetailContext, IServiceCollection, ValueTask<IServiceProviderFactory<TContainerBuilder>>> serviceProviderFactory
@@ -65,10 +65,10 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Set the service provider factory to be used for hosting or other systems.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="serviceProviderFactory"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="builder">The context to configure.</param>
+    /// <param name="serviceProviderFactory">The service provider factory to use.</param>
+    /// <returns>The <paramref name="builder" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static IDovetailContext UseServiceProviderFactory<TContainerBuilder>(
         this IDovetailContext builder,
         IServiceProviderFactory<TContainerBuilder> serviceProviderFactory
@@ -82,10 +82,10 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Set the service provider factory to be used for hosting or other systems.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="serviceProviderFactory"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="builder">The context to configure.</param>
+    /// <param name="serviceProviderFactory">A factory method that asynchronously produces the service provider factory to use.</param>
+    /// <returns>The <paramref name="builder" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static IDovetailContext UseServiceProviderFactory<TContainerBuilder>(
         this IDovetailContext builder,
         Func<IDovetailContext, IServiceCollection, CancellationToken, ValueTask<IServiceProviderFactory<TContainerBuilder>>> serviceProviderFactory
@@ -99,10 +99,10 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Set the service provider factory to be used for hosting or other systems.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="serviceProviderFactory"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="builder">The context to configure.</param>
+    /// <param name="serviceProviderFactory">A factory method that asynchronously produces the service provider factory to use.</param>
+    /// <returns>The <paramref name="builder" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static IDovetailContext UseServiceProviderFactory<TContainerBuilder>(
         this IDovetailContext builder,
         Func<IDovetailContext, IServiceCollection, ValueTask<IServiceProviderFactory<TContainerBuilder>>> serviceProviderFactory
@@ -116,9 +116,10 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Get a value by type from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static T? Get<T>(this DovetailContextBuilder context)
         where T : class
     {
@@ -130,9 +131,11 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found in the context.</exception>
     public static T Require<T>(this DovetailContextBuilder context)
         where T : notnull
     {
@@ -146,10 +149,11 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static T? Get<T>(this DovetailContextBuilder context, string key)
         where T : class
     {
@@ -161,10 +165,12 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Get a value by type from the context or throw
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
+    /// <exception cref="KeyNotFoundException">No value of type <typeparamref name="T" /> was found at <paramref name="key" />.</exception>
     public static T Require<T>(this DovetailContextBuilder context, string key)
         where T : notnull
     {
@@ -178,10 +184,11 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="builder">The builder</param>
     /// <param name="factory">The factory method in the event the type is not found</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="factory" /> is <see langword="null" />.</exception>
     public static T GetOrAdd<T>(this DovetailContextBuilder builder, Func<T> factory)
         where T : class
     {
@@ -200,11 +207,12 @@ public static class DovetailHostBuilderExtensions
     /// <summary>
     ///     Get a value by key from the context
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="builder">The builder</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="factory">The factory method in the event the type is not found</param>
     /// <returns>T.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="factory" /> is <see langword="null" />.</exception>
     public static T GetOrAdd<T>(this DovetailContextBuilder builder, string key, Func<T> factory)
         where T : class
     {
@@ -227,6 +235,7 @@ public static class DovetailHostBuilderExtensions
     /// <typeparam name="T">The type of the value</typeparam>
     /// <param name="context">The context</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder Set<T>(this DovetailContextBuilder context, T value)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -241,6 +250,7 @@ public static class DovetailHostBuilderExtensions
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder Set(this DovetailContextBuilder context, Type key, object value)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -256,6 +266,7 @@ public static class DovetailHostBuilderExtensions
     /// <param name="context">The context</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder Set<T>(this DovetailContextBuilder context, string key, T value)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -270,6 +281,7 @@ public static class DovetailHostBuilderExtensions
     /// <typeparam name="T">The type of the value</typeparam>
     /// <param name="builder">The builder</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder AddIfMissing<T>(this DovetailContextBuilder builder, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -283,6 +295,7 @@ public static class DovetailHostBuilderExtensions
     /// <param name="builder">The builder</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder AddIfMissing(this DovetailContextBuilder builder, Type key, object value)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -297,6 +310,7 @@ public static class DovetailHostBuilderExtensions
     /// <param name="builder">The builder</param>
     /// <param name="key">The key where the value is saved</param>
     /// <param name="value">The value to save</param>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static DovetailContextBuilder AddIfMissing<T>(this DovetailContextBuilder builder, string key, T value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -308,6 +322,8 @@ public static class DovetailHostBuilderExtensions
     ///     Check if this is a test host (to allow conventions to behave differently during unit tests)
     /// </summary>
     /// <param name="context">The context</param>
+    /// <returns><see langword="true" /> if <paramref name="context" /> is running under <see cref="DovetailHostType.UnitTest" />; otherwise, <see langword="false" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static bool IsUnitTestHost(this DovetailContextBuilder context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -316,9 +332,10 @@ public static class DovetailHostBuilderExtensions
     }
 
     /// <summary>
-    ///     Check if this is a test host (to allow conventions to behave differently during unit tests)
+    ///     Get the host type the builder is currently configured for
     /// </summary>
     /// <param name="context">The context</param>
+    /// <returns>The <see cref="DovetailHostType" /> for the builder, or <see cref="DovetailHostType.Undefined" /> if none was registered.</returns>
     public static DovetailHostType GetHostType(this DovetailContextBuilder context)
     {
         return context.Properties.TryGetValue(typeof(DovetailHostType), out var hostType)

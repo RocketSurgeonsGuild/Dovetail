@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using Dovetail;
-using Dovetail.Hosting.WebAssembly;
 using Dovetail.Infrastructure;
 using Dovetail.Joints;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -12,10 +10,25 @@ using Microsoft.Extensions.Configuration.Json;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Dovetail;
 
+/// <summary>
+///     Shared helpers used to wire a <see cref="WebAssemblyHostBuilder" /> up to a Dovetail
+///     <see cref="IDovetailContext" />. Not intended to be called directly by consumers; hidden from IntelliSense
+///     via <see cref="EditorBrowsableState.Never" />.
+/// </summary>
 [PublicAPI]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class DovetailWebAssemblyHelpers
 {
+    /// <summary>
+    ///     Populates the context, applies shared host configuration, services, and logging, wires up the
+    ///     service provider factory (if one was registered), and builds the host.
+    /// </summary>
+    /// <param name="builder">The WebAssembly host builder to configure.</param>
+    /// <param name="buildHost">A callback that builds the host from the configured builder.</param>
+    /// <param name="contextBuilder">The context builder used to create the <see cref="IDovetailContext" />.</param>
+    /// <param name="cancellationToken">The cancellation token used while applying configuration and building the host.</param>
+    /// <returns>The built and configured <see cref="WebAssemblyHost" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" />, <paramref name="buildHost" />, or <paramref name="contextBuilder" /> is <see langword="null" />.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static async ValueTask<WebAssemblyHost> Configure(
         this WebAssemblyHostBuilder builder,

@@ -14,7 +14,6 @@
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
       DovetailAutofacVersion: {sdk-version},
-      DovetailCommandLineVersion: {sdk-version},
       DovetailConfigurationJsonVersion: {sdk-version},
       DovetailConfigurationTomlVersion: {sdk-version},
       DovetailConfigurationYamlVersion: {sdk-version},

@@ -8,10 +8,23 @@ using Microsoft.Extensions.Configuration;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Dovetail;
 
+/// <summary>
+///     Shared helpers used to wire an <see cref="IDistributedApplicationBuilder" /> up to a Dovetail
+///     <see cref="IDovetailContext" />. Not intended to be called directly by consumers; hidden from IntelliSense
+///     via <see cref="EditorBrowsableState.Never" />.
+/// </summary>
 [PublicAPI]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class DovetailDistributedApplicationHelpers
 {
+    /// <summary>
+    ///     Populates the context, applies shared configuration, and builds the distributed application host.
+    /// </summary>
+    /// <param name="builder">The distributed application builder to configure.</param>
+    /// <param name="contextBuilder">The context builder used to create the <see cref="IDovetailContext" />.</param>
+    /// <param name="cancellationToken">The cancellation token used while applying configuration and building the host.</param>
+    /// <returns>The built and configured <see cref="DistributedApplication" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="contextBuilder" /> is <see langword="null" />.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static async ValueTask<DistributedApplication> Configure(
         IDistributedApplicationBuilder builder,

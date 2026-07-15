@@ -13,9 +13,9 @@ public static class DovetailContextBuilderExtensions
     /// <summary>
     ///     Allows creation of a service provider from the convention context.  This will apply configuration
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="context">The context to build a service provider from.</param>
+    /// <param name="cancellationToken">The cancellation token used while applying configuration, services, and logging.</param>
+    /// <returns>The <see cref="IServiceProvider" /> built from the context.</returns>
     public static async ValueTask<IServiceProvider> CreateServiceProvider(this IDovetailContext context, CancellationToken cancellationToken = default)
     {
         var cb = new ConfigurationManager();
