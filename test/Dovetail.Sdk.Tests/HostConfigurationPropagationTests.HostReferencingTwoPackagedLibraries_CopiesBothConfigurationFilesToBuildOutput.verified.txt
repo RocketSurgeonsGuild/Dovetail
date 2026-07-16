@@ -211,10 +211,10 @@
         Version: Version_0
       },
       DovetailPkgTestLib1: {
-        Version: Version_2
+        Version: Version_0
       },
       DovetailPkgTestLib2: {
-        Version: Version_2
+        Version: Version_0
       }
     },
     DovetailJoint: {},

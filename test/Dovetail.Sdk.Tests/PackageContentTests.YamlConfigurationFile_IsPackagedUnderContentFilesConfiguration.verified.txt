@@ -81,7 +81,7 @@
   Packages: [
     {
       PackageId: lib,
-      Version: 1.0.0,
+      Version: {sdk-version},
       Files: [
         contentFiles/any/any/configuration/lib.yaml,
         lib.nuspec,
