@@ -1,29 +1,32 @@
 ---
 name: dotnet-microsoft-agent-framework-specialist
-description: 'Guides Microsoft Agent Framework development for .NET applications. Agent design, workflow orchestration, multi-agent patterns, tool integration, and provider configuration. Triggers on: agent framework, microsoft agent, ai agent, multi-agent, agent orchestration, agent workflow, chat completion agent, azure openai agent, mcp agent.'
+description:
+  'Guides Microsoft Agent Framework development for .NET applications. Agent design, workflow orchestration, multi-agent
+  patterns, tool integration, and provider configuration. Triggers on: agent framework, microsoft agent, ai agent,
+  multi-agent, agent orchestration, agent workflow, chat completion agent, azure openai agent, mcp agent.'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-microsoft-agent-framework-specialist
+  short-description: '.NET specialist subagent for dotnet-microsoft-agent-framework-specialist'
 ---
 
 # dotnet-microsoft-agent-framework-specialist
@@ -47,23 +50,23 @@ Always load these skills before analysis:
    [skill:dotnet-project-analysis] to identify Agent Framework package references and provider configurations.
 
 1. **Assess agent architecture** -- Using [skill:dotnet-microsoft-agent-framework], identify:
-    - Active agent types (ChatClientAgent, AzureOpenAIAgent, AnthropicAgent, OllamaAgent)
-    - Workflow patterns in use (sequential, concurrent, group chat, handoff, magentic)
-    - Tool integrations (function calling, MCP servers, hosted tools)
-    - Provider configurations and API keys/secrets management
+   - Active agent types (ChatClientAgent, AzureOpenAIAgent, AnthropicAgent, OllamaAgent)
+   - Workflow patterns in use (sequential, concurrent, group chat, handoff, magentic)
+   - Tool integrations (function calling, MCP servers, hosted tools)
+   - Provider configurations and API keys/secrets management
 
 1. **Recommend patterns** -- Based on detected context and requirements, recommend:
-    - Optimal agent types for the use case and provider
-    - Appropriate workflow pattern for multi-agent scenarios
-    - Tool integration strategy (inline functions vs MCP servers)
-    - Middleware pipeline configuration (logging, auth, retries)
-    - Chat history persistence and session management
+   - Optimal agent types for the use case and provider
+   - Appropriate workflow pattern for multi-agent scenarios
+   - Tool integration strategy (inline functions vs MCP servers)
+   - Middleware pipeline configuration (logging, auth, retries)
+   - Chat history persistence and session management
 
 1. **Delegate** -- For concerns outside Agent Framework core, delegate to specialist skills:
-    - [skill:dotnet-messaging-patterns] for event-driven agent communication
-    - [skill:dotnet-resilience] for retry/circuit breaker patterns
-    - [skill:dotnet-observability] for OpenTelemetry integration beyond Agent Framework defaults
-    - [skill:dotnet-secrets-management] for API key rotation and secrets handling
+   - [skill:dotnet-messaging-patterns] for event-driven agent communication
+   - [skill:dotnet-resilience] for retry/circuit breaker patterns
+   - [skill:dotnet-observability] for OpenTelemetry integration beyond Agent Framework defaults
+   - [skill:dotnet-secrets-management] for API key rotation and secrets handling
 
 ## Decision Tree
 

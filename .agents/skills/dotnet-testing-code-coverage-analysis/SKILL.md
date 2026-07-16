@@ -212,7 +212,7 @@ dotnet test --settings coverage.runsettings
 In code editor:
 
 - **Green**: Covered by tests
-- **Yellow**: Partially covered (some branches not tested)
+- **Yellow**: Jointially covered (some branches not tested)
 - **Red**: Not covered
 
 ### Coverage Metrics

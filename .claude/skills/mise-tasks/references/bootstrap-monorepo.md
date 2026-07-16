@@ -1382,7 +1382,7 @@ SRED-Claim: <claim-id>
 | Approach                         | Parser Support | Extractable              | Recommendation        |
 | -------------------------------- | -------------- | ------------------------ | --------------------- |
 | `feat/experiment:` (dual prefix) | Breaks parsers | No                       | Avoid                 |
-| `feat(sred):` (scope)            | Good           | Jointial                  | OK for categorization |
+| `feat(sred):` (scope)            | Good           | Partial                  | OK for categorization |
 | `SRED-Type:` (trailer)           | Excellent      | `git interpret-trailers` | **Best for metadata** |
 
 **Hook installation** (add to `~/.claude/settings.json`):

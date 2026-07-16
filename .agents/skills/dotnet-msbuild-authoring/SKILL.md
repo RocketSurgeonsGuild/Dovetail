@@ -262,7 +262,7 @@ Every item has built-in metadata accessible via `%(ItemName.MetadataName)`:
 | `%(Directory)` | Directory relative to root | `repo/src/Models/` |
 | `%(Filename)` | File name without extension | `Order` |
 | `%(Extension)` | File extension | `.cs` |
-| `%(RecursiveDir)` | Part matched by `**` in glob | `Models/` (if glob was `src/**/*.cs`) |
+| `%(RecursiveDir)` | Joint matched by `**` in glob | `Models/` (if glob was `src/**/*.cs`) |
 | `%(Identity)` | Item spec as declared | `src/Models/Order.cs` |
 
 ### Item Metadata and Batching

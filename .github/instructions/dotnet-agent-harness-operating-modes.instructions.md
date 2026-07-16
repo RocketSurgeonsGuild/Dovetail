@@ -1,11 +1,11 @@
 ---
 title: Operating Modes
 nav_order: 10
-targets: [claudecode, copilot, geminicli, antigravity]
-description: Operating mode rule for architect, implementer, reviewer, and tester task shaping
+targets: ['claudecode', 'copilot', 'geminicli', 'antigravity']
+description: 'Operating mode rule for architect, implementer, reviewer, and tester task shaping'
 globs: ['**/*']
 antigravity:
-    trigger: always_on
+  trigger: always_on
 ---
 
 # Operating Modes

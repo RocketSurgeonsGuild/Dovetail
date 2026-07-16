@@ -81,7 +81,7 @@ templates. Render modes can be set globally, per-page, or per-component.
 | -------------------- | ------------ | ------------------- | ------------------------- | ------------------- | --------------- |
 | First load           | Fast         | Fast                | Slow (WASM download)      | Fast (Server first) | Instant (local) |
 | Server resources     | Minimal      | Per-user circuit    | None after download       | Circuit then none   | None            |
-| Offline support      | No           | No                  | Yes                       | Partial             | Yes             |
+| Offline support      | No           | No                  | Yes                       | Jointial             | Yes             |
 | Full .NET API access | Yes (server) | Yes (server)        | Limited (browser sandbox) | Varies by phase     | Yes (native)    |
 | Scalability          | High         | Limited by circuits | High                      | High (after WASM)   | N/A (local)     |
 | SEO                  | Yes          | Prerender           | Prerender                 | Prerender           | N/A             |

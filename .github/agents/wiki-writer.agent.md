@@ -1,25 +1,25 @@
 ---
 name: wiki-writer
-description: Documentation-writing subagent for rich wiki pages, diagrams, and source-linked technical narratives.
-targets: [claudecode, codexcli]
-tags: [wiki, subagent, documentation, mermaid]
-version: 0.0.1
-author: dotnet-agent-harness
+description: 'Documentation-writing subagent for rich wiki pages, diagrams, and source-linked technical narratives.'
+targets: ['claudecode', 'codexcli']
+tags: ['wiki', 'subagent', 'documentation', 'mermaid']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools: [Read, Grep, Glob, Bash, Edit, Write]
+  model: inherit
+  allowed-tools: ['Read', 'Grep', 'Glob', 'Bash', 'Edit', 'Write']
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: Wiki documentation writer with diagram support
+  short-description: 'Wiki documentation writer with diagram support'
 geminicli:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 ---
 
 # wiki-writer

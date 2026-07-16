@@ -1,29 +1,32 @@
 ---
 name: dotnet-testing-specialist
-description: Designs test architecture, chooses test types (unit/integration/E2E), manages test data, tests microservices, and structures test projects. Routes benchmarking to [subagent:dotnet-benchmark-designer], security auditing to [subagent:dotnet-security-reviewer].
+description:
+  'Designs test architecture, chooses test types (unit/integration/E2E), manages test data, tests microservices, and
+  structures test projects. Routes benchmarking to [subagent:dotnet-benchmark-designer], security auditing to
+  [subagent:dotnet-security-reviewer].'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-testing-specialist
+  short-description: '.NET specialist subagent for dotnet-testing-specialist'
 ---
 
 # dotnet-testing-specialist

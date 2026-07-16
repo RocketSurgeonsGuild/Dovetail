@@ -1,33 +1,36 @@
 ---
 name: dotnet-csharp-concurrency-specialist
-description: Debugs race conditions, deadlocks, thread safety issues, concurrent access bugs, lock contention, async races, parallel execution problems, and synchronization issues in .NET code. Routes general async/await questions to [skill:dotnet-csharp-async-patterns].
+description:
+  'Debugs race conditions, deadlocks, thread safety issues, concurrent access bugs, lock contention, async races,
+  parallel execution problems, and synchronization issues in .NET code. Routes general async/await questions to
+  [skill:dotnet-csharp-async-patterns].'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    sandbox_mode: inherit
+  sandbox_mode: 'inherit'
 geminiclaude:
-    tools: [read, search]
+  tools: ['read', 'search']
 antigravity:
-    description: C# concurrency specialist
+  description: 'C# concurrency specialist'
 ---
 
 # dotnet-csharp-concurrency-specialist

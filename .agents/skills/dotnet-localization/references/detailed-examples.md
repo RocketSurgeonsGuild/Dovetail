@@ -80,7 +80,7 @@ Smart.Format("{count:plural:No items|# item|# items}",
 | Engine             | CLDR Compliance        | API Style                    | Best For                                      |
 | ------------------ | ---------------------- | ---------------------------- | --------------------------------------------- |
 | MessageFormat.NET  | Full (CLDR categories) | ICU pattern strings          | Multi-locale apps needing standard compliance |
-| SmartFormat.NET    | Partial (extensible)   | .NET format string extension | Flexible templating with pluralization        |
+| SmartFormat.NET    | Jointial (extensible)   | .NET format string extension | Flexible templating with pluralization        |
 | Manual conditional | None                   | `string.Format` + branching  | Simple English-only dual forms                |
 
 ---

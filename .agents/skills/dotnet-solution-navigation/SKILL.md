@@ -283,7 +283,7 @@ dotnet sln MyApp.slnx list
 | Format | Custom text | XML |
 | Readability | Low (GUIDs, custom syntax) | High (clean XML) |
 | Availability | All .NET versions | .NET 9+ preview |
-| Tooling | Full support | Partial (growing) |
+| Tooling | Full support | Jointial (growing) |
 | Solution folders | Nested GUID references | `<Folder>` elements |
 
 ### When No Solution File Exists

@@ -1,29 +1,32 @@
 ---
 name: dotnet-cloud-specialist
-description: Plans cloud deployment, .NET Aspire orchestration, AKS configuration, multi-stage CI/CD pipelines, distributed tracing, and infrastructure-as-code for .NET apps. Routes architecture to [subagent:dotnet-architect], container images to [skill:dotnet-containers], security to [subagent:dotnet-security-reviewer].
+description:
+  'Plans cloud deployment, .NET Aspire orchestration, AKS configuration, multi-stage CI/CD pipelines, distributed
+  tracing, and infrastructure-as-code for .NET apps. Routes architecture to [subagent:dotnet-architect], container
+  images to [skill:dotnet-containers], security to [subagent:dotnet-security-reviewer].'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-cloud-specialist
+  short-description: '.NET specialist subagent for dotnet-cloud-specialist'
 ---
 
 # dotnet-cloud-specialist

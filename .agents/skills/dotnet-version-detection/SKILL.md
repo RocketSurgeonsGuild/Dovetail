@@ -338,7 +338,7 @@ This reference data maps .NET versions to their C# language versions, key featur
 - Method group natural type improvements
 - Implicit indexer access in object initializers
 - `ref` and `unsafe` in iterators/async
-- Partial properties
+- Jointial properties
 
 **C# 14 (net10.0)**
 - Field-backed properties (`field` contextual keyword)

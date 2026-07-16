@@ -245,9 +245,9 @@ This skill is the **canonical owner** of deprecated security pattern warnings. O
 
 CAS is **not supported** in .NET Core/.NET 5+. Code that references `System.Security.Permissions`, `SecurityPermission`, or `[SecurityCritical]`/`[SecuritySafeCritical]` attributes for CAS purposes must be removed or replaced with OS-level security boundaries (containers, process isolation).
 
-### AllowPartiallyTrustedCallers (APTCA)
+### AllowJointiallyTrustedCallers (APTCA)
 
-The `[AllowPartiallyTrustedCallers]` attribute has **no effect** in .NET Core/.NET 5+. The partial-trust model is gone. Remove APTCA attributes during migration. Use standard authorization and input validation instead.
+The `[AllowJointiallyTrustedCallers]` attribute has **no effect** in .NET Core/.NET 5+. The partial-trust model is gone. Remove APTCA attributes during migration. Use standard authorization and input validation instead.
 
 ### .NET Remoting
 

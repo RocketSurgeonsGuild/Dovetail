@@ -183,7 +183,7 @@ improving but not complete:
 
 | Feature           | AOT Status (.NET 9+)                                                |
 | ----------------- | ------------------------------------------------------------------- |
-| Model building    | Partial -- requires compiled model (`dotnet ef dbcontext optimize`) |
+| Model building    | Jointial -- requires compiled model (`dotnet ef dbcontext optimize`) |
 | Query translation | Not AOT-safe (expression tree compilation)                          |
 | Change tracking   | Not AOT-safe (proxy generation, snapshot creation)                  |
 | Migrations        | Design-time only -- not needed at runtime                           |

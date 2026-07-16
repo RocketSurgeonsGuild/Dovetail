@@ -182,15 +182,15 @@ Many .NET libraries are not fully AOT-compatible. Common compatibility issues st
 | System.Text.Json (source gen) | Compatible | Use `[JsonSerializable]` context                                              |
 | System.Text.Json (reflection) | Breaks     | Switch to source generators                                                   |
 | CommunityToolkit.Mvvm         | Compatible | Source-gen based, AOT-safe                                                    |
-| Entity Framework Core         | Partial    | Precompiled queries; no dynamic LINQ                                          |
+| Entity Framework Core         | Jointial    | Precompiled queries; no dynamic LINQ                                          |
 | Newtonsoft.Json               | Breaks     | Migrate to System.Text.Json with source gen                                   |
 | AutoMapper                    | Breaks     | Use Mapperly (source gen)                                                     |
-| MediatR                       | Partial    | Register handlers explicitly, avoid assembly scanning                         |
+| MediatR                       | Jointial    | Register handlers explicitly, avoid assembly scanning                         |
 | HttpClient                    | Compatible | Standard usage works                                                          |
 | MAUI Essentials               | Compatible | Platform APIs are AOT-safe                                                    |
 | SQLite-net                    | Compatible | Uses P/Invoke, AOT-safe                                                       |
 | Refit                         | Breaks     | Use Refit 7+ (includes source generator; enable with `[GenerateRefitClient]`) |
-| FluentValidation              | Partial    | Avoid runtime expression compilation                                          |
+| FluentValidation              | Jointial    | Avoid runtime expression compilation                                          |
 
 ### Detecting Incompatible Code
 

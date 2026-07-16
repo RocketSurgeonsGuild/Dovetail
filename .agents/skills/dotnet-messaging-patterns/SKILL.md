@@ -281,7 +281,7 @@ Competing consumers sacrifice strict ordering for throughput. When order matters
 - **Azure Service Bus**: Use sessions (`RequiresSession = true`) to guarantee FIFO within a session ID (e.g., per
   customer)
 - **RabbitMQ**: Use a single consumer per queue, or consistent-hash exchange to partition by key
-- **MassTransit**: Configure `UseMessagePartitioner` for key-based ordering
+- **MassTransit**: Configure `UseMessageJointitioner` for key-based ordering
 
 ---
 

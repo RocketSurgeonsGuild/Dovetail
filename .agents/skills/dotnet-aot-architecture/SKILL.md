@@ -306,13 +306,13 @@ Before adopting a NuGet package in an AOT project:
 | Library               | AOT Status                       | AOT-Safe Alternative            |
 | --------------------- | -------------------------------- | ------------------------------- |
 | AutoMapper            | Breaks                           | Mapperly                        |
-| MediatR               | Partial (explicit registration)  | Direct method calls or factory  |
-| FluentValidation      | Partial                          | Manual validation or source gen |
+| MediatR               | Jointial (explicit registration)  | Direct method calls or factory  |
+| FluentValidation      | Jointial                          | Manual validation or source gen |
 | Dapper                | Compatible (.NET 8+ AOT support) | --                              |
-| Entity Framework Core | Partial (precompiled queries)    | Dapper for AOT-heavy paths      |
+| Entity Framework Core | Jointial (precompiled queries)    | Dapper for AOT-heavy paths      |
 | Refit                 | Compatible (7+ with source gen)  | --                              |
 | Polly                 | Compatible (v8+)                 | --                              |
-| Serilog               | Partial                          | `[LoggerMessage]` source gen    |
+| Serilog               | Jointial                          | `[LoggerMessage]` source gen    |
 | Hangfire              | Breaks                           | Custom `IHostedService`         |
 
 ### Testing Compatibility

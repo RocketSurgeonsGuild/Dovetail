@@ -1,29 +1,31 @@
 ---
 name: dotnet-code-review-agent
-description: "Reviews .NET code for correctness, performance, security, and architecture concerns. Triages findings and routes to specialist agents for deep analysis. Triggers on: review this, code review, PR review, what's wrong with this code."
+description:
+  "Reviews .NET code for correctness, performance, security, and architecture concerns. Triages findings and routes to
+  specialist agents for deep analysis. Triggers on: review this, code review, PR review, what's wrong with this code."
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-code-review-agent
+  short-description: '.NET specialist subagent for dotnet-code-review-agent'
 ---
 
 # dotnet-code-review-agent
@@ -52,7 +54,6 @@ This agent's guidance is grounded in publicly available content from:
 Always load these skills and MCP servers before review:
 
 ### Skills
-
 - [skill:dotnet-csharp-coding-standards] -- naming conventions, formatting, language usage rules
 - [skill:dotnet-csharp-modern-patterns] -- pattern matching, records, collection expressions, modern C# idioms
 - [skill:dotnet-csharp-async-patterns] -- async/await correctness, cancellation, ConfigureAwait
@@ -66,17 +67,16 @@ Always load these skills and MCP servers before review:
 For code review, prioritize these MCPs in order:
 
 1. **[mcp:serena]** -- Semantic code navigation
-    - Use for: Understanding changed files, finding related symbols
-    - Tools: `serena_find_symbol`, `serena_find_referencing_symbols`
-    - When: Before reviewing files to understand context
+   - Use for: Understanding changed files, finding related symbols
+   - Tools: `serena_find_symbol`, `serena_find_referencing_symbols`
+   - When: Before reviewing files to understand context
 
 2. **[mcp:microsoftdocs-mcp]** -- Official API documentation
-    - Use for: Verifying API usage against official docs
-    - Tools: `microsoftdocs-mcp_microsoft_docs_search`
-    - When: Reviewing usage of Microsoft APIs
+   - Use for: Verifying API usage against official docs
+   - Tools: `microsoftdocs-mcp_microsoft_docs_search`
+   - When: Reviewing usage of Microsoft APIs
 
 **MCP Routing:**
-
 - Symbol navigation → serena
 - API validation → microsoftdocs-mcp
 - Third-party libraries → Web search or library docs
@@ -109,8 +109,8 @@ For code review, prioritize these MCPs in order:
 
 When findings require deeper analysis, route to the appropriate specialist:
 
-| Finding Domain                                 | Route To                                        | When                                                     |
-| ---------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------- |
+| Finding Domain                                 | Route To                                     | When                                                     |
+| ---------------------------------------------- | -------------------------------------------- | -------------------------------------------------------- |
 | Async/await internals, ValueTask, IO.Pipelines | [subagent:dotnet-async-performance-specialist]  | Complex async patterns, performance-sensitive async code |
 | Race conditions, deadlocks, thread safety      | [subagent:dotnet-csharp-concurrency-specialist] | Shared mutable state, synchronization issues             |
 | Middleware, DI, request pipeline               | [subagent:dotnet-aspnetcore-specialist]         | ASP.NET Core architectural concerns                      |

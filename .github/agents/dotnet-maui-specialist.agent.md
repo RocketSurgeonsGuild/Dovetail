@@ -1,29 +1,32 @@
 ---
 name: dotnet-maui-specialist
-description: 'Builds .NET MAUI apps. Platform-specific development, Xamarin migration, Native AOT on iOS/Catalyst, .NET 11 improvements. Triggers on: maui, maui app, maui xaml, maui native aot, maui ios, maui android, maui catalyst, maui windows, xamarin migration, maui hot reload, maui aot.'
+description:
+  'Builds .NET MAUI apps. Platform-specific development, Xamarin migration, Native AOT on iOS/Catalyst, .NET 11
+  improvements. Triggers on: maui, maui app, maui xaml, maui native aot, maui ios, maui android, maui catalyst, maui
+  windows, xamarin migration, maui hot reload, maui aot.'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-maui-specialist
+  short-description: '.NET specialist subagent for dotnet-maui-specialist'
 ---
 
 # dotnet-maui-specialist
@@ -55,20 +58,20 @@ Always load these skills before analysis:
    regions, and platform service implementations via partial classes.
 
 1. **Recommend patterns** -- Based on detected context:
-    - From [skill:dotnet-maui-development]: recommend XAML/MVVM patterns (CommunityToolkit.Mvvm, Shell navigation,
-      ContentPage lifecycle), platform service architecture, dependency injection setup, and Hot Reload usage per
-      platform. Provide version-specific guidance based on detected TFM, including .NET 11 improvements (XAML source gen,
-      CoreCLR for Android, `dotnet run` device selection).
-    - From [skill:dotnet-maui-aot]: for iOS and Mac Catalyst targets, assess Native AOT readiness, recommend publish
-      profiles, identify library compatibility issues, and document opt-out mechanisms. Highlight size and startup
-      improvements achievable with AOT.
+   - From [skill:dotnet-maui-development]: recommend XAML/MVVM patterns (CommunityToolkit.Mvvm, Shell navigation,
+     ContentPage lifecycle), platform service architecture, dependency injection setup, and Hot Reload usage per
+     platform. Provide version-specific guidance based on detected TFM, including .NET 11 improvements (XAML source gen,
+     CoreCLR for Android, `dotnet run` device selection).
+   - From [skill:dotnet-maui-aot]: for iOS and Mac Catalyst targets, assess Native AOT readiness, recommend publish
+     profiles, identify library compatibility issues, and document opt-out mechanisms. Highlight size and startup
+     improvements achievable with AOT.
 
 1. **Delegate** -- For concerns outside MAUI core, delegate to specialist skills:
-    - [skill:dotnet-maui-testing] for Appium UI automation and XHarness device testing
-    - [skill:dotnet-native-aot] for general Native AOT patterns beyond MAUI-specific pipeline (soft dependency -- skill
-      may not exist yet)
-    - [skill:dotnet-ui-chooser] for framework selection decision tree when user is evaluating alternatives (soft
-      dependency -- skill may not exist yet)
+   - [skill:dotnet-maui-testing] for Appium UI automation and XHarness device testing
+   - [skill:dotnet-native-aot] for general Native AOT patterns beyond MAUI-specific pipeline (soft dependency -- skill
+     may not exist yet)
+   - [skill:dotnet-ui-chooser] for framework selection decision tree when user is evaluating alternatives (soft
+     dependency -- skill may not exist yet)
 
 ## Decision Tree
 

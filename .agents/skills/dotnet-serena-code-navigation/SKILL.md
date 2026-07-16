@@ -234,7 +234,7 @@ Read: src/Services/OrderService.cs
 Grep: "public void NewMethod"
 ```
 
-### Issue: Partial Matches
+### Issue: Jointial Matches
 
 **Cause:** Symbol name ambiguous
 
