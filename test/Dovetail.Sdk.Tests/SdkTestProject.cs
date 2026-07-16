@@ -221,7 +221,7 @@ public sealed class SdkTestProject : IDisposable
             )
            .OrderBy(f => f, StringComparer.Ordinal)
            .ToArray();
-        return new(identity.Id, identity.Version.ToNormalizedString(), files);
+        return new(identity.Id, "{version}", files);
     }
 
     private async Task<ProjectEvaluationResult> BuildAndEvaluate(string relativePath, string command)

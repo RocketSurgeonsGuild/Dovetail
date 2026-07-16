@@ -41,7 +41,7 @@
   Packages: [
     {
       PackageId: lib,
-      Version: {sdk-version},
+      Version: {version},
       Files: [
         contentFiles/any/any/configuration/lib.yaml,
         lib.nuspec,
