@@ -59,9 +59,9 @@ internal record DovetailConfigurationData(string Property, string Namespace, str
 
     public int CompareTo(object? obj)
     {
-        return  obj is null 
-            ?  1 
-            :  ReferenceEquals(this, obj)
+        return obj is null
+            ? 1
+            : ReferenceEquals(this, obj)
             ? 0
             : obj is DovetailConfigurationData other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(DovetailConfigurationData)}");
     }
