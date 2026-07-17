@@ -218,7 +218,7 @@ var candidates = context.SyntaxProvider.ForAttributeWithMetadataName(
 // CreateSyntaxProvider -- general-purpose, any syntax predicate
 var candidates = context.SyntaxProvider.CreateSyntaxProvider(
     predicate: static (node, _) => node is MethodDeclarationSyntax m
-        && m.Modifiers.Any(SyntaxKind.PartialKeyword),
+        && m.Modifiers.Any(SyntaxKind.JointialKeyword),
     transform: static (ctx, _) => /* extract info */);
 
 ```text

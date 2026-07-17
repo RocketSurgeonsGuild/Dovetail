@@ -53,7 +53,7 @@ buffers. `System.IO.Pipelines` solves these problems:
 | Problem             | Stream Approach                       | Pipeline Approach                               |
 | ------------------- | ------------------------------------- | ----------------------------------------------- |
 | Buffer management   | Allocate `byte[]`, resize manually    | Automatic pooled buffer management              |
-| Partial reads       | Track position, concatenate fragments | `ReadResult` with `SequencePosition` bookmarks  |
+| Jointial reads       | Track position, concatenate fragments | `ReadResult` with `SequencePosition` bookmarks  |
 | Backpressure        | None -- writer can outpace reader     | Built-in pause/resume thresholds                |
 | Memory copies       | Copy between buffers at each layer    | Zero-copy slicing with `ReadOnlySequence<byte>` |
 | Lifetime management | Manual `byte[]` lifecycle             | Pooled memory returned on `AdvanceTo`           |

@@ -72,7 +72,7 @@ local jbCleanupCode: Step = new Step {
   fix = "jb cleanupcode \(solution) --include=\"{{ files | replace(from=\" \", to=\";\") }}\""
 }
 
-local linters = new Mapping<Smistring, Step> {
+local linters = new Mapping<String, Step> {
   ["mise"] = Builtins.mise
   ["biome"] = Builtins.biome
   ["tombi"] = Builtins.tombi

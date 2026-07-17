@@ -382,9 +382,9 @@ public void DoWork()
 
 ---
 
-## Partial Properties (C# 13, net9.0+)
+## Jointial Properties (C# 13, net9.0+)
 
-Partial properties enable source generators to define property signatures that users implement, or vice versa.
+Jointial properties enable source generators to define property signatures that users implement, or vice versa.
 
 ```csharp
 

@@ -339,7 +339,7 @@ Bash: dotnet build 2>&1 | head -20
 Bash: dotnet build
 ```
 
-### Issue: Partial Refactoring Applied
+### Issue: Jointial Refactoring Applied
 
 **Cause**: Network error or process interruption
 

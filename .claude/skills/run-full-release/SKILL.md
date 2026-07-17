@@ -115,7 +115,7 @@ find $(npm root -g 2>/dev/null) node_modules \
 done
 ```
 
-**Jointial semantic-release failure** (version bumped, no tag): Do NOT re-run semantic-release. Manually create tag + GitHub release, then continue with publish tasks.
+**Partial semantic-release failure** (version bumped, no tag): Do NOT re-run semantic-release. Manually create tag + GitHub release, then continue with publish tasks.
 
 **Cargo workspace lockfile cascade** (Rust workspaces with `version.workspace = true`): the perl-based version bump in `prepareCmd` only touches `Cargo.toml`, but the workspace version cascades into every member crate's entry in `Cargo.lock`. The `@semantic-release/git` plugin only stages files listed in `assets`, so without an explicit cargo invocation + `Cargo.lock` in assets, the lockfile stays at the old version. Symptoms: `release:preflight` fails with `M Cargo.lock` after a successful `release:version`, blocking `cargo publish`. Fix in `.releaserc.yml`:
 
@@ -175,6 +175,16 @@ git log --oneline @{u}..HEAD
 # This recurs across sessions — see Known Issues. Running this BEFORE
 # release:full saves a preflight-fail/retry round trip. No-op if clean.
 [[ -x ./scripts/sync-hooks-to-settings.sh ]] && ./scripts/sync-hooks-to-settings.sh
+
+# Ensure GH_TOKEN is in the env — release:preflight checks `[ -n "$GH_TOKEN" ]`
+# but many repos (incl. cc-skills) do NOT define it in .mise.toml [env]; auth
+# lives in the gh keyring instead. Source it for the run. The Process Storm
+# Guard blocks `$(gh auth token)` as a gh-recursion pattern, so the
+# `# PROCESS-STORM-OK` escape hatch is REQUIRED here (this is a one-shot
+# interactive release step, not a hook/credential-helper — the intended use).
+if [ -z "${GH_TOKEN:-}" ]; then
+  export GH_TOKEN="$(gh auth token)" && export GITHUB_TOKEN="$GH_TOKEN"  # PROCESS-STORM-OK
+fi
 
 # Route by flags
 mise run release:full    # default

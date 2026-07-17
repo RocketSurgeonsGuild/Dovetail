@@ -1,33 +1,36 @@
 ---
 name: dotnet-architect
-description: 'Analyzes .NET project context, requirements, and constraints to recommend architecture approaches, framework choices, and design patterns. Triggers on: what framework to use, how to structure a project, recommend an approach, architecture review.'
+description:
+  'Analyzes .NET project context, requirements, and constraints to recommend architecture approaches, framework choices,
+  and design patterns. Triggers on: what framework to use, how to structure a project, recommend an approach,
+  architecture review.'
 targets: ['*']
-tags: [dotnet, agent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'agent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
 opencode:
-    mode: primary
-    hidden: false
-    tools:
-        bash: true
-        edit: false
-        write: false
+  mode: primary
+  hidden: false
+  tools:
+    bash: true
+    edit: false
+    write: false
 copilot:
-    tools: [read, search, execute]
+  tools: ['read', 'search', 'execute']
 codexcli:
-    short-description: $1
-    sandbox_mode: inherit
+  short-description: '$1'
+  sandbox_mode: inherit
 geminiclaude:
-    tools: [read, search]
+  tools: ['read', 'search']
 antigravity:
-    description: .NET architecture advisor
+  description: '.NET architecture advisor'
 ---
 
 # dotnet-architect
@@ -40,7 +43,6 @@ approaches based on detected frameworks, versions, and constraints.
 Always load these foundation skills and MCP servers before analysis:
 
 ### Skills
-
 - [skill:dotnet-advisor] -- router/index for all .NET skills; consult its catalog to find specialist skills
 - [skill:dotnet-version-detection] -- detect target framework, SDK version, and preview features
 - [skill:dotnet-project-analysis] -- understand solution structure, project references, and package management
@@ -50,17 +52,16 @@ Always load these foundation skills and MCP servers before analysis:
 For architecture analysis, prioritize these MCPs in order:
 
 1. **[mcp:serena]** -- Semantic code analysis
-    - Use for: Understanding existing solution structure, finding key classes
-    - Tools: `serena_get_symbols_overview`, `serena_find_symbol`
-    - When: First step for any existing codebase analysis
+   - Use for: Understanding existing solution structure, finding key classes
+   - Tools: `serena_get_symbols_overview`, `serena_find_symbol`
+   - When: First step for any existing codebase analysis
 
 2. **[mcp:microsoftdocs-mcp]** -- Official .NET documentation
-    - Use for: Validating framework choices against official guidance
-    - Tools: `microsoftdocs-mcp_microsoft_docs_search`
-    - When: Recommending patterns or validating architectural decisions
+   - Use for: Validating framework choices against official guidance
+   - Tools: `microsoftdocs-mcp_microsoft_docs_search`
+   - When: Recommending patterns or validating architectural decisions
 
 **Project Documentation:**
-
 - Read docs/, wiki/, or markdown files directly for project conventions
 - Use Grep to search for patterns across documentation
 

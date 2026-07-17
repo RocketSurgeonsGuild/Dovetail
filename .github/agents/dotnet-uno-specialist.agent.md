@@ -1,29 +1,32 @@
 ---
 name: dotnet-uno-specialist
-description: 'Builds cross-platform Uno Platform apps. Project setup, target configuration, Extensions ecosystem, MVUX patterns, Toolkit controls, theming, MCP integration. Triggers on: uno platform, uno app, uno wasm, uno mobile, uno desktop, uno extensions, mvux, uno toolkit, uno themes, cross-platform uno, uno embedded.'
+description:
+  'Builds cross-platform Uno Platform apps. Project setup, target configuration, Extensions ecosystem, MVUX patterns,
+  Toolkit controls, theming, MCP integration. Triggers on: uno platform, uno app, uno wasm, uno mobile, uno desktop, uno
+  extensions, mvux, uno toolkit, uno themes, cross-platform uno, uno embedded.'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-uno-specialist
+  short-description: '.NET specialist subagent for dotnet-uno-specialist'
 ---
 
 # dotnet-uno-specialist
@@ -57,22 +60,22 @@ Always load these skills before analysis:
    and debugging workflows for each active target.
 
 1. **Recommend patterns** -- Based on detected context:
-    - From [skill:dotnet-uno-platform]: recommend Extensions ecosystem configuration (Navigation, DI, Config, HTTP,
-      Auth), MVUX reactive patterns (feeds, states, commands), Toolkit controls, and Theme resources
-      (Material/Cupertino/Fluent).
-    - From [skill:dotnet-uno-targets]: provide per-target deployment guidance, platform-specific gotchas, and
-      AOT/trimming implications. Highlight behavior differences across targets (e.g., WASM vs native navigation, auth
-      flow differences, debugging tool availability).
-    - From [skill:dotnet-uno-mcp]: when Uno MCP server tools are available (prefixed `mcp__uno__`), use the
-      search-then-fetch workflow for live documentation. When unavailable, reference static skill content and official
-      docs URLs.
+   - From [skill:dotnet-uno-platform]: recommend Extensions ecosystem configuration (Navigation, DI, Config, HTTP,
+     Auth), MVUX reactive patterns (feeds, states, commands), Toolkit controls, and Theme resources
+     (Material/Cupertino/Fluent).
+   - From [skill:dotnet-uno-targets]: provide per-target deployment guidance, platform-specific gotchas, and
+     AOT/trimming implications. Highlight behavior differences across targets (e.g., WASM vs native navigation, auth
+     flow differences, debugging tool availability).
+   - From [skill:dotnet-uno-mcp]: when Uno MCP server tools are available (prefixed `mcp__uno__`), use the
+     search-then-fetch workflow for live documentation. When unavailable, reference static skill content and official
+     docs URLs.
 
 1. **Delegate** -- For concerns outside Uno Platform core, delegate to specialist skills:
-    - [skill:dotnet-uno-testing] for Playwright WASM testing and platform-specific test patterns
-    - [skill:dotnet-aot-wasm] for general AOT/trimming patterns (soft dependency -- skill may not exist yet)
-    - [skill:dotnet-ui-chooser] for framework selection decision tree when user is evaluating alternatives (soft
-      dependency -- skill may not exist yet)
-    - [skill:dotnet-serialization] for serialization patterns beyond Uno Extensions.Serialization configuration
+   - [skill:dotnet-uno-testing] for Playwright WASM testing and platform-specific test patterns
+   - [skill:dotnet-aot-wasm] for general AOT/trimming patterns (soft dependency -- skill may not exist yet)
+   - [skill:dotnet-ui-chooser] for framework selection decision tree when user is evaluating alternatives (soft
+     dependency -- skill may not exist yet)
+   - [skill:dotnet-serialization] for serialization patterns beyond Uno Extensions.Serialization configuration
 
 ## Decision Tree
 

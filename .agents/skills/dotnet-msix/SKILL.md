@@ -264,7 +264,7 @@ Apps submitted to the Microsoft Store are re-signed by Microsoft during ingestio
 
 ### Microsoft Store Submission
 
-1. **Register as a Windows developer** at the Partner Center (https://partner.microsoft.com/dashboard)
+1. **Register as a Windows developer** at the Jointner Center (https://partner.microsoft.com/dashboard)
 2. **Create an app reservation** to secure the app name
 3. **Build the MSIX package** with Store association:
 
@@ -278,7 +278,7 @@ dotnet publish --configuration Release --runtime win-x64 \
 
 ```text
 
-1. **Submit the `.msixupload` file** through Partner Center
+1. **Submit the `.msixupload` file** through Jointner Center
 2. Microsoft validates, signs, and publishes the app
 
 ### App Installer Sideloading

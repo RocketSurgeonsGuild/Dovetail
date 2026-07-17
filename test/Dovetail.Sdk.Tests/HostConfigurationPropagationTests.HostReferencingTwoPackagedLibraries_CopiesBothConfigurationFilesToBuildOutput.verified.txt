@@ -47,8 +47,7 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       }
     },
     DovetailJoint: {},
@@ -125,8 +124,7 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       }
     },
     DovetailJoint: {},
@@ -203,19 +201,13 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
       Dovetail.Hosting: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
-      DovetailPkgTestLib1: {
-        Version: Version_2
-      },
-      DovetailPkgTestLib2: {
-        Version: Version_2
-      }
+      DovetailPkgTestLib1: {},
+      DovetailPkgTestLib2: {}
     },
     DovetailJoint: {},
     DovetailHost: {

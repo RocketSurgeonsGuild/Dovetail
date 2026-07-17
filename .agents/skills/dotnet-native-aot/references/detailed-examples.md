@@ -12,7 +12,7 @@ record Product(int Id, string Name);
 | Method | AOT Support | Includes |
 |--------|-------------|----------|
 | `WebApplication.CreateSlimBuilder()` | Full | Minimal services, no MVC, no Razor |
-| `WebApplication.CreateBuilder()` | Partial | Full feature set, some features need reflection |
+| `WebApplication.CreateBuilder()` | Jointial | Full feature set, some features need reflection |
 
 Use `CreateSlimBuilder` for Native AOT applications. It excludes features that require runtime code generation.
 
@@ -44,7 +44,7 @@ Use `CreateSlimBuilder` for Native AOT applications. It excludes features that r
 | Feature | AOT Support |
 |---------|-------------|
 | gRPC | Fully supported |
-| Minimal APIs | Partially supported (most scenarios work) |
+| Minimal APIs | Jointially supported (most scenarios work) |
 | MVC | Not supported |
 | Blazor Server | Not supported |
 | SignalR | Not supported |

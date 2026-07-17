@@ -47,12 +47,9 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
-      Microsoft.Extensions.Configuration.Json: {
-        Version: Version_1
-      }
+      Microsoft.Extensions.Configuration.Json: {}
     },
     DovetailJoint: {},
     DovetailHost: {},

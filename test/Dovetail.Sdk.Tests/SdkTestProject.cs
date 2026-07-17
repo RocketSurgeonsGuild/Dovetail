@@ -61,6 +61,7 @@ public sealed class SdkTestProject : IDisposable
         }
 
         _settings = new VerifySettings();
+        _settings.ScrubMember<PackageVerificationResult>(z => z.Version);
         // MSBuild resolves the entry project's own full path via the process's current directory,
         // which macOS reports through the /var,/tmp -> /private/var,/private/tmp symlink. Verify's
         // built-in TempPath scrubber only matches the unresolved Path.GetTempPath() form, so every
@@ -73,7 +74,7 @@ public sealed class SdkTestProject : IDisposable
         // to a specific installed .NET SDK version - global.json's rollForward: latestMajor lets it float to
         // whatever's newest on the machine (e.g. a preview SDK), which would otherwise make the snapshot differ
         // across dev machines/CI runners with a different set of installed SDKs.
-        _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @"/sdk/\d+\.\d+\.\d+[^/]*/", "/sdk/{dotnet-sdk-version}/"));
+        _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @".*/sdk/\d+\.\d+\.\d+[^/]*/", "/sdk/{dotnet-sdk-version}/"));
 
         var currentGlobalJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(Config.RootDirectory, "global.json")));
         var version = currentGlobalJson.RootElement.GetProperty("sdk").GetProperty("version").GetString();
@@ -291,7 +292,9 @@ public sealed class SdkTestProject : IDisposable
         var publishDirectory = System.IO.Directory.Exists(binDirectory)
             ? System.IO.Directory.EnumerateDirectories(binDirectory, "publish", SearchOption.AllDirectories).SingleOrDefault()
             : null;
-        var publishFiles = publishDirectory is null ? [] : ListConfigurationFiles(publishDirectory);
+        var publishFiles = ( publishDirectory is null ? [] : ListConfigurationFiles(publishDirectory) )
+        .OrderBy(z => z)
+        .ToHashSet();
 
         await Verify(publishFiles, settings: _settings);
     }

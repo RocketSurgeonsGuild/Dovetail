@@ -1,29 +1,32 @@
 ---
 name: dotnet-async-performance-specialist
-description: Analyzes async/await performance, ValueTask correctness, ConfigureAwait decisions, IO.Pipelines, ThreadPool tuning, and Channel selection in .NET code. Routes profiling interpretation to [subagent:dotnet-performance-analyst], thread sync bugs to [subagent:dotnet-csharp-concurrency-specialist].
+description:
+  'Analyzes async/await performance, ValueTask correctness, ConfigureAwait decisions, IO.Pipelines, ThreadPool tuning,
+  and Channel selection in .NET code. Routes profiling interpretation to [subagent:dotnet-performance-analyst],
+  thread sync bugs to [subagent:dotnet-csharp-concurrency-specialist].'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-async-performance-specialist
+  short-description: '.NET specialist subagent for dotnet-async-performance-specialist'
 ---
 
 # dotnet-async-performance-specialist

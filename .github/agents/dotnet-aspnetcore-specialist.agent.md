@@ -1,29 +1,32 @@
 ---
 name: dotnet-aspnetcore-specialist
-description: Analyzes ASP.NET Core middleware, request pipelines, minimal API design, DI lifetime selection, and diagnostic scenarios. Routes Blazor to [subagent:dotnet-blazor-specialist], security to [subagent:dotnet-security-reviewer], async internals to [subagent:dotnet-async-performance-specialist].
+description:
+  'Analyzes ASP.NET Core middleware, request pipelines, minimal API design, DI lifetime selection, and diagnostic
+  scenarios. Routes Blazor to [subagent:dotnet-blazor-specialist], security to [subagent:dotnet-security-reviewer],
+  async internals to [subagent:dotnet-async-performance-specialist].'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-aspnetcore-specialist
+  short-description: '.NET specialist subagent for dotnet-aspnetcore-specialist'
 ---
 
 # dotnet-aspnetcore-specialist

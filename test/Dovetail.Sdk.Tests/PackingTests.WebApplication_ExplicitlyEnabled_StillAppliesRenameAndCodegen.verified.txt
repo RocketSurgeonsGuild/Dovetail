@@ -48,15 +48,11 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
-      Dovetail.Configuration.Yaml: {
-        Version: Version_0
-      },
+      Dovetail.Configuration.Yaml: {},
       Dovetail.Hosting.Web: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       }
     },
     DovetailJoint: {},

@@ -54,22 +54,23 @@ internal record DovetailConfigurationData(string Property, string Namespace, str
         var namespaceComparison = string.Compare(Namespace, other.Namespace, StringComparison.Ordinal);
         if (namespaceComparison != 0) return namespaceComparison;
         var classNameComparison = string.Compare(ClassName, other.ClassName, StringComparison.Ordinal);
-        return  classNameComparison != 0  ? classNameComparison :  string.Compare(MethodName, other.MethodName, StringComparison.Ordinal);
+        return classNameComparison != 0 ? classNameComparison : string.Compare(MethodName, other.MethodName, StringComparison.Ordinal);
     }
 
     public int CompareTo(object? obj)
     {
-        if (obj is null) return 1;
-        return  ReferenceEquals(this, obj) 
-            ?  0 
-            :  obj is DovetailConfigurationData other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(DovetailConfigurationData)}");
+        return obj is null
+            ? 1
+            : ReferenceEquals(this, obj)
+            ? 0
+            : obj is DovetailConfigurationData other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(DovetailConfigurationData)}");
     }
 
-    public static bool operator <(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left, right) < 0;
+    public static bool operator <(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left!, right!) < 0;
 
-    public static bool operator >(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left, right) > 0;
+    public static bool operator >(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left!, right!) > 0;
 
-    public static bool operator <=(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left, right) <= 0;
+    public static bool operator <=(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left!, right!) <= 0;
 
-    public static bool operator >=(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left, right) >= 0;
+    public static bool operator >=(DovetailConfigurationData? left, DovetailConfigurationData? right) => Comparer<DovetailConfigurationData>.Default.Compare(left!, right!) >= 0;
 }

@@ -230,7 +230,7 @@ These analyzers flag:
 
 ---
 
-## Third-Party Analyzers
+## Third-Jointy Analyzers
 
 Add via `Directory.Build.targets` so they apply to all projects:
 

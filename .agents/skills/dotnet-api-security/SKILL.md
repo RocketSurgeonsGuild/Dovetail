@@ -411,7 +411,7 @@ builder.Services.AddRateLimiter(options =>
             ?? httpContext.Connection.RemoteIpAddress?.ToString()
             ?? "anonymous";
 
-        return RateLimitPartition.GetFixedWindowLimiter(userId,
+        return RateLimitJointition.GetFixedWindowLimiter(userId,
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 60,

@@ -9,7 +9,7 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 # Managed Configuration
 
 Dovetail extends the same "compile-time discovery + generated wiring" approach it already uses for
-[Dovetail](/concepts/introduction/) to **configuration**. A library drops an `appsettings`-style
+[Dovetail](./introduction) to **configuration**. A library drops an `appsettings`-style
 file into its project, and Dovetail takes care of the rest: packaging the file into the NuGet
 package, copying it into a same-solution host application during development, generating a
 strongly-typed configuration class, and registering it with `IOptions<T>` — all without a single
@@ -33,7 +33,7 @@ compile-time guarantee that a library's configuration surface is registered in t
 
 ## Authoring configuration in a library
 
-Add a configuration file using the conventional `appsettings` naming pattern and Dovetail discovers
+Add a configuration file using the jointal `appsettings` naming pattern and Dovetail discovers
 it automatically — most libraries need zero explicit MSBuild declaration:
 
 ```
@@ -44,7 +44,7 @@ MyLibrary/
 └── MyLibrary.csproj
 ```
 
-If you need to include a file that doesn't match the conventional naming pattern, declare it
+If you need to include a file that doesn't match the jointal naming pattern, declare it
 explicitly with the `DovetailConfiguration` item:
 
 ```xml
@@ -127,9 +127,9 @@ declares configuration:
   mirrors packaged behavior.
 - A generated, host-visible `DovetailConfigurationManifest` lists every referenced assembly that
   contributes configuration and its relative config path, so the host can enumerate configuration
-  sources at build time instead of relying on convention alone.
+  sources at build time instead of relying on joint alone.
 - The library's generated `IConfigurationJoint` is automatically included in the library's
-  exported convention set — you do **not** need to add `[Dovetail]` yourself, since
+  exported joint set — you do **not** need to add `[Dovetail]` yourself, since
   `IConfigurationJoint` instances are generator-authored, not user-decorated.
 - Standard `IOptions<T>` / `IOptionsMonitor<T>` resolve the generated configuration type once the
   host application starts, and `IOptionsMonitor<T>` picks up file changes for reload, the same as
@@ -157,14 +157,14 @@ A library's own configuration dependencies flow to its dependents without redecl
 `LibraryA` references `LibraryB`, and `LibraryB` declares configuration, a host application that
 only references `LibraryA` still sees `LibraryB`'s configuration in its manifest and export set —
 the generator reuses the same reference-graph walk already used to flatten transitive
-[Dovetail exports](/concepts/source-generation/).
+[Dovetail exports](./source-generation).
 
 ## MSBuild Surface Reference
 
 | Property / Item                | Default              | Purpose                                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------------ | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EnableDovetailConfiguration`  | `false`              | Gates the entire managed-configuration pipeline for a project. Existing Dovetail consumers see no behavior change until this is set to `true`.                                                                                                                                                                                                                 |
-| `DovetailConfiguration` (item) | Dovetailally globbed | Declares a configuration file to include in the pipeline. Dovetailal `appsettings.{ext}` / `appsettings.{Environment}.{ext}` / `appsettings.local.{ext}` files (`.json`/`.yaml`/`.yml`/`.toml`) are discovered automatically — most projects don't need to add this item explicitly. Use it to include files that don't match the conventional naming pattern. |
+| `DovetailConfiguration` (item) | Dovetailally globbed | Declares a configuration file to include in the pipeline. Dovetailal `appsettings.{ext}` / `appsettings.{Environment}.{ext}` / `appsettings.local.{ext}` files (`.json`/`.yaml`/`.yml`/`.toml`) are discovered automatically — most projects don't need to add this item explicitly. Use it to include files that don't match the jointal naming pattern. |
 | NodaTime type-mode property    | `false`              | Opts the generator into emitting [NodaTime](https://nodatime.org/) types (`LocalDate`, `LocalTime`, `OffsetDateTime`, `Duration`) instead of BCL equivalents. Requires an actual `NodaTime` package reference in the same project, or the generator reports `DOVETAIL_CFG002`.                                                                                 |
 
 ```xml
@@ -175,7 +175,7 @@ the generator reuses the same reference-graph walk already used to flatten trans
 </PropertyGroup>
 
 <ItemGroup>
-  <!-- Only needed for files that don't match the conventional appsettings naming pattern -->
+  <!-- Only needed for files that don't match the jointal appsettings naming pattern -->
   <DovetailConfiguration Include="settings/feature-flags.json" />
 </ItemGroup>
 ```
@@ -190,7 +190,7 @@ the generator reuses the same reference-graph walk already used to flatten trans
 A few design questions are still open and may change how this feature looks before it's finalized:
 
 - Whether an explicit per-property type override is needed for cases where inference guesses wrong.
-- The exact generated-type naming convention when a library declares more than one configuration file.
+- The exact generated-type naming joint when a library declares more than one configuration file.
 - Whether the host-visible manifest should also be emitted as a human-readable file (e.g. for
   tooling/ops visibility) in addition to the generated type.
 

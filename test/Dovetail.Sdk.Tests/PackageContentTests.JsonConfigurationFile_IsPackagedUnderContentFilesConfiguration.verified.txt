@@ -48,8 +48,7 @@
       AdditionalFiles: [],
       PackageReference: {
         Dovetail: {
-          IsImplicitlyDefined: true,
-          Version: Version_0
+          IsImplicitlyDefined: true
         }
       },
       DovetailJoint: {},
@@ -81,7 +80,7 @@
   Packages: [
     {
       PackageId: lib,
-      Version: 1.0.0,
+      Version: {Scrubbed},
       Files: [
         contentFiles/any/any/configuration/lib.json,
         lib.nuspec,

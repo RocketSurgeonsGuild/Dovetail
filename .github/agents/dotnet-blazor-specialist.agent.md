@@ -1,29 +1,32 @@
 ---
 name: dotnet-blazor-specialist
-description: 'Guides Blazor development across all hosting models (Server, WASM, Hybrid, Auto). Component design, state management, authentication, and render mode selection. Triggers on: blazor component, render mode, blazor auth, editform, blazor state.'
+description:
+  'Guides Blazor development across all hosting models (Server, WASM, Hybrid, Auto). Component design, state management,
+  authentication, and render mode selection. Triggers on: blazor component, render mode, blazor auth, editform, blazor
+  state.'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-blazor-specialist
+  short-description: '.NET specialist subagent for dotnet-blazor-specialist'
 ---
 
 # dotnet-blazor-specialist
@@ -59,10 +62,10 @@ Always load these skills before analysis:
    configuration from [skill:dotnet-blazor-auth]. Provide version-specific guidance based on detected TFM.
 
 1. **Delegate** -- For concerns outside Blazor core, delegate to specialist skills:
-    - [skill:dotnet-blazor-testing] for bUnit component testing
-    - [skill:dotnet-playwright] for browser-based E2E testing
-    - [skill:dotnet-api-security] for API-level auth (JWT, OAuth/OIDC, passkeys)
-    - [skill:dotnet-realtime-communication] for standalone SignalR patterns (hub design, scaling, backplanes)
+   - [skill:dotnet-blazor-testing] for bUnit component testing
+   - [skill:dotnet-playwright] for browser-based E2E testing
+   - [skill:dotnet-api-security] for API-level auth (JWT, OAuth/OIDC, passkeys)
+   - [skill:dotnet-realtime-communication] for standalone SignalR patterns (hub design, scaling, backplanes)
 
 ## Decision Tree
 

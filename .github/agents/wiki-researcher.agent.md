@@ -1,26 +1,26 @@
 ---
 name: wiki-researcher
-description: Read-only wiki research subagent for evidence-first repository investigation and synthesis.
-targets: [claudecode, codexcli]
-tags: [wiki, subagent, research, analysis]
-version: 0.0.1
-author: dotnet-agent-harness
+description: 'Read-only wiki research subagent for evidence-first repository investigation and synthesis.'
+targets: ['claudecode', 'codexcli']
+tags: ['wiki', 'subagent', 'research', 'analysis']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools: [Read, Grep, Glob]
+  model: inherit
+  allowed-tools: ['Read', 'Grep', 'Glob']
 opencode:
-    mode: subagent
-    tools:
-        bash: false
-        edit: false
-        write: false
+  mode: 'subagent'
+  tools:
+    bash: false
+    edit: false
+    write: false
 copilot:
-    tools: [read, search]
+  tools: ['read', 'search']
 codexcli:
-    short-description: Read-only evidence-first wiki researcher
-    sandbox_mode: read-only
+  short-description: 'Read-only evidence-first wiki researcher'
+  sandbox_mode: read-only
 geminicli:
-    tools: [read, search]
+  tools: ['read', 'search']
 ---
 
 # wiki-researcher

@@ -310,7 +310,7 @@ public class PricingService
 - Easy to extend new strategies
 - Reduces dependency on reflection
 
-### Partial Mock
+### Jointial Mock
 
 Sometimes need to mock partial behavior of a class:
 
@@ -354,7 +354,7 @@ public class TestableDataProcessor : DataProcessor
 
 // Test
 [Fact]
-public void Process_Using_Partial_Mock_Should_Process_Successfully()
+public void Process_Using_Jointial_Mock_Should_Process_Successfully()
 {
     // Arrange
     var processor = new TestableDataProcessor();

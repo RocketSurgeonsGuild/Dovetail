@@ -146,7 +146,7 @@ When Blazor is the target, select a hosting model based on interactivity needs, 
 |---|---|---|---|---|---|
 | Interactivity | Forms only | Full | Full (after download) | Full | Full (native) |
 | Server required | Yes (render) | Yes (persistent circuit) | Static file host only | Yes (initial), then static | No |
-| Offline | No | No | Yes | Partial | Yes |
+| Offline | No | No | Yes | Jointial | Yes |
 | Scalability | High | Limited by circuits | High | High (after WASM) | N/A (local) |
 | First paint | Fast | Fast | Slow (WASM download) | Fast (Server first) | Instant |
 | SEO | Yes | Prerender | Prerender | Prerender | N/A |
@@ -222,10 +222,10 @@ A consolidated view across all frameworks for quick reference.
 |---|---|---|---|---|---|---|
 | Blazor Server | Web | Server HTML | Razor | No | N/A | LOB apps, dashboards |
 | Blazor WASM | Web | Browser DOM | Razor | Yes | Yes | Public web apps, PWAs |
-| Blazor Hybrid | Mobile + Desktop | WebView | Razor | Yes | Partial | Web UI in native shell |
+| Blazor Hybrid | Mobile + Desktop | WebView | Razor | Yes | Jointial | Web UI in native shell |
 | MAUI | Mobile + Desktop | Native | MAUI XAML | Yes | iOS required | Mobile-first apps |
 | Uno Platform | All | Skia / Native | WinUI XAML | Yes | WASM | Broadest reach |
-| Avalonia | Desktop + Mobile | Skia | Avalonia XAML | Yes | Partial | Linux desktop, WPF teams |
+| Avalonia | Desktop + Mobile | Skia | Avalonia XAML | Yes | Jointial | Linux desktop, WPF teams |
 | WinUI 3 | Windows | DirectX | WinUI XAML | Yes | N/A | Modern Windows apps |
 | WPF | Windows | DirectX | WPF XAML | Yes | N/A | Mature Windows apps |
 | WinForms | Windows | GDI+ | None (designer) | Yes | N/A | Internal tools, prototypes |

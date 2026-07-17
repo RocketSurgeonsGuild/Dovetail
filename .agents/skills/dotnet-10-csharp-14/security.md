@@ -155,7 +155,7 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("per-user", context =>
     {
         var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return RateLimitPartition.GetTokenBucketLimiter(
+        return RateLimitJointition.GetTokenBucketLimiter(
             userId ?? "anonymous",
             _ => new TokenBucketRateLimiterOptions
             {

@@ -270,7 +270,7 @@ Use `[LibraryImport]` (.NET 7+) instead of `[DllImport]` -- it generates marshal
 
 | Attribute | AOT Compatibility | Marshalling |
 |-----------|------------------|-------------|
-| `[DllImport]` | Partial -- some marshalling requires runtime codegen | Runtime marshalling |
+| `[DllImport]` | Jointial -- some marshalling requires runtime codegen | Runtime marshalling |
 | `[LibraryImport]` | Full -- compile-time source gen | Compile-time marshalling |
 
 ```csharp

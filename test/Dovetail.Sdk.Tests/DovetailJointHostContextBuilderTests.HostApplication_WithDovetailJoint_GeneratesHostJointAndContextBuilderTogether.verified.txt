@@ -47,16 +47,12 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
       Dovetail.Hosting: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
-      Microsoft.Extensions.Logging: {
-        Version: Version_1
-      }
+      Microsoft.Extensions.Logging: {}
     },
     DovetailJoint: {
       CustomLogging: {

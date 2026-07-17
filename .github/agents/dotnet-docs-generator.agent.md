@@ -1,29 +1,32 @@
 ---
 name: dotnet-docs-generator
-description: 'Generates documentation for .NET projects. Analyzes project structure, recommends doc tooling, generates Mermaid architecture diagrams, writes XML doc comment skeletons, and scaffolds GitHub-native docs. Triggers on: generate docs, add documentation, create README, document this project, add XML docs, generate architecture diagram.'
+description:
+  'Generates documentation for .NET projects. Analyzes project structure, recommends doc tooling, generates Mermaid
+  architecture diagrams, writes XML doc comment skeletons, and scaffolds GitHub-native docs. Triggers on: generate docs,
+  add documentation, create README, document this project, add XML docs, generate architecture diagram.'
 targets: ['*']
-tags: [dotnet, subagent]
-version: 0.0.1
-author: dotnet-agent-harness
+tags: ['dotnet', 'subagent']
+version: '0.0.1'
+author: 'dotnet-agent-harness'
 claudecode:
-    model: inherit
-    allowed-tools:
-        - Read
-        - Grep
-        - Glob
-        - Bash
-        - Write
-        - Edit
+  model: inherit
+  allowed-tools:
+    - Read
+    - Grep
+    - Glob
+    - Bash
+    - Write
+    - Edit
 opencode:
-    mode: subagent
-    tools:
-        bash: true
-        edit: true
-        write: true
+  mode: 'subagent'
+  tools:
+    bash: true
+    edit: true
+    write: true
 copilot:
-    tools: [read, search, execute, edit]
+  tools: ['read', 'search', 'execute', 'edit']
 codexcli:
-    short-description: .NET specialist subagent for dotnet-docs-generator
+  short-description: '.NET specialist subagent for dotnet-docs-generator'
 ---
 
 # dotnet-docs-generator
@@ -59,12 +62,12 @@ Always load these skills before starting documentation work:
 
 1. **Generate Mermaid architecture diagrams** -- Using [skill:dotnet-mermaid-diagrams], create architecture diagrams
    that reflect the actual project structure:
-    - **Solution architecture** -- C4-style context and container diagrams showing project boundaries and external
-      dependencies.
-    - **Layer/service diagrams** -- Flowcharts showing request flow through middleware, services, and data access layers.
-    - **Domain model diagrams** -- Class diagrams for key domain entities detected in the codebase.
-    - **Deployment diagrams** -- Container and infrastructure topology if deployment artifacts are detected (Dockerfile,
-      Kubernetes manifests, Bicep/ARM templates).
+   - **Solution architecture** -- C4-style context and container diagrams showing project boundaries and external
+     dependencies.
+   - **Layer/service diagrams** -- Flowcharts showing request flow through middleware, services, and data access layers.
+   - **Domain model diagrams** -- Class diagrams for key domain entities detected in the codebase.
+   - **Deployment diagrams** -- Container and infrastructure topology if deployment artifacts are detected (Dockerfile,
+     Kubernetes manifests, Bicep/ARM templates).
 
 1. **Write XML doc comment skeletons for public APIs** -- Using [skill:dotnet-xml-docs], scan public types and members
    that lack XML documentation comments. Generate skeleton doc comments with `<summary>`, `<param>`, `<returns>`,
@@ -73,12 +76,12 @@ Always load these skills before starting documentation work:
 
 1. **Scaffold GitHub-native docs** -- Using [skill:dotnet-documentation-strategy] and [skill:dotnet-mermaid-diagrams]
    for content:
-    - **README.md** -- Project title, description, badges (NuGet, CI status, license), getting started guide,
-      architecture overview with embedded Mermaid diagram, contributing link.
-    - **CONTRIBUTING.md** -- Development setup, coding standards reference, PR process, issue triage labels.
-    - **Issue templates** -- Bug report and feature request templates with .NET-specific fields (target framework,
-      runtime version, OS).
-    - **PR template** -- Checklist covering tests, documentation updates, breaking changes.
+   - **README.md** -- Project title, description, badges (NuGet, CI status, license), getting started guide,
+     architecture overview with embedded Mermaid diagram, contributing link.
+   - **CONTRIBUTING.md** -- Development setup, coding standards reference, PR process, issue triage labels.
+   - **Issue templates** -- Bug report and feature request templates with .NET-specific fields (target framework,
+     runtime version, OS).
+   - **PR template** -- Checklist covering tests, documentation updates, breaking changes.
 
 ## Decision Tree
 
