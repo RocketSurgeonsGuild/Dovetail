@@ -75,20 +75,11 @@ internal static class Config
                          .OrderBy(z => z.Key)
                     )
             {
-                writer.WritePropertyName(property.Key);
                 if (property.Key.StartsWith("RsgSdk_") && property.Key.EndsWith("_Version"))
                 {
-                    if (_namedVersions.TryGetValue(property.Value, out _, out var index))
-                    {
-                        writer.WriteValue($"Version_{index}");
-                    }
-                    else
-                    {
-                        _namedVersions.TryAdd(property.Value, property.Value, out index);
-                        writer.WriteValue($"Version_{index}");
-                    }
                     continue;
                 }
+                writer.WritePropertyName(property.Key);
                 writer.WriteValue(property.Value);
             }
 
@@ -141,21 +132,12 @@ internal static class Config
                         continue;
                     }
 
-                    writer.WritePropertyName(value.Name);
                     if (value.Name == "Version")
                     {
-                        if (_namedVersions.TryGetValue(value.Value, out _, out var index))
-                        {
-                            writer.WriteValue($"Version_{index}");
-                        }
-                        else
-                        {
-                            _namedVersions.TryAdd(value.Value, $"Version_{_namedVersions.Count + 1}", out index);
-                            writer.WriteValue($"Version_{index}");
-                        }
                         continue;
                     }
 
+                    writer.WritePropertyName(value.Name);
                     writer.WriteValue(value.Value);
                 }
 
