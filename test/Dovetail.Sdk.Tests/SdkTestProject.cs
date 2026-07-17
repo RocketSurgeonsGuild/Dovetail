@@ -61,6 +61,7 @@ public sealed class SdkTestProject : IDisposable
         }
 
         _settings = new VerifySettings();
+        _settings.ScrubMember<PackageVerificationResult>(z => z.Version);
         // MSBuild resolves the entry project's own full path via the process's current directory,
         // which macOS reports through the /var,/tmp -> /private/var,/private/tmp symlink. Verify's
         // built-in TempPath scrubber only matches the unresolved Path.GetTempPath() form, so every
