@@ -45,8 +45,6 @@ internal static class Config
 
     public static string TUnitVersion => field ??= typeof(TestAttribute).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
 
-    private static readonly OrderedDictionary<string, string> _namedVersions = [];
-
     private class ProjectEvaluationSerializer : WriteOnlyJsonConverter<ProjectEvaluationResult>
     {
         private static readonly IReadOnlyCollection<string> PropertiesToWrite =
@@ -210,26 +208,12 @@ internal static class Config
                     // /var,/tmp -> /private/var,/private/tmp symlink makes that comparison behave
                     // differently than on Linux, so the same evaluation yields Link on one platform
                     // and not the other. Not meaningful test signal - skip it.
-                    if (value.Name == "Link")
+                    if (value.Name is "Link" or "Version")
                     {
                         continue;
                     }
 
                     writer.WritePropertyName(value.Name);
-                    if (value.Name == "Version")
-                    {
-                        if (_namedVersions.TryGetValue(value.Value, out _, out var index))
-                        {
-                            writer.WriteValue($"Version_{index}");
-                        }
-                        else
-                        {
-                            _namedVersions.TryAdd(value.Value, $"Version_{_namedVersions.Count + 1}", out index);
-                            writer.WriteValue($"Version_{index}");
-                        }
-                        continue;
-                    }
-
                     writer.WriteValue(value.Value);
                 }
 

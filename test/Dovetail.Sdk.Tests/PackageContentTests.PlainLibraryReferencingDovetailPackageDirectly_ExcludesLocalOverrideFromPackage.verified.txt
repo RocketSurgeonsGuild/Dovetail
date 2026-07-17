@@ -21,9 +21,7 @@
       },
       AdditionalFiles: [],
       PackageReference: {
-        Dovetail: {
-          Version: Version_0
-        }
+        Dovetail: {}
       },
       DovetailJoint: {},
       DovetailHost: {},

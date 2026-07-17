@@ -47,12 +47,9 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
-      Dovetail.Configuration.Toml: {
-        Version: Version_0
-      }
+      Dovetail.Configuration.Toml: {}
     },
     DovetailJoint: {},
     DovetailHost: {},

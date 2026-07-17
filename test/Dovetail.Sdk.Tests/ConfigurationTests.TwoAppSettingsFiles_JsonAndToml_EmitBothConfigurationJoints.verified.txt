@@ -47,15 +47,10 @@
     AdditionalFiles: [],
     PackageReference: {
       Dovetail: {
-        IsImplicitlyDefined: true,
-        Version: Version_0
+        IsImplicitlyDefined: true
       },
-      Dovetail.Configuration.Toml: {
-        Version: Version_0
-      },
-      Microsoft.Extensions.Configuration.Json: {
-        Version: Version_1
-      }
+      Dovetail.Configuration.Toml: {},
+      Microsoft.Extensions.Configuration.Json: {}
     },
     DovetailJoint: {},
     DovetailHost: {},

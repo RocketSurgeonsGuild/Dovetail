@@ -48,8 +48,7 @@
       AdditionalFiles: [],
       PackageReference: {
         Dovetail: {
-          IsImplicitlyDefined: true,
-          Version: Version_0
+          IsImplicitlyDefined: true
         }
       },
       DovetailJoint: {},
