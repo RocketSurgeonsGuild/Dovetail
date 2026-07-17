@@ -221,7 +221,7 @@ public sealed class SdkTestProject : IDisposable
             )
            .OrderBy(f => f, StringComparer.Ordinal)
            .ToArray();
-        return new(identity.Id, "{version}", files);
+        return new(identity.Id, identity.Version.ToNormalizedString(), files);
     }
 
     private async Task<ProjectEvaluationResult> BuildAndEvaluate(string relativePath, string command)
@@ -291,7 +291,9 @@ public sealed class SdkTestProject : IDisposable
         var publishDirectory = System.IO.Directory.Exists(binDirectory)
             ? System.IO.Directory.EnumerateDirectories(binDirectory, "publish", SearchOption.AllDirectories).SingleOrDefault()
             : null;
-        var publishFiles = publishDirectory is null ? [] : ListConfigurationFiles(publishDirectory);
+        var publishFiles = ( publishDirectory is null ? [] : ListConfigurationFiles(publishDirectory) )
+        .OrderBy(z => z)
+        .ToHashSet();
 
         await Verify(publishFiles, settings: _settings);
     }

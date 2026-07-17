@@ -81,7 +81,7 @@
   Packages: [
     {
       PackageId: lib,
-      Version: {version},
+      Version: {sdk-version},
       Files: [
         contentFiles/any/any/configuration/lib.toml,
         lib.nuspec,

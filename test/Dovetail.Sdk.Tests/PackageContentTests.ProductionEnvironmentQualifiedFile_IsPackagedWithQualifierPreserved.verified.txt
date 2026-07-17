@@ -82,7 +82,7 @@
   Packages: [
     {
       PackageId: lib,
-      Version: {version},
+      Version: {sdk-version},
       Files: [
         contentFiles/any/any/configuration/lib.Production.yaml,
         contentFiles/any/any/configuration/lib.yaml,
