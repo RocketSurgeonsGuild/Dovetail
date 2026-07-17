@@ -19,7 +19,6 @@
         <PackageReference Include="FakeItEasy" />
         <PackageReference Include="Shouldly" />
         <PackageReference Include="NodaTime" />
-        <PackageReference Include="Indago" />
         <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
         <ProjectReference Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Aspire.Testing\Dovetail.Aspire.Testing.csproj" />
