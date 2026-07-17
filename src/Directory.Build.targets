@@ -17,7 +17,7 @@
       PrivateAssets="contentfiles;build;buildMultitargeting;buildTransitive"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
-      Condition="'$(MSBuildProjectName)' != 'Dovetail' and '$(MSBuildProjectName)' != 'Dovetail.Analyzers' and '$(MSBuildProjectName)' != 'Dovetail.Analyzers.roslyn5.0' and '$(MSBuildProjectName)' != 'Dovetail.Sdk'"
+      Condition="'$(MSBuildProjectName)' != 'Dovetail' and '$(MSBuildProjectName)' != 'Dovetail.Sdk' and !$(MSBuildProjectName.StartsWith('Dovetail.Analyzers'))"
     />
   </ItemGroup>
 </Project>

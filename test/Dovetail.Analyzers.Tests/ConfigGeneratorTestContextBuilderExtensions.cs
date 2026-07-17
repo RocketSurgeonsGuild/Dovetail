@@ -35,7 +35,7 @@ internal static class ConfigGeneratorTestContextBuilderExtensions
 
     public static GeneratorTestContextBuilder AddConfigCommonGenerators(this GeneratorTestContextBuilder builder)
     {
-        foreach (var generator in GetAllGenerators(typeof(ConfigGeneratorTestContextBuilderExtensions).Assembly.GetIndagoProvider()))
+        foreach (var generator in GetAllGenerators(SpecularProvider.Instance))
         {
             builder = builder.WithGenerator(generator);
         }
@@ -43,7 +43,7 @@ internal static class ConfigGeneratorTestContextBuilderExtensions
         return builder;
     }
 
-    private static IEnumerable<Type> GetAllGenerators(IIndagoProvider provider) => provider.GetTypes(s => s
+    private static IEnumerable<Type> GetAllGenerators(ISpecularProvider provider) => provider.GetTypes(s => s
                                                                                               .FromAssemblyOf<DovetailAttributesGenerator>()
                                                                                               .GetTypes(f => f.WithAttribute<GeneratorAttribute>().AssignableTo<IIncrementalGenerator>())
         );

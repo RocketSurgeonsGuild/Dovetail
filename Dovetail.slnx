@@ -26,7 +26,6 @@
     <File Path="Directory.Build.props" />
     <File Path="Directory.Build.targets" />
     <File Path="Directory.Packages.props" />
-    <File Path="Directory.Packages.support.props" />
     <File Path="dotnet-tools.json" />
     <File Path="GitReleaseManager.yaml" />
     <File Path="GitVersion.yml" />
@@ -95,6 +94,7 @@
   </Folder>
   <Folder Name="/src/Dovetail.Analyzers.supports/">
     <Project Path="src/Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.0.csproj" />
+    <Project Path="src/Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.3.csproj" />
   </Folder>
   <Folder Name="/test/">
     <File Path="test/.editorconfig" />
