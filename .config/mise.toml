@@ -21,7 +21,7 @@ biome = "2.5.2"
 "dotnet:docfx" = "2.78.5"
 "dotnet:hertzole.docfx2astro" = "1.4.1"
 tombi = "1.1.7"
-oxfmt = "0.57.0"
+oxfmt = "0.59.0"
 # dotnet
 
 [tasks]
