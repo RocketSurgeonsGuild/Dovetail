@@ -36,6 +36,11 @@ public sealed class DovetailContext : IDovetailContext
     public ImmutableList<IDovetailJoint> Joints { get; }
 
     /// <summary>
+    ///    The properties of the convention context
+    /// </summary>
+    public ImmutableList<IDovetailJointMetadata> Metadata { get; }
+
+    /// <summary>
     ///     The host type
     /// </summary>
     public DovetailHostType HostType => this.GetHostType();
@@ -43,12 +48,13 @@ public sealed class DovetailContext : IDovetailContext
 
     internal DovetailContext(
         DovetailHostType hostType,
-        IEnumerable<IDovetailJointMetadata> joints,
+        IEnumerable<IDovetailJointMetadata> jointsMetadata,
         IDovetailDictionary properties,
         IEnumerable<DovetailCategory> categories)
     {
         Categories = categories.ToImmutableHashSet(DovetailCategory.ValueComparer);
-        Joints = DovetailResolver.Resolve(hostType, Categories, joints);
+        Metadata = [.. jointsMetadata];
+        Joints = DovetailResolver.Resolve(hostType, Categories, Metadata);
         _properties = properties;
     }
 

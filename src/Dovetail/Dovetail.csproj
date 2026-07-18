@@ -41,6 +41,7 @@
     <None Include="buildTransitive/*.*" Pack="true" PackagePath="buildTransitive" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Dovetail.Mermaid" />
     <DovetailJoint Include="Setup" Namespace="Dovetail.Joints" />
     <DovetailJoint Include="Service" Namespace="Dovetail.Joints" ProvideServices="true" BuilderMethodName="ConfigureServices" />
     <DovetailJoint Include="Configuration" Namespace="Dovetail.Joints" ParameterType="global::Microsoft.Extensions.Configuration.IConfigurationBuilder" ParameterName="builder" />

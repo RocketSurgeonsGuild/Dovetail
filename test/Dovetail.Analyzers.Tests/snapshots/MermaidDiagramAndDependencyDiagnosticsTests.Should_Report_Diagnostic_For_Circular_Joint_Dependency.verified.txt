@@ -1,0 +1,69 @@
+﻿{
+  FinalDiagnostics: [
+    {
+      Id: DT0005,
+      Title: Circular joint dependency,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: Input0.cs: (13,19)-(13,20),
+      MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
+      Message: Joint 'B' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
+      Category: Dovetail
+    },
+    {
+      Id: DT0005,
+      Title: Circular joint dependency,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: Input0.cs: (9,19)-(9,20),
+      MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
+      Message: Joint 'A' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
+      Category: Dovetail
+    }
+  ],
+  GeneratorDiagnostics: {
+    Dovetail.DovetailAttributesGenerator: [
+      {
+        Id: DT0005,
+        Title: Circular joint dependency,
+        Severity: Error,
+        WarningLevel: 0,
+        Location: Input0.cs: (13,19)-(13,20),
+        MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
+        Message: Joint 'B' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
+        Category: Dovetail
+      },
+      {
+        Id: DT0005,
+        Title: Circular joint dependency,
+        Severity: Error,
+        WarningLevel: 0,
+        Location: Input0.cs: (9,19)-(9,20),
+        MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
+        Message: Joint 'A' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
+        Category: Dovetail
+      }
+    ]
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: 
+  },
+  References: [
+    Dovetail.dll,
+    FluentValidation.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Private.CoreLib.dll,
+    System.Runtime.dll
+  ]
+}

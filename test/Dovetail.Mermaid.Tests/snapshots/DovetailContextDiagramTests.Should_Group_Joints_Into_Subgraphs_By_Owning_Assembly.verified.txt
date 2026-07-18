@@ -1,0 +1,10 @@
+﻿---
+title: Dovetail Joints
+---
+flowchart LR
+    subgraph sub1 [Dovetail.Mermaid.Tests]
+    id2["PlainJoint"]
+    end
+    subgraph sub4 [Sample.DependencyOne]
+    id5["Class1"]
+    end

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\sample\Sample.DependencyOne\Sample.DependencyOne.csproj" />
+        <ProjectReference Include="..\..\sample\Sample.DependencyThree\Sample.DependencyThree.csproj" />
+        <ProjectReference Include="..\..\sample\Sample.DependencyTwo\Sample.DependencyTwo.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail.Mermaid\Dovetail.Mermaid.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+    </ItemGroup>
+</Project>
