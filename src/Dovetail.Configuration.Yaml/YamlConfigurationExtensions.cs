@@ -131,7 +131,7 @@ public static class YamlConfigurationExtensions
             }
             catch (YamlException e)
             {
-                throw new FormatException(string.Format("Could not parse the YAML file: {{0}}.", e.Message), e);
+                throw new FormatException(string.Format("Could not parse the YAML file: {0}.", e.Message), e);
             }
         }
     }

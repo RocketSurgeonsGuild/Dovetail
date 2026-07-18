@@ -112,4 +112,8 @@
     <Project Path="test/Dovetail.Hosting.Tests/Dovetail.Hosting.Tests.csproj" />
     <Project Path="test/Dovetail.WebAssembly.Hosting.Tests/Dovetail.WebAssembly.Hosting.Tests.csproj" />
   </Folder>
+  <Folder Name="/test/Dovetail.Analyzers.Tests.supports/">
+    <Project Path="test/Dovetail.Analyzers.Tests.supports/Dovetail.Analyzers.roslyn5.0.Tests.csproj" />
+    <Project Path="test/Dovetail.Analyzers.Tests.supports/Dovetail.Analyzers.roslyn5.3.Tests.csproj" />
+  </Folder>
 </Solution>

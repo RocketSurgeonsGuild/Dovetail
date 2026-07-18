@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Dovetail.Infrastructure;
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
 
 namespace Dovetail;
 

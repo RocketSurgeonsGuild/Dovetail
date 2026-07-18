@@ -44,7 +44,6 @@ public static partial class {JointName}JointExtensions
     /// <summary>
     ///     Applies the registered {JointName} parts.
     /// </summary>
-    /// <returns>The <see cref="{SubjectType}" /> for chaining.</returns>
     /// <exception cref="global::System.ArgumentNullException"><c>context</c> is <see langword="null" />.</exception>
     public static global::System.Threading.Tasks.ValueTask{ReturnContext} Apply{JointName}{GenericArg}({ExtensionParams}) {GenericConstraint}
     {
