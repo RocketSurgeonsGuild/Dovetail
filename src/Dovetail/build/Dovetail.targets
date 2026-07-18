@@ -7,11 +7,11 @@
 
     <DovetailImportNamespace Condition="'$(DovetailImportNamespace)' == ''">$(RootNamespace)</DovetailImportNamespace>
     <DovetailImportClassName Condition="'$(DovetailImportClassName)' == ''">Imports</DovetailImportClassName>
-    <DovetailImportMethodName Condition="'$(DovetailImportMethodName)' == ''">Ashlar</DovetailImportMethodName>
+    <DovetailImportMethodName Condition="'$(DovetailImportMethodName)' == ''">Joints</DovetailImportMethodName>
 
     <DovetailExportNamespace Condition="'$(DovetailExportNamespace)' == ''">$(RootNamespace).Rivets</DovetailExportNamespace>
     <DovetailExportClassName Condition="'$(DovetailExportClassName)' == ''">Exports</DovetailExportClassName>
-    <DovetailExportMethodName Condition="'$(DovetailExportMethodName)' == ''">Ashlar</DovetailExportMethodName>
+    <DovetailExportMethodName Condition="'$(DovetailExportMethodName)' == ''">Joints</DovetailExportMethodName>
   </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleProperty Include="RootNamespace"/>
