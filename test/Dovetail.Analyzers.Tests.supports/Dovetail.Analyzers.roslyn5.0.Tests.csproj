@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="../../src/Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.0.csproj" />
+    </ItemGroup>
+</Project>

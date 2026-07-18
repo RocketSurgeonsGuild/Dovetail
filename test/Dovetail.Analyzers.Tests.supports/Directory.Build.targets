@@ -1,25 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net10.0-browser</TargetFramework>
-        <OutputType>Exe</OutputType>
-        <DefineConstants>$(DefineConstants);ROSLYN_CURRENT</DefineConstants>
-    </PropertyGroup>
+<Project>
     <ItemGroup>
         <PackageReference Include="AutoMapper" />
         <PackageReference Include="FluentValidation" />
         <PackageReference Include="MediatR" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Features" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
         <PackageReference Include="NodaTime" />
         <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
         <PackageReference Include="Specular" />
-        <ProjectReference Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Aspire.Testing\Dovetail.Aspire.Testing.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Aspire\Dovetail.Aspire.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Serilog\Dovetail.Serilog.csproj" />
@@ -29,8 +18,7 @@
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Yaml\Dovetail.Configuration.Yaml.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Toml\Dovetail.Configuration.Toml.csproj" />
-    </ItemGroup>
-    <ItemGroup>
         <PackageReference Include="Verify.SourceGenerators" />
     </ItemGroup>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

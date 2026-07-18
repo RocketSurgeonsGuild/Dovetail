@@ -1,18 +1,17 @@
 <Project>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <PropertyGroup>
-        <_Analyzer_Roslyn_Version_>$(MSBuildProjectName.Replace('Dovetail.Analyzers.', ''))</_Analyzer_Roslyn_Version_>
+        <_Analyzer_Roslyn_Version_>$(MSBuildProjectName.Replace('Dovetail.Analyzers.Tests.', ''))</_Analyzer_Roslyn_Version_>
         <DefineConstants>$(DefineConstants);$(_Analyzer_Roslyn_Version_.Replace('.', '_').ToUpper())</DefineConstants>
         <BaseOutputPath>bin/$(_Analyzer_Roslyn_Version_)/</BaseOutputPath>
         <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj/$(_Analyzer_Roslyn_Version_)/</BaseIntermediateOutputPath>
-        <NoWarn>NU5105;$(NoWarn)</NoWarn>
-        <RootNamespace>Dovetail.Analyzers</RootNamespace>
-        <AssemblyName>Dovetail.Analyzers</AssemblyName>
-        <IsPackable>false</IsPackable>
-        <NoPackageAnalysis>true</NoPackageAnalysis>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <NoWarn>$(NoWarn);NU1605</NoWarn>
+        <RootNamespace>Dovetail.Analyzers.Tests</RootNamespace>
+        <TargetFramework>net10.0-browser</TargetFramework>
+        <OutputType>Exe</OutputType>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="../Dovetail.Analyzers.Tests/*.cs" />
+    </ItemGroup>
 </Project>
