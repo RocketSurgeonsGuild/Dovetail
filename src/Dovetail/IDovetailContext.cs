@@ -31,7 +31,10 @@ public interface IDovetailContext
     /// </summary>
     DovetailHostType HostType { get; }
 
-    internal ImmutableList<IDovetailJointMetadata> Metadata { get; }
+    /// <summary>
+    ///  The raw metadata for the joints in this context
+    /// </summary>
+    ImmutableList<IDovetailJointMetadata> Metadata { get; }
     internal IDovetailDictionary Properties { get; }
 
     internal DovetailExceptionPolicyDelegate ExceptionPolicy => Properties.Require<DovetailExceptionPolicyDelegate>();
