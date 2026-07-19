@@ -45,15 +45,11 @@ public sealed class DovetailContext : IDovetailContext
     IDovetailDictionary IDovetailContext.Properties => _properties;
     ImmutableList<IDovetailJointMetadata> IDovetailContext.Metadata => Metadata;
 
-    internal DovetailContext(
-        IEnumerable<IDovetailJointMetadata> jointsMetadata,
-        IDovetailDictionary properties,
-        IEnumerable<DovetailCategory> categories)
+    internal DovetailContext(IEnumerable<IDovetailJointMetadata> jointsMetadata, IDovetailDictionary properties, IEnumerable<DovetailCategory> categories)
     {
         Categories = categories.ToImmutableHashSet(DovetailCategory.ValueComparer);
         Metadata = [.. jointsMetadata];
         _properties = properties;
         _properties.AddIfMissing(DovetailHostType.Undefined);
     }
-
 }
