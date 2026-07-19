@@ -57,8 +57,8 @@ public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.C
     [Test]
     public async Task Should_Build_The_Host_Correctly()
     {
-        var @delegate = A.Fake<HostCreatedAsyncJoint<WebApplication>>();
-        var delegate2 = A.Fake<HostCreatedJoint<IHost>>();
+        var @delegate = A.Fake<HostCreatedAsyncJointDelegate<WebApplication>>();
+        var delegate2 = A.Fake<HostCreatedJointDelegate<IHost>>();
         await using var host = await WebApplication
                                     .CreateBuilder()
                                     .ConfigureDovetail(z => z.ConfigureHostCreated(@delegate).ConfigureHostCreated(delegate2));
@@ -71,7 +71,7 @@ public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.C
     [Test]
     public async Task Should_ConfigureHosting()
     {
-        var convention = A.Fake<HostApplicationJoint<IHostApplicationBuilder>>();
+        var convention = A.Fake<HostApplicationJointDelegate<IHostApplicationBuilder>>();
         await using var host = await WebApplication
                                     .CreateBuilder()
                                     .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention));
@@ -82,7 +82,7 @@ public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.C
     [Test]
     public async Task Should_ConfigureHosting_HostApplication()
     {
-        var convention = A.Fake<HostApplicationJoint<WebApplicationBuilder>>();
+        var convention = A.Fake<HostApplicationJointDelegate<WebApplicationBuilder>>();
         await using var host = await WebApplication
                                     .CreateBuilder()
                                     .ConfigureDovetail(

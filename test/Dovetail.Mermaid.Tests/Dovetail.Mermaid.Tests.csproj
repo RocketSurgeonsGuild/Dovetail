@@ -8,5 +8,7 @@
         <ProjectReference Include="..\..\sample\Sample.DependencyTwo\Sample.DependencyTwo.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Mermaid\Dovetail.Mermaid.csproj" />
         <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail.Serilog\Dovetail.Serilog.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail.OpenTelemetry\Dovetail.OpenTelemetry.csproj" />
     </ItemGroup>
 </Project>

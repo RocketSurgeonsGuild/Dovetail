@@ -1,8 +1,0 @@
-﻿---
-title: Dovetail Joints
----
-flowchart LR
-    subgraph sub1 [Dovetail.Mermaid.Tests]
-    id2["LiveOnlyJoint"]
-    id3["PlainJoint"]
-    end

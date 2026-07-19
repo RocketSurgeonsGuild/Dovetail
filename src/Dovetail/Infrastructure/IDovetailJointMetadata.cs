@@ -9,7 +9,6 @@ public interface IDovetailJointMetadata
     ///     The convention
     /// </summary>
     IDovetailJoint Joint { get; }
-
     /// <summary>
     ///     The dependencies
     /// </summary>
