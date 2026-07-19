@@ -15,18 +15,6 @@ using Dovetail.Infrastructure;
 /// <summary>
 /// The class defined for importing Dovetail parts into this assembly
 /// </summary>
-/// <remarks>
-/// <code>
-/// ```mermaid
-/// flowchart TD
-///     Imports["Imports"]
-///     Exports_Rivet["Exports.Rivet"] --&gt; Imports
-///     subgraph Joints["Imports joints"]
-///         Dovetail_Tests_A["A"]
-///     end
-/// ```
-/// </code>
-/// </remarks>
 [System.CodeDom.Compiler.GeneratedCode("Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 internal static partial class Imports
 {
@@ -34,20 +22,17 @@ internal static partial class Imports
     /// <summary>
     /// Creates the context builder populated with the Dovetail parts imported into this assembly
     /// </summary>
-    private static DovetailContextBuilder CreateDovetailContextBuilder(IDictionary<object, object>? properties = null, IEnumerable<DovetailCategory>? categories = null) => DovetailContextBuilder.Create(LoadDovetailJointsMethod(), properties ?? new Dictionary<object, object>(), categories ?? []);
+    private static DovetailContextBuilder CreateDovetailContextBuilder(IDictionary<object, object>? properties = null, IEnumerable<DovetailCategory>? categories = null) => DovetailContextBuilder.Create(LoadDovetailJointsMethod(), properties ?? new Dictionary<object, object>(), DovetailHostType.UnitTest, categories ?? []);
     /// <summary>
     /// The Dovetail parts imported into this assembly
     /// </summary>
     private static IEnumerable<IDovetailJointMetadata> LoadDovetailJointsMethod()
     {
+        foreach (var part in Dovetail.Rivets.Exports.Joints())
+            yield return part;
         foreach (var part in Exports.Rivet())
             yield return part;
     }
-
-    /// <summary>
-    /// The Mermaid diagram of this assembly's Dovetail import and joint dependency graph, embedded in the class documentation above
-    /// </summary>
-    internal static string GetMermaidDiagram() => "flowchart TD\n    Imports[\"Imports\"]\n    Exports_Rivet[\"Exports.Rivet\"] --> Imports\n    subgraph Joints[\"Imports joints\"]\n        Dovetail_Tests_A[\"A\"]\n    end";
 };
 #pragma warning restore CA1002, CA1034, CA1822, CS0105, CS1573, CS8602, CS8603, CS8618, CS8669
 #nullable restore

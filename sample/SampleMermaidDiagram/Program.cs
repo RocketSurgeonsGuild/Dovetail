@@ -1,4 +1,4 @@
 using SampleMermaidDiagram;
 
-var context = await Imports.Joints().CreateAsync();
-File.WriteAllText("diagram.md", context.ToMermaidJointFlowDiagramMarkdown());
+var builder = Imports.Joints();
+File.WriteAllText("diagram.md", builder.ToMermaidJointFlowDiagramMarkdown());

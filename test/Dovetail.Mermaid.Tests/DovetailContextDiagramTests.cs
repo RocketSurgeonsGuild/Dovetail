@@ -1,4 +1,5 @@
 using Dovetail.Attributes;
+using Dovetail.Diagnostics;
 using Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,19 +12,12 @@ namespace Dovetail.Mermaid.Tests;
 public class DovetailContextDiagramTests
 {
     [Test]
-    public async Task Should_Render_Default_Flowchart()
-    {
-        var context = await Imports.Joints().Set(DovetailHostType.Undefined).CreateAsync();
-
-        await Verify(context.ToMermaidJointFlowDiagramMarkdown(), "md");
-    }
-    // [Test]
+    public async Task Should_Render_Default_Flowchart() => await Verify(Imports.Joints().ToMermaidJointFlowDiagramMarkdown(), "md");
+    [Test]
     public async Task Should_Verify_Metadata()
     {
-        var context = await Imports.Joints().Set(DovetailHostType.Undefined).CreateAsync();
-
-        // TODO: Fix
-        await Verify(context.Metadata);
+        var context = Imports.Joints();
+        await Verify(context.GetDiagnosticMetadata());
     }
 }
 

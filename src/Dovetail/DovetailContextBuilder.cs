@@ -188,7 +188,6 @@ public sealed class DovetailContextBuilder
     public async ValueTask<IDovetailContext> CreateAsync(CancellationToken cancellationToken = default)
     {
         var context = new DovetailContext(
-            Properties.Get<DovetailHostType>(),
             _conventions,
             new DovetailDictionary(Properties),
             Categories
@@ -196,6 +195,8 @@ public sealed class DovetailContextBuilder
         await context.ApplySetup(cancellationToken);
         return context;
     }
+
+    internal List<IDovetailJointMetadata> Metadata => _conventions.AsList();
 
     private class UniqueQueue : IEnumerable<IDovetailJointMetadata>
     {
@@ -210,5 +211,6 @@ public sealed class DovetailContextBuilder
         IEnumerator<IDovetailJointMetadata> IEnumerable<IDovetailJointMetadata>.GetEnumerator() => _list.GetEnumerator();
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _list.GetEnumerator();
+        internal List<IDovetailJointMetadata> AsList() => _list;
     }
 }
