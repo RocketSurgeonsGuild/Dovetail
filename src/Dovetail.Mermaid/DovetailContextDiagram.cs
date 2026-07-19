@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Reflection;
 using System.Text;
 using Dovetail.Diagnostics;
 using Dovetail.Infrastructure;
@@ -100,20 +99,20 @@ public static class DovetailContextDiagram
         //     }
         // }
 
-        foreach (var (stepName, node) in connectedStepNodes)
+        foreach (var (stepName, node) in connectedStepNodes.OrderBy(z => z.Key, StringComparer.Ordinal))
         {
             if (!stepSubgraphs.TryGetValue(stepName, out var subgraph)) continue;
             builder.AddLink(node, subgraph, out _, lineStyle: LinkLineStyle.Dotted);
         }
 
-        foreach (var (from, to) in stepEdges.Where(z => !connectedStepNodes.ContainsKey(z.To)))
+        foreach (var (from, to) in stepEdges.Where(z => !connectedStepNodes.ContainsKey(z.To)).OrderBy(z => z.From, StringComparer.Ordinal).ThenBy(z => z.To, StringComparer.Ordinal))
         {
             builder.AddLink(stepSubgraphs[from], stepSubgraphs[to], out _, lineStyle: LinkLineStyle.Dotted);
         }
 
-        foreach (var item in metadata)
+        foreach (var item in metadata.OrderBy(z => z.AssemblyName, StringComparer.Ordinal).ThenBy(z => z.JointName, StringComparer.Ordinal))
         {
-            foreach (var dep in item.Dependencies)
+            foreach (var dep in item.Dependencies.OrderBy(z => z.AssemblyName, StringComparer.Ordinal).ThenBy(z => z.JointName, StringComparer.Ordinal))
             {
                 if (!metadataNodes.TryGetValue(item, out var toNode)) continue;
                 if (!metadataNodes.TryGetValue(dep, out var fromNode)) continue;

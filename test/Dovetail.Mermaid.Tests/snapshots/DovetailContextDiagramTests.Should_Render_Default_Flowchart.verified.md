@@ -54,12 +54,12 @@ flowchart TB
     id42["`**Dovetail.Mermaid.Tests.SpecificStepBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
     end
     end
-    sub1 -.-> sub6
-    sub12 -.-> sub38
     sub6 -.-> sub12
-    sub12 -.-> sub32
     sub32 -.-> sub34
+    sub12 -.-> sub32
+    sub12 -.-> sub38
     sub12 -.-> sub36
+    sub1 -.-> sub6
     classDef hostUndefined text-align:left,fill:#eceff1,stroke:#607d8b,color:#263238
     classDef hostLive text-align:left,fill:#c8e6c9,stroke:#2e7d32,color:#1b5e20
     classDef hostUnitTest text-align:left,fill:#ffe0b2,stroke:#ef6c00,color:#e65100
