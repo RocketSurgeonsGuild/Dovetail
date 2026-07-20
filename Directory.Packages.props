@@ -84,7 +84,7 @@
     <PackageVersion Include="Rocket.Surgery.Extensions.Testing.TUnit" Version="10.0.6" />
     <PackageVersion Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" Version="10.0.6" />
     <PackageVersion Include="TUnit" Version="1.61.15" />
-    <PackageVersion Include="Verify.TUnit" Version="31.25.0" />
+    <PackageVersion Include="Verify.TUnit" Version="31.26.0" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CrashDump" Version="2.2.3" />
     <PackageVersion Include="Microsoft.Testing.Extensions.HangDump" Version="2.2.3" />
     <PackageVersion Include="Verify.AngleSharp" Version="5.0.0" />
