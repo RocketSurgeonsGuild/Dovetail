@@ -1,6 +1,6 @@
 [tools]
 "github:microsoft/apm" = { version = "v0.25.0", bin = "apm" }
-"github:eljulians/skillfile" = { version = "v1.8.0", bin = "skillfile" }
+"github:eljulians/skillfile" = { version = "v1.9.0", bin = "skillfile" }
 hk = "1.48.0"
 pkl = "0.32.0"
 node = "24.16.0"
