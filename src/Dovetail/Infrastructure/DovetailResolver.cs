@@ -6,12 +6,11 @@ internal static class DovetailResolver
 {
 
     public static ImmutableList<IDovetailJoint> Resolve(DovetailHostType hostType, ImmutableHashSet<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
-        => ResolveMetadata(categories, contributions)
+        => [.. ResolveMetadata(categories, contributions)
           .Where(cod => cod.HostType == DovetailHostType.Undefined || cod.HostType == hostType)
-          .Select(z => z.Joint)
-          .ToImmutableList();
+          .Select(z => z.Joint)];
 
-    private static ImmutableList<IDovetailJointMetadata> ResolveMetadata(ImmutableHashSet<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
+    public static ImmutableList<IDovetailJointMetadata> ResolveMetadata(ImmutableHashSet<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
     {
         IEnumerable<IDovetailJointMetadata> c = contributions.Order(Comparer<IDovetailJointMetadata>.Create((x, y) => x.Joint.Priority.CompareTo(y.Joint.Priority))); ;
         if (categories.Any()) c = c.Where(z => !categories.Contains(z.Category));
@@ -62,7 +61,7 @@ internal static class DovetailResolver
                         )
                        .ToLookup(x => x.convention.Joint, x => x.dependsOn);
 
-        return TopographicalSort(c, x => dependsOn[x.Joint]).ToImmutableList();
+        return [.. TopographicalSort(c, x => dependsOn[x.Joint])];
     }
 
     private static List<T> TopographicalSort<T>(IEnumerable<T> source, Func<T, IEnumerable<T>> dependencies)

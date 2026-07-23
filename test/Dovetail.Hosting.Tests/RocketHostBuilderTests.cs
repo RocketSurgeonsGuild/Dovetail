@@ -26,7 +26,7 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
     [Test]
     public async Task Should_ConfigureServices()
     {
-        var convention = A.Fake<ServiceJoint>();
+        var convention = A.Fake<ServiceJointDelegate>();
         using var host = await Host
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.ConfigureServices(convention));
@@ -37,7 +37,7 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
     [Test]
     public async Task Should_ConfigureConfiguration()
     {
-        var convention = A.Fake<ConfigurationJoint>();
+        var convention = A.Fake<ConfigurationJointDelegate>();
         using var host = await Host
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.ConfigureConfiguration(convention));
@@ -48,7 +48,7 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
     [Test]
     public async Task Should_ConfigureHosting()
     {
-        var convention = A.Fake<HostApplicationJoint<IHostApplicationBuilder>>();
+        var convention = A.Fake<HostApplicationJointDelegate<IHostApplicationBuilder>>();
         using var host = await Host
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention));
@@ -59,7 +59,7 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
     [Test]
     public async Task Should_ConfigureHosting_HostApplication()
     {
-        var convention = A.Fake<HostApplicationJoint<HostApplicationBuilder>>();
+        var convention = A.Fake<HostApplicationJointDelegate<HostApplicationBuilder>>();
         using var host = await Host
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention));
@@ -70,7 +70,7 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
     [Test]
     public async Task Should_ConfigureLogging()
     {
-        var convention = A.Fake<LoggingJoint>();
+        var convention = A.Fake<LoggingJointDelegate>();
         using var host = await Host
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.ConfigureLogging(convention));
@@ -81,7 +81,7 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
     [Test]
     public async Task Should_Build_The_Host_Correctly()
     {
-        var @delegate = A.Fake<HostCreatedJoint<IHost>>();
+        var @delegate = A.Fake<HostCreatedJointDelegate<IHost>>();
         using var host = await Host
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(z => z.ConfigureHostCreated(@delegate));

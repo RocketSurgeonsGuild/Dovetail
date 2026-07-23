@@ -48,8 +48,8 @@ public class DovetailScannerTests() : AutoFakeTest<TestRecord>(TestRecord.Create
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var d1 = A.Fake<ServiceJoint>(z => z.Named("d1"));
-        var d2 = A.Fake<ServiceJoint>(z => z.Named("d2"));
+        var d1 = A.Fake<ServiceJointDelegate>(z => z.Named("d1"));
+        var d2 = A.Fake<ServiceJointDelegate>(z => z.Named("d2"));
 
         var @delegate = scanner.ConfigureServices(d1, default, null);
         var delegate2 = scanner.ConfigureServices(d2, default, null);

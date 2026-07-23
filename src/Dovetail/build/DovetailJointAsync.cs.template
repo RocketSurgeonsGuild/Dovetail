@@ -7,6 +7,7 @@
 #nullable enable
 #pragma warning disable CA1002, CA1034, CA1040, CA1822, CS0105, CS1573, CS8618, CS8669
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Dovetail;
 using Dovetail.Infrastructure;
@@ -20,6 +21,7 @@ namespace {Namespace};
 ///     Implements the <see cref="global::Dovetail.Infrastructure.IDovetailJoint" />
 /// </summary>
 /// <seealso cref="global::Dovetail.Infrastructure.IDovetailJoint" />
+[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
 public interface I{JointName}AsyncJoint{GenericParam} : global::Dovetail.Infrastructure.IDovetailJoint {GenericConstraint}
 {
     /// <summary>
@@ -31,14 +33,17 @@ public interface I{JointName}AsyncJoint{GenericParam} : global::Dovetail.Infrast
 /// <summary>
 ///     Async delegate for the {JointName} part.
 /// </summary>
-public delegate global::System.Threading.Tasks.ValueTask {JointName}AsyncJoint{GenericParam}({AsyncParams}) {GenericConstraint};
+[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
+public delegate global::System.Threading.Tasks.ValueTask {JointName}AsyncJointDelegate{GenericParam}({AsyncParams}) {GenericConstraint};
 
-file class Private{JointName}AsyncJoint{GenericArg}({JointName}AsyncJoint{GenericArg} fromDelegate, int priority, string? expression = null) : I{JointName}AsyncJoint{GenericArg} {GenericConstraint}
+file class Private{JointName}AsyncJoint{GenericArg}({JointName}AsyncJointDelegate{GenericArg} fromDelegate, int priority, string? expression = null) : I{JointName}AsyncJoint{GenericArg}, IDovetailJointDelegate {GenericConstraint}
 {
     public global::System.Threading.Tasks.ValueTask Register({AsyncParams}) => fromDelegate({AsyncArgs});
     int IDovetailJoint.Priority => priority;
     public override string? ToString() => expression;
     public override int GetHashCode() => fromDelegate.GetHashCode();
+    Assembly IDovetailJointDelegate.Assembly => fromDelegate.Method.Module.Assembly;
+    string IDovetailJointDelegate.Expression => expression ?? fromDelegate.Method.ToString();
 }
 
 /// <summary>
@@ -46,7 +51,6 @@ file class Private{JointName}AsyncJoint{GenericArg}({JointName}AsyncJoint{Generi
 /// </summary>
 public static partial class {JointName}HostBuilderExtensions
 {
-    /// <param name="container">The container.</param>
     extension(DovetailContextBuilder container)
     {
         /// <summary>
@@ -58,7 +62,7 @@ public static partial class {JointName}HostBuilderExtensions
         /// <param name="hostType">The host type.</param>
         /// <returns>The <see cref="global::Dovetail.DovetailContextBuilder" />, for chaining.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="container" /> is <see langword="null" />.</exception>
-        public global::Dovetail.DovetailContextBuilder {BuilderMethodName}{GenericArg}({JointName}AsyncJoint{GenericArg} @delegate, int priority = 0, DovetailCategory? category = null, DovetailHostType hostType = DovetailHostType.Undefined, [CallerArgumentExpression("delegate")] string? expression = null) {GenericConstraint}
+        public global::Dovetail.DovetailContextBuilder {BuilderMethodName}{GenericArg}({JointName}AsyncJointDelegate{GenericArg} @delegate, int priority = 0, DovetailCategory? category = null, DovetailHostType hostType = DovetailHostType.Undefined, [CallerArgumentExpression(nameof(@delegate))] string? expression = null) {GenericConstraint}
         {
             ArgumentNullException.ThrowIfNull(container);
             container.AppendJoint(new DovetailJointMetadata(new Private{JointName}AsyncJoint{GenericArg}(@delegate, priority, expression), hostType, category ?? DovetailCategory.Core));

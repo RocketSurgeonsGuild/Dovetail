@@ -29,6 +29,7 @@
       DovetailHostingVersion: {sdk-version},
       DovetailHostingWebAssemblyVersion: {sdk-version},
       DovetailHostingWebVersion: {sdk-version},
+      DovetailMermaidVersion: {sdk-version},
       DovetailOpenTelemetryVersion: {sdk-version},
       DovetailPackConfiguration: false,
       DovetailSdkVersion: {sdk-version},

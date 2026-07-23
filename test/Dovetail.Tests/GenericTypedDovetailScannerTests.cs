@@ -45,8 +45,8 @@ public class GenericTypedDovetailScannerTests() : AutoFakeTest<TestRecord>(TestR
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var @delegate = A.Fake<ServiceJoint>(c => c.Named("delegate"));
-        var delegate2 = A.Fake<ServiceJoint>(c => c.Named("delegate2"));
+        var @delegate = A.Fake<ServiceJointDelegate>(c => c.Named("delegate"));
+        var delegate2 = A.Fake<ServiceJointDelegate>(c => c.Named("delegate2"));
 
         scanner.ConfigureServices(delegate2, default, null);
         scanner.ConfigureServices(@delegate, default, null);

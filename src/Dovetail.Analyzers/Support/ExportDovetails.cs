@@ -16,6 +16,7 @@ internal static class ExportDovetails
         if (!conventions.Any()) return;
 
         var helperClassBody = Block();
+        var dependencyGraph = ImmutableArray.CreateBuilder<(INamedTypeSymbol Joint, ImmutableArray<DovetailDependencyParser.DependencyEdge> Edges)>();
 
         foreach (var convention in conventions)
         {
@@ -40,54 +41,21 @@ internal static class ExportDovetails
                 IdentifierName("DovetailCategory"),
                 IdentifierName("Application")
             );
-            var dependencies = new List<(ExpressionSyntax direction, TypeSyntax type)>();
             foreach (var attributeData in attributes)
             {
-                switch (attributeData)
-                {
-                    case
-                    {
-                        AttributeClass:
-                        {
-                            Name: "DependentOfJointAttribute" or "BeforeJointAttribute",
-                            TypeArguments: [INamedTypeSymbol dependencyDirectionDependentOfSymbol],
-                        },
-                    }:
-                        dependencies.Add((_dependencyDirectionDependentOf, ParseName(dependencyDirectionDependentOfSymbol.ToDisplayString())));
-                        break;
-                    case
-                    {
-                        AttributeClass.Name: "DependentOfJointAttribute" or "BeforeJointAttribute",
-                        ConstructorArguments: [{ Kind: TypedConstantKind.Type, Value: INamedTypeSymbol dependencyDirectionDependentOfSymbol2 }],
-                    }:
-                        dependencies.Add((_dependencyDirectionDependentOf, ParseName(dependencyDirectionDependentOfSymbol2.ToDisplayString())));
-                        break;
-                    case
-                    {
-                        AttributeClass:
-                        {
-                            Name: "DependsOnJointAttribute" or "AfterJointAttribute",
-                            TypeArguments: [INamedTypeSymbol dependencyDirectionDependsOnSymbol],
-                        },
-                    }:
-                        dependencies.Add((_dependencyDirectionDependsOn, ParseName(dependencyDirectionDependsOnSymbol.ToDisplayString())));
-                        break;
-                    case
-                    {
-                        AttributeClass.Name: "DependsOnJointAttribute" or "AfterJointAttribute",
-                        ConstructorArguments: [{ Kind: TypedConstantKind.Type, Value: INamedTypeSymbol dependencyDirectionDependsOnSymbol2 }],
-                    }:
-                        dependencies.Add((_dependencyDirectionDependsOn, ParseName(dependencyDirectionDependsOnSymbol2.ToDisplayString())));
-                        break;
-                    default:
-                        break;
-                }
-
                 if (msBuildConfig.IsTestProject)
                 {
                     hostType = _hostTypeUnitTestHost;
                 }
             }
+
+            var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
+            foreach (var (location, descriptor) in issues)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(descriptor, location ?? convention.Locations.FirstOrDefault()));
+            }
+
+            dependencyGraph.Add((convention, edges));
 
             ExpressionSyntax withDependencies = ObjectCreationExpression(IdentifierName("DovetailJointMetadata"))
                .WithArgumentList(
@@ -101,8 +69,9 @@ internal static class ExportDovetails
                     )
                 );
 
-            foreach ((var direction, var type) in dependencies)
+            foreach (var edge in edges)
             {
+                var direction = edge.Direction == DovetailDependencyParser.DependencyKind.DependsOn ? _dependencyDirectionDependsOn : _dependencyDirectionDependentOf;
                 withDependencies = InvocationExpression(
                         MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
@@ -116,7 +85,7 @@ internal static class ExportDovetails
                                 new[]
                                 {
                                     Argument(direction),
-                                    Argument(TypeOfExpression(type)),
+                                    Argument(TypeOfExpression(ParseName(edge.Target.ToDisplayString()))),
                                 }
                             )
                         )
@@ -130,6 +99,12 @@ internal static class ExportDovetails
                     withDependencies
                 )
             );
+        }
+
+        foreach (var (joint, cycle) in DovetailDependencyParser.DetectCycles(dependencyGraph.ToImmutable()))
+        {
+            var chain = string.Join(" -> ", cycle.Select(c => c.Name));
+            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.CircularJointDependency, joint.Locations.FirstOrDefault(), joint.Name, chain));
         }
 
         var helperClass =

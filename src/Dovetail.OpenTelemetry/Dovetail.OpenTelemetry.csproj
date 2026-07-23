@@ -3,14 +3,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <PackageDescription>Provides OpenTelemetry support for a Rocket Surgery Application</PackageDescription>
     <PackageTags>$(PackageTags);OpenTelemetry</PackageTags>
-    <RootNamespace>Dovetail</RootNamespace>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
   <ItemGroup>
-    <DovetailJoint Include="TracerProvider" Namespace="Dovetail.Joints" IsAsync="false" ParameterType="global::OpenTelemetry.Trace.TracerProviderBuilder" ParameterName="builder" />
-    <DovetailJoint Include="MeterProvider" Namespace="Dovetail.Joints" IsAsync="false" ParameterType="global::OpenTelemetry.Metrics.MeterProviderBuilder" ParameterName="builder" />
-    <DovetailJoint Include="LoggerProvider" Namespace="Dovetail.Joints" IsAsync="false" ParameterType="global::OpenTelemetry.Logs.LoggerProviderBuilder" ParameterName="builder" />
-    <DovetailJoint Include="ResourceBuilder" Namespace="Dovetail.Joints" IsAsync="false" ParameterType="global::OpenTelemetry.Resources.ResourceBuilder" ParameterName="builder" />
     <DovetailJoint Include="OpenTelemetry" Namespace="Dovetail.Joints" ParameterType="global::OpenTelemetry.IOpenTelemetryBuilder" ParameterName="builder" />
   </ItemGroup>
   <ItemGroup>

@@ -5,70 +5,46 @@ namespace Dovetail;
 internal static class Diagnostics
 {
     public static DiagnosticDescriptor DovetailHasToManyConstructors { get; } = new(
-        "RSG0001",
-        "Dovetail has to Many Constructors",
-        "Dovetails only allow one (or the default) constructor",
-        "RocketSurgeonsGuild",
+        "DT0001",
+        "Joint has too Many Constructors",
+        "Joints only allow one (or the default) constructor",
+        "Dovetail",
         DiagnosticSeverity.Error,
         true
     );
 
     public static DiagnosticDescriptor DovetailCannotBeGeneric { get; } = new(
-        "RSG0002",
-        "Dovetail cannot be generic",
-        "Dovetails cannot be generic types",
-        "RocketSurgeonsGuild",
-        DiagnosticSeverity.Error,
-        true
-    );
-
-    public static DiagnosticDescriptor MustBeAnExpression { get; } = new(
-        "RSG0003",
-        "Must be a expression",
-        "Methods that will be analyzed statically must be an expression, blocks and variables are not allowed",
-        "RocketSurgeonsGuild",
+        "DT0002",
+        "Joint cannot be generic",
+        "Joints cannot be generic types",
+        "Dovetail",
         DiagnosticSeverity.Error,
         true
     );
 
     public static DiagnosticDescriptor MustBeTypeOf { get; } = new(
-        "RSG0004",
+        "DT0003",
         "Must use typeof",
         "Method must be called with typeof, variables are not allowed",
-        "RocketSurgeonsGuild",
+        "Dovetail",
         DiagnosticSeverity.Error,
         true
     );
 
     public static DiagnosticDescriptor UnhandledSymbol { get; } = new(
-        "RSG0005",
+        "DT0004",
         "Symbol could not be handled",
         "The indicated symbol could not be handled correctly",
-        "RocketSurgeonsGuild",
+        "Dovetail",
         DiagnosticSeverity.Warning,
         true
     );
 
-    public static DiagnosticDescriptor MustBeAString { get; } = new(
-        "RSG0006",
-        "Value must be a string",
-        "The given value must be a constant string",
-        "RocketSurgeonsGuild",
-        DiagnosticSeverity.Warning,
-        true
-    );
-
-    /// <summary>
-    ///     Reported when the NodaTime configuration type-mode MSBuild property is enabled for a project that does
-    ///     not reference the <c>NodaTime</c> assembly. Silent fallback to BCL types would make the generated
-    ///     public API shape depend on an easily-missed reference, so this is an error rather than a warning.
-    /// </summary>
-    public static DiagnosticDescriptor NodaTimeEnabledWithoutReference { get; } = new(
-        "DOVETAIL_CFG002",
-        "NodaTime configuration type-mode enabled without a NodaTime reference",
-        "The NodaTime configuration type-mode property is enabled, but this project does not reference the "
-      + "NodaTime assembly. Add a reference to NodaTime, or disable the property, to continue",
-        "Dovetail.Configuration",
+    public static DiagnosticDescriptor CircularJointDependency { get; } = new(
+        "DT0005",
+        "Circular joint dependency",
+        "Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered",
+        "Dovetail",
         DiagnosticSeverity.Error,
         true
     );

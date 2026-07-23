@@ -1,7 +1,7 @@
 namespace Dovetail.Infrastructure;
 
 /// <summary>
-///     A marker interface to indicate a type is a convention
+///     A marker interface to indicate a type is a joint
 /// </summary>
 [PublicAPI]
 public interface IDovetailJoint
@@ -28,5 +28,4 @@ public interface IDovetailJoint
 
         public int GetHashCode(IDovetailJoint obj) => obj.GetType().GetHashCode();
     }
-
 }

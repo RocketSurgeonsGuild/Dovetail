@@ -1,0 +1,194 @@
+﻿[
+  {
+    JointName: Dovetail.OpenTelemetry.OpenTelemetryConnector,
+    AssemblyName: Dovetail.OpenTelemetry,
+    ImplementsJointTypes: [
+      Service
+    ],
+    ConnectsToJointTypes: [
+      OpenTelemetry
+    ],
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Infrastructure.LoggingConnector,
+    AssemblyName: Dovetail,
+    ImplementsJointTypes: [
+      Service
+    ],
+    ConnectsToJointTypes: [
+      Logging
+    ],
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Serilog.SerilogConfigurationJoint,
+    AssemblyName: Dovetail.Serilog,
+    ImplementsJointTypes: [
+      Service
+    ],
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Serilog.SerilogJoint,
+    AssemblyName: Dovetail.Serilog,
+    ImplementsJointTypes: [
+      Service
+    ],
+    ConnectsToJointTypes: [
+      Logging
+    ],
+    Category: Application,
+    Dependencies: [
+      {
+        JointName: Dovetail.Infrastructure.LoggingConnector,
+        AssemblyName: Dovetail,
+        ImplementsJointTypes: [
+          Service
+        ],
+        ConnectsToJointTypes: [
+          Logging
+        ],
+        Category: Application
+      }
+    ]
+  },
+  {
+    JointName: Sample.DependencyOne.Class1,
+    AssemblyName: Sample.DependencyOne,
+    Category: Application
+  },
+  {
+    JointName: Sample.DependencyThree.Class3,
+    AssemblyName: Sample.DependencyThree,
+    Category: Application
+  },
+  {
+    JointName: Sample.DependencyTwo.Nested+Class2,
+    AssemblyName: Sample.DependencyTwo,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.ConfigurationJoint1,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Configuration
+    ],
+    HostType: UnitTest,
+    Category: Application,
+    Dependencies: [
+      {
+        Direction: DependentOf,
+        JointName: Dovetail.Mermaid.Tests.LiveConfigurationJoint,
+        AssemblyName: Dovetail.Mermaid.Tests,
+        ImplementsJointTypes: [
+          Configuration
+        ],
+        HostType: UnitTest,
+        Category: Application
+      }
+    ]
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.CoreCategoryJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Service
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.MyLoggingJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Logging
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.DependsOnDependsOnPlainJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Logging
+    ],
+    HostType: UnitTest,
+    Category: Application,
+    Dependencies: [
+      {
+        JointName: Dovetail.Mermaid.Tests.MyLoggingJoint,
+        AssemblyName: Dovetail.Mermaid.Tests,
+        ImplementsJointTypes: [
+          Logging
+        ],
+        HostType: UnitTest,
+        Category: Application
+      }
+    ]
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.FirstLoggingBridgeJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Service
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.LiveConfigurationJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Configuration
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.MySetupJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Setup
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.SecondLoggingBridgeJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Service
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.SpecificStepBridgeJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Service,
+      Logging
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.TaggedJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Service
+    ],
+    HostType: UnitTest,
+    Category: Application
+  },
+  {
+    JointName: Dovetail.Mermaid.Tests.UnitTestOnlyJoint,
+    AssemblyName: Dovetail.Mermaid.Tests,
+    ImplementsJointTypes: [
+      Service
+    ],
+    HostType: UnitTest,
+    Category: Application
+  }
+]
