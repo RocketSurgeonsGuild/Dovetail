@@ -25,7 +25,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.20.0" />
-    
     <PackageVersion Include="MSBuild.ProjectCreation" Version="19.1.4" />
     <PackageVersion Include="MSBuild.StructuredLogger.Utils" Version="2.3.213" />
     <PackageVersion Include="NuGet.Packaging" Version="7.6.0" />
@@ -37,9 +36,7 @@
     <PackageVersion Include="Aspire.Hosting" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.6" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.4.6" />
-    <PackageVersion Include="AutoMapper" Version="16.1.1" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
-    <PackageVersion Include="MediatR" Version="14.1.0" />
     <PackageVersion Include="Polyfill" Version="11.0.1" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
     <PackageVersion Include="BenchMarkDotNet" Version="0.15.8" />
