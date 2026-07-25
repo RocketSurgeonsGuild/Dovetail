@@ -13,7 +13,7 @@ public class SampleTests
         // await Assert.That(services.GetRequiredService<IService>().GetString()).IsEqualTo("TestService");
     }
 
-    public SampleTests() => _builder = DovetailContextBuilder.Create([], new Dictionary<object, object>(), []).Set(DovetailHostType.UnitTest);
+    public SampleTests() => _builder = DovetailContextBuilder.Create([], new Dictionary<object, object>(), DovetailHostType.UnitTest, []);
 
     private readonly DovetailContextBuilder _builder;
 }

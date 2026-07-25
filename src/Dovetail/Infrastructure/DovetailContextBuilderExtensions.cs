@@ -24,7 +24,6 @@ public static class DovetailContextBuilderExtensions
         var services = new ServiceCollection();
         services.AddSingleton<IConfigurationRoot>(cb).AddSingleton(cb).AddSingleton<IConfiguration>(cb);
         await services.ApplyService(context, cancellationToken).ConfigureAwait(false);
-        await new LoggingBuilder(services).ApplyLogging(context, cancellationToken).ConfigureAwait(false);
 
         if (context.Get<ServiceProviderFactoryAdapter>() is not { } factory)
             return services.BuildServiceProvider(context.GetOrAdd(() => new ServiceProviderOptions()));

@@ -60,7 +60,7 @@ public class DovetailContextTests
     public async Task Setups_With_Delegate()
     {
         var contextBuilder = DovetailContextBuilder.Create([], new DovetailDictionary(), []);
-        var convention = A.Fake<SetupJoint>();
+        var convention = A.Fake<SetupJointDelegate>();
         contextBuilder.ConfigureSetup(convention);
 
         var context = await DovetailContext.FromAsync(contextBuilder);

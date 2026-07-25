@@ -21,15 +21,23 @@ public sealed class DovetailContextBuilder
     /// </summary>
     /// <param name="conventions">The joints to seed the builder with.</param>
     /// <param name="properties">The initial set of properties to populate the context with.</param>
+    /// <param name="hostType">The host type the resulting context should be scoped to.</param>
+    /// <param name="categories">The categories the resulting context should be scoped to.</param>
+    /// <returns>A new <see cref="DovetailContextBuilder" />.</returns>
+    public static DovetailContextBuilder Create(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType properties, DovetailHostType hostType, IEnumerable<DovetailCategory> categories) =>
+        Create(conventions, properties, categories).Set(hostType);
+
+    /// <summary>
+    ///     Create a default context builder
+    /// </summary>
+    /// <param name="conventions">The joints to seed the builder with.</param>
+    /// <param name="properties">The initial set of properties to populate the context with.</param>
     /// <param name="categories">The categories the resulting context should be scoped to.</param>
     /// <returns>A new <see cref="DovetailContextBuilder" />.</returns>
     public static DovetailContextBuilder Create(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType properties, IEnumerable<DovetailCategory> categories) =>
         new(conventions, properties, categories);
 
-    private static readonly string[] categoryEnvironmentVariables = ["DOVETAIL__CATEGORY", "DOVETAIL__CATEGORIES"];
-
     private readonly UniqueQueue _conventions;
-    private static readonly string[] hostTypeEnvironmentVariables = ["DOVETAIL__HOSTTYPE"];
 
     /// <summary>
     ///     Create a context builder with a set of properties
@@ -42,20 +50,7 @@ public sealed class DovetailContextBuilder
         Properties = new DovetailDictionary(properties ?? new PropertiesDictionary());
         _conventions = new();
         _conventions.Append(conventions);
-
-        foreach (var variable in hostTypeEnvironmentVariables)
-        {
-            if (Environment.GetEnvironmentVariable(variable) is { Length: > 0 } hostType && Enum.TryParse<DovetailHostType>(hostType, true, out var type)) Properties[typeof(DovetailHostType)] = type;
-        }
-
-        List<DovetailCategory> categoriesBuilder = [.. categories];
-        foreach (var variable in categoryEnvironmentVariables)
-        {
-            if (Environment.GetEnvironmentVariable(variable) is not { Length: > 0 } category) continue;
-            categoriesBuilder.AddRange(category.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(item => new DovetailCategory(item)));
-        }
-
-        Categories = ImmutableHashSet.CreateRange(DovetailCategory.ValueComparer, categoriesBuilder);
+        Categories = ImmutableHashSet.CreateRange(DovetailCategory.ValueComparer, categories);
     }
 
     /// <summary>
@@ -193,7 +188,6 @@ public sealed class DovetailContextBuilder
     public async ValueTask<IDovetailContext> CreateAsync(CancellationToken cancellationToken = default)
     {
         var context = new DovetailContext(
-            Properties.Get<DovetailHostType>(),
             _conventions,
             new DovetailDictionary(Properties),
             Categories
@@ -201,6 +195,8 @@ public sealed class DovetailContextBuilder
         await context.ApplySetup(cancellationToken);
         return context;
     }
+
+    internal List<IDovetailJointMetadata> Metadata => _conventions.AsList();
 
     private class UniqueQueue : IEnumerable<IDovetailJointMetadata>
     {
@@ -215,5 +211,6 @@ public sealed class DovetailContextBuilder
         IEnumerator<IDovetailJointMetadata> IEnumerable<IDovetailJointMetadata>.GetEnumerator() => _list.GetEnumerator();
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _list.GetEnumerator();
+        internal List<IDovetailJointMetadata> AsList() => _list;
     }
 }

@@ -6,12 +6,6 @@ namespace Dovetail.Serilog;
 ///     <c>appsettings.json</c>'s <c>Serilog</c> section (see design.md, Decision 4). Dogfoods the
 ///     runtime half of the pipeline (task 8.3) ahead of the generator landing.
 /// </summary>
-/// <remarks>
-///     Once the codegen stage (tasks 3-4) ships, this class is expected to be deleted and replaced
-///     by the generated equivalent — its shape (a settable-property sealed class matching the JSON
-///     shape) is deliberately what the generator is documented to produce, so migrating on is a
-///     drop-in replacement rather than a redesign.
-/// </remarks>
 public sealed record SerilogRuntimeConfiguration
 {
     /// <summary>

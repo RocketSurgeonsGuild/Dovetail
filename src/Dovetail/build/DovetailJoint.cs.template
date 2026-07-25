@@ -7,6 +7,7 @@
 #nullable enable
 #pragma warning disable CA1002, CA1034, CA1040, CA1822, CS0105, CS1573, CS8618, CS8669
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Dovetail;
 using Dovetail.Infrastructure;
@@ -20,7 +21,7 @@ namespace {Namespace};
 ///     Implements the <see cref="global::Dovetail.Infrastructure.IDovetailJoint" />
 /// </summary>
 /// <seealso cref="global::Dovetail.Infrastructure.IDovetailJoint" />
-[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated")]
+[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
 public interface I{JointName}Joint{GenericParam} : global::Dovetail.Infrastructure.IDovetailJoint {GenericConstraint}
 {
     /// <summary>
@@ -32,8 +33,8 @@ public interface I{JointName}Joint{GenericParam} : global::Dovetail.Infrastructu
 /// <summary>
 ///     Delegate for the {JointName} part.
 /// </summary>
-[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated")]
-public delegate void {JointName}Joint{GenericParam}({SyncParams}) {GenericConstraint};
+[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
+public delegate void {JointName}JointDelegate{GenericParam}({SyncParams}) {GenericConstraint};
 
 /// <summary>
 ///     Extension methods for applying {JointName} parts.
@@ -52,12 +53,14 @@ public static partial class {JointName}JointExtensions
     }
 }
 
-file class Private{JointName}Joint{GenericArg}({JointName}Joint{GenericArg} fromDelegate, int priority, string? expression = null) : I{JointName}Joint{GenericArg} {GenericConstraint}
+file class Private{JointName}Joint{GenericArg}({JointName}JointDelegate{GenericArg} fromDelegate, int priority, string? expression = null) : I{JointName}Joint{GenericArg}, IDovetailJointDelegate {GenericConstraint}
 {
     public void Register({SyncParams}) => fromDelegate({SyncArgs});
     int IDovetailJoint.Priority => priority;
     public override string? ToString() => expression;
     public override int GetHashCode() => fromDelegate.GetHashCode();
+    Assembly IDovetailJointDelegate.Assembly => fromDelegate.Method.Module.Assembly;
+    string IDovetailJointDelegate.Expression => expression ?? fromDelegate.Method.ToString();
 }
 
 /// <summary>
@@ -66,7 +69,6 @@ file class Private{JointName}Joint{GenericArg}({JointName}Joint{GenericArg} from
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated")]
 public static partial class {JointName}HostBuilderExtensions
 {
-    /// <param name="container">The container.</param>
     extension(DovetailContextBuilder container)
     {
         /// <summary>
@@ -78,7 +80,7 @@ public static partial class {JointName}HostBuilderExtensions
         /// <param name="hostType">The host type.</param>
         /// <returns>The <see cref="global::Dovetail.DovetailContextBuilder" />, for chaining.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="container" /> is <see langword="null" />.</exception>
-        public global::Dovetail.DovetailContextBuilder {BuilderMethodName}{GenericArg}({JointName}Joint{GenericArg} @delegate, int priority = 0, DovetailCategory? category = null, DovetailHostType hostType = DovetailHostType.Undefined, [CallerArgumentExpression("delegate")] string? expression = null) {GenericConstraint}
+        public global::Dovetail.DovetailContextBuilder {BuilderMethodName}{GenericArg}({JointName}JointDelegate{GenericArg} @delegate, int priority = 0, DovetailCategory? category = null, DovetailHostType hostType = DovetailHostType.Undefined, [CallerArgumentExpression(nameof(@delegate))] string? expression = null) {GenericConstraint}
         {
             ArgumentNullException.ThrowIfNull(container);
             container.AppendJoint(new DovetailJointMetadata(new Private{JointName}Joint{GenericArg}(@delegate, priority, expression), hostType, category ?? DovetailCategory.Core));

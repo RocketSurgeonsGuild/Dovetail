@@ -24,7 +24,7 @@ public partial class RocketDistributedApplicationTestingBuilderTests
     [Test]
     public async Task Should_ConfigureHosting()
     {
-        var convention = A.Fake<DistributedApplicationTestingJoint>();
+        var convention = A.Fake<DistributedApplicationTestingJointDelegate>();
         await using var host = await DistributedApplicationTestingBuilder
                                     .CreateAsync<Anchor>()
                                     .ConfigureDovetail(rb => rb.ConfigureDistributedApplicationTesting(convention));
@@ -35,8 +35,8 @@ public partial class RocketDistributedApplicationTestingBuilderTests
     [Test]
     public async Task Should_Build_The_Host_Correctly()
     {
-        var @delegate = A.Fake<HostCreatedAsyncJoint<IHost>>();
-        var delegate2 = A.Fake<HostCreatedJoint<DistributedApplication>>();
+        var @delegate = A.Fake<HostCreatedAsyncJointDelegate<IHost>>();
+        var delegate2 = A.Fake<HostCreatedJointDelegate<DistributedApplication>>();
         await using var host = await DistributedApplicationTestingBuilder
                                     .CreateAsync<Anchor>()
                                     .ConfigureDovetail(z => z.ConfigureHostCreated(@delegate).ConfigureHostCreated(delegate2));

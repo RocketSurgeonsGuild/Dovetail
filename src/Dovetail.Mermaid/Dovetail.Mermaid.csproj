@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageDescription>
+      Adds support for loading configuration, services, logging, command line
+      and more via simple and easy to setup assembly attributes
+    </PackageDescription>
+    <PackageTags>$(PackageTags);reflection</PackageTags>
+    <IsTrimmable>true</IsTrimmable>
+    <RootNamespace>Dovetail</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Interactive" />
+    <PackageReference Include="FoggyBalrog.MermaidDotNet" />
+    <ProjectReference Include="..\Dovetail\Dovetail.csproj" />
+  </ItemGroup>
+</Project>

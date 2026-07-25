@@ -8,7 +8,7 @@ public interface IDovetailDependency
     /// <summary>
     ///     The type
     /// </summary>
-    Type Type { get; }
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type Type { get; }
 
     /// <summary>
     ///     The direction

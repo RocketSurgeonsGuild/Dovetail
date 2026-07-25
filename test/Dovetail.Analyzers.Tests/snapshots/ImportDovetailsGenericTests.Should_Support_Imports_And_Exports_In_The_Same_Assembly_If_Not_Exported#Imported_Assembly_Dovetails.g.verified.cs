@@ -22,12 +22,14 @@ internal static partial class Imports
     /// <summary>
     /// Creates the context builder populated with the Dovetail parts imported into this assembly
     /// </summary>
-    private static DovetailContextBuilder CreateDovetailContextBuilder(IDictionary<object, object>? properties = null, IEnumerable<DovetailCategory>? categories = null) => DovetailContextBuilder.Create(LoadDovetailJointsMethod(), properties ?? new Dictionary<object, object>(), categories ?? []);
+    private static DovetailContextBuilder CreateDovetailContextBuilder(IDictionary<object, object>? properties = null, IEnumerable<DovetailCategory>? categories = null) => DovetailContextBuilder.Create(LoadDovetailJointsMethod(), properties ?? new Dictionary<object, object>(), DovetailHostType.UnitTest, categories ?? []);
     /// <summary>
     /// The Dovetail parts imported into this assembly
     /// </summary>
     private static IEnumerable<IDovetailJointMetadata> LoadDovetailJointsMethod()
     {
+        foreach (var part in Dovetail.Rivets.Exports.Joints())
+            yield return part;
         foreach (var part in Exports.Rivet())
             yield return part;
     }

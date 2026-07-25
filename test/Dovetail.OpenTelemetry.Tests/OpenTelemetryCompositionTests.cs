@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Dovetail.Joints;
+using Dovetail.OpenTelemetry.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Trace;

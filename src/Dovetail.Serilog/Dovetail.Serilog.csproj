@@ -5,7 +5,7 @@
         <PackageTags>$(PackageTags);Serilog</PackageTags>
     </PropertyGroup>
     <ItemGroup>
-        <DovetailJoint Include="Serilog" Namespace="Dovetail.Joints" ParameterType="global::Serilog.LoggerConfiguration" ParameterName="loggerConfiguration" />
+    <DovetailJoint Include="Serilog" Namespace="Dovetail.Joints" ProvideServices="true" ParameterType="global::Serilog.LoggerConfiguration" ParameterName="loggerConfiguration" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Serilog" />

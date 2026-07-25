@@ -33,23 +33,23 @@ public sealed class DovetailContext : IDovetailContext
     /// <summary>
     ///     Get the conventions from the context
     /// </summary>
-    public ImmutableList<IDovetailJoint> Joints { get; }
+    public ImmutableList<IDovetailJoint> Joints =>
+    field ??= DovetailResolver.Resolve(_properties.Require<DovetailHostType>(), Categories, Metadata);
+
+    internal ImmutableList<IDovetailJointMetadata> Metadata { get; }
 
     /// <summary>
     ///     The host type
     /// </summary>
     public DovetailHostType HostType => this.GetHostType();
     IDovetailDictionary IDovetailContext.Properties => _properties;
+    ImmutableList<IDovetailJointMetadata> IDovetailContext.Metadata => Metadata;
 
-    internal DovetailContext(
-        DovetailHostType hostType,
-        IEnumerable<IDovetailJointMetadata> joints,
-        IDovetailDictionary properties,
-        IEnumerable<DovetailCategory> categories)
+    internal DovetailContext(IEnumerable<IDovetailJointMetadata> jointsMetadata, IDovetailDictionary properties, IEnumerable<DovetailCategory> categories)
     {
         Categories = categories.ToImmutableHashSet(DovetailCategory.ValueComparer);
-        Joints = DovetailResolver.Resolve(hostType, Categories, joints);
+        Metadata = [.. jointsMetadata];
         _properties = properties;
+        _properties.AddIfMissing(DovetailHostType.Undefined);
     }
-
 }

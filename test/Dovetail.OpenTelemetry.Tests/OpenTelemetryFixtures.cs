@@ -1,5 +1,5 @@
 using Dovetail.Attributes;
-using Dovetail.Joints;
+using Dovetail.OpenTelemetry.Joints;
 using OpenTelemetry.Trace;
 
 namespace Dovetail.OpenTelemetry.Tests;

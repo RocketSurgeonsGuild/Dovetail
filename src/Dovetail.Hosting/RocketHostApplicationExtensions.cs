@@ -60,7 +60,6 @@ public static class DovetailHostApplicationHelpers
         var context = await DovetailContext.FromAsync(contextBuilder, cancellationToken).ConfigureAwait(false);
         await SharedHostConfigurationAsync(context, builder, cancellationToken).ConfigureAwait(false);
         await builder.Services.ApplyService(context, cancellationToken).ConfigureAwait(false);
-        await builder.Logging.ApplyLogging(context, cancellationToken).ConfigureAwait(false);
 
         if (context.Get<ServiceProviderFactoryAdapter>() is { } factory)
             builder.ConfigureContainer(await factory(context, builder.Services, cancellationToken).ConfigureAwait(false));

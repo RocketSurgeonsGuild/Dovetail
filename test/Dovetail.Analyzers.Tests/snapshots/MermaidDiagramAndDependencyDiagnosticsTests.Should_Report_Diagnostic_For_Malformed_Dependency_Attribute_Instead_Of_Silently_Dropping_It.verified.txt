@@ -1,0 +1,65 @@
+﻿{
+  FinalDiagnostics: [
+    {
+      Id: DT0004,
+      Title: Symbol could not be handled,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: Input0.cs: (9,5)-(9,19),
+      MessageFormat: The indicated symbol could not be handled correctly,
+      Message: The indicated symbol could not be handled correctly,
+      Category: Dovetail
+    },
+    {
+      Id: CS7036,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: Input0.cs: (9,5)-(9,19),
+      HelpLink: https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS7036),
+      MessageFormat: There is no argument given that corresponds to the required parameter '{0}' of '{1}',
+      Message: There is no argument given that corresponds to the required parameter 'type' of 'DependsOnJointAttribute.DependsOnJointAttribute(Type)',
+      Category: Compiler,
+      CustomTags: [
+        Compiler,
+        Telemetry,
+        NotConfigurable
+      ]
+    }
+  ],
+  GeneratorDiagnostics: {
+    Dovetail.DovetailAttributesGenerator: [
+      {
+        Id: DT0004,
+        Title: Symbol could not be handled,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input0.cs: (9,5)-(9,19),
+        MessageFormat: The indicated symbol could not be handled correctly,
+        Message: The indicated symbol could not be handled correctly,
+        Category: Dovetail
+      }
+    ]
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: 
+  },
+  References: [
+    Dovetail.dll,
+    FluentValidation.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Private.CoreLib.dll,
+    System.Runtime.dll
+  ]
+}

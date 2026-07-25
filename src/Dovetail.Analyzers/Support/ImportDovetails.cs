@@ -78,6 +78,7 @@ internal static class ImportDovetails
                                 )
                         ).WithArgumentList(ArgumentList())
                     )),
+                        Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,IdentifierName("DovetailHostType"),IdentifierName("UnitTest"))),
                                                         Argument(BinaryExpression(                        SyntaxKind.CoalesceExpression,                        IdentifierName("categories"),                        CollectionExpression()                    ))
                                                     ]
                                                 )
@@ -137,25 +138,6 @@ internal static class ImportDovetails
                         Block(
                             List<StatementSyntax>(
                                 [
-                                    ExpressionStatement(
-                                        InvocationExpression(
-                                                MemberAccessExpression(
-                                                    SyntaxKind.SimpleMemberAccessExpression,
-                                                    IdentifierName("Environment"),
-                                                    IdentifierName("SetEnvironmentVariable")
-                                                )
-                                            )
-                                           .WithArgumentList(
-                                                ArgumentList(
-                                                    SeparatedList(
-                                                        [
-                                                            Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal("DOVETAIL__HOSTTYPE"))),
-                                                            Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal("UnitTest"))),
-                                                        ]
-                                                    )
-                                                )
-                                            )
-                                    ),
                                     ExpressionStatement(
                                         AssignmentExpression(
                                             SyntaxKind.SimpleAssignmentExpression,
