@@ -1,5 +1,5 @@
 [tools]
-"github:microsoft/apm" = { version = "v0.25.0", bin = "apm" }
+"github:microsoft/apm" = { version = "v0.28.0", bin = "apm" }
 "github:eljulians/skillfile" = { version = "v1.8.0", bin = "skillfile" }
 hk = "1.53.0"
 pkl = "0.32.1"
