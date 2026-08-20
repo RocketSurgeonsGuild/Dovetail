@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.20.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="19.1.4" />
-    <PackageVersion Include="MSBuild.StructuredLogger.Utils" Version="2.3.244" />
+    <PackageVersion Include="MSBuild.StructuredLogger.Utils" Version="2.3.246" />
     <PackageVersion Include="NuGet.Packaging" Version="7.6.0" />
     <PackageVersion Include="Rocket.Surgery.ModularPipelines.Extensions" Version="0.1.12" />
     <PackageVersion Include="Sourcy.DotNet" Version="1.1.1" />
