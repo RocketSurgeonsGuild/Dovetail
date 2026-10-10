@@ -65,7 +65,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="5.6.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.6.0" />
-    <PackageVersion Include="Verify.DiffPlex" Version="3.3.1" />
+    <PackageVersion Include="Verify.DiffPlex" Version="3.4.0" />
     <PackageVersion Include="YamlDotNet" Version="18.1.0" />
     <!-- Pinned to the last version without a System.Text.Json dependency (2.x+ requires >=10.0.2, which
              conflicts with the pinned System.Text.Json used by the older Roslyn-host support projects). -->
