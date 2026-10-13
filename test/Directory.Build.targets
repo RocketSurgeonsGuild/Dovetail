@@ -10,7 +10,12 @@
         <PackageReference Include="TUnit" />
         <PackageReference Include="Verify.TUnit" />
         <Using Include="Shouldly" />
-        <ProjectReference Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference
+            Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false"
+            Condition="!$(MSBuildProjectName.StartsWith('Dovetail.Analyzers.'))"
+        />
     </ItemGroup>
     <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.targets" />
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />

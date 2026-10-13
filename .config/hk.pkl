@@ -3,7 +3,7 @@ amends "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Config.pk
 import "package://github.com/jdx/hk/releases/download/v2.6.0/hk@2.6.0#/Builtins.pkl"
 
 // Solution the .NET formatters operate against.
-local solution = "Specular.slnx"
+local solution = "Dovetail.slnx"
 
 local excludeDiagnostics = new Listing<String> {
   "CA1869"

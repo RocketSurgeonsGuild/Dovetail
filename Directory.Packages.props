@@ -22,6 +22,7 @@
     <GlobalPackageReference Include="FakeItEasy.Analyzer.CSharp" Version="6.1.1" />
     <GlobalPackageReference Include="xunit.analyzers" Version="2.2.0" />
     <GlobalPackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.170" />
+    <PackageVersion Include="Tomlyn.Extensions.Configuration" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.20.0" />

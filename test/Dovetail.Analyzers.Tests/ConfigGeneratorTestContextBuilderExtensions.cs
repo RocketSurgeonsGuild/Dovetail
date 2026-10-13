@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
+using Tomlyn.Extensions.Configuration;
 
 namespace Dovetail.Analyzers.Tests;
 
