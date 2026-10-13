@@ -1,4 +1,3 @@
-using Dovetail.Configuration.Toml;
 using Dovetail.Configuration.Yaml;
 
 using Microsoft.Extensions.Configuration;
