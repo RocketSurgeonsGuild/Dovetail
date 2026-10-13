@@ -3,6 +3,7 @@ using Dovetail.Attributes;
 using Dovetail.Configuration.Toml;
 using Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
+using Tomlyn.Extensions.Configuration;
 
 /// <summary>
 ///     Default TOML app-settings convention for this project.
