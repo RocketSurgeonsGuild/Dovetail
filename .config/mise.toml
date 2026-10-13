@@ -1,7 +1,7 @@
 [tools]
 "github:microsoft/apm" = { version = "v0.25.0", bin = "apm" }
-"github:eljulians/skillfile" = { version = "v1.8.0", bin = "skillfile" }
-hk = "1.53.0"
+"github:eljulians/skillfile" = { version = "v1.7.4", bin = "skillfile" }
+hk = "2.6.0"
 pkl = "0.32.1"
 node = "24.18.1"
 actionlint = "1.7.12"
@@ -42,14 +42,6 @@ idiomatic_version_file_enable_tools = ["dotnet"]
 
 [env]
 HK_MISE = 1
-# Keep npm's download cache inside the mise data dir so jdx/mise-action's
-# cache (which caches MISE_DATA_DIR / ~/.local/share/mise) also persists npm
-# tarballs across CI runs. `npm ci` still wipes node_modules, but reuses these.
 npm_config_cache = "{{env.HOME}}/.local/share/mise/npm-cache"
-# Microsoft Roslyn language server (Microsoft.CodeAnalysis.LanguageServer), installed by the
-# `roslyn-lsp` task from the Azure DevOps vs-impl feed. The wrapper lands on PATH below.
-ROSLYN_LSP_VERSION = "4.8.0-7.26274.14"
-PKL_VSCODE_VERSION = "0.22.0"
 
-[hooks]
-postinstall = ["hk install --mise", "npm install"]
+[deps.npm]
