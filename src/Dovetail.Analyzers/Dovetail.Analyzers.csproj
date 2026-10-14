@@ -14,10 +14,12 @@
         <PackageReference Include="Polyfill" PrivateAssets="all" />
         <ProjectReference Include="../Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.0.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
         <ProjectReference Include="../Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.3.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="../Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.6.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="bin\$(Configuration)\netstandard2.0\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/roslyn5.6/cs" Visible="false" />
-        <None Include="$(_AnalyzersLocation)roslyn5.3/$(Configuration)/netstandard2.0/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/roslyn5.3/cs" Visible="false" />
+        <None Include="bin\$(Configuration)\netstandard2.0\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/roslyn5.9/cs" Visible="false" />
         <None Include="$(_AnalyzersLocation)roslyn5.0/$(Configuration)/netstandard2.0/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/roslyn5.0/cs" Visible="false" />
+        <None Include="$(_AnalyzersLocation)roslyn5.3/$(Configuration)/netstandard2.0/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/roslyn5.3/cs" Visible="false" />
+        <None Include="$(_AnalyzersLocation)roslyn5.6/$(Configuration)/netstandard2.0/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/roslyn5.6/cs" Visible="false" />
     </ItemGroup>
 </Project>

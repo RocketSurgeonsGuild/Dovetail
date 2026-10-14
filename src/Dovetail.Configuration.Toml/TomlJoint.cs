@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using Dovetail.Attributes;
 using Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
+using Tomlyn.Extensions.Configuration;
 
 
 namespace Dovetail.Configuration.Toml;

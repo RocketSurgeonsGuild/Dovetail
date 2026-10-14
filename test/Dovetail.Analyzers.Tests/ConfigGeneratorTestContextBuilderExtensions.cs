@@ -1,4 +1,3 @@
-using Dovetail.Configuration.Toml;
 using Dovetail.Configuration.Yaml;
 using Dovetail.Infrastructure;
 using Dovetail.Joints;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
+using Tomlyn.Extensions.Configuration;
 
 namespace Dovetail.Analyzers.Tests;
 

@@ -96,6 +96,7 @@
   <Folder Name="/src/Dovetail.Analyzers.supports/">
     <Project Path="src/Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.0.csproj" />
     <Project Path="src/Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.3.csproj" />
+    <Project Path="src/Dovetail.Analyzers.supports/Dovetail.Analyzers.roslyn5.6.csproj" />
   </Folder>
   <Folder Name="/test/">
     <File Path="test/.editorconfig" />
@@ -117,5 +118,6 @@
   <Folder Name="/test/Dovetail.Analyzers.Tests.supports/">
     <Project Path="test/Dovetail.Analyzers.Tests.supports/Dovetail.Analyzers.roslyn5.0.Tests.csproj" />
     <Project Path="test/Dovetail.Analyzers.Tests.supports/Dovetail.Analyzers.roslyn5.3.Tests.csproj" />
+    <Project Path="test/Dovetail.Analyzers.Tests.supports/Dovetail.Analyzers.roslyn5.6.Tests.csproj" />
   </Folder>
 </Solution>
