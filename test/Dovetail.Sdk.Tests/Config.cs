@@ -274,6 +274,23 @@ internal static class Config
             : match[prefix.Length..^".nupkg".Length];
     }
 
+    /// <summary>
+    /// Resolves the version pinned for a package in the solution's central
+    /// <c>Directory.Packages.props</c>, so scaffolded consumer projects that reference e.g.
+    /// <c>Microsoft.Extensions.Logging</c> stay in sync with the solution's pin instead of a value
+    /// hardcoded in the test.
+    /// </summary>
+    public static string CentralPackageVersion(string packageId)
+    {
+        var path = Path.Combine(RootDirectory, "Directory.Packages.props");
+        var version = XDocument.Load(path)
+           .Descendants("PackageVersion")
+           .FirstOrDefault(e => string.Equals(e.Attribute("Include")?.Value, packageId, StringComparison.OrdinalIgnoreCase))
+          ?.Attribute("Version")
+          ?.Value;
+        return version ?? throw new InvalidOperationException($"No PackageVersion entry found for '{packageId}' in {path}.");
+    }
+
     private static string FindRootDirectory()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
