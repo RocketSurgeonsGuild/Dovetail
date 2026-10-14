@@ -22,7 +22,7 @@ public class SdkTests
                    .ItemInclude(
                         "PackageReference",
                         include: "Microsoft.Extensions.Logging",
-                        metadata: new Dictionary<string, string?> { ["Version"] = "10.0.12" }
+                        metadata: new Dictionary<string, string?> { ["Version"] = Config.CentralPackageVersion("Microsoft.Extensions.Logging") }
                     )
                    .ItemInclude(
                         "DovetailJoint",
