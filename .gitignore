@@ -241,3 +241,7 @@ docs/.docfx-metadata/
 docs/.generated/
 .playwright-mcp/
 docs/api/
+.agents/skills/.mise-skills.json
+.agents/skills/fnox
+.agents/skills/hk-configure
+.agents/skills/hk-debug

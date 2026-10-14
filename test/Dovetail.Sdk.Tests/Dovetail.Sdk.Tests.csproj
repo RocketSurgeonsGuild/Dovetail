@@ -14,7 +14,6 @@
     <PackageReference Include="MSBuild.StructuredLogger.Utils" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="System.Interactive" />
-    <PackageReference Include="Verify.DiffPlex" />
   </ItemGroup>
 
   <!--
