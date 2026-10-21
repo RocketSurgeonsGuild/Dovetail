@@ -3,7 +3,7 @@
     Name: lib.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: false,
       AssemblyName: lib,
@@ -43,7 +43,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin\Debug/,
       RootNamespace: lib,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {

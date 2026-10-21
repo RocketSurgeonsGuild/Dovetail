@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <PackageDescription>Adds support for loading toml configuration files</PackageDescription>
         <PackageTags>$(PackageTags);reflection</PackageTags>
         <RootNamespace>Dovetail.Configuration.Toml</RootNamespace>
@@ -10,7 +10,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Configuration" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Condition="$(TargetFramework) != 'net8.0-browser'" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
         <InternalsVisibleTo Include="Dovetail.CommandLine" />
         <InternalsVisibleTo Include="Dovetail.Hosting" />
         <InternalsVisibleTo Include="Dovetail.Web.Hosting" />

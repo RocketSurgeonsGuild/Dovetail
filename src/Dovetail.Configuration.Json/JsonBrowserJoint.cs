@@ -43,7 +43,8 @@ internal class JsonBrowserJoint : IConfigurationAsyncJoint
     {
         try
         {
-            var stream = await http.GetStreamAsync(path, cancellationToken).ConfigureAwait(false);
+            // The browser's HttpClient can't read synchronously, and the configuration parsers do, so buffer the file first.
+            var stream = new MemoryStream(await http.GetByteArrayAsync(path, cancellationToken).ConfigureAwait(false));
             builder.Add(new JsonStreamConfigurationSource { Stream = stream, });
         }
         catch (HttpRequestException) { }

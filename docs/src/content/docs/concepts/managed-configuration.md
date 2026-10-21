@@ -151,6 +151,48 @@ public class MyService
 }
 ```
 
+### Validating configuration
+
+`AddDovetailConfigurationOptions<TOptions>` returns the standard `OptionsBuilder<TOptions>`, so the
+usual validation calls chain straight onto it:
+
+```c#
+services
+   .AddDovetailConfigurationOptions<MyLibrary.AppSettingsConfiguration>(configuration, "MyLibrary")
+   .Validate<AppSettingsConfigurationValidator>() // an IValidateOptions<AppSettingsConfiguration>
+   .ValidateOnStart();
+```
+
+On .NET 11, `OptionsBuilder<TOptions>` also accepts asynchronous validation, for checks that need I/O
+(a reachable endpoint, an existing database):
+
+```c#
+services
+   .AddDovetailConfigurationOptions<MyLibrary.AppSettingsConfiguration>(configuration, "MyLibrary")
+   .Validate<IHttpClientFactory>(
+        static async (options, http, cancellationToken) =>
+        {
+            using var response = await http.CreateClient().GetAsync(options.Endpoint, cancellationToken);
+            return response.IsSuccessStatusCode;
+        },
+        "MyLibrary:Endpoint is not reachable"
+    )
+   .ValidateOnStart();
+```
+
+Asynchronous validators run while the host starts (`IHost.StartAsync`), through the built-in
+`IAsyncStartupValidator`. Keep these .NET 11 limits in mind:
+
+- Options that have only asynchronous validators can't be read synchronously before startup finishes.
+  Reading them throws an `OptionsValidationException`.
+- `IOptionsSnapshot<T>`, and `IOptionsMonitor<T>` after a reload, validate synchronously only. Keep a
+  synchronous validator too if those paths must reject bad values.
+- A custom startup validator should implement `IAsyncStartupValidator`. The synchronous
+  `IStartupValidator` is obsolete on .NET 11 (`SYSLIB0066`).
+
+None of this needs anything from Dovetail. It's the standard options pipeline that
+`AddDovetailConfigurationOptions` hands back.
+
 ### Transitive configuration
 
 A library's own configuration dependencies flow to its dependents without redeclaration. If

@@ -3,7 +3,7 @@
     Name: wasm.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: true,
       AssemblyName: wasm,
@@ -43,7 +43,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin\Debug/,
       RootNamespace: wasm,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
@@ -85,6 +85,7 @@
       DovetailHost.WebAssembly.g.cs
     ],
     OutputFiles: [
+      wasm.runtimeconfig.dev.json,
       wasm.staticwebassets.runtime.json
     ]
   }

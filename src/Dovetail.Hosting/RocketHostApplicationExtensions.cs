@@ -70,7 +70,7 @@ public static class DovetailHostApplicationHelpers
         return host;
     }
 
-    internal static ValueTask SharedHostConfigurationAsync(
+    internal static async ValueTask SharedHostConfigurationAsync(
         IDovetailContext context,
         IHostApplicationBuilder hostApplicationBuilder,
         CancellationToken cancellationToken
@@ -99,7 +99,9 @@ public static class DovetailHostApplicationHelpers
                 break;
             }
         }
+        // Sources only exist once the conventions have run, so apply them before deciding whether to chain.
         var cb = new ConfigurationBuilder();
+        await cb.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
         if (cb.Sources is { Count: > 0, })
         {
             hostApplicationBuilder.Configuration.Sources.Insert(
@@ -115,6 +117,5 @@ public static class DovetailHostApplicationHelpers
         hostApplicationBuilder.Configuration.AddInMemoryCollection(
             new Dictionary<string, string?> { ["RocketSurgeryDovetails:HostType"] = context.GetHostType().ToString(), }
         );
-        return cb.ApplyConfiguration(context, cancellationToken);
     }
 }

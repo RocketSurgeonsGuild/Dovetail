@@ -48,7 +48,7 @@ public static class DovetailContextDiagram
 
         var hostTypeClasses = DefineHostTypeCssClasses(builder);
 
-        var stepSubgraphs = new Dictionary<string, Subgraph>(StringComparer.Ordinal);
+        Dictionary<string, Subgraph> stepSubgraphs = [with(StringComparer.Ordinal)];
         var connectedStepNodes = new Dictionary<string, Node>();
         var metadataNodes = new Dictionary<DovetailDiagnosticMetadataJoint, Node>();
         var metadataTypeNodes = new Dictionary<Type, Node>();
@@ -110,11 +110,12 @@ public static class DovetailContextDiagram
             builder.AddLink(stepSubgraphs[from], stepSubgraphs[to], out _, lineStyle: LinkLineStyle.Dotted);
         }
 
+        items:
         foreach (var item in metadata.OrderBy(z => z.AssemblyName, StringComparer.Ordinal).ThenBy(z => z.JointName, StringComparer.Ordinal))
         {
             foreach (var dep in item.Dependencies.OrderBy(z => z.AssemblyName, StringComparer.Ordinal).ThenBy(z => z.JointName, StringComparer.Ordinal))
             {
-                if (!metadataNodes.TryGetValue(item, out var toNode)) continue;
+                if (!metadataNodes.TryGetValue(item, out var toNode)) continue items;
                 if (!metadataNodes.TryGetValue(dep, out var fromNode)) continue;
                 if (dep.Direction == DependencyDirection.DependentOf)
                 {

@@ -3,7 +3,7 @@
     Name: host.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: true,
       AssemblyName: host,
@@ -43,7 +43,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin\Debug/,
       RootNamespace: host,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
@@ -86,6 +86,7 @@
       DovetailHost.HostApplication.g.cs
     ],
     OutputFiles: [
+      host.runtimeconfig.dev.json,
       lib1.yaml,
       lib2.json
     ]

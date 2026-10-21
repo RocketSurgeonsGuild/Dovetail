@@ -10,7 +10,8 @@ namespace Dovetail.Sdk.Tests;
 /// driven purely by file presence + provider-reference detection, independent of the
 /// (default-off) <c>DovetailEnable*Configuration</c>/<c>Dovetail.Configuration.targets</c> opt-in path.
 /// </summary>
-public class ConfigurationTests
+[TargetFrameworks]
+public class ConfigurationTests(string targetFramework)
 {
     [Test]
     [Arguments("json", "Microsoft.Extensions.Configuration.Json", "10.0.9", "Dovetail.JsonConfiguration.g.cs")]
@@ -37,7 +38,7 @@ public class ConfigurationTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
                    .ItemInclude(
                         "PackageReference",
                         include: providerPackageId,
@@ -69,7 +70,7 @@ public class ConfigurationTests
     public Task TwoAppSettingsFiles_YamlAndToml_EmitBothConfigurationJoints() =>
         VerifyTwoProviders("yaml", "Dovetail.Configuration.Yaml", null, "toml", "Dovetail.Configuration.Toml", null);
 
-    private static async Task VerifyTwoProviders(
+    private async Task VerifyTwoProviders(
         string extensionA,
         string providerPackageIdA,
         string? providerVersionA,
@@ -92,7 +93,7 @@ public class ConfigurationTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
                    .ItemInclude(
                         "PackageReference",
                         include: providerPackageIdA,
@@ -128,7 +129,7 @@ public class ConfigurationTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile($"lib/appsettings.{extension}", "{}");
 

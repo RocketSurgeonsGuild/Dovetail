@@ -4,7 +4,7 @@
       Name: lib.csproj,
       Configuration: Release,
       Platform: AnyCPU,
-      TargetFramework: net10.0,
+      TargetFramework: {TargetFramework},
       Properties: {
         _DovetailApplicationDetected: false,
         AssemblyName: lib,
@@ -44,7 +44,7 @@
         NoWarn: 1701;1702,
         PackageOutputPath: bin\Release/,
         RootNamespace: lib,
-        TargetFramework: net10.0
+        TargetFramework: {TargetFramework}
       },
       AdditionalFiles: [],
       PackageReference: {
@@ -85,7 +85,7 @@
       Files: [
         contentFiles/any/any/configuration/lib.json,
         lib.nuspec,
-        lib/net10.0/lib.dll
+        lib/{TargetFramework}/lib.dll
       ]
     }
   ]

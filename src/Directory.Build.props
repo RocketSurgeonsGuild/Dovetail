@@ -9,5 +9,7 @@
          PackageOutputPath (artifacts/nuget, GitVersion-numbered) as a global property, which
          always wins over this plain assignment regardless of the condition below. -->
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(SolutionDir)artifacts/nuget-local</PackageOutputPath>
+    <!-- Blazor WebAssembly apps load these libraries' net11.0 assets, and Mono can't run runtime-async methods. -->
+    <UseRuntimeAsync>false</UseRuntimeAsync>
   </PropertyGroup>
 </Project>

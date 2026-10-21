@@ -1,6 +1,8 @@
 using Dovetail.Hosting.AspNetCore.Tests.Startups;
+using Dovetail.Joints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Rocket.Surgery.Extensions.Testing;
 
 
@@ -21,5 +23,20 @@ public class RocketWebApplicationBuilderTests() : AutoFakeTest<TestRecord>(TestR
         var server = host.GetTestServer();
         server.CreateClient();
         await host.StopAsync();
+    }
+
+    [Test]
+    public async Task Should_Chain_Dovetail_Configuration_Into_The_Host()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+
+        await using var host = await builder.ConfigureDovetail(
+            rb => rb.ConfigureConfiguration(
+                static (_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Chained"] = "yes", })
+            )
+        );
+
+        host.Configuration["Dovetail:Chained"].ShouldBe("yes");
     }
 }

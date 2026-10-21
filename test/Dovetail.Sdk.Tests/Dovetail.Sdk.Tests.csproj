@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <!--
+        MSBuild.ProjectCreation loads MSBuild in-proc from an SDK of the host's major version, and only SDK 11 is
+        installed (mise adds just the .NET 10 runtime). The scaffolded projects cover both target frameworks instead,
+        through TargetFrameworksAttribute.
+    -->
+    <TargetFramework>net11.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\sample\Sample.DependencyOne\Sample.DependencyOne.csproj" />
@@ -11,8 +16,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSBuild.ProjectCreation" />
+    <!-- Load all of MSBuild from the SDK (MSBuildAssemblyResolver): copies from these packages don't match its Microsoft.Build.dll. -->
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
     <PackageReference Include="MSBuild.StructuredLogger.Utils" />
     <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <PackageReference Include="System.Interactive" />
   </ItemGroup>
 
@@ -30,6 +39,20 @@
 
   <Target Name="PackDovetailSourcePackages" BeforeTargets="Build">
     <!--
+        Each target framework's inner build asks for the packages. Route every request to one call without a
+        TargetFramework: MSBuild caches it, so the packages are built once per build rather than once (and
+        concurrently) per framework, and the src projects never inherit this project's TargetFramework.
+    -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_PackDovetailSourcePackages"
+      Properties="Configuration=$(Configuration)"
+      RemoveProperties="TargetFramework;RuntimeIdentifier"
+    />
+  </Target>
+
+  <Target Name="_PackDovetailSourcePackages">
+    <!--
         artifacts/nuget-local also accumulates packages from other pack invocations (e.g. a
         Release/CI-style GitVersion-numbered pack run locally). SdkTestProject picks up every
         Dovetail.* nupkg it finds there and hands the highest version to the scaffolded consumer's
@@ -45,6 +68,7 @@
       Projects="@(_DovetailSrcProject)"
       Targets="Restore;Pack"
       Properties="Configuration=$(Configuration)"
+      RemoveProperties="TargetFramework;RuntimeIdentifier"
       BuildInParallel="true"
     />
   </Target>

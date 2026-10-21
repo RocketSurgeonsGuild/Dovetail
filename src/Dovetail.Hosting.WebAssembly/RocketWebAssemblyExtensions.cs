@@ -54,7 +54,7 @@ public static class DovetailWebAssemblyHelpers
 
         var context = await DovetailContext.FromAsync(contextBuilder, cancellationToken).ConfigureAwait(false);
 
-        await SharedHostConfigurationAsync(context, builder, cancellationToken).ConfigureAwait(false);
+        await SharedHostConfigurationAsync(context, builder.Configuration, cancellationToken).ConfigureAwait(false);
         await builder.Services.ApplyService(context, cancellationToken).ConfigureAwait(false);
 
         if (context.Get<ServiceProviderFactoryAdapter>() is { } factory)
@@ -66,25 +66,29 @@ public static class DovetailWebAssemblyHelpers
         return host;
     }
 
-    internal static ValueTask SharedHostConfigurationAsync(
+    internal static async ValueTask SharedHostConfigurationAsync(
         IDovetailContext context,
-        WebAssemblyHostBuilder builder,
+        IConfigurationBuilder configurationBuilder,
         CancellationToken cancellationToken
     )
     {
-        var configurationBuilder = (IConfigurationBuilder)builder.Configuration;
-
         // Dovetail's own IConfigurationAsyncJoint conventions (JsonBrowserDovetail/YamlBrowserDovetail/
         // TomlBrowserDovetail, etc.) now own configuration loading end to end - including the HTTP fetch
         // that used to be Blazor's own default behavior for appsettings.json/appsettings.{Environment}.json -
         // so strip whatever the default WebAssembly host already loaded to avoid double-loading/precedence
-        // conflicts, then insert a freshly-built ConfigurationBuilder in its place.
-        foreach (var existing in configurationBuilder.Sources.OfType<JsonStreamConfigurationSource>().ToArray())
+        // conflicts. WebAssemblyHostConfiguration only hands out a read-only copy of its sources; there the
+        // defaults stay, and Dovetail's sources are added after them so they still win.
+        if (!configurationBuilder.Sources.IsReadOnly)
         {
-            configurationBuilder.Sources.Remove(existing);
+            foreach (var existing in configurationBuilder.Sources.OfType<JsonStreamConfigurationSource>().ToArray())
+            {
+                configurationBuilder.Sources.Remove(existing);
+            }
         }
 
+        // Sources only exist once the conventions have run, so apply them before deciding whether to chain.
         var cb = new ConfigurationBuilder();
+        await cb.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
         if (cb.Sources is { Count: > 0, })
         {
             configurationBuilder.Add(
@@ -95,6 +99,12 @@ public static class DovetailWebAssemblyHelpers
                 }
             );
         }
-        return cb.ApplyConfiguration(context, cancellationToken);
+
+#if NET11_0_OR_GREATER
+        // Since .NET 11 the WebAssembly host reads environment variables into configuration. Keep them, and the
+        // RSG_-prefixed ones the server host also honors, above Dovetail's configuration files.
+        configurationBuilder.AddEnvironmentVariables();
+        configurationBuilder.AddEnvironmentVariables("RSG_");
+#endif
     }
 }
