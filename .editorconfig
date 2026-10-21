@@ -2,17 +2,11 @@ root = true
 
 [*]
 charset = utf-8
-insert_final_newline = true
 max_line_length = 200
-root = true
-
-[*]
-charset = utf-8
 end_of_line = lf
 indent_size = 2
 indent_style = space
 insert_final_newline = true
-max_line_length = 80
 trim_trailing_whitespace = true
 
 [*.{css,scss}]
@@ -388,9 +382,9 @@ file_header_template = unset
 # Applicable to: IDE0073
 # non-empty string, optionally containing a {fileName} placeholder, unset or empty string
 
-visual_basic_preferred_modifier_order = Jointial, Default, Private, Protected, Public, Friend, NotOverridable, Overridable, MustOverride, Overloads, Overrides, MustInherit, NotInheritable, Static, Shared, Shadows, ReadOnly, WriteOnly, Dim, Const, WithEvents, Widening, Narrowing, Custom, Async
+visual_basic_preferred_modifier_order = Partial, Default, Private, Protected, Public, Friend, NotOverridable, Overridable, MustOverride, Overloads, Overrides, MustInherit, NotInheritable, Static, Shared, Shadows, ReadOnly, WriteOnly, Dim, Const, WithEvents, Widening, Narrowing, Custom, Async
 # Applicable to: IDE0036
-# One or more Visual Basic modifiers, such as Jointial, Private, and Public
+# One or more Visual Basic modifiers, such as Partial, Private, and Public
 
 visual_basic_style_prefer_isnot_expression = true
 # Applicable to: IDE0084
@@ -2508,6 +2502,8 @@ dotnet_diagnostic.IDE0330.severity = warning
 # IDE1005: Use conditional delegate call
 dotnet_diagnostic.IDE1005.severity = warning
 # Options: csharp_style_conditional_delegate_call
+
+dotnet_diagnostic.IDE1100.severity = none
 
 ###################################################################################################################
 ###                     Roslynator
