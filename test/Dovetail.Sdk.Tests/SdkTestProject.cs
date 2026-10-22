@@ -300,6 +300,30 @@ public sealed class SdkTestProject : IDisposable
     }
 
     /// <summary>
+    /// Builds the project at <paramref name="relativePath"/> and verifies where its configuration
+    /// files ended up: the ones copied to <c>bin/</c>, and the manifest resources
+    /// <c>Dovetail.PackConfiguration.targets</c> embedded into the built assembly (read with
+    /// <see cref="System.Reflection.Metadata.MetadataReader"/>, so the assembly is never loaded).
+    /// </summary>
+    public async Task VerifyEmbeddedConfiguration(string relativePath)
+    {
+        var projectDirectory = Path.Combine(Directory, relativePath);
+        var result = await BuildAndEvaluate(projectDirectory, "build");
+
+        var assemblyPath = System.IO.Directory.EnumerateFiles(Path.Combine(projectDirectory, "bin"), $"{Path.GetFileName(relativePath)}.dll", SearchOption.AllDirectories).Single();
+        using var stream = File.OpenRead(assemblyPath);
+        using var peReader = new System.Reflection.PortableExecutable.PEReader(stream);
+        var metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(peReader);
+        var embeddedResources = metadata.ManifestResources
+           .Select(handle => metadata.GetString(metadata.GetManifestResource(handle).Name))
+           .OrderBy(z => z, StringComparer.Ordinal)
+           .ToArray();
+
+        var outputFiles = result.OutputFiles.OrderBy(z => z, StringComparer.Ordinal).ToArray();
+        await Verify(new { OutputFiles = outputFiles, EmbeddedResources = embeddedResources }, settings: _settings);
+    }
+
+    /// <summary>
     /// Lists the config-shaped filenames (json/yaml/yml/toml) under <paramref name="directory"/>,
     /// excluding the .NET SDK's own generated *.deps.json/*.runtimeconfig.json/
     /// *.staticwebassets.endpoints.json - those share the same extensions but aren't anything

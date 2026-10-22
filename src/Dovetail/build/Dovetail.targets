@@ -59,6 +59,7 @@
       <HelperName></HelperName>
       <HasBuildExpression></HasBuildExpression>
       <BuildExpression></BuildExpression>
+      <_SyncEntryPoint></_SyncEntryPoint>
     </DovetailHost>
   </ItemDefinitionGroup>
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Joints.targets" Condition="'$(_DovetailJointTargetsImported)' != 'true'" />

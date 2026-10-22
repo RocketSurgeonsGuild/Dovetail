@@ -15,7 +15,7 @@ internal class YamlJoint : IConfigurationJoint
     /// <inheritdoc />
     public void Register(IDovetailContext context, IConfigurationBuilder builder)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser"))) return;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("Browser")) || context.EmbeddedConfigurationAssembly is not null) return;
         var applicationName = context.Get<string>("ApplicationName");
         var environmentName = context.Get<string>("EnvironmentName");
 
