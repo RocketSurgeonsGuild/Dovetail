@@ -28,6 +28,7 @@
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
       DovetailHostingMauiVersion: {sdk-version},
+      DovetailHostingUnoVersion: {sdk-version},
       DovetailHostingVersion: {sdk-version},
       DovetailHostingWebAssemblyVersion: {sdk-version},
       DovetailHostingWebVersion: {sdk-version},

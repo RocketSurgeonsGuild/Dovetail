@@ -27,7 +27,19 @@ public class EmbeddedConfigurationTests(string targetFramework)
         await project.VerifyEmbeddedConfiguration("lib");
     }
 
-    private SdkTestProject CreateLibrary(bool embedOnly)
+    /// <summary>
+    /// Uno.Sdk embeds <c>appsettings.json</c> itself, under the default manifest name and from targets imported after
+    /// Dovetail's; Dovetail then leaves that file to it rather than embedding it twice.
+    /// </summary>
+    [Test]
+    public async Task FileAlreadyEmbeddedByAnotherTool_IsNotEmbeddedTwice()
+    {
+        using var project = CreateLibrary(embedOnly: false, embedAppSettingsJson: true);
+
+        await project.VerifyEmbeddedConfiguration("lib");
+    }
+
+    private SdkTestProject CreateLibrary(bool embedOnly, bool embedAppSettingsJson = false)
     {
         var library = ProjectCreator
                      .Templates.SdkCsproj(targetFramework: targetFramework)
@@ -39,6 +51,11 @@ public class EmbeddedConfigurationTests(string targetFramework)
         if (embedOnly)
         {
             library.Property("DovetailEmbedConfiguration", "true");
+        }
+
+        if (embedAppSettingsJson)
+        {
+            library.ItemInclude("EmbeddedResource", "appsettings.json");
         }
 
         var project = new SdkTestProject();

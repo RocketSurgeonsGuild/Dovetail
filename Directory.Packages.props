@@ -81,6 +81,19 @@
     <PackageVersion Include="Verify.Playwright" Version="3.1.1" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
   </ItemGroup>
+  <!--
+      Uno.Extensions per release line: no stable 7.x has net10.0+ assets (its net9.0 ones serve net10.0), and only the 8.0
+      prereleases target net10.0+, so net11.0 builds take those until 8.0 is stable. Kept apart from the per-framework groups
+      below so the two lines can be bumped independently.
+  -->
+  <ItemGroup Label="Uno.Extensions 7.x" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="7.3.6" />
+    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="7.3.6" />
+  </ItemGroup>
+  <ItemGroup Label="Uno.Extensions 8.x" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="8.0.0-dev.118" />
+    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="8.0.0-dev.118" />
+  </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
     <PackageVersion Include="Microsoft.Maui.Core" Version="10.0.120" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />

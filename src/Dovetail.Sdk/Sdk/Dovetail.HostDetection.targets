@@ -8,6 +8,14 @@
       has been evaluated, while still being early enough (pure evaluation, no Target execution yet) for the
       DovetailSdkImplicitPackageReference items below to reach NuGet restore.
   -->
+  <!--
+      Uno.Sdk only normalizes UnoFeatures (whitespace stripped, lower-cased, wrapped in ';') in its own targets, which may
+      not have been evaluated yet, so normalize a copy here.
+  -->
+  <PropertyGroup Condition="'$(UsingUnoSdk)' == 'true'">
+    <_DovetailUnoFeatures>;$([System.Text.RegularExpressions.Regex]::Replace('$(UnoFeatures)', '\s+', '').ToLowerInvariant());</_DovetailUnoFeatures>
+    <_DovetailUnoApplication Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe' or '$(OutputType)' == 'WinExe'">true</_DovetailUnoApplication>
+  </PropertyGroup>
   <Choose>
     <!--
         MAUI first: MAUI apps are OutputType=Exe, so the generic host branch below would claim them. MAUI class
@@ -29,6 +37,28 @@
         <AssemblyMetadata Include="DovetailEnvironmentName" Value="$(_DovetailMauiEnvironmentName)" />
         <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting.Maui" Version="$(DovetailHostingMauiVersion)" />
       </ItemGroup>
+    </When>
+    <!--
+        Uno apps with Uno.Extensions.Hosting (UnoFeatures includes Hosting) - ahead of the WebAssembly branch (the browserwasm
+        head is built on Microsoft.NET.Sdk.WebAssembly) and the Exe branch. Without Hosting an Uno app has no container for
+        Dovetail to plug into; see the warning target below. Navigation apps start with NavigateAsync<TShell>(), so the host
+        also gets ConfigureDovetail<TShell>. Configuration is embedded only, as on a device there are no files on disk.
+    -->
+    <When Condition=" '$(UsingUnoSdk)' == 'true' and '$(_DovetailUnoApplication)' == 'true' and $(_DovetailUnoFeatures.Contains(';hosting;')) ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+        <DovetailEmbedConfiguration Condition="'$(DovetailEmbedConfiguration)' == ''">true</DovetailEmbedConfiguration>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="Uno" HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Dovetail.DovetailUnoHelpers" BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly" NavigateEntryPoint="true"/>
+        <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting.Uno" Version="$(DovetailHostingUnoVersion)" />
+      </ItemGroup>
+    </When>
+    <!-- An Uno app without Uno.Extensions.Hosting is not a generic host either: no host (see _DovetailWarnUnoWithoutHosting). -->
+    <When Condition=" '$(UsingUnoSdk)' == 'true' and '$(_DovetailUnoApplication)' == 'true' ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>false</_DovetailApplicationDetected>
+      </PropertyGroup>
     </When>
     <When Condition=" '$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' or '$(UsingMicrosoftNETSdkWebAssembly)'=='true' ">
       <PropertyGroup>
@@ -57,26 +87,6 @@
         <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
       </ItemGroup>
     </When>
-    <!--    <When Condition=" '$(UsingUnoSdk)'=='true' ">-->
-    <!--      <PropertyGroup>-->
-    <!--        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>-->
-    <!--      </PropertyGroup>-->
-    <!--      <ItemGroup>-->
-    <!--        <DovetailHost-->
-    <!--          Include="Uno"-->
-    <!--          HostBuilderType="global::Uno.UI.Hosting.IUnoPlatformHostBuilder"-->
-    <!--          HostBuilderName="builder"-->
-    <!--          HostType="global::Uno.UI.Hosting.UnoPlatformHost"-->
-    <!--        />-->
-    <!--        <DovetailSdkImplicitPackageReference-->
-    <!--          Include="Dovetail.Hosting.Uno"-->
-    <!--          Version="TODO"-->
-    <!--          Condition="@(PackageReference->AnyHaveMetadataValue('Identity', 'Dovetail.Hosting.Uno')) != 'true'"-->
-    <!--          PrivateAssets="all"-->
-    <!--          IncludeAssets="runtime; build; native; contentfiles; analyzers"-->
-    <!--        />-->
-    <!--      </ItemGroup>-->
-    <!--    </When>-->
     <Otherwise>
       <PropertyGroup>
         <_DovetailApplicationDetected>false</_DovetailApplicationDetected>
@@ -100,6 +110,12 @@
     <DovetailEnableAspire Condition="'$(DovetailEnableAspireHosting)' == ''">false</DovetailEnableAspire>
     <DovetailEnableAspireTesting Condition="'$(DovetailEnableAspireHostingTesting)' == ''">false</DovetailEnableAspireTesting>
   </PropertyGroup>
+
+  <Target Name="_DovetailWarnUnoWithoutHosting"
+          BeforeTargets="Build"
+          Condition="'$(UsingUnoSdk)' == 'true' and '$(_DovetailUnoApplication)' == 'true' and !$(_DovetailUnoFeatures.Contains(';hosting;'))">
+    <Warning Text="Dovetail: this Uno Platform app doesn't use Uno.Extensions.Hosting, so Dovetail has no host to configure. Add Hosting to UnoFeatures to use Dovetail here." />
+  </Target>
 
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Configuration.targets" Condition="'$(DovetailEnableConfiguration)' == 'true'"/>
 
