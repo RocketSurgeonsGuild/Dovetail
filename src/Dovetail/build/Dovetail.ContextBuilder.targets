@@ -6,7 +6,7 @@
 
   <!-- Batched once per DovetailContextBuilder item via Outputs -->
   <Target Name="_DovetailGenerateContextBuilderSources"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailPrepareHostItems"
     Condition="'@(DovetailHost)' != ''"
     Outputs="$(_DovetailContextBuilderOutputFile)">

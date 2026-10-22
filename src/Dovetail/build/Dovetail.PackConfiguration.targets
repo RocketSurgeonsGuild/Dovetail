@@ -234,7 +234,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateJsonConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.json;$(_DovetailJsonConfigurationTemplateFile)"
@@ -252,7 +252,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateYamlConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.yaml;$(_DovetailYamlConfigurationTemplateFile)"
@@ -270,7 +270,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateYmlConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.yml;$(_DovetailYmlConfigurationTemplateFile)"
@@ -288,7 +288,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateTomlConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.toml;$(_DovetailTomlConfigurationTemplateFile)"

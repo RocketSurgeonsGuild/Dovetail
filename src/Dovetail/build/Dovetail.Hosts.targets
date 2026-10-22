@@ -36,9 +36,12 @@
     </ItemGroup>
   </Target>
 
-  <!-- Batched once per DovetailHost item via Outputs -->
+  <!--
+      Batched once per DovetailHost item via Outputs. Also before XamlPreCompile: WinUI's XAML compiler (MAUI and Uno Windows
+      heads) compiles the project's C# in a first pass, and the app code calls these generated entry points.
+  -->
   <Target Name="_DovetailGenerateHostSources"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailPrepareHostItems"
     Condition="'@(DovetailHost)' != ''"
     Outputs="%(DovetailHost.Identity)">

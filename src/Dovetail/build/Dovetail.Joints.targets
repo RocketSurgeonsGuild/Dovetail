@@ -109,7 +109,7 @@
 
   <!-- Batched once per DovetailJoint item via Outputs -->
   <Target Name="_DovetailGenerateJointSources"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailPrepareJointItems"
     Condition="'@(DovetailJoint)' != ''"
     Outputs="%(DovetailJoint.Identity)">

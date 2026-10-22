@@ -42,7 +42,9 @@ jobs:
                       workloads: maui-android android wasm-tools wasm-tools-net10
                       maui: net10.0-android%3Bnet11.0-android
                       uno: net10.0-desktop%3Bnet10.0-browserwasm%3Bnet10.0-android
-                      uno-net11: net11.0-android
+                      # Not yet: the Uno 7 prerelease's Android runtime is built against a newer Java.Interop than the .NET 11
+                      # RC Android workload has (CS1705). Back to net11.0-android once those line up.
+                      uno-net11: ''
                     - name: macOS net10.0 (iOS, Mac Catalyst)
                       os: macos-26
                       properties: -p:ValidateXcodeVersion=false
@@ -65,6 +67,11 @@ jobs:
         defaults:
             run:
                 shell: bash
+        env:
+            # One MSBuild process per build: MAUI's and Uno's Resizetizer tasks load different SkiaSharp natives, and a reused
+            # node from the MAUI build breaks Uno's (SKColorSpace type initializer).
+            MSBUILDDISABLENODEREUSE: '1'
+            DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
         steps:
             # Some snapshot files' paths are longer than Windows allows by default.
             - name: Enable long paths
