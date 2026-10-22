@@ -5,8 +5,9 @@ name: Workload samples
 # through DovetailSampleTargetFrameworks (';' is passed as %3B, since MSBuild splits -p: values on it; an empty value skips
 # that sample on the leg).
 #
-# .NET for iOS/Mac Catalyst pins an exact Xcode version per release: the net10.0 packs need Xcode 26.0 (selected on macos-26),
-# the net11.0 prerelease packs need Xcode 27.0, which only GitHub's xcode-27 preview image has.
+# .NET for iOS/Mac Catalyst pins an exact Xcode version per release. The net11.0 prerelease packs need Xcode 27.0, which only
+# GitHub's xcode-27 preview image has. The net10.0 packs ask for Xcode 26.0, but macos-26's Xcode 26.0.1 has no matching iOS
+# simulator runtime, so that leg keeps the image's default Xcode and turns the exact-version check off (ValidateXcodeVersion).
 
 on:
     push:
@@ -44,7 +45,7 @@ jobs:
                       uno-net11: net11.0-android
                     - name: macOS net10.0 (iOS, Mac Catalyst)
                       os: macos-26
-                      xcode: /Applications/Xcode_26.0.1.app
+                      properties: -p:ValidateXcodeVersion=false
                       workloads: maui ios maccatalyst
                       maui: net10.0-ios%3Bnet10.0-maccatalyst
                       uno: net10.0-ios
@@ -65,6 +66,10 @@ jobs:
             run:
                 shell: bash
         steps:
+            # Some snapshot files' paths are longer than Windows allows by default.
+            - name: Enable long paths
+              if: runner.os == 'Windows'
+              run: git config --global core.longpaths true
             - name: Checkout
               uses: actions/checkout@v7
               with:
@@ -77,13 +82,6 @@ jobs:
                   cache_key_prefix: mise-v2
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
-            - name: 🍎 Select Xcode
-              if: matrix.xcode != ''
-              run: |
-                  sudo xcode-select --switch "$XCODE"
-                  xcodebuild -version
-              env:
-                  XCODE: ${{ matrix.xcode }}
             # Through mise, so dotnet is the SDK global.json asks for (on Windows the runner's own SDKs come first on PATH).
             - name: 📦 Install workloads
               run: |
@@ -93,19 +91,28 @@ jobs:
                   WORKLOADS: ${{ matrix.workloads }}
             - name: ⚙️ Build Sample.Maui
               if: matrix.maui != ''
-              run: mise exec -- dotnet build sample/Sample.Maui/Sample.Maui.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Maui.binlog
+              run: |
+                  read -ra properties <<< "$PROPERTIES"
+                  mise exec -- dotnet build sample/Sample.Maui/Sample.Maui.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Maui.binlog "${properties[@]}"
               env:
                   HEADS: ${{ matrix.maui }}
+                  PROPERTIES: ${{ matrix.properties }}
             - name: ⚙️ Build Sample.Uno
               if: (success() || failure()) && matrix.uno != ''
-              run: mise exec -- dotnet build sample/Sample.Uno/Sample.Uno.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.binlog
+              run: |
+                  read -ra properties <<< "$PROPERTIES"
+                  mise exec -- dotnet build sample/Sample.Uno/Sample.Uno.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.binlog "${properties[@]}"
               env:
                   HEADS: ${{ matrix.uno }}
+                  PROPERTIES: ${{ matrix.properties }}
             - name: ⚙️ Build Sample.Uno.Net11
               if: (success() || failure()) && matrix.uno-net11 != ''
-              run: mise exec -- dotnet build sample/Sample.Uno.Net11/Sample.Uno.Net11.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.Net11.binlog
+              run: |
+                  read -ra properties <<< "$PROPERTIES"
+                  mise exec -- dotnet build sample/Sample.Uno.Net11/Sample.Uno.Net11.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.Net11.binlog "${properties[@]}"
               env:
                   HEADS: ${{ matrix.uno-net11 }}
+                  PROPERTIES: ${{ matrix.properties }}
             - name: 🏺 Publish logs
               if: always()
               uses: actions/upload-artifact@v7

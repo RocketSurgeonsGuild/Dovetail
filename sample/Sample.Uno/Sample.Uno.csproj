@@ -32,6 +32,13 @@
 
     <!-- What the Dovetail SDK's Uno detection sets (see src/Dovetail.Sdk/Sdk/Dovetail.HostDetection.targets); samples reference src directly. -->
     <DovetailEmbedConfiguration>true</DovetailEmbedConfiguration>
+    <!--
+        The repo's Rocket.Surgery.MSBuild.SourceLink turns these on; with the Skia renderer, Uno swaps in its own runtime
+        assemblies and their .pdb/.xml, so the package copies would land in the output twice (NETSDK1152, and a duplicate key in
+        the WebAssembly boot manifest).
+    -->
+    <CopyDebugSymbolFilesFromPackages>false</CopyDebugSymbolFilesFromPackages>
+    <CopyDocumentationFilesFromPackages>false</CopyDocumentationFilesFromPackages>
   </PropertyGroup>
 
   <ItemGroup>
