@@ -1,8 +1,8 @@
 name: Workload samples
 
 # Builds the samples that need .NET workloads (sample/Sample.Maui, sample/Sample.Uno, sample/Sample.Uno.Net11), which
-# Dovetail.slnx leaves out of the solution build. Each leg installs the workloads its runner can build and picks those heads
-# through DovetailSampleTargetFrameworks (';' is passed as %3B, since MSBuild splits -p: values on it; an empty value skips
+# Dovetail.slnx leaves out of the solution build. `mise install` installs the workloads this runner's OS can build (the dotnet
+# tool's postinstall in .config/mise.toml), and each leg picks those heads through DovetailSampleTargetFrameworks (';' is passed as %3B, since MSBuild splits -p: values on it; an empty value skips
 # that sample on the leg).
 #
 # .NET for iOS/Mac Catalyst pins an exact Xcode version per release. The net11.0 prerelease packs need Xcode 27.0, which only
@@ -38,8 +38,6 @@ jobs:
                 include:
                     - name: Linux (Android, Uno desktop and WebAssembly)
                       os: ubuntu-latest
-                      # wasm-tools-net10: the .NET 11 SDK's wasm-tools only covers net11.0 heads.
-                      workloads: maui-android android wasm-tools wasm-tools-net10
                       maui: net10.0-android%3Bnet11.0-android
                       uno: net10.0-desktop%3Bnet10.0-browserwasm%3Bnet10.0-android
                       # Not yet: the Uno 7 prerelease's Android runtime is built against a newer Java.Interop than the .NET 11
@@ -48,19 +46,16 @@ jobs:
                     - name: macOS net10.0 (iOS, Mac Catalyst)
                       os: macos-26
                       properties: -p:ValidateXcodeVersion=false
-                      workloads: maui ios maccatalyst
                       maui: net10.0-ios%3Bnet10.0-maccatalyst
                       uno: net10.0-ios
                       uno-net11: ''
                     - name: macOS net11.0 (iOS, Mac Catalyst)
                       os: xcode-27
-                      workloads: maui ios maccatalyst
                       maui: net11.0-ios%3Bnet11.0-maccatalyst
                       uno: ''
                       uno-net11: net11.0-ios
                     - name: Windows
                       os: windows-latest
-                      workloads: maui-windows
                       maui: net10.0-windows10.0.19041.0%3Bnet11.0-windows10.0.19041.0
                       uno: net10.0-windows10.0.26100
                       uno-net11: net11.0-windows10.0.26100
@@ -90,6 +85,8 @@ jobs:
               with:
                   install: true
                   cache: true
+                  # Restore only: build.yml is the single cache writer (as in lint.yml).
+                  cache_save: false
                   cache_key_prefix: mise-v2
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -101,13 +98,10 @@ jobs:
                   fi
                   "$DOTNET_ROOT/dotnet" --version
             # The dotnet mise installed (it exports DOTNET_ROOT), which global.json asks for: on Windows the runner's own SDKs come first
-            # on PATH, and `mise exec` would also run the repo's npm deps step, which fails on Windows.
-            - name: 📦 Install workloads
-              run: |
-                  read -ra workloads <<< "$WORKLOADS"
-                  "$DOTNET_ROOT/dotnet" workload install "${workloads[@]}"
-              env:
-                  WORKLOADS: ${{ matrix.workloads }}
+            # on PATH, and `mise exec` would also run the repo's npm deps step, which fails on Windows. The workloads themselves were
+            # installed by `mise install` above.
+            - name: 📦 Installed workloads
+              run: '"$DOTNET_ROOT/dotnet" workload list'
             - name: ⚙️ Build Sample.Maui
               if: matrix.maui != ''
               run: |
