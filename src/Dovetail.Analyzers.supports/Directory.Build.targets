@@ -4,4 +4,9 @@
         <Compile Include="$(MSBuildThisFileDirectory)..\Dovetail.Analyzers\**\*.cs" Exclude="$(MSBuildThisFileDirectory)..\Dovetail.Analyzers\obj\**\*.cs" />
     </ItemGroup>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+    <!-- These builds compile Dovetail.Analyzers' sources, so they track its rules too. -->
+    <ItemGroup>
+        <AdditionalFiles Remove="AnalyzerReleases.Shipped.md;AnalyzerReleases.Unshipped.md" />
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\Dovetail.Analyzers\AnalyzerReleases.Shipped.md;$(MSBuildThisFileDirectory)..\Dovetail.Analyzers\AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
 </Project>
