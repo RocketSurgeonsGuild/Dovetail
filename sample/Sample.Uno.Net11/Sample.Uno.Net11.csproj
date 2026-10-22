@@ -52,8 +52,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Dovetail.Hosting.Uno\Dovetail.Hosting.Uno.csproj" />
-    <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+    <!-- The libraries' net11.0 builds declare RuntimeIdentifiers (browser-wasm), which would make the app's per-RID head builds pass
+         their RuntimeIdentifier down; package consumers never see this, as the libraries ship RID-agnostic. -->
+    <ProjectReference Include="..\..\src\Dovetail.Hosting.Uno\Dovetail.Hosting.Uno.csproj" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained" />
+    <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained" />
 
     <DovetailHost
       Include="Uno"

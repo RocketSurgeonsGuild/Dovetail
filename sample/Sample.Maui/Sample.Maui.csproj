@@ -43,8 +43,10 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" />
-        <ProjectReference Include="..\..\src\Dovetail.Hosting.Maui\Dovetail.Hosting.Maui.csproj" />
-        <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+        <!-- The libraries' net11.0 builds declare RuntimeIdentifiers (browser-wasm), which would make the app's per-RID head builds pass
+             their RuntimeIdentifier down; package consumers never see this, as the libraries ship RID-agnostic. -->
+        <ProjectReference Include="..\..\src\Dovetail.Hosting.Maui\Dovetail.Hosting.Maui.csproj" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained" />
+        <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained" />
 
         <DovetailHost
             Include="Maui"
