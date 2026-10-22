@@ -12,9 +12,19 @@ namespace Dovetail.OpenTelemetry;
 [DovetailExport, ConnectsJoint<IOpenTelemetryJoint>]
 public class OpenTelemetryConnector : IServiceAsyncJoint
 {
+#if NET11_0_OR_GREATER
+    /// <summary>
+    ///     ASP.NET Core 11 publishes its request activities on this <see cref="System.Diagnostics.ActivitySource" />.
+    /// </summary>
+    internal const string AspNetCoreActivitySourceName = "Microsoft.AspNetCore";
+#endif
+
     ValueTask IServiceAsyncJoint.Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken)
     {
         var builder = new Builder(services);
+#if NET11_0_OR_GREATER
+        builder.WithTracing(static tracing => tracing.AddSource(AspNetCoreActivitySourceName));
+#endif
         return builder.ApplyOpenTelemetry(context, cancellationToken);
     }
 

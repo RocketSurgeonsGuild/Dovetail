@@ -3,7 +3,7 @@
     Name: web.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: true,
       AssemblyName: web,
@@ -43,7 +43,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin\Debug/,
       RootNamespace: web,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
@@ -85,6 +85,9 @@
       DovetailContextBuilder.g.cs,
       DovetailHost.WebApplication.g.cs
     ],
-    OutputFiles: []
+    OutputFiles: [
+      web.runtimeconfig.dev.json,
+      web.staticwebassets.runtime.json
+    ]
   }
 ]

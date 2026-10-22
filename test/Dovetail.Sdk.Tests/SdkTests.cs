@@ -2,7 +2,8 @@ using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace Dovetail.Sdk.Tests;
 
-public class SdkTests
+[TargetFrameworks]
+public class SdkTests(string targetFramework)
 {
     [Test]
     public async Task BaseSdk_AppliesSharedDefaults_AndInjectsAnalyzers()
@@ -18,11 +19,11 @@ public class SdkTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
                    .ItemInclude(
                         "PackageReference",
                         include: "Microsoft.Extensions.Logging",
-                        metadata: new Dictionary<string, string?> { ["Version"] = Config.CentralPackageVersion("Microsoft.Extensions.Logging") }
+                        metadata: new Dictionary<string, string?> { ["Version"] = Config.CentralPackageVersion("Microsoft.Extensions.Logging", targetFramework) }
                     )
                    .ItemInclude(
                         "DovetailJoint",

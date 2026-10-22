@@ -252,6 +252,18 @@ internal static class Config
         .ToFrozenSet();
 
     public static string RootDirectory => field ??= FindRootDirectory();
+
+    /// <summary>
+    /// The .NET SDK the repo builds with, pinned in <c>.config/mise.toml</c> (the first <c>dotnet</c> tool entry), so
+    /// scaffolded projects use the same SDK instead of whatever is newest on the machine.
+    /// </summary>
+    public static string DotnetSdkVersion => field ??= System.Text.RegularExpressions.Regex.Match(
+                                                 File.ReadAllText(Path.Combine(RootDirectory, ".config", "mise.toml")),
+                                                 @"dotnet = \[\s*\{ version = ""(?<version>[^""]+)"""
+                                             ) is { Success: true, } match
+        ? match.Groups["version"].Value
+        : throw new InvalidOperationException("No dotnet SDK version found in .config/mise.toml.");
+
     public static string NugetArtifactsDirectory => field ??= Path.Combine(FindRootDirectory(), "artifacts", "nuget-local");
 
     /// <summary>
@@ -278,14 +290,21 @@ internal static class Config
     /// Resolves the version pinned for a package in the solution's central
     /// <c>Directory.Packages.props</c>, so scaffolded consumer projects that reference e.g.
     /// <c>Microsoft.Extensions.Logging</c> stay in sync with the solution's pin instead of a value
-    /// hardcoded in the test.
+    /// hardcoded in the test. Packages split per release train sit in two item groups conditioned on
+    /// net11.0 compatibility; <paramref name="targetFramework" /> picks the matching one.
     /// </summary>
-    public static string CentralPackageVersion(string packageId)
+    public static string CentralPackageVersion(string packageId, string targetFramework)
     {
         var path = Path.Combine(RootDirectory, "Directory.Packages.props");
+        var isNet11OrGreater = Version.Parse(targetFramework["net".Length..]).Major >= 11;
         var version = XDocument.Load(path)
            .Descendants("PackageVersion")
-           .FirstOrDefault(e => string.Equals(e.Attribute("Include")?.Value, packageId, StringComparison.OrdinalIgnoreCase))
+           .Where(e => string.Equals(e.Attribute("Include")?.Value, packageId, StringComparison.OrdinalIgnoreCase))
+           .FirstOrDefault(
+                e => e.Parent?.Attribute("Condition")?.Value is not { } condition
+                 || !condition.Contains("IsTargetFrameworkCompatible", StringComparison.Ordinal)
+                 || condition.TrimStart().StartsWith('!') != isNet11OrGreater
+            )
           ?.Attribute("Version")
           ?.Value;
         return version ?? throw new InvalidOperationException($"No PackageVersion entry found for '{packageId}' in {path}.");

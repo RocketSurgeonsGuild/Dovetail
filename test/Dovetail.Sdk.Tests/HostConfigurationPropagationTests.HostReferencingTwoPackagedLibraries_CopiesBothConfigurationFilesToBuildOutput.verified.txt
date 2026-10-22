@@ -3,7 +3,7 @@
     Name: DovetailPkgTestLib1.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: false,
       AssemblyName: DovetailPkgTestLib1,
@@ -43,7 +43,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin/Debug/,
       RootNamespace: DovetailPkgTestLib1,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
@@ -81,7 +81,7 @@
     Name: DovetailPkgTestLib2.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: false,
       AssemblyName: DovetailPkgTestLib2,
@@ -121,7 +121,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin/Debug/,
       RootNamespace: DovetailPkgTestLib2,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
@@ -159,7 +159,7 @@
     Name: host.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: true,
       AssemblyName: host,
@@ -199,7 +199,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin\Debug/,
       RootNamespace: host,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
@@ -245,7 +245,8 @@
     ],
     OutputFiles: [
       DovetailPkgTestLib1.yaml,
-      DovetailPkgTestLib2.json
+      DovetailPkgTestLib2.json,
+      host.runtimeconfig.dev.json
     ]
   }
 ]

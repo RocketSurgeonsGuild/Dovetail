@@ -11,7 +11,8 @@ namespace Dovetail.Sdk.Tests;
 /// present - see Dovetail.ContextBuilder.targets) to all run against the same project, and the
 /// generated code has to actually compile against real call sites instead of just being declared.
 /// </summary>
-public class DovetailJointHostContextBuilderTests
+[TargetFrameworks]
+public class DovetailJointHostContextBuilderTests(string targetFramework)
 {
     [Test]
     public async Task HostApplication_WithDovetailJoint_GeneratesHostJointAndContextBuilderTogether()
@@ -27,11 +28,11 @@ public class DovetailJointHostContextBuilderTests
            .AddProject(
                 "worker/worker.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0", outputType: "Exe")
+                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
                    .ItemInclude(
                         "PackageReference",
                         include: "Microsoft.Extensions.Logging",
-                        metadata: new Dictionary<string, string?> { ["Version"] = Config.CentralPackageVersion("Microsoft.Extensions.Logging") }
+                        metadata: new Dictionary<string, string?> { ["Version"] = Config.CentralPackageVersion("Microsoft.Extensions.Logging", targetFramework) }
                     )
                    .ItemInclude(
                         "DovetailJoint",

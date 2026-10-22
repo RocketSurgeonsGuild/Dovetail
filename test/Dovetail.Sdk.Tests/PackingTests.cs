@@ -7,7 +7,8 @@ namespace Dovetail.Sdk.Tests;
 /// <c>Dovetail.PackConfiguration.targets</c> - the appsettings rename/pack/copy + codegen surface
 /// exercised by <see cref="ConfigurationTests"/> - is imported at all for a given project.
 /// </summary>
-public class PackingTests
+[TargetFrameworks]
+public class PackingTests(string targetFramework)
 {
     [Test]
     public async Task PlainLibrary_DefaultsDovetailPackConfigurationTrue()
@@ -23,7 +24,7 @@ public class PackingTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.yaml", "{}");
 
@@ -44,7 +45,7 @@ public class PackingTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
                    .Property("DovetailPackConfiguration", "false")
                    .ItemInclude(
                         "PackageReference",
@@ -71,7 +72,7 @@ public class PackingTests
            .AddProject(
                 "web/web.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0", sdk: "Microsoft.NET.Sdk.Web")
+                   .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.Web")
                    .Property("DovetailPackConfiguration", "true")
                    .ItemInclude(
                         "PackageReference",

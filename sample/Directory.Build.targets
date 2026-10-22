@@ -6,6 +6,7 @@
       IncludeAssets="all"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
+      IsAspireProjectResource="false"
     />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />

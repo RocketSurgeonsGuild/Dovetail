@@ -3,7 +3,7 @@
     Name: worker.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
-    TargetFramework: net10.0,
+    TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: true,
       AssemblyName: worker,
@@ -43,7 +43,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin\Debug/,
       RootNamespace: worker,
-      TargetFramework: net10.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
@@ -94,6 +94,8 @@
       DovetailJoint.CustomLogging.g.cs,
       DovetailJointAsync.CustomLogging.g.cs
     ],
-    OutputFiles: []
+    OutputFiles: [
+      worker.runtimeconfig.dev.json
+    ]
   }
 ]

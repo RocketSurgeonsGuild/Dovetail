@@ -1,10 +1,12 @@
+using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
-using BenchmarkDotNet.Toolchains.InProcess.Emit;
+using BenchmarkDotNet.Toolchains.CsProj;
+using BenchmarkDotNet.Toolchains.DotNetCli;
 using Dovetail.Attributes;
-using Dovetail;
 using Dovetail.Hosting;
 using Dovetail.Joints;
 using Hosting.Benchmarks;
@@ -13,16 +15,26 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+// One job per target framework, side by side, so the results show what .NET 11 (and runtime async) changes.
 var config = ManualConfig
-           .Create(DefaultConfig.Instance);
-config.AddJob(
-    Job.ShortRun.WithToolchain(
-        InProcessEmitToolchain
-           .Instance // Run in-process so you don't need a solution file. If this is part of a solution, replace with CsProjCoreToolchain.NetCoreApp21.
-    )
-);
+            .Create(DefaultConfig.Instance)
+            .AddJob(Job.ShortRun.WithRuntime(CoreRuntime.Core10_0).WithId("net10.0").AsBaseline())
+            .AddJob(
+                 Job.ShortRun
+                    .WithRuntime(Net11Runtime())
+                    .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net11.0", null, ".NET 11.0")))
+                    .WithId("net11.0")
+             );
 
-BenchmarkRunner.Run<Benchmarks>(config);
+BenchmarkSwitcher.FromTypes([typeof(Benchmarks)]).Run(args, config);
+
+// BenchmarkDotNet 0.15 has no .NET 11 moniker and throws on unrecognized ones, so describe .NET 11 on the net10.0
+// moniker (used for its SDK version checks) and pick the net11.0 toolchain explicitly. Use CoreRuntime.Core11_0 once a
+// stable BenchmarkDotNet has it.
+static CoreRuntime Net11Runtime() =>
+    (CoreRuntime)typeof(CoreRuntime)
+                .GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, [typeof(RuntimeMoniker), typeof(string), typeof(string)])!
+                .Invoke([RuntimeMoniker.Net10_0, "net11.0", ".NET 11.0"]);
 
 #pragma warning disable CA1822
 #pragma warning disable CA1724

@@ -11,6 +11,8 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <!-- Sample.BlazorWasm builds this for browser-wasm (see RuntimeAsyncBrowserWasmAsset in the root Directory.Build.targets). -->
+        <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
     </PropertyGroup>
 </Project>

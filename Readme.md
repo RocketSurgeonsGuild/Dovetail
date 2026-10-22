@@ -26,6 +26,17 @@
 
 <!-- nuget packages -->
 
+# Contributing
+
+Run `mise install` before building: it installs the .NET SDK and the extra .NET 10 runtime that the net10.0 tests run on (`.config/mise.toml`). `global.json` pins the same SDK, so a `dotnet` outside mise fails fast unless that SDK is installed.
+
+> [!NOTE]
+> On macOS, the first `mise install` of a new .NET SDK can overwrite the shared `~/.local/share/mise/dotnet-root/dotnet` host in place, and macOS then kills every `dotnet` command (SIGKILL). Replace the host with a fresh copy to fix it:
+>
+> ```bash
+> cd ~/.local/share/mise/dotnet-root && cp -p dotnet dotnet.fresh && mv -f dotnet.fresh dotnet
+> ```
+
 # Whats next?
 
 TBD

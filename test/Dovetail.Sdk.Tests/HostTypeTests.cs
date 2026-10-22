@@ -2,7 +2,8 @@ using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace Dovetail.Sdk.Tests;
 
-public class HostTypeTests
+[TargetFrameworks]
+public class HostTypeTests(string targetFramework)
 {
     [Test]
     public async Task WebApplication_DetectsHostAndInjectsHostingWeb()
@@ -18,7 +19,7 @@ public class HostTypeTests
            .AddProject(
                 "web/web.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0", sdk: "Microsoft.NET.Sdk.Web")
+                   .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.Web")
             )
            .AddFile("web/Program.cs", "System.Console.WriteLine(\"hello\");");
 
@@ -39,7 +40,7 @@ public class HostTypeTests
            .AddProject(
                 "worker/worker.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0", outputType: "Exe")
+                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
             )
            .AddFile("worker/Program.cs", "System.Console.WriteLine(\"hello\");");
 
@@ -60,7 +61,7 @@ public class HostTypeTests
            .AddProject(
                 "wasm/wasm.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0", sdk: "Microsoft.NET.Sdk.BlazorWebAssembly")
+                   .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly")
             )
            .AddFile("wasm/Program.cs", "System.Console.WriteLine(\"hello\");");
 
@@ -81,7 +82,7 @@ public class HostTypeTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             );
 
         await project.VerifyProjects();

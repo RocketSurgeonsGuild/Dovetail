@@ -9,7 +9,8 @@ namespace Dovetail.Sdk.Tests;
 /// package NuGet restores to consumers, not just in the MSBuild evaluation snapshot exercised by
 /// <see cref="PackingTests"/>.
 /// </summary>
-public class PackageContentTests
+[TargetFrameworks]
+public class PackageContentTests(string targetFramework)
 {
     [Test]
     public async Task JsonConfigurationFile_IsPackagedUnderContentFilesConfiguration()
@@ -25,7 +26,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.json", "{}");
 
@@ -46,7 +47,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.yaml", "{}");
 
@@ -67,7 +68,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.yml", "{}");
 
@@ -88,7 +89,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.toml", "");
 
@@ -109,7 +110,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.yaml", "{}")
            .AddFile("lib/appsettings.local.yaml", "{}");
@@ -131,7 +132,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
                    .Property("DovetailPackConfiguration", "false")
             )
            .AddFile("lib/appsettings.yaml", "{}");
@@ -153,7 +154,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.yaml", "{}")
            .AddFile("lib/appsettings.Development.yaml", "{}");
@@ -175,7 +176,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
             )
            .AddFile("lib/appsettings.yaml", "{}")
            .AddFile("lib/appsettings.Production.yaml", "{}");
@@ -199,7 +200,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
                    .ItemInclude(
                         "PackageReference",
                         include: "Dovetail",
@@ -219,7 +220,7 @@ public class PackageContentTests
            .AddProject(
                 "lib/lib.csproj",
                 ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: "net10.0")
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
                    .ItemInclude(
                         "PackageReference",
                         include: "Dovetail",

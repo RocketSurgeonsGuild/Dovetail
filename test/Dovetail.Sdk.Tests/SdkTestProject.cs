@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Build.Utilities.ProjectCreation;
@@ -69,15 +68,16 @@ public sealed class SdkTestProject : IDisposable
         // Scrub both forms - and the id - in a single pass, since separate ScrubLinesWithReplace
         // registrations each run against the original line rather than chaining.
         var tempPath = Path.GetTempPath();
-        _settings.ScrubLinesWithReplace(z => z.Replace("/private" + tempPath, "{TempPath}").Replace(id, "{id}"));
+        // The tests run once per target framework (see TargetFrameworksAttribute) against one shared snapshot.
+        _settings.IgnoreConstructorParameters();
+        _settings.ScrubLinesWithReplace(z => ScrubTargetFramework(z.Replace("/private" + tempPath, "{TempPath}").Replace(id, "{id}")));
         // A project that never references Dovetail.Sdk has nothing pinning $(CustomAfterMicrosoftCommonTargets)
         // to a specific installed .NET SDK version - global.json's rollForward: latestMajor lets it float to
         // whatever's newest on the machine (e.g. a preview SDK), which would otherwise make the snapshot differ
         // across dev machines/CI runners with a different set of installed SDKs.
-        _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @".*/sdk/\d+\.\d+\.\d+[^/]*/", "/sdk/{dotnet-sdk-version}/"));
+        _settings.ScrubLinesWithReplace(z => ScrubTargetFramework(System.Text.RegularExpressions.Regex.Replace(z, @".*/sdk/\d+\.\d+\.\d+[^/]*/", "/sdk/{dotnet-sdk-version}/")));
 
-        var currentGlobalJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(Config.RootDirectory, "global.json")));
-        var version = currentGlobalJson.RootElement.GetProperty("sdk").GetProperty("version").GetString();
+        var version = Config.DotnetSdkVersion;
 
         var globalJson = GlobalJsonCreator.Create(new DirectoryInfo(Directory));
         foreach (var sdkName in _repository.Packages.Where(z => z.Id.StartsWith("Dovetail.Sdk", StringComparison.OrdinalIgnoreCase)))
@@ -359,6 +359,8 @@ public sealed class SdkTestProject : IDisposable
         psi.Environment.Remove("MSBuildLoadMicrosoftTargetsReadOnly");
         return psi;
     }
+
+    private static string ScrubTargetFramework(string line) => System.Text.RegularExpressions.Regex.Replace(line, @"\bnet1[01]\.0\b", "{TargetFramework}");
 
     public void Dispose()
     {

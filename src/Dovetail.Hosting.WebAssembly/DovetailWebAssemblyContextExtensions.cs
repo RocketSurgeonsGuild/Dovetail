@@ -16,7 +16,7 @@ public static class DovetailWebAssemblyContextExtensions
         ///     The underlying WebAssembly host environment. Populated by the host during startup.
         /// </summary>
         /// <exception cref="InvalidOperationException"><see cref="IWebAssemblyHostEnvironment" /> has not been registered in the context's properties.</exception>
-        public IWebAssemblyHostEnvironment Configuration =>
+        public IWebAssemblyHostEnvironment WebAssemblyHostEnvironment =>
             context.Get<IWebAssemblyHostEnvironment>()
             ?? throw new InvalidOperationException(
                 "IWebAssemblyHostEnvironment has not been registered in the Dovetail context. Ensure the host populates context.Properties with IWebAssemblyHostEnvironment."

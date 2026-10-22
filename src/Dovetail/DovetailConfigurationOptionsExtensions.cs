@@ -39,7 +39,11 @@ public static class DovetailConfigurationOptionsExtensions
     /// <param name="services">The service collection to register against.</param>
     /// <param name="configuration">The root configuration to bind from.</param>
     /// <param name="sectionKey">The configuration section key that maps to <typeparamref name="TOptions" />.</param>
-    /// <returns>The <see cref="OptionsBuilder{TOptions}" /> for further configuration.</returns>
+    /// <returns>
+    ///     The <see cref="OptionsBuilder{TOptions}" /> for further configuration, such as
+    ///     <c>Validate&lt;TValidateOptions&gt;()</c> and <c>ValidateOnStart()</c>. On .NET 11 its asynchronous
+    ///     <c>Validate</c> overloads run during host startup through <c>IAsyncStartupValidator</c>.
+    /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="services" />, <paramref name="configuration" />, or <paramref name="sectionKey" /> is <see langword="null" />.</exception>
     /// <remarks>
     ///     <para>

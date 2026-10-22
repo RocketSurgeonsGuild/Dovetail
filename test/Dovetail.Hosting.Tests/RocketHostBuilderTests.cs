@@ -46,6 +46,20 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
     }
 
     [Test]
+    public async Task Should_Chain_Dovetail_Configuration_Into_The_Host()
+    {
+        using var host = await Host
+                              .CreateApplicationBuilder()
+                              .ConfigureDovetail(
+                                   rb => rb.ConfigureConfiguration(
+                                       static (_, builder) => builder.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Chained"] = "yes", })
+                                   )
+                               );
+
+        host.Services.GetRequiredService<IConfiguration>()["Dovetail:Chained"].ShouldBe("yes");
+    }
+
+    [Test]
     public async Task Should_ConfigureHosting()
     {
         var convention = A.Fake<HostApplicationJointDelegate<IHostApplicationBuilder>>();
