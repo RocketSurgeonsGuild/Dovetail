@@ -12,7 +12,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
-        <!-- Sample.BlazorWasm loads the net11.0 build, and Mono can't run runtime-async methods. -->
-        <UseRuntimeAsync>false</UseRuntimeAsync>
+        <!-- Sample.BlazorWasm builds this for browser-wasm (see RuntimeAsyncBrowserWasmAsset in the root Directory.Build.targets). -->
+        <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
     </PropertyGroup>
 </Project>
