@@ -304,8 +304,10 @@ public sealed class SdkTestProject : IDisposable
     /// <c>dotnet msbuild -getProperty/-getItem</c> and verifies the requested properties and items, each
     /// item with its own (non well-known) metadata. For projects that can't be built here, e.g. ones that
     /// need a workload the test machine doesn't have: evaluation still runs the SDK's host detection.
+    /// <paramref name="includeItem" /> (item type, identity) leaves out items that depend on the machine, such as the
+    /// implicit package references an installed workload adds.
     /// </summary>
-    public async Task VerifyEvaluation(string relativePath, IReadOnlyList<string> properties, IReadOnlyList<string> items)
+    public async Task VerifyEvaluation(string relativePath, IReadOnlyList<string> properties, IReadOnlyList<string> items, Func<string, string, bool>? includeItem = null)
     {
         var arguments = string.Join(' ', properties.Select(z => $"-getProperty:{z}").Concat(items.Select(z => $"-getItem:{z}")));
         var psi = CreateHermeticStartInfo($"msbuild {arguments}");
@@ -326,6 +328,7 @@ public sealed class SdkTestProject : IDisposable
             z => z,
             z => root.GetProperty("Items").TryGetProperty(z, out var values)
                 ? values.EnumerateArray()
+                   .Where(item => includeItem?.Invoke(z, item.GetProperty("Identity").GetString()!) ?? true)
                    .OrderBy(item => item.GetProperty("Identity").GetString(), StringComparer.Ordinal)
                    .ToDictionary(
                         item => item.GetProperty("Identity").GetString()!,

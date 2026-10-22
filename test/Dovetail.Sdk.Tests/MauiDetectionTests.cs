@@ -14,12 +14,17 @@ public class MauiDetectionTests(string targetFramework)
     private static readonly string[] Properties = ["_DovetailApplicationDetected", "DovetailEmbedConfiguration", "ImportDovetailAssembly", "ExportDovetailAssembly"];
     private static readonly string[] Items = ["DovetailHost", "PackageReference", "AssemblyMetadata"];
 
+    // With the MAUI workload installed, the MAUI SDK adds its own implicit package references (at the workload's version), so
+    // keep only Dovetail's.
+    private static bool DovetailPackagesOnly(string itemType, string identity) =>
+        itemType != "PackageReference" || identity.StartsWith("Dovetail", StringComparison.Ordinal);
+
     [Test]
     public async Task MauiApp_DetectsMauiHostAndInjectsHostingMaui()
     {
         using var project = CreateProject(outputType: "Exe");
 
-        await project.VerifyEvaluation("app", Properties, Items);
+        await project.VerifyEvaluation("app", Properties, Items, DovetailPackagesOnly);
     }
 
     [Test]
@@ -27,7 +32,7 @@ public class MauiDetectionTests(string targetFramework)
     {
         using var project = CreateProject(outputType: "Exe", environmentName: "Staging");
 
-        await project.VerifyEvaluation("app", Properties, ["AssemblyMetadata"]);
+        await project.VerifyEvaluation("app", Properties, ["AssemblyMetadata"], DovetailPackagesOnly);
     }
 
     [Test]
@@ -35,7 +40,7 @@ public class MauiDetectionTests(string targetFramework)
     {
         using var project = CreateProject(outputType: null);
 
-        await project.VerifyEvaluation("app", Properties, Items);
+        await project.VerifyEvaluation("app", Properties, Items, DovetailPackagesOnly);
     }
 
     private SdkTestProject CreateProject(string? outputType, string? environmentName = null)
