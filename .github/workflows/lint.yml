@@ -40,6 +40,9 @@ jobs:
                   cache_key_prefix: mise-v2
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
+            # hk's xmllint step needs the xmllint binary, which isn't on the runner image (or in mise).
+            - name: 📦 Install xmllint
+              run: sudo apt-get update && sudo apt-get install --yes --no-install-recommends libxml2-utils
             # merge_group: hard gate only — no autofix in the merge queue.
             - name: 🧹 Lint (hk check) — merge_group
               if: github.event_name == 'merge_group'

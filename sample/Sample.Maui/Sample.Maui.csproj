@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!--
+        A .NET MAUI app bootstrapped by Dovetail (see MauiProgram.cs). Needs the maui workload, so Dovetail.slnx doesn't build
+        it by default; the workload-samples workflow builds it per platform.
+    -->
+    <PropertyGroup>
+        <TargetFrameworks>net10.0-android;net11.0-android</TargetFrameworks>
+        <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst;net11.0-ios;net11.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0;net11.0-windows10.0.19041.0</TargetFrameworks>
+        <!-- Lets a build (e.g. one CI leg) pick the heads it has workloads for, without the property flowing to referenced projects. A list arrives escaped (';' as %3B) from the command line. -->
+        <TargetFrameworks Condition="'$(DovetailSampleTargetFrameworks)' != ''">$([MSBuild]::Unescape('$(DovetailSampleTargetFrameworks)'))</TargetFrameworks>
+
+        <OutputType>Exe</OutputType>
+        <RootNamespace>Sample.Maui</RootNamespace>
+        <UseMaui>true</UseMaui>
+        <SingleProject>true</SingleProject>
+        <MauiXamlInflator>SourceGen</MauiXamlInflator>
+
+        <ApplicationTitle>Dovetail MAUI Sample</ApplicationTitle>
+        <ApplicationId>com.rocketsurgeonsguild.dovetail.sample.maui</ApplicationId>
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationVersion>1</ApplicationVersion>
+        <WindowsPackageType>None</WindowsPackageType>
+
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+        <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+
+        <!-- What the Dovetail SDK's MAUI detection sets (see src/Dovetail.Sdk/Sdk/Dovetail.HostDetection.targets); samples reference src directly. -->
+        <DovetailEmbedConfiguration>true</DovetailEmbedConfiguration>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+        <MauiImage Include="Resources\Images\*" />
+        <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+        <MauiFont Include="Resources\Fonts\*" />
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Maui.Controls" />
+        <ProjectReference Include="..\..\src\Dovetail.Hosting.Maui\Dovetail.Hosting.Maui.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+
+        <DovetailHost
+            Include="Maui"
+            HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Maui.Hosting.MauiApp"
+            HelperName="global::Dovetail.DovetailMauiHelpers"
+            BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly"
+            SyncEntryPoint="true"
+        />
+        <AssemblyMetadata Include="DovetailEnvironmentName" Value="Development" Condition="'$(Configuration)' == 'Debug'" />
+        <AssemblyMetadata Include="DovetailEnvironmentName" Value="Production" Condition="'$(Configuration)' != 'Debug'" />
+    </ItemGroup>
+    <!--
+        The libraries' net11.0 builds declare RuntimeIdentifiers (browser-wasm, for runtime async), so the app's per-RID head
+        builds would pass their RuntimeIdentifier down to them - including the transitive references the SDK adds, hence an item
+        definition rather than metadata on the references below. Package consumers don't see this: the libraries ship RID-agnostic.
+    -->
+    <ItemDefinitionGroup>
+        <ProjectReference>
+            <GlobalPropertiesToRemove>%(GlobalPropertiesToRemove);RuntimeIdentifier;SelfContained</GlobalPropertiesToRemove>
+        </ProjectReference>
+    </ItemDefinitionGroup>
+</Project>

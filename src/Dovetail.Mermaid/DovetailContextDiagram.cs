@@ -148,14 +148,15 @@ public static class DovetailContextDiagram
         /// <summary>
         ///    Renders the resolved joints of the context as a Mermaid flowchart diagram.
         /// </summary>
-        /// <param name="categories"></param>
-        /// <returns></returns>
+        /// <param name="categories">The categories of joints to include.</param>
+        /// <returns>The Mermaid flowchart source.</returns>
         public string ToMermaidJointFlowDiagram(params IEnumerable<DovetailCategory> categories) => ToMermaidJointFlowDiagramInternal(context.GetDiagnosticMetadata(categories));
 
         /// <summary>
-        ///     Renders <see cref="ToMermaidJointFlowDiagram" /> wrapped in a Markdown mermaid code fence.
+        ///     Renders <see cref="extension(IDovetailContext).ToMermaidJointFlowDiagram(IEnumerable{DovetailCategory})" /> wrapped in a Markdown mermaid code fence.
         /// </summary>
-        /// <param name="categories"></param>
+        /// <param name="categories">The categories of joints to include.</param>
+        /// <returns>The Markdown, with the diagram in a <c>mermaid</c> code fence.</returns>
         public string ToMermaidJointFlowDiagramMarkdown(params IEnumerable<DovetailCategory> categories)
         {
             var sb2 = new StringBuilder();
@@ -171,13 +172,15 @@ public static class DovetailContextDiagram
         /// <summary>
         ///    Renders the resolved joints of the context as a Mermaid flowchart diagram.
         /// </summary>
-        /// <param name="categories"></param>
-        /// <returns></returns>
+        /// <param name="categories">The categories of joints to include.</param>
+        /// <returns>The Mermaid flowchart source.</returns>
         public string ToMermaidJointFlowDiagram(params IEnumerable<DovetailCategory> categories) => ToMermaidJointFlowDiagramInternal(contextBuilder.GetDiagnosticMetadata(categories));
 
         /// <summary>
-        ///     Renders <see cref="ToMermaidJointFlowDiagram" /> wrapped in a Markdown mermaid code fence.
+        ///     Renders <see cref="extension(DovetailContextBuilder).ToMermaidJointFlowDiagram(IEnumerable{DovetailCategory})" /> wrapped in a Markdown mermaid code fence.
         /// </summary>
+        /// <param name="categories">The categories of joints to include.</param>
+        /// <returns>The Markdown, with the diagram in a <c>mermaid</c> code fence.</returns>
         public string ToMermaidJointFlowDiagramMarkdown(params IEnumerable<DovetailCategory> categories)
         {
             var sb2 = new StringBuilder();

@@ -35,6 +35,8 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Dovetail.Hosting.AspNetCore.Tests" />
         <InternalsVisibleTo Include="Dovetail.Hosting.Tests" />
+        <InternalsVisibleTo Include="Dovetail.Hosting.Maui" />
+        <InternalsVisibleTo Include="Dovetail.Hosting.Uno" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
     </ItemGroup>

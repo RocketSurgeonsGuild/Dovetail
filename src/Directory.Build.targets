@@ -12,11 +12,15 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Dovetail.Aspire.Tests" />
     <InternalsVisibleTo Include="Dovetail.Autofac.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Configuration.Runtime.Tests" />
     <InternalsVisibleTo Include="Dovetail.DryIoc.Tests" />
     <InternalsVisibleTo Include="Dovetail.Hosting.AspNetCore.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Hosting.Maui.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Hosting.Uno.Tests" />
     <InternalsVisibleTo Include="Dovetail.Hosting.Tests" />
     <InternalsVisibleTo Include="Dovetail.WebAssembly.Hosting.Tests" />
     <InternalsVisibleTo Include="Dovetail.OpenTelemetry.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Stashbox.Tests" />
     <InternalsVisibleTo Include="Dovetail.Tests" />
     <ProjectReference
       Include="$(MSBuildThisFileDirectory)Dovetail.Analyzers\Dovetail.Analyzers.csproj"

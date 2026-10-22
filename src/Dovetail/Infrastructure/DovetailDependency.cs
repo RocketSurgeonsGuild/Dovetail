@@ -9,12 +9,13 @@ namespace Dovetail.Infrastructure;
 /// </remarks>
 /// <param name="direction"></param>
 /// <param name="type"></param>
-internal readonly struct DovetailDependency(DependencyDirection direction, Type type) : IEquatable<DovetailDependency>, IDovetailDependency
+internal readonly struct DovetailDependency(DependencyDirection direction, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type) : IEquatable<DovetailDependency>, IDovetailDependency
 {
 
     /// <summary>
     ///     The <see cref="IDovetailJoint" /> type to link to
     /// </summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
     public Type Type { get; } = type;
 
     /// <summary>

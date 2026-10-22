@@ -6,6 +6,11 @@
         through TargetFrameworksAttribute.
     -->
     <TargetFramework>net11.0</TargetFramework>
+    <!--
+        MSB3277: Microsoft.Build references a newer NuGet.Frameworks (7.10, shipped with the SDK) than the newest NuGet.* packages
+        (7.9). Harmless: MSBuild and NuGet are loaded from the installed SDK at run time, so these only compile against.
+    -->
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\sample\Sample.DependencyOne\Sample.DependencyOne.csproj" />
@@ -17,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="MSBuild.ProjectCreation" />
     <!-- Load all of MSBuild from the SDK (MSBuildAssemblyResolver): copies from these packages don't match its Microsoft.Build.dll. -->
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
     <PackageReference Include="MSBuild.StructuredLogger.Utils" />
@@ -64,10 +70,14 @@
       <_StaleDovetailPackage Include="$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Dovetail*.nupkg;$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Dovetail*.snupkg" />
     </ItemGroup>
     <Delete Files="@(_StaleDovetailPackage)" />
+    <!--
+        Packed as a prerelease (1.0.0-local), as any dev build is: the packages depend on prereleases (the .NET 11 RC packages for
+        net11.0, and DryIoc's preview), which a stable version would flag as NU5104.
+    -->
     <MSBuild
       Projects="@(_DovetailSrcProject)"
       Targets="Restore;Pack"
-      Properties="Configuration=$(Configuration)"
+      Properties="Configuration=$(Configuration);VersionSuffix=local"
       RemoveProperties="TargetFramework;RuntimeIdentifier"
       BuildInParallel="true"
     />

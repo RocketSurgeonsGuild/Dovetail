@@ -213,7 +213,9 @@ public sealed class ConfigurationOptionsBindingTests
                 await Task.Delay(TimeSpan.FromMilliseconds(250));
                 await File.WriteAllTextAsync(filePath, updatedContent);
 
-                var completed = await Task.WhenAny(changeReceived.Task, Task.Delay(TimeSpan.FromSeconds(15)));
+                using var timeout = new CancellationTokenSource();
+                var completed = await Task.WhenAny(changeReceived.Task, Task.Delay(TimeSpan.FromSeconds(15), timeout.Token));
+                await timeout.CancelAsync();
                 completed.ShouldBe(changeReceived.Task, "Expected IOptionsMonitor<SampleOptions> to observe the file-system change within the timeout.");
 
                 var updated = await changeReceived.Task;

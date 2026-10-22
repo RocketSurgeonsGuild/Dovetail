@@ -20,14 +20,14 @@
     <GlobalPackageReference Include="Roslynator.Refactorings" Version="5.0.1" />
     <GlobalPackageReference Include="Spectre.Console.Analyzer" Version="1.0.0" />
     <GlobalPackageReference Include="FakeItEasy.Analyzer.CSharp" Version="6.1.1" />
-    <GlobalPackageReference Include="xunit.analyzers" Version="2.2.0" />
     <GlobalPackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.171" />
     <PackageVersion Include="Tomlyn.Extensions.Configuration" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.20.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="20.0.0" />
-    <!-- Exactly what MSBuild.ProjectCreation 20.0.0 pins; Dovetail.Sdk.Tests only compiles against them. -->
+    <!-- The MSBuild packages Dovetail.Sdk.Tests compiles against (MSBuild.ProjectCreation brings Microsoft.Build); keep all three on one version. -->
+    <PackageVersion Include="Microsoft.Build" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.11.0" />
     <PackageVersion Include="MSBuild.StructuredLogger.Utils" Version="2.3.246" />
@@ -48,6 +48,7 @@
     <PackageVersion Include="BenchMarkDotNet" Version="0.15.8" />
     <PackageVersion Include="bunit.web" Version="1.40.0" />
     <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="8.0.0-preview-04" />
+    <PackageVersion Include="Stashbox.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageVersion Include="Serilog" Version="4.4.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="OpenTelemetry" Version="1.20.1" />
@@ -80,7 +81,22 @@
     <PackageVersion Include="Verify.Playwright" Version="3.1.1" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
   </ItemGroup>
+  <!--
+      Uno.Extensions per release line: no stable 7.x has net10.0+ assets (its net9.0 ones serve net10.0), and only the 8.0
+      prereleases target net10.0+, so net11.0 builds take those until 8.0 is stable. Kept apart from the per-framework groups
+      below so the two lines can be bumped independently.
+  -->
+  <ItemGroup Label="Uno.Extensions 7.x" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="7.3.6" />
+    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="7.3.6" />
+  </ItemGroup>
+  <ItemGroup Label="Uno.Extensions 8.x" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="8.0.0-dev.118" />
+    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="8.0.0-dev.118" />
+  </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.120" />
+    <PackageVersion Include="Microsoft.Maui.Core" Version="10.0.120" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
@@ -96,6 +112,8 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.13" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0-rc.2.26505.5" />
+    <PackageVersion Include="Microsoft.Maui.Core" Version="11.0.0-rc.2.26505.5" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.Gateway" Version="11.0.0-rc.2.26504.105" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.2.26504.105" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="11.0.0-rc.2.26504.105" />

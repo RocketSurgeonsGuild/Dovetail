@@ -14,5 +14,5 @@ namespace Dovetail.Autofac;
 [DovetailExport, ConnectsJoint<IAutofacJoint>]
 public class AutofacJoint : IServiceAsyncJoint
 {
-    ValueTask IServiceAsyncJoint.Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken = default) => new ContainerBuilder().ApplyAutofac(context, cancellationToken);
+    ValueTask IServiceAsyncJoint.Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken) => new ContainerBuilder().ApplyAutofac(context, cancellationToken);
 }

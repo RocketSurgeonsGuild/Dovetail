@@ -26,6 +26,15 @@
     appsettings.local.{ext} remains excluded from the NuGet package (developer-machine-only
     override, see Dovetail.Configuration.targets' gitignore warning target) but IS still
     renamed and copied to the output directory like its siblings.
+
+    The same files are also embedded into the assembly under their renamed names, so hosts with no
+    file system to read them from (mobile and other app-package hosts, which set
+    DovetailEmbeddedConfiguration.AssemblyKey on the context) can still load them; the generated
+    IConfigurationJoint below falls back to those embedded copies. appsettings.local.{ext} is only
+    embedded when DovetailEmbedConfiguration is 'true', so a packed library never carries it.
+
+    DovetailEmbedConfiguration=true (set by the SDK for MAUI and Uno applications) makes the
+    embedded copies the only ones: the files are no longer copied to the output directory.
   -->
 
   <!--
@@ -58,6 +67,13 @@
       TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
+    <None Update="$(MSBuildProjectDirectory)\appsettings*.json" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.json"
+      Exclude="@(EmbeddedResource)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      DovetailConfiguration="true"
+      Visible="false" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.json" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')">
@@ -70,6 +86,13 @@
       TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.yaml" Pack="false" />
+    <None Update="$(MSBuildProjectDirectory)\appsettings*.yaml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.yaml"
+      Exclude="@(EmbeddedResource)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      DovetailConfiguration="true"
+      Visible="false" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yaml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')">
@@ -82,6 +105,13 @@
       TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.yml" Pack="false" />
+    <None Update="$(MSBuildProjectDirectory)\appsettings*.yml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.yml"
+      Exclude="@(EmbeddedResource)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      DovetailConfiguration="true"
+      Visible="false" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')">
@@ -94,7 +124,39 @@
       TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.toml" Pack="false" />
+    <None Update="$(MSBuildProjectDirectory)\appsettings*.toml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.toml"
+      Exclude="@(EmbeddedResource)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      DovetailConfiguration="true"
+      Visible="false" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.toml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
+
+  <!--
+    Some tools embed the same appsettings files themselves (Uno.Sdk's Configuration feature, for
+    EmbeddedSource<App>()), from targets imported after this file, so the Exclude above can't see
+    them. Drop Dovetail's copy of any file that is already embedded under another name: the
+    configuration joints find those resources by their ".{fileName}" suffix (see
+    DovetailEmbeddedConfiguration.OpenResource), so each file is embedded once.
+  -->
+  <Target Name="_DovetailRemoveDuplicateConfigurationResources" BeforeTargets="PrepareResourceNames">
+    <ItemGroup>
+      <_DovetailForeignConfigurationResource
+        Include="@(EmbeddedResource)"
+        Condition="'%(EmbeddedResource.DovetailConfiguration)' != 'true' and $([System.String]::Copy('%(EmbeddedResource.Filename)').StartsWith('appsettings'))" />
+      <_DovetailDuplicateConfigurationResource
+        Include="@(EmbeddedResource)"
+        Condition="'%(EmbeddedResource.DovetailConfiguration)' == 'true'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(_DovetailForeignConfigurationResource)' != ''">
+      <!-- Keep only Dovetail's copies whose file is also embedded by something else, then drop those. -->
+      <_DovetailUniqueConfigurationResource Include="@(_DovetailDuplicateConfigurationResource)" />
+      <_DovetailUniqueConfigurationResource Remove="@(_DovetailForeignConfigurationResource)" MatchOnMetadata="FullPath" />
+      <_DovetailDuplicateConfigurationResource Remove="@(_DovetailUniqueConfigurationResource)" />
+      <EmbeddedResource Remove="@(_DovetailDuplicateConfigurationResource)" MatchOnMetadata="LogicalName" />
+    </ItemGroup>
+  </Target>
 
   <!--
     Emission gate for the generated IConfigurationJoint sources below.
@@ -172,7 +234,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateJsonConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.json;$(_DovetailJsonConfigurationTemplateFile)"
@@ -190,7 +252,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateYamlConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.yaml;$(_DovetailYamlConfigurationTemplateFile)"
@@ -208,7 +270,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateYmlConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.yml;$(_DovetailYmlConfigurationTemplateFile)"
@@ -226,7 +288,7 @@
   </Target>
 
   <Target Name="_DovetailGenerateTomlConfiguration"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
     Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')"
     Inputs="$(MSBuildProjectDirectory)\appsettings.toml;$(_DovetailTomlConfigurationTemplateFile)"

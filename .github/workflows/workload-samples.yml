@@ -1,0 +1,134 @@
+name: Workload samples
+
+# Builds the samples that need .NET workloads (sample/Sample.Maui, sample/Sample.Uno, sample/Sample.Uno.Net11), which
+# Dovetail.slnx leaves out of the solution build. `mise install` installs the workloads this runner's OS can build (the dotnet
+# tool's postinstall in .config/mise.toml), and each leg picks those heads through DovetailSampleTargetFrameworks (';' is passed as %3B, since MSBuild splits -p: values on it; an empty value skips
+# that sample on the leg).
+#
+# .NET for iOS/Mac Catalyst pins an exact Xcode version per release. The net11.0 prerelease packs need Xcode 27.0, which only
+# GitHub's xcode-27 preview image has. The net10.0 packs ask for Xcode 26.0, but macos-26's Xcode 26.0.1 has no matching iOS
+# simulator runtime, so that leg keeps the image's default Xcode and turns the exact-version check off (ValidateXcodeVersion).
+
+on:
+    push:
+        branches:
+            - main
+            - next
+        tags:
+            - v*
+    pull_request:
+        branches:
+            - main
+            - next
+    merge_group:
+        branches:
+            - main
+            - next
+
+permissions:
+    contents: read
+
+jobs:
+    samples:
+        name: ${{ matrix.name }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: Linux (Android, Uno desktop and WebAssembly)
+                      os: ubuntu-latest
+                      maui: net10.0-android%3Bnet11.0-android
+                      uno: net10.0-desktop%3Bnet10.0-browserwasm%3Bnet10.0-android
+                      # Not yet: the Uno 7 prerelease's Android runtime is built against a newer Java.Interop than the .NET 11
+                      # RC Android workload has (CS1705). Back to net11.0-android once those line up.
+                      uno-net11: ''
+                    - name: macOS net10.0 (iOS, Mac Catalyst)
+                      os: macos-26
+                      properties: -p:ValidateXcodeVersion=false
+                      maui: net10.0-ios%3Bnet10.0-maccatalyst
+                      uno: net10.0-ios
+                      uno-net11: ''
+                    - name: macOS net11.0 (iOS, Mac Catalyst)
+                      os: xcode-27
+                      maui: net11.0-ios%3Bnet11.0-maccatalyst
+                      uno: ''
+                      uno-net11: net11.0-ios
+                    - name: Windows
+                      os: windows-latest
+                      maui: net10.0-windows10.0.19041.0%3Bnet11.0-windows10.0.19041.0
+                      uno: net10.0-windows10.0.26100
+                      uno-net11: net11.0-windows10.0.26100
+        defaults:
+            run:
+                shell: bash
+        env:
+            # One MSBuild process per build: MAUI's and Uno's Resizetizer tasks load different SkiaSharp natives, and a reused
+            # node from the MAUI build breaks Uno's (SKColorSpace type initializer).
+            MSBUILDDISABLENODEREUSE: '1'
+            DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
+        steps:
+            # Some snapshot files' paths are longer than Windows allows by default.
+            - name: Enable long paths
+              if: runner.os == 'Windows'
+              run: git config --global core.longpaths true
+            - name: Checkout
+              uses: actions/checkout@v7
+              with:
+                  fetch-depth: '0'
+            # .config/mise.toml uses {{env.HOME}}, which Windows runners don't set.
+            - name: Set HOME
+              if: runner.os == 'Windows'
+              run: echo "HOME=$USERPROFILE" >> "$GITHUB_ENV"
+            - name: 🛠️ Setup mise
+              uses: jdx/mise-action@v5
+              with:
+                  install: true
+                  cache: true
+                  # Restore only: build.yml is the single cache writer (as in lint.yml).
+                  cache_save: false
+                  cache_key_prefix: mise-v2
+                  experimental: true
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+            - name: 🔎 Locate dotnet
+              run: |
+                  if [ -z "${DOTNET_ROOT:-}" ]; then
+                      DOTNET_ROOT="$(dirname "$(command -v dotnet)")"
+                      echo "DOTNET_ROOT=$DOTNET_ROOT" >> "$GITHUB_ENV"
+                  fi
+                  "$DOTNET_ROOT/dotnet" --version
+            # The dotnet mise installed (it exports DOTNET_ROOT), which global.json asks for: on Windows the runner's own SDKs come first
+            # on PATH, and `mise exec` would also run the repo's npm deps step, which fails on Windows. The workloads themselves were
+            # installed by `mise install` above.
+            - name: 📦 Installed workloads
+              run: '"$DOTNET_ROOT/dotnet" workload list'
+            - name: ⚙️ Build Sample.Maui
+              if: matrix.maui != ''
+              run: |
+                  read -ra properties <<< "$PROPERTIES"
+                  "$DOTNET_ROOT/dotnet" build sample/Sample.Maui/Sample.Maui.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Maui.binlog "${properties[@]}"
+              env:
+                  HEADS: ${{ matrix.maui }}
+                  PROPERTIES: ${{ matrix.properties }}
+            - name: ⚙️ Build Sample.Uno
+              if: (success() || failure()) && matrix.uno != ''
+              run: |
+                  read -ra properties <<< "$PROPERTIES"
+                  "$DOTNET_ROOT/dotnet" build sample/Sample.Uno/Sample.Uno.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.binlog "${properties[@]}"
+              env:
+                  HEADS: ${{ matrix.uno }}
+                  PROPERTIES: ${{ matrix.properties }}
+            - name: ⚙️ Build Sample.Uno.Net11
+              if: (success() || failure()) && matrix.uno-net11 != ''
+              run: |
+                  read -ra properties <<< "$PROPERTIES"
+                  "$DOTNET_ROOT/dotnet" build sample/Sample.Uno.Net11/Sample.Uno.Net11.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.Net11.binlog "${properties[@]}"
+              env:
+                  HEADS: ${{ matrix.uno-net11 }}
+                  PROPERTIES: ${{ matrix.properties }}
+            - name: 🏺 Publish logs
+              if: always()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: workload-samples-logs-${{ strategy.job-index }}
+                  path: artifacts/logs/

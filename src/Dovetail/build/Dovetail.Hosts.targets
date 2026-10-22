@@ -10,6 +10,12 @@
           HostBuilderType       - The type of the host builder
           HostBuilderName       - The name of the host builder
           HostType              - The type of the host
+          SyncEntryPoint       - Internal: 'true' also emits blocking UseDovetail overloads (from
+                                  DovetailHostSync.cs.template) for hosts whose bootstrap method
+                                  can't be async. Only the SDK's MAUI detection sets it.
+          NavigateEntryPoint    - Internal: 'true' also emits ConfigureDovetail<TShell> overloads (from
+                                  DovetailHostNavigate.cs.template) that navigate to a shell instead of
+                                  building (Uno.Extensions.Navigation). Only the SDK's Uno detection sets it.
 
         Each part generates: The extension methods for the given hostbuilder type, for bootstrapping
           and will wire in Dovetail.
@@ -17,6 +23,8 @@
   <PropertyGroup>
     <_DovetailHostsTargetsImported>true</_DovetailHostsTargetsImported>
     <_DovetailHostTemplateFile>$(MSBuildThisFileDirectory)DovetailHost.cs.template</_DovetailHostTemplateFile>
+    <_DovetailHostSyncTemplateFile>$(MSBuildThisFileDirectory)DovetailHostSync.cs.template</_DovetailHostSyncTemplateFile>
+    <_DovetailHostNavigateTemplateFile>$(MSBuildThisFileDirectory)DovetailHostNavigate.cs.template</_DovetailHostNavigateTemplateFile>
   </PropertyGroup>
 
   <Target Name="_DovetailPrepareHostItems" Condition="'@(DovetailHost)' != ''">
@@ -28,9 +36,12 @@
     </ItemGroup>
   </Target>
 
-  <!-- Batched once per DovetailHost item via Outputs -->
+  <!--
+      Batched once per DovetailHost item via Outputs. Also before XamlPreCompile: WinUI's XAML compiler (MAUI and Uno Windows
+      heads) compiles the project's C# in a first pass, and the app code calls these generated entry points.
+  -->
   <Target Name="_DovetailGenerateHostSources"
-    BeforeTargets="CoreCompile"
+    BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailPrepareHostItems"
     Condition="'@(DovetailHost)' != ''"
     Outputs="%(DovetailHost.Identity)">
@@ -47,6 +58,8 @@
       <_DovetailHasBuildExpression Condition="'$(_DovetailHasBuildExpression)' == ''">true</_DovetailHasBuildExpression>
       <_DovetailBuildExpression Condition="'$(_DovetailHasBuildExpression)' != 'true'"></_DovetailBuildExpression>
       <_DovetailHostType>%(DovetailHost.HostType)</_DovetailHostType>
+      <_DovetailHostSyncEntryPoint>%(DovetailHost.SyncEntryPoint)</_DovetailHostSyncEntryPoint>
+      <_DovetailHostNavigateEntryPoint>%(DovetailHost.NavigateEntryPoint)</_DovetailHostNavigateEntryPoint>
       <_DovetailHostContent>$([System.IO.File]::ReadAllText('$(_DovetailHostTemplateFile)'))</_DovetailHostContent>
       <_DovetailHostContent>$(_DovetailHostContent.Replace('{HostName}', '$(_DovetailHostName)'))</_DovetailHostContent>
       <_DovetailHostContent>$(_DovetailHostContent.Replace('{Namespace}','$(_DovetailHostNamespace)'))</_DovetailHostContent>
@@ -65,6 +78,43 @@
     <ItemGroup>
       <Compile Include="$(_DovetailHostOutputFile)" />
       <FileWrites Include="$(_DovetailHostOutputFile)" />
+    </ItemGroup>
+    <PropertyGroup Condition="'$(_DovetailHostSyncEntryPoint)' == 'true'">
+      <_DovetailHostSyncContent>$([System.IO.File]::ReadAllText('$(_DovetailHostSyncTemplateFile)'))</_DovetailHostSyncContent>
+      <_DovetailHostSyncContent>$(_DovetailHostSyncContent.Replace('{HostName}', '$(_DovetailHostName)'))</_DovetailHostSyncContent>
+      <_DovetailHostSyncContent>$(_DovetailHostSyncContent.Replace('{Namespace}','$(_DovetailHostNamespace)'))</_DovetailHostSyncContent>
+      <_DovetailHostSyncContent>$(_DovetailHostSyncContent.Replace('{HostBuilderType}', '$(_DovetailHostBuilderType)'))</_DovetailHostSyncContent>
+      <_DovetailHostSyncContent>$(_DovetailHostSyncContent.Replace('{HostType}', '$(_DovetailHostType)'))</_DovetailHostSyncContent>
+      <_DovetailHostSyncOutputFile>$(IntermediateOutputPath)DovetailHost.$(_DovetailHostName).Sync.g.cs</_DovetailHostSyncOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      Condition="'$(_DovetailHostSyncEntryPoint)' == 'true'"
+      File="$(_DovetailHostSyncOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailHostSyncContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup Condition="'$(_DovetailHostSyncEntryPoint)' == 'true'">
+      <Compile Include="$(_DovetailHostSyncOutputFile)" />
+      <FileWrites Include="$(_DovetailHostSyncOutputFile)" />
+    </ItemGroup>
+    <PropertyGroup Condition="'$(_DovetailHostNavigateEntryPoint)' == 'true'">
+      <_DovetailHostNavigateContent>$([System.IO.File]::ReadAllText('$(_DovetailHostNavigateTemplateFile)'))</_DovetailHostNavigateContent>
+      <_DovetailHostNavigateContent>$(_DovetailHostNavigateContent.Replace('{HostName}', '$(_DovetailHostName)'))</_DovetailHostNavigateContent>
+      <_DovetailHostNavigateContent>$(_DovetailHostNavigateContent.Replace('{Namespace}','$(_DovetailHostNamespace)'))</_DovetailHostNavigateContent>
+      <_DovetailHostNavigateContent>$(_DovetailHostNavigateContent.Replace('{HostBuilderType}', '$(_DovetailHostBuilderType)'))</_DovetailHostNavigateContent>
+      <_DovetailHostNavigateContent>$(_DovetailHostNavigateContent.Replace('{HostType}', '$(_DovetailHostType)'))</_DovetailHostNavigateContent>
+      <_DovetailHostNavigateContent>$(_DovetailHostNavigateContent.Replace('{HelperName}', '$(_DovetailHelperName)'))</_DovetailHostNavigateContent>
+      <_DovetailHostNavigateOutputFile>$(IntermediateOutputPath)DovetailHost.$(_DovetailHostName).Navigate.g.cs</_DovetailHostNavigateOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      Condition="'$(_DovetailHostNavigateEntryPoint)' == 'true'"
+      File="$(_DovetailHostNavigateOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailHostNavigateContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup Condition="'$(_DovetailHostNavigateEntryPoint)' == 'true'">
+      <Compile Include="$(_DovetailHostNavigateOutputFile)" />
+      <FileWrites Include="$(_DovetailHostNavigateOutputFile)" />
     </ItemGroup>
   </Target>
 </Project>

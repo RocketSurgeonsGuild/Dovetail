@@ -8,4 +8,8 @@
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Yaml\Dovetail.Configuration.Yaml.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Toml\Dovetail.Configuration.Toml.csproj" />
     </ItemGroup>
+    <ItemGroup>
+        <!-- Fixtures for the embedded configuration joints, named the way the Dovetail SDK (and, for the Some.Root.* files, other tools) name embedded resources. -->
+        <EmbeddedResource Include="embedded/*" LogicalName="%(Filename)%(Extension)" />
+    </ItemGroup>
 </Project>

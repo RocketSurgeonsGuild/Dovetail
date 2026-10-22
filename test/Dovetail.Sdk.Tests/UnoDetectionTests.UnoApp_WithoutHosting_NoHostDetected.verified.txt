@@ -1,0 +1,15 @@
+﻿{
+  Properties: {
+    DovetailEmbedConfiguration: ,
+    ImportDovetailAssembly: false,
+    _DovetailApplicationDetected: false
+  },
+  Items: {
+    PackageReference: {
+      Dovetail: {
+        IsImplicitlyDefined: true,
+        Version: {sdk-version}
+      }
+    }
+  }
+}

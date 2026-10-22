@@ -70,6 +70,16 @@
     <Project Path="sample/Sample.DependencyOne/Sample.DependencyOne.csproj" />
     <Project Path="sample/Sample.DependencyThree/Sample.DependencyThree.csproj" />
     <Project Path="sample/Sample.DependencyTwo/Sample.DependencyTwo.csproj" />
+    <!-- Needs workloads: built by .github/workflows/workload-samples.yml, not by the solution build. -->
+    <Project Path="sample/Sample.Maui/Sample.Maui.csproj">
+      <Build Project="false" />
+    </Project>
+    <Project Path="sample/Sample.Uno/Sample.Uno.csproj">
+      <Build Project="false" />
+    </Project>
+    <Project Path="sample/Sample.Uno.Net11/Sample.Uno.Net11.csproj">
+      <Build Project="false" />
+    </Project>
   </Folder>
   <Folder Name="/src/">
     <File Path="src/.editorconfig" />
@@ -85,10 +95,13 @@
     <Project Path="src/Dovetail.DryIoc/Dovetail.DryIoc.csproj" />
     <Project Path="src/Dovetail.OpenTelemetry/Dovetail.OpenTelemetry.csproj" />
     <Project Path="src/Dovetail.Serilog/Dovetail.Serilog.csproj" />
+    <Project Path="src/Dovetail.Stashbox/Dovetail.Stashbox.csproj" />
     <Project Path="src/Dovetail.Testing/Dovetail.Testing.csproj" />
     <Project Path="src/Dovetail/Dovetail.csproj" />
     <Project Path="src/Dovetail.Mermaid/Dovetail.Mermaid.csproj" />
     <Project Path="src/Dovetail.Hosting.Web/Dovetail.Hosting.Web.csproj" />
+    <Project Path="src/Dovetail.Hosting.Maui/Dovetail.Hosting.Maui.csproj" />
+    <Project Path="src/Dovetail.Hosting.Uno/Dovetail.Hosting.Uno.csproj" />
     <Project Path="src/Dovetail.Hosting.WebAssembly/Dovetail.Hosting.WebAssembly.csproj" />
     <Project Path="src/Dovetail.Hosting/Dovetail.Hosting.csproj" />
     <Project Path="src/Dovetail.Sdk/Dovetail.Sdk.csproj" />
@@ -110,9 +123,12 @@
     <Project Path="test/Dovetail.Tests/Dovetail.Tests.csproj" />
     <Project Path="test/Dovetail.Mermaid.Tests/Dovetail.Mermaid.Tests.csproj" />
     <Project Path="test/Dovetail.DryIoc.Tests/Dovetail.DryIoc.Tests.csproj" />
+    <Project Path="test/Dovetail.Stashbox.Tests/Dovetail.Stashbox.Tests.csproj" />
     <Project Path="test/Dovetail.Hosting.AspNetCore.Tests/Dovetail.Hosting.AspNetCore.Tests.csproj" />
     <Project Path="test/Dovetail.OpenTelemetry.Tests/Dovetail.OpenTelemetry.Tests.csproj" />
+    <Project Path="test/Dovetail.Hosting.Maui.Tests/Dovetail.Hosting.Maui.Tests.csproj" />
     <Project Path="test/Dovetail.Hosting.Tests/Dovetail.Hosting.Tests.csproj" />
+    <Project Path="test/Dovetail.Hosting.Uno.Tests/Dovetail.Hosting.Uno.Tests.csproj" />
     <Project Path="test/Dovetail.WebAssembly.Hosting.Tests/Dovetail.WebAssembly.Hosting.Tests.csproj" />
   </Folder>
   <Folder Name="/test/Dovetail.Analyzers.Tests.supports/">

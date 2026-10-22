@@ -18,8 +18,22 @@ internal class TomlAppSettingsConfiguration : IConfigurationJoint
     /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add the TOML sources to.</param>
     public void Register(IDovetailContext context, IConfigurationBuilder builder)
     {
+        var environmentName = context.Get<string>("EnvironmentName") ?? "Production";
+        if (context.EmbeddedConfigurationAssembly is not null)
+        {
+            // Hosts without a file system read the copies the Dovetail SDK embedded into this assembly instead.
+            var assembly = typeof(TomlAppSettingsConfiguration).Assembly;
+            builder.AddTomlStream(
+                DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.toml", "appsettings.toml")
+             ?? throw new System.IO.FileNotFoundException($"The embedded configuration file '{{ProjectName}}.toml' was not found in '{assembly.FullName}'.")
+            );
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.{environmentName}.toml", $"appsettings.{environmentName}.toml") is { } environment) builder.AddTomlStream(environment);
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.local.toml", "appsettings.local.toml") is { } local) builder.AddTomlStream(local);
+            return;
+        }
+
         builder.AddTomlFile("{{ProjectName}}.toml", optional: false, reloadOnChange: false);
-        builder.AddTomlFile($"{{ProjectName}}.{context.Get<string>("EnvironmentName") ?? "Production"}.toml", optional: true, reloadOnChange: false);
+        builder.AddTomlFile($"{{ProjectName}}.{environmentName}.toml", optional: true, reloadOnChange: false);
         builder.AddTomlFile("{{ProjectName}}.local.toml", optional: true, reloadOnChange: false);
     }
 }

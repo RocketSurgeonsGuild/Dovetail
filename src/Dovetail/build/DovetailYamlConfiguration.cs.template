@@ -17,8 +17,22 @@ internal class YamlAppSettingsConfiguration : IConfigurationJoint
     /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add the YAML sources to.</param>
     public void Register(IDovetailContext context, IConfigurationBuilder builder)
     {
+        var environmentName = context.Get<string>("EnvironmentName") ?? "Production";
+        if (context.EmbeddedConfigurationAssembly is not null)
+        {
+            // Hosts without a file system read the copies the Dovetail SDK embedded into this assembly instead.
+            var assembly = typeof(YamlAppSettingsConfiguration).Assembly;
+            builder.AddYamlStream(
+                DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.yaml", "appsettings.yaml")
+             ?? throw new System.IO.FileNotFoundException($"The embedded configuration file '{{ProjectName}}.yaml' was not found in '{assembly.FullName}'.")
+            );
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml") is { } environment) builder.AddYamlStream(environment);
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.local.yaml", "appsettings.local.yaml") is { } local) builder.AddYamlStream(local);
+            return;
+        }
+
         builder.AddYamlFile("{{ProjectName}}.yaml", optional: false, reloadOnChange: false);
-        builder.AddYamlFile($"{{ProjectName}}.{context.Get<string>("EnvironmentName") ?? "Production"}.yaml", optional: true, reloadOnChange: false);
+        builder.AddYamlFile($"{{ProjectName}}.{environmentName}.yaml", optional: true, reloadOnChange: false);
         builder.AddYamlFile("{{ProjectName}}.local.yaml", optional: true, reloadOnChange: false);
     }
 }

@@ -17,9 +17,11 @@ public sealed class AfterJointAttribute(
     Type type
 ) : Attribute, IDovetailDependency
 {
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
     private readonly Type _type = ThrowHelper.EnsureTypeIsDovetail(type);
 
     DependencyDirection IDovetailDependency.Direction => DependencyDirection.DependsOn;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
     Type IDovetailDependency.Type => _type;
 }
 
@@ -37,5 +39,6 @@ T> : Attribute,
     where T : IDovetailJoint
 {
     DependencyDirection IDovetailDependency.Direction => DependencyDirection.DependsOn;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
     Type IDovetailDependency.Type => typeof(T);
 }

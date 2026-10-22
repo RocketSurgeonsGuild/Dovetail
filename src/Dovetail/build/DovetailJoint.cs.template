@@ -60,7 +60,7 @@ file class Private{JointName}Joint{GenericArg}({JointName}JointDelegate{GenericA
     public override string? ToString() => expression;
     public override int GetHashCode() => fromDelegate.GetHashCode();
     Assembly IDovetailJointDelegate.Assembly => fromDelegate.Method.Module.Assembly;
-    string IDovetailJointDelegate.Expression => expression ?? fromDelegate.Method.ToString();
+    string IDovetailJointDelegate.Expression => expression ?? fromDelegate.Method.ToString() ?? fromDelegate.Method.Name;
 }
 
 /// <summary>
@@ -83,7 +83,8 @@ public static partial class {JointName}HostBuilderExtensions
         public global::Dovetail.DovetailContextBuilder {BuilderMethodName}{GenericArg}({JointName}JointDelegate{GenericArg} @delegate, int priority = 0, DovetailCategory? category = null, DovetailHostType hostType = DovetailHostType.Undefined, [CallerArgumentExpression(nameof(@delegate))] string? expression = null) {GenericConstraint}
         {
             ArgumentNullException.ThrowIfNull(container);
-            container.AppendJoint(new DovetailJointMetadata(new Private{JointName}Joint{GenericArg}(@delegate, priority, expression), hostType, category ?? DovetailCategory.Core));
+            // An explicit array rather than the params collection: CsWinRT (Windows targets) flags implicit collections of an interface type.
+            container.AppendJoint(new IDovetailJointMetadata[] { new DovetailJointMetadata(new Private{JointName}Joint{GenericArg}(@delegate, priority, expression), hostType, category ?? DovetailCategory.Core) });
             return container;
         }
     }

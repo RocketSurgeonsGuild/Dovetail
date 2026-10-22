@@ -300,6 +300,80 @@ public sealed class SdkTestProject : IDisposable
     }
 
     /// <summary>
+    /// Evaluates (without building) the project at <paramref name="relativePath"/> with
+    /// <c>dotnet msbuild -getProperty/-getItem</c> and verifies the requested properties and items, each
+    /// item with its own (non well-known) metadata. For projects that can't be built here, e.g. ones that
+    /// need a workload the test machine doesn't have: evaluation still runs the SDK's host detection.
+    /// <paramref name="includeItem" /> (item type, identity) leaves out items that depend on the machine, such as the
+    /// implicit package references an installed workload adds.
+    /// </summary>
+    public async Task VerifyEvaluation(string relativePath, IReadOnlyList<string> properties, IReadOnlyList<string> items, Func<string, string, bool>? includeItem = null)
+    {
+        var arguments = string.Join(' ', properties.Select(z => $"-getProperty:{z}").Concat(items.Select(z => $"-getItem:{z}")));
+        var psi = CreateHermeticStartInfo($"msbuild {arguments}");
+        psi.WorkingDirectory = Path.Combine(Directory, relativePath);
+        using var proc = Process.Start(psi)!;
+        var stdout = await proc.StandardOutput.ReadToEndAsync();
+        var stderr = await proc.StandardError.ReadToEndAsync();
+        await proc.WaitForExitAsync();
+        if (proc.ExitCode != 0)
+        {
+            throw new TUnitException($"dotnet msbuild evaluation failed for {relativePath}:\n{stdout}\n{stderr}");
+        }
+
+        using var document = System.Text.Json.JsonDocument.Parse(stdout);
+        var root = document.RootElement;
+        var evaluatedProperties = properties.ToDictionary(z => z, z => root.GetProperty("Properties").GetProperty(z).GetString());
+        var evaluatedItems = items.ToDictionary(
+            z => z,
+            z => root.GetProperty("Items").TryGetProperty(z, out var values)
+                ? values.EnumerateArray()
+                   .Where(item => includeItem?.Invoke(z, item.GetProperty("Identity").GetString()!) ?? true)
+                   .OrderBy(item => item.GetProperty("Identity").GetString(), StringComparer.Ordinal)
+                   .ToDictionary(
+                        item => item.GetProperty("Identity").GetString()!,
+                        item => item.EnumerateObject()
+                           .Where(metadata => !WellKnownItemMetadata.Contains(metadata.Name) && metadata.Value.GetString() is { Length: > 0, })
+                           .OrderBy(metadata => metadata.Name, StringComparer.Ordinal)
+                           .ToDictionary(metadata => metadata.Name, metadata => metadata.Value.GetString())
+                    )
+                : []
+        );
+
+        await Verify(new { Properties = evaluatedProperties, Items = evaluatedItems }, settings: _settings);
+    }
+
+    private static readonly HashSet<string> WellKnownItemMetadata =
+    [
+        "Identity", "FullPath", "RootDir", "Filename", "Extension", "RelativeDir", "Directory", "RecursiveDir", "ModifiedTime", "CreatedTime",
+        "AccessedTime", "DefiningProjectFullPath", "DefiningProjectDirectory", "DefiningProjectName", "DefiningProjectExtension",
+    ];
+
+    /// <summary>
+    /// Builds the project at <paramref name="relativePath"/> and verifies where its configuration
+    /// files ended up: the ones copied to <c>bin/</c>, and the manifest resources
+    /// <c>Dovetail.PackConfiguration.targets</c> embedded into the built assembly (read with
+    /// <see cref="System.Reflection.Metadata.MetadataReader"/>, so the assembly is never loaded).
+    /// </summary>
+    public async Task VerifyEmbeddedConfiguration(string relativePath)
+    {
+        var projectDirectory = Path.Combine(Directory, relativePath);
+        var result = await BuildAndEvaluate(projectDirectory, "build");
+
+        var assemblyPath = System.IO.Directory.EnumerateFiles(Path.Combine(projectDirectory, "bin"), $"{Path.GetFileName(relativePath)}.dll", SearchOption.AllDirectories).Single();
+        using var stream = File.OpenRead(assemblyPath);
+        using var peReader = new System.Reflection.PortableExecutable.PEReader(stream);
+        var metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(peReader);
+        var embeddedResources = metadata.ManifestResources
+           .Select(handle => metadata.GetString(metadata.GetManifestResource(handle).Name))
+           .OrderBy(z => z, StringComparer.Ordinal)
+           .ToArray();
+
+        var outputFiles = result.OutputFiles.OrderBy(z => z, StringComparer.Ordinal).ToArray();
+        await Verify(new { OutputFiles = outputFiles, EmbeddedResources = embeddedResources }, settings: _settings);
+    }
+
+    /// <summary>
     /// Lists the config-shaped filenames (json/yaml/yml/toml) under <paramref name="directory"/>,
     /// excluding the .NET SDK's own generated *.deps.json/*.runtimeconfig.json/
     /// *.staticwebassets.endpoints.json - those share the same extensions but aren't anything

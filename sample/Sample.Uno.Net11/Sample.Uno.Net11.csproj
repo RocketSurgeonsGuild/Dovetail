@@ -1,0 +1,78 @@
+<Project Sdk="Uno.Sdk/7.0.0-dev.87">
+  <!--
+      Sample.Uno on the next release lines: the Uno 7 prerelease SDK and the net11.0 heads, with Dovetail.Hosting.Uno's net11.0
+      build (Uno.Extensions 8.0 prereleases, which have no desktop or browserwasm assets yet). The app code is linked from
+      Sample.Uno; only the per-platform head files live here. Needs the Uno Platform workloads, so Dovetail.slnx doesn't build it
+      by default; the workload-samples workflow builds it per platform.
+  -->
+  <PropertyGroup>
+    <TargetFrameworks>net11.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net11.0-ios</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.26100</TargetFrameworks>
+    <!-- Lets a build (e.g. one CI leg) pick the heads it has workloads for, without the property flowing to referenced projects. A list arrives escaped (';' as %3B) from the command line. -->
+    <TargetFrameworks Condition="'$(DovetailSampleTargetFrameworks)' != ''">$([MSBuild]::Unescape('$(DovetailSampleTargetFrameworks)'))</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
+    <RootNamespace>Sample.Uno</RootNamespace>
+    <ApplicationTitle>Dovetail Uno Sample (net11)</ApplicationTitle>
+    <ApplicationId>com.rocketsurgeonsguild.dovetail.sample.uno.net11</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationPublisher>Rocket Surgeons Guild</ApplicationPublisher>
+    <Description>Dovetail on Uno Platform (net11).</Description>
+    <UnoFeatures>
+      Hosting;
+      Logging;
+      Configuration;
+      SkiaRenderer;
+    </UnoFeatures>
+    <!-- NU1507: multiple package sources with CPM; NETSDK1201: RID without self-contained; PRI257: default language not in resources. -->
+    <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257</NoWarn>
+
+    <!-- What the Dovetail SDK's Uno detection sets (see src/Dovetail.Sdk/Sdk/Dovetail.HostDetection.targets); samples reference src directly. -->
+    <DovetailEmbedConfiguration>true</DovetailEmbedConfiguration>
+    <!--
+        The repo's Rocket.Surgery.MSBuild.SourceLink turns these on; with the Skia renderer, Uno swaps in its own runtime
+        assemblies and their .pdb/.xml, so the package copies would land in the output twice (NETSDK1152, and a duplicate key in
+        the WebAssembly boot manifest).
+    -->
+    <CopyDebugSymbolFilesFromPackages>false</CopyDebugSymbolFilesFromPackages>
+    <CopyDocumentationFilesFromPackages>false</CopyDocumentationFilesFromPackages>
+  </PropertyGroup>
+
+  <ItemGroup Label="Shared with Sample.Uno">
+    <ApplicationDefinition Include="..\Sample.Uno\App.xaml" Link="App.xaml" />
+    <Page Include="..\Sample.Uno\MainPage.xaml" Link="MainPage.xaml" />
+    <Compile Include="..\Sample.Uno\App.xaml.cs" Link="App.xaml.cs" DependentUpon="App.xaml" />
+    <Compile Include="..\Sample.Uno\MainPage.xaml.cs" Link="MainPage.xaml.cs" DependentUpon="MainPage.xaml" />
+    <Compile Include="..\Sample.Uno\GlobalUsings.cs;..\Sample.Uno\GreetingJoint.cs" Link="%(Filename)%(Extension)" />
+    <Compile Include="..\Sample.Uno\Models\*.cs" Link="Models\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\Sample.Uno\appsettings.json;..\Sample.Uno\appsettings.*.json" Link="%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Dovetail.Hosting.Uno\Dovetail.Hosting.Uno.csproj" />
+    <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+
+    <DovetailHost
+      Include="Uno"
+      HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder"
+      HostBuilderName="builder"
+      HostType="global::Microsoft.Extensions.Hosting.IHost"
+      HelperName="global::Dovetail.DovetailUnoHelpers"
+      BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly"
+      NavigateEntryPoint="true"
+    />
+  </ItemGroup>
+  <!--
+    The libraries' net11.0 builds declare RuntimeIdentifiers (browser-wasm, for runtime async), so the app's per-RID head
+    builds would pass their RuntimeIdentifier down to them - including the transitive references the SDK adds, hence an item
+    definition rather than metadata on the references below. Package consumers don't see this: the libraries ship RID-agnostic.
+  -->
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <GlobalPropertiesToRemove>%(GlobalPropertiesToRemove);RuntimeIdentifier;SelfContained</GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+</Project>
