@@ -1,6 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <!--
+            The Windows heads of an Uno app use the real WinUI (Windows App SDK) rather than Uno.UI, so Microsoft.UI.Xaml's
+            Application, Window and UIElement are different types there: build against Uno.Extensions' Windows assets for them too.
+        -->
+        <TargetFrameworks>net10.0;net11.0;net10.0-windows10.0.19041;net11.0-windows10.0.19041</TargetFrameworks>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <!--
+            A library with no resources of its own: the app generates the PRI (resource index). Generating or expanding PRIs here would
+            only need the Windows-only MRT tooling, which also keeps the package buildable on Linux and macOS.
+        -->
+        <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
+        <ExpandPriResources>false</ExpandPriResources>
         <PackageDescription>
             Adds helpers to easily bootstrap an Uno Platform application (Uno.Extensions.Hosting) using conventions by just using the correct
             extension method. This adds additional configuration, logging and service injections by convention.
