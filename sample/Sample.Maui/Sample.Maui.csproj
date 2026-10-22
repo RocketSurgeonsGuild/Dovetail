@@ -43,10 +43,8 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" />
-        <!-- The libraries' net11.0 builds declare RuntimeIdentifiers (browser-wasm), which would make the app's per-RID head builds pass
-             their RuntimeIdentifier down; package consumers never see this, as the libraries ship RID-agnostic. -->
-        <ProjectReference Include="..\..\src\Dovetail.Hosting.Maui\Dovetail.Hosting.Maui.csproj" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained" />
-        <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained" />
+        <ProjectReference Include="..\..\src\Dovetail.Hosting.Maui\Dovetail.Hosting.Maui.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
 
         <DovetailHost
             Include="Maui"
@@ -60,4 +58,14 @@
         <AssemblyMetadata Include="DovetailEnvironmentName" Value="Development" Condition="'$(Configuration)' == 'Debug'" />
         <AssemblyMetadata Include="DovetailEnvironmentName" Value="Production" Condition="'$(Configuration)' != 'Debug'" />
     </ItemGroup>
+    <!--
+        The libraries' net11.0 builds declare RuntimeIdentifiers (browser-wasm, for runtime async), so the app's per-RID head
+        builds would pass their RuntimeIdentifier down to them - including the transitive references the SDK adds, hence an item
+        definition rather than metadata on the references below. Package consumers don't see this: the libraries ship RID-agnostic.
+    -->
+    <ItemDefinitionGroup>
+        <ProjectReference>
+            <GlobalPropertiesToRemove>%(GlobalPropertiesToRemove);RuntimeIdentifier;SelfContained</GlobalPropertiesToRemove>
+        </ProjectReference>
+    </ItemDefinitionGroup>
 </Project>
