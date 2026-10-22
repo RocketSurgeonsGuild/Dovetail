@@ -92,6 +92,7 @@
   <PropertyGroup>
     <DovetailEnableAutofac Condition="'$(DovetailEnableAutofac)' == ''">false</DovetailEnableAutofac>
     <DovetailEnableDryIoc Condition="'$(DovetailEnableDryIoc)' == ''">false</DovetailEnableDryIoc>
+    <DovetailEnableStashbox Condition="'$(DovetailEnableStashbox)' == ''">false</DovetailEnableStashbox>
     <DovetailEnableSerilog Condition="'$(DovetailEnableSerilog)' == ''">false</DovetailEnableSerilog>
     <DovetailEnableOpenTelemetry Condition="'$(DovetailEnableOpenTelemetry)' == ''">false</DovetailEnableOpenTelemetry>
     <DovetailEnableHosting Condition="'$(DovetailEnableHosting)' == ''">false</DovetailEnableHosting>
@@ -120,8 +121,9 @@
   <!-- Flag-gated optional package references -->
   <ItemGroup>
     <DovetailSdkImplicitPackageReference Include="Dovetail" Version="$(DovetailVersion)"/>
-    <DovetailSdkImplicitPackageReference Include="Dovetail.Autofac" Version="$(DovetailAutofacVersion)" Condition="'$(DovetailEnableAutofac)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac')) == 'true'"/>
-    <DovetailSdkImplicitPackageReference Include="Dovetail.DryIoc" Version="$(DovetailDryIocVersion)" Condition="'$(DovetailEnableDryIoc)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc')) == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.Autofac" Version="$(DovetailAutofacVersion)" Condition="'$(DovetailEnableAutofac)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac.Extensions.DependencyInjection')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.DryIoc" Version="$(DovetailDryIocVersion)" Condition="'$(DovetailEnableDryIoc)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc.Microsoft.DependencyInjection')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Dovetail.Stashbox" Version="$(DovetailStashboxVersion)" Condition="'$(DovetailEnableStashbox)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.DependencyInjection')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.Hosting')) == 'true')"/>
     <DovetailSdkImplicitPackageReference Include="Dovetail.Serilog" Version="$(DovetailSerilogVersion)" Condition="'$(DovetailEnableSerilog)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Serilog')) == 'true'"/>
     <DovetailSdkImplicitPackageReference Include="Dovetail.OpenTelemetry" Version="$(DovetailOpenTelemetryVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true'"/>
   </ItemGroup>

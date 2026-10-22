@@ -17,6 +17,7 @@
     <InternalsVisibleTo Include="Dovetail.Hosting.Tests" />
     <InternalsVisibleTo Include="Dovetail.WebAssembly.Hosting.Tests" />
     <InternalsVisibleTo Include="Dovetail.OpenTelemetry.Tests" />
+    <InternalsVisibleTo Include="Dovetail.Stashbox.Tests" />
     <InternalsVisibleTo Include="Dovetail.Tests" />
     <ProjectReference
       Include="$(MSBuildThisFileDirectory)Dovetail.Analyzers\Dovetail.Analyzers.csproj"

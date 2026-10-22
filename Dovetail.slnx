@@ -85,6 +85,7 @@
     <Project Path="src/Dovetail.DryIoc/Dovetail.DryIoc.csproj" />
     <Project Path="src/Dovetail.OpenTelemetry/Dovetail.OpenTelemetry.csproj" />
     <Project Path="src/Dovetail.Serilog/Dovetail.Serilog.csproj" />
+    <Project Path="src/Dovetail.Stashbox/Dovetail.Stashbox.csproj" />
     <Project Path="src/Dovetail.Testing/Dovetail.Testing.csproj" />
     <Project Path="src/Dovetail/Dovetail.csproj" />
     <Project Path="src/Dovetail.Mermaid/Dovetail.Mermaid.csproj" />
@@ -110,6 +111,7 @@
     <Project Path="test/Dovetail.Tests/Dovetail.Tests.csproj" />
     <Project Path="test/Dovetail.Mermaid.Tests/Dovetail.Mermaid.Tests.csproj" />
     <Project Path="test/Dovetail.DryIoc.Tests/Dovetail.DryIoc.Tests.csproj" />
+    <Project Path="test/Dovetail.Stashbox.Tests/Dovetail.Stashbox.Tests.csproj" />
     <Project Path="test/Dovetail.Hosting.AspNetCore.Tests/Dovetail.Hosting.AspNetCore.Tests.csproj" />
     <Project Path="test/Dovetail.OpenTelemetry.Tests/Dovetail.OpenTelemetry.Tests.csproj" />
     <Project Path="test/Dovetail.Hosting.Tests/Dovetail.Hosting.Tests.csproj" />
