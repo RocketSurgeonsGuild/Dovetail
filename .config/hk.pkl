@@ -55,6 +55,9 @@ local excludedDiagnosticsString = excludeDiagnostics.join(" ")
 // Has a real verify mode, so it can run in `check` as well as `fix`.
 local dotnetFormat: Step = new Step {
   glob = "**/*.cs"
+  // The workload samples aren't built by the solution, and they target several platforms: `dotnet format` formats them once per
+  // platform and leaves conflict markers wherever the results differ.
+  exclude = List("sample/Sample.Maui/**", "sample/Sample.Uno/**", "sample/Sample.Uno.Net11/**")
   check =
     "dotnet format \(solution) --exclude-diagnostics \(excludedDiagnosticsString) --verify-no-changes --include {{files}}"
   fix =

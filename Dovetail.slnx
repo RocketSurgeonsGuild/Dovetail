@@ -70,6 +70,16 @@
     <Project Path="sample/Sample.DependencyOne/Sample.DependencyOne.csproj" />
     <Project Path="sample/Sample.DependencyThree/Sample.DependencyThree.csproj" />
     <Project Path="sample/Sample.DependencyTwo/Sample.DependencyTwo.csproj" />
+    <!-- Needs workloads: built by .github/workflows/workload-samples.yml, not by the solution build. -->
+    <Project Path="sample/Sample.Maui/Sample.Maui.csproj">
+      <Build Project="false" />
+    </Project>
+    <Project Path="sample/Sample.Uno/Sample.Uno.csproj">
+      <Build Project="false" />
+    </Project>
+    <Project Path="sample/Sample.Uno.Net11/Sample.Uno.Net11.csproj">
+      <Build Project="false" />
+    </Project>
   </Folder>
   <Folder Name="/src/">
     <File Path="src/.editorconfig" />
