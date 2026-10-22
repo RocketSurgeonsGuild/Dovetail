@@ -10,7 +10,7 @@
           HostBuilderType       - The type of the host builder
           HostBuilderName       - The name of the host builder
           HostType              - The type of the host
-          _SyncEntryPoint       - Internal: 'true' also emits blocking UseDovetail overloads (from
+          SyncEntryPoint       - Internal: 'true' also emits blocking UseDovetail overloads (from
                                   DovetailHostSync.cs.template) for hosts whose bootstrap method
                                   can't be async. Only the SDK's MAUI detection sets it.
 
@@ -51,7 +51,7 @@
       <_DovetailHasBuildExpression Condition="'$(_DovetailHasBuildExpression)' == ''">true</_DovetailHasBuildExpression>
       <_DovetailBuildExpression Condition="'$(_DovetailHasBuildExpression)' != 'true'"></_DovetailBuildExpression>
       <_DovetailHostType>%(DovetailHost.HostType)</_DovetailHostType>
-      <_DovetailHostSyncEntryPoint>%(DovetailHost._SyncEntryPoint)</_DovetailHostSyncEntryPoint>
+      <_DovetailHostSyncEntryPoint>%(DovetailHost.SyncEntryPoint)</_DovetailHostSyncEntryPoint>
       <_DovetailHostContent>$([System.IO.File]::ReadAllText('$(_DovetailHostTemplateFile)'))</_DovetailHostContent>
       <_DovetailHostContent>$(_DovetailHostContent.Replace('{HostName}', '$(_DovetailHostName)'))</_DovetailHostContent>
       <_DovetailHostContent>$(_DovetailHostContent.Replace('{Namespace}','$(_DovetailHostNamespace)'))</_DovetailHostContent>

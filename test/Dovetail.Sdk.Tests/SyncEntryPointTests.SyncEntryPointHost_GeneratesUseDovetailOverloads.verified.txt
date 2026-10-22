@@ -27,6 +27,7 @@
       DovetailEnableOpenTelemetry: false,
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
+      DovetailHostingMauiVersion: {sdk-version},
       DovetailHostingVersion: {sdk-version},
       DovetailHostingWebAssemblyVersion: {sdk-version},
       DovetailHostingWebVersion: {sdk-version},
@@ -65,11 +66,11 @@
         HostType: global::Microsoft.Extensions.Hosting.IHost
       },
       SyncHost: {
-        _SyncEntryPoint: true,
         HelperName: global::Dovetail.DovetailHostApplicationHelpers,
         HostBuilderName: builder,
         HostBuilderType: global::Microsoft.Extensions.Hosting.HostApplicationBuilder,
-        HostType: global::Microsoft.Extensions.Hosting.IHost
+        HostType: global::Microsoft.Extensions.Hosting.IHost,
+        SyncEntryPoint: true
       }
     },
     Using: [],

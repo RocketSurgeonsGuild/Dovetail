@@ -300,6 +300,53 @@ public sealed class SdkTestProject : IDisposable
     }
 
     /// <summary>
+    /// Evaluates (without building) the project at <paramref name="relativePath"/> with
+    /// <c>dotnet msbuild -getProperty/-getItem</c> and verifies the requested properties and items, each
+    /// item with its own (non well-known) metadata. For projects that can't be built here, e.g. ones that
+    /// need a workload the test machine doesn't have: evaluation still runs the SDK's host detection.
+    /// </summary>
+    public async Task VerifyEvaluation(string relativePath, IReadOnlyList<string> properties, IReadOnlyList<string> items)
+    {
+        var arguments = string.Join(' ', properties.Select(z => $"-getProperty:{z}").Concat(items.Select(z => $"-getItem:{z}")));
+        var psi = CreateHermeticStartInfo($"msbuild {arguments}");
+        psi.WorkingDirectory = Path.Combine(Directory, relativePath);
+        using var proc = Process.Start(psi)!;
+        var stdout = await proc.StandardOutput.ReadToEndAsync();
+        var stderr = await proc.StandardError.ReadToEndAsync();
+        await proc.WaitForExitAsync();
+        if (proc.ExitCode != 0)
+        {
+            throw new TUnitException($"dotnet msbuild evaluation failed for {relativePath}:\n{stdout}\n{stderr}");
+        }
+
+        using var document = System.Text.Json.JsonDocument.Parse(stdout);
+        var root = document.RootElement;
+        var evaluatedProperties = properties.ToDictionary(z => z, z => root.GetProperty("Properties").GetProperty(z).GetString());
+        var evaluatedItems = items.ToDictionary(
+            z => z,
+            z => root.GetProperty("Items").TryGetProperty(z, out var values)
+                ? values.EnumerateArray()
+                   .OrderBy(item => item.GetProperty("Identity").GetString(), StringComparer.Ordinal)
+                   .ToDictionary(
+                        item => item.GetProperty("Identity").GetString()!,
+                        item => item.EnumerateObject()
+                           .Where(metadata => !WellKnownItemMetadata.Contains(metadata.Name) && metadata.Value.GetString() is { Length: > 0, })
+                           .OrderBy(metadata => metadata.Name, StringComparer.Ordinal)
+                           .ToDictionary(metadata => metadata.Name, metadata => metadata.Value.GetString())
+                    )
+                : []
+        );
+
+        await Verify(new { Properties = evaluatedProperties, Items = evaluatedItems }, settings: _settings);
+    }
+
+    private static readonly HashSet<string> WellKnownItemMetadata =
+    [
+        "Identity", "FullPath", "RootDir", "Filename", "Extension", "RelativeDir", "Directory", "RecursiveDir", "ModifiedTime", "CreatedTime",
+        "AccessedTime", "DefiningProjectFullPath", "DefiningProjectDirectory", "DefiningProjectName", "DefiningProjectExtension",
+    ];
+
+    /// <summary>
     /// Builds the project at <paramref name="relativePath"/> and verifies where its configuration
     /// files ended up: the ones copied to <c>bin/</c>, and the manifest resources
     /// <c>Dovetail.PackConfiguration.targets</c> embedded into the built assembly (read with

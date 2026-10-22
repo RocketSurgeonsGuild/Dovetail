@@ -1,0 +1,15 @@
+﻿{
+  Properties: {
+    DovetailEmbedConfiguration: true,
+    ExportDovetailAssembly: true,
+    ImportDovetailAssembly: true,
+    _DovetailApplicationDetected: true
+  },
+  Items: {
+    AssemblyMetadata: {
+      DovetailEnvironmentName: {
+        Value: Staging
+      }
+    }
+  }
+}

@@ -9,6 +9,27 @@
       DovetailSdkImplicitPackageReference items below to reach NuGet restore.
   -->
   <Choose>
+    <!--
+        MAUI first: MAUI apps are OutputType=Exe, so the generic host branch below would claim them. MAUI class
+        libraries also set UseMaui, but have no OutputType=Exe. The app's entry point (MauiProgram.CreateMauiApp)
+        is synchronous, so the host also gets the blocking UseDovetail overloads, and the generated extensions
+        pass their own (application) assembly to the helper. A device has no appsettings files on disk, so they
+        are only embedded.
+    -->
+    <When Condition=" '$(UseMaui)'=='true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe' or '$(OutputType)' == 'WinExe') ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+        <DovetailEmbedConfiguration Condition="'$(DovetailEmbedConfiguration)' == ''">true</DovetailEmbedConfiguration>
+        <_DovetailMauiEnvironmentName>$(DovetailEnvironmentName)</_DovetailMauiEnvironmentName>
+        <_DovetailMauiEnvironmentName Condition="'$(_DovetailMauiEnvironmentName)' == '' and '$(Configuration)' == 'Debug'">Development</_DovetailMauiEnvironmentName>
+        <_DovetailMauiEnvironmentName Condition="'$(_DovetailMauiEnvironmentName)' == ''">Production</_DovetailMauiEnvironmentName>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="Maui" HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder" HostBuilderName="builder" HostType="global::Microsoft.Maui.Hosting.MauiApp" HelperName="global::Dovetail.DovetailMauiHelpers" BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly" SyncEntryPoint="true"/>
+        <AssemblyMetadata Include="DovetailEnvironmentName" Value="$(_DovetailMauiEnvironmentName)" />
+        <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting.Maui" Version="$(DovetailHostingMauiVersion)" />
+      </ItemGroup>
+    </When>
     <When Condition=" '$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' or '$(UsingMicrosoftNETSdkWebAssembly)'=='true' ">
       <PropertyGroup>
         <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
@@ -36,27 +57,6 @@
         <DovetailSdkImplicitPackageReference Include="Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
       </ItemGroup>
     </When>
-    <!--    <When Condition=" '$(UsingMicrosoftMauiSdk)'=='true' ">-->
-    <!--      <PropertyGroup>-->
-    <!--        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>-->
-    <!--      </PropertyGroup>-->
-    <!--      <ItemGroup>-->
-    <!--        <DovetailHost-->
-    <!--          Include="Maui"-->
-    <!--          HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder"-->
-    <!--          HostBuilderName="builder"-->
-    <!--          HostType="global::Microsoft.Maui.Hosting.MauiApp"-->
-    <!--        />-->
-    <!--        <PackageReference-->
-    <!--          Include="Dovetail.Hosting.Maui"-->
-    <!--          Version="TODO"-->
-    <!--          Condition="@(PackageReference->AnyHaveMetadataValue('Identity', 'Dovetail.Hosting.Maui')) != 'true'"-->
-    <!--          IsImplicitlyDefined="true"-->
-    <!--          PrivateAssets="all"-->
-    <!--          IncludeAssets="runtime; build; native; contentfiles; analyzers"-->
-    <!--        />-->
-    <!--      </ItemGroup>-->
-    <!--    </When>-->
     <!--    <When Condition=" '$(UsingUnoSdk)'=='true' ">-->
     <!--      <PropertyGroup>-->
     <!--        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>-->
