@@ -60,7 +60,7 @@ file class Private{JointName}Joint{GenericArg}({JointName}JointDelegate{GenericA
     public override string? ToString() => expression;
     public override int GetHashCode() => fromDelegate.GetHashCode();
     Assembly IDovetailJointDelegate.Assembly => fromDelegate.Method.Module.Assembly;
-    string IDovetailJointDelegate.Expression => expression ?? fromDelegate.Method.ToString();
+    string IDovetailJointDelegate.Expression => expression ?? fromDelegate.Method.ToString() ?? fromDelegate.Method.Name;
 }
 
 /// <summary>

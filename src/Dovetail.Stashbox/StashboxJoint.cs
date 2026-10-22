@@ -14,5 +14,5 @@ namespace Dovetail.Stashbox;
 [DovetailExport, ConnectsJoint<IStashboxJoint>]
 public class StashboxJoint : IServiceAsyncJoint
 {
-    ValueTask IServiceAsyncJoint.Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken = default) => new StashboxContainer().ApplyStashbox(context, cancellationToken);
+    ValueTask IServiceAsyncJoint.Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken) => new StashboxContainer().ApplyStashbox(context, cancellationToken);
 }

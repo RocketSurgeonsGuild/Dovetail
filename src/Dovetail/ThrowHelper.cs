@@ -5,7 +5,8 @@ namespace Dovetail;
 
 internal static class ThrowHelper
 {
-    public static Type EnsureTypeIsDovetail(Type type)
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+    public static Type EnsureTypeIsDovetail([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
     {
         return !typeof(IDovetailJoint).IsAssignableFrom(type)
             ? throw new NotSupportedException("Type must inherit from " + nameof(IDovetailJoint))

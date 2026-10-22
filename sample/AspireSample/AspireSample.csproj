@@ -10,6 +10,8 @@
         <UserSecretsId>FCFECA99-F7DA-4740-9B84-7A313F452F4F</UserSecretsId>
         <!-- The multi-target outer build doesn't import the SDK's PickBestRid task, so let Aspire use its out-of-proc RID tool there. -->
         <_AspireUseSdkPickBestRid Condition="'$(TargetFramework)' == ''">false</_AspireUseSdkPickBestRid>
+        <!-- ASPIRE010: the sample runs without the Aspire CLI bundle (Aspire's default); it doesn't use the features that need it. -->
+        <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

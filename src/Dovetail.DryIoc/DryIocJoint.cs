@@ -14,5 +14,5 @@ namespace Dovetail.DryIoc;
 [DovetailExport, ConnectsJoint<IDryIocJoint>]
 public class DryIocJoint : IServiceAsyncJoint
 {
-    ValueTask IServiceAsyncJoint.Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken = default) => new Container().ApplyDryIoc(context, cancellationToken);
+    ValueTask IServiceAsyncJoint.Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken) => new Container().ApplyDryIoc(context, cancellationToken);
 }

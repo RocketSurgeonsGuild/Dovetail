@@ -27,7 +27,8 @@
   <ItemGroup>
     <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.20.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="20.0.0" />
-    <!-- Exactly what MSBuild.ProjectCreation 20.0.0 pins; Dovetail.Sdk.Tests only compiles against them. -->
+    <!-- The MSBuild packages Dovetail.Sdk.Tests compiles against (MSBuild.ProjectCreation brings Microsoft.Build); keep all three on one version. -->
+    <PackageVersion Include="Microsoft.Build" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.11.0" />
     <PackageVersion Include="MSBuild.StructuredLogger.Utils" Version="2.3.246" />

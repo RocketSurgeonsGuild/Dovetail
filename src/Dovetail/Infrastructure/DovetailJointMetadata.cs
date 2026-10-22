@@ -41,7 +41,7 @@ public sealed class DovetailJointMetadata : IDovetailJointMetadata
     /// <param name="direction">The direction of the dependency.</param>
     /// <param name="type">The <see cref="IDovetailJoint" /> type that this dependency relates to.</param>
     /// <returns>This <see cref="DovetailJointMetadata" />, for chaining.</returns>
-    public DovetailJointMetadata WithDependency(DependencyDirection direction, Type type)
+    public DovetailJointMetadata WithDependency(DependencyDirection direction, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
     {
         _dependencies.Add(new DovetailDependency(direction, type));
         return this;
@@ -92,7 +92,7 @@ internal sealed class DovetailDeferredJointMetadata<[DynamicallyAccessedMembers(
     /// <param name="direction">The direction of the dependency.</param>
     /// <param name="type">The <see cref="IDovetailJoint" /> type that this dependency relates to.</param>
     /// <returns>This <see cref="DovetailDeferredJointMetadata{T}" />, for chaining.</returns>
-    public DovetailDeferredJointMetadata<T> WithDependency(DependencyDirection direction, Type type)
+    public DovetailDeferredJointMetadata<T> WithDependency(DependencyDirection direction, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
     {
         _dependencies.Add(new DovetailDependency(direction, type));
         return this;
