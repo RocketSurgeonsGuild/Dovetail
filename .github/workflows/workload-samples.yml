@@ -76,10 +76,16 @@ jobs:
               uses: actions/checkout@v7
               with:
                   fetch-depth: '0'
-            # .config/mise.toml uses {{env.HOME}}, which Windows runners don't set.
-            - name: Set HOME
+            # .config/mise.toml uses {{env.HOME}}, which Windows runners don't set. The SDK, the workloads and the NuGet packages
+            # don't fit on the Windows runner's C: drive, so keep mise's data (dotnet and its workloads) and NuGet's packages on D:.
+            - name: Set up Windows paths
               if: runner.os == 'Windows'
-              run: echo "HOME=$USERPROFILE" >> "$GITHUB_ENV"
+              run: |
+                  {
+                      echo "HOME=$USERPROFILE"
+                      echo "MISE_DATA_DIR=D:/mise"
+                      echo "NUGET_PACKAGES=D:/nuget/packages"
+                  } >> "$GITHUB_ENV"
             - name: 🛠️ Setup mise
               uses: jdx/mise-action@v5
               with:
