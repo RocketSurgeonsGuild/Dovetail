@@ -32,7 +32,6 @@
                 <Function>^System\..*</Function>
                 <Function>^TUnit.*</Function>
                 <Function>^Verify.*</Function>
-                <Function>^XUnit.*</Function>
               </Exclude>
             </Functions>
             <ModulePaths>
@@ -126,7 +125,7 @@
                 <ModulePath>.*Rocket\.Surgery\.DependencyInjection\.Extensions\.dll</ModulePath>
                 <ModulePath>.*Rocket\.Surgery\.Extensions\.Testing\.FakeItEasy\.dll</ModulePath>
                 <ModulePath>.*Rocket\.Surgery\.Extensions\.Testing\.SourceGenerators\.dll</ModulePath>
-                <ModulePath>.*Rocket\.Surgery\.Extensions\.Testing\.XUnit\.dll</ModulePath>
+                <ModulePath>.*Rocket\.Surgery\.Extensions\.Testing\.TUnit\.dll</ModulePath>
                 <ModulePath>.*Rocket\.Surgery\.MSBuild\.CI\.dll</ModulePath>
                 <ModulePath>.*Rocket\.Surgery\.MSBuild\.GitVersion\.dll</ModulePath>
                 <ModulePath>.*Rocket\.Surgery\.MSBuild\.GlobalAnalyzerConfig\.dll</ModulePath>
@@ -150,10 +149,11 @@
                 <ModulePath>.*Verify\.ImageMagick\.dll</ModulePath>
                 <ModulePath>.*Verify\.Playwright\.dll</ModulePath>
                 <ModulePath>.*Verify\.SourceGenerators\.dll</ModulePath>
-                <ModulePath>.*Verify\.Xunit\.dll</ModulePath>
-                <ModulePath>.*xunit\.analyzers\.dll</ModulePath>
-                <ModulePath>.*xunit\.dll</ModulePath>
-                <ModulePath>.*xunit\.runner\.visualstudio\.dll</ModulePath>
+                <ModulePath>.*Verify\.TUnit\.dll</ModulePath>
+                <ModulePath>.*TUnit\.dll</ModulePath>
+                <ModulePath>.*TUnit\.Assertions\.dll</ModulePath>
+                <ModulePath>.*TUnit\.Core\.dll</ModulePath>
+                <ModulePath>.*TUnit\.Engine\.dll</ModulePath>
                 <ModulePath>.*YamlDotNet\.dll</ModulePath>
               </Exclude>
             </ModulePaths>
