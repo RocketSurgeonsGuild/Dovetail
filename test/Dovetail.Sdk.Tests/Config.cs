@@ -259,7 +259,8 @@ internal static class Config
     /// </summary>
     public static string DotnetSdkVersion => field ??= System.Text.RegularExpressions.Regex.Match(
                                                  File.ReadAllText(Path.Combine(RootDirectory, ".config", "mise.toml")),
-                                                 @"dotnet = \[\s*\{ version = ""(?<version>[^""]+)"""
+                                                 // Whitespace and comment lines may sit between the list and its first entry.
+                                                 @"dotnet = \[(?:\s|#[^\n]*)*\{ version = ""(?<version>[^""]+)"""
                                              ) is { Success: true, } match
         ? match.Groups["version"].Value
         : throw new InvalidOperationException("No dotnet SDK version found in .config/mise.toml.");
