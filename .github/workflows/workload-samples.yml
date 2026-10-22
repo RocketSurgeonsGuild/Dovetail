@@ -2,7 +2,11 @@ name: Workload samples
 
 # Builds the samples that need .NET workloads (sample/Sample.Maui, sample/Sample.Uno, sample/Sample.Uno.Net11), which
 # Dovetail.slnx leaves out of the solution build. Each leg installs the workloads its runner can build and picks those heads
-# through DovetailSampleTargetFrameworks (';' is passed as %3B, since MSBuild splits -p: values on it).
+# through DovetailSampleTargetFrameworks (';' is passed as %3B, since MSBuild splits -p: values on it; an empty value skips
+# that sample on the leg).
+#
+# .NET for iOS/Mac Catalyst pins an exact Xcode version per release: the net10.0 packs need Xcode 26.0 (selected on macos-26),
+# the net11.0 prerelease packs need Xcode 27.0, which only GitHub's xcode-27 preview image has.
 
 on:
     push:
@@ -33,15 +37,23 @@ jobs:
                 include:
                     - name: Linux (Android, Uno desktop and WebAssembly)
                       os: ubuntu-latest
-                      workloads: maui-android android wasm-tools
+                      # wasm-tools-net10: the .NET 11 SDK's wasm-tools only covers net11.0 heads.
+                      workloads: maui-android android wasm-tools wasm-tools-net10
                       maui: net10.0-android%3Bnet11.0-android
                       uno: net10.0-desktop%3Bnet10.0-browserwasm%3Bnet10.0-android
                       uno-net11: net11.0-android
-                    - name: macOS (iOS, Mac Catalyst)
-                      os: macos-latest
+                    - name: macOS net10.0 (iOS, Mac Catalyst)
+                      os: macos-26
+                      xcode: /Applications/Xcode_26.0.1.app
                       workloads: maui ios maccatalyst
-                      maui: net10.0-ios%3Bnet10.0-maccatalyst%3Bnet11.0-ios%3Bnet11.0-maccatalyst
+                      maui: net10.0-ios%3Bnet10.0-maccatalyst
                       uno: net10.0-ios
+                      uno-net11: ''
+                    - name: macOS net11.0 (iOS, Mac Catalyst)
+                      os: xcode-27
+                      workloads: maui ios maccatalyst
+                      maui: net11.0-ios%3Bnet11.0-maccatalyst
+                      uno: ''
                       uno-net11: net11.0-ios
                     - name: Windows
                       os: windows-latest
@@ -65,29 +77,38 @@ jobs:
                   cache_key_prefix: mise-v2
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
+            - name: 🍎 Select Xcode
+              if: matrix.xcode != ''
+              run: |
+                  sudo xcode-select --switch "$XCODE"
+                  xcodebuild -version
+              env:
+                  XCODE: ${{ matrix.xcode }}
+            # Through mise, so dotnet is the SDK global.json asks for (on Windows the runner's own SDKs come first on PATH).
             - name: 📦 Install workloads
               run: |
                   read -ra workloads <<< "$WORKLOADS"
-                  dotnet workload install "${workloads[@]}"
+                  mise exec -- dotnet workload install "${workloads[@]}"
               env:
                   WORKLOADS: ${{ matrix.workloads }}
             - name: ⚙️ Build Sample.Maui
-              run: dotnet build sample/Sample.Maui/Sample.Maui.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Maui.binlog
+              if: matrix.maui != ''
+              run: mise exec -- dotnet build sample/Sample.Maui/Sample.Maui.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Maui.binlog
               env:
                   HEADS: ${{ matrix.maui }}
             - name: ⚙️ Build Sample.Uno
-              if: always()
-              run: dotnet build sample/Sample.Uno/Sample.Uno.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.binlog
+              if: (success() || failure()) && matrix.uno != ''
+              run: mise exec -- dotnet build sample/Sample.Uno/Sample.Uno.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.binlog
               env:
                   HEADS: ${{ matrix.uno }}
             - name: ⚙️ Build Sample.Uno.Net11
-              if: always()
-              run: dotnet build sample/Sample.Uno.Net11/Sample.Uno.Net11.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.Net11.binlog
+              if: (success() || failure()) && matrix.uno-net11 != ''
+              run: mise exec -- dotnet build sample/Sample.Uno.Net11/Sample.Uno.Net11.csproj "-p:DovetailSampleTargetFrameworks=$HEADS" -bl:artifacts/logs/Sample.Uno.Net11.binlog
               env:
                   HEADS: ${{ matrix.uno-net11 }}
             - name: 🏺 Publish logs
               if: always()
               uses: actions/upload-artifact@v7
               with:
-                  name: workload-samples-logs-${{ matrix.os }}
+                  name: workload-samples-logs-${{ strategy.job-index }}
                   path: artifacts/logs/

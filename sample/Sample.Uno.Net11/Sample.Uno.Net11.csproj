@@ -9,8 +9,8 @@
     <TargetFrameworks>net11.0-android</TargetFrameworks>
     <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net11.0-ios</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.26100</TargetFrameworks>
-    <!-- Lets a build (e.g. one CI leg) pick the heads it has workloads for, without the property flowing to referenced projects. -->
-    <TargetFrameworks Condition="'$(DovetailSampleTargetFrameworks)' != ''">$(DovetailSampleTargetFrameworks)</TargetFrameworks>
+    <!-- Lets a build (e.g. one CI leg) pick the heads it has workloads for, without the property flowing to referenced projects. A list arrives escaped (';' as %3B) from the command line. -->
+    <TargetFrameworks Condition="'$(DovetailSampleTargetFrameworks)' != ''">$([MSBuild]::Unescape('$(DovetailSampleTargetFrameworks)'))</TargetFrameworks>
 
     <OutputType>Exe</OutputType>
     <UnoSingleProject>true</UnoSingleProject>
