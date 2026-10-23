@@ -30,7 +30,7 @@ permissions:
     contents: read
 
 jobs:
-    samples:
+    sample:
         name: ${{ matrix.name }}
         runs-on: ${{ matrix.os }}
         strategy:
@@ -145,3 +145,17 @@ jobs:
               with:
                   name: workload-samples-logs-${{ strategy.job-index }}
                   path: artifacts/logs/
+
+    # The ruleset requires a check named `samples`. Each matrix leg reports under its own name, so this job stands in for all
+    # of them and passes only when every leg did.
+    samples:
+        name: samples
+        needs: sample
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: ✅ All samples built
+              if: needs.sample.result != 'success'
+              run: |
+                  echo "::error::A sample leg didn't succeed (${{ needs.sample.result }})."
+                  exit 1
