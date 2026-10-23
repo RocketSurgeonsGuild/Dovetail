@@ -9,6 +9,9 @@ name: samples
 # GitHub's xcode-27 preview image has (it now defaults to Xcode 27.1). The net10.0 packs ask for Xcode 26.0, but macos-26's
 # Xcode 26.0.1 has no matching iOS simulator runtime. So both legs keep the image's default Xcode and turn the exact-version
 # check off (ValidateXcodeVersion).
+#
+# The macOS legs are turned off: they build, but fail intermittently on GitHub's macOS runners. To bring them back, uncomment
+# them in the matrix below (actionlint.yaml still knows the xcode-27 label).
 
 on:
     push:
@@ -39,25 +42,28 @@ jobs:
                 include:
                     - name: Linux (Android, Uno desktop and WebAssembly)
                       os: ubuntu-latest
+                      properties: ''
                       maui: net10.0-android%3Bnet11.0-android
                       uno: net10.0-desktop%3Bnet10.0-browserwasm%3Bnet10.0-android
                       # Not yet: the Uno 7 prerelease's Android runtime is built against a newer Java.Interop than the .NET 11
                       # RC Android workload has (CS1705). Back to net11.0-android once those line up.
                       uno-net11: ''
-                    - name: macOS net10.0 (iOS, Mac Catalyst)
-                      os: macos-26
-                      properties: -p:ValidateXcodeVersion=false
-                      maui: net10.0-ios%3Bnet10.0-maccatalyst
-                      uno: net10.0-ios
-                      uno-net11: ''
-                    - name: macOS net11.0 (iOS, Mac Catalyst)
-                      os: xcode-27
-                      properties: -p:ValidateXcodeVersion=false
-                      maui: net11.0-ios%3Bnet11.0-maccatalyst
-                      uno: ''
-                      uno-net11: net11.0-ios
+                    # Off: these build, but fail intermittently (see the note at the top).
+                    # - name: macOS net10.0 (iOS, Mac Catalyst)
+                    #   os: macos-26
+                    #   properties: -p:ValidateXcodeVersion=false
+                    #   maui: net10.0-ios%3Bnet10.0-maccatalyst
+                    #   uno: net10.0-ios
+                    #   uno-net11: ''
+                    # - name: macOS net11.0 (iOS, Mac Catalyst)
+                    #   os: xcode-27
+                    #   properties: -p:ValidateXcodeVersion=false
+                    #   maui: net11.0-ios%3Bnet11.0-maccatalyst
+                    #   uno: ''
+                    #   uno-net11: net11.0-ios
                     - name: Windows
                       os: windows-latest
+                      properties: ''
                       maui: net10.0-windows10.0.19041.0%3Bnet11.0-windows10.0.19041.0
                       uno: net10.0-windows10.0.26100
                       uno-net11: net11.0-windows10.0.26100
