@@ -1,4 +1,4 @@
-name: Workload samples
+name: samples
 
 # Builds the samples that need .NET workloads (sample/Sample.Maui, sample/Sample.Uno, sample/Sample.Uno.Net11), which
 # Dovetail.slnx leaves out of the solution build. `mise install` installs the workloads this runner's OS can build (the dotnet
