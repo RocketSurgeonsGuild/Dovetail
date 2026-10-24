@@ -1,0 +1,8 @@
+﻿{
+  OutputFiles: [
+    lib.json
+  ],
+  EmbeddedResources: [
+    lib.json
+  ]
+}

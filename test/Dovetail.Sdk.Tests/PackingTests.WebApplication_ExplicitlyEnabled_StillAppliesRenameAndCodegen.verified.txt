@@ -93,6 +93,7 @@
       DovetailHost.WebApplication.g.cs
     ],
     OutputFiles: [
+      appsettings.schema.json,
       web.runtimeconfig.dev.json,
       web.staticwebassets.runtime.json,
       web.yaml

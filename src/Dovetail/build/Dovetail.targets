@@ -109,4 +109,5 @@
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Hosts.targets" Condition="'$(_DovetailHostsTargetsImported)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Metadata.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.PackConfiguration.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.ConfigurationSchema.targets" Condition="'$(_DovetailConfigurationSchemaTargetsImported)' != 'true'" />
 </Project>
