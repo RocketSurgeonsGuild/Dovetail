@@ -300,6 +300,22 @@ public sealed class SdkTestProject : IDisposable
     }
 
     /// <summary>
+    /// Builds and runs the application at <paramref name="relativePath"/> with <c>dotnet run</c> and returns what it
+    /// wrote to standard output, for behaviour that only shows up at run time (e.g. the host type the generated
+    /// <c>Imports</c> leaves the context with).
+    /// </summary>
+    public async Task<string> Run(string relativePath)
+    {
+        var psi = CreateHermeticStartInfo("run");
+        psi.WorkingDirectory = Path.Combine(Directory, relativePath);
+        using var proc = Process.Start(psi)!;
+        var stdout = await proc.StandardOutput.ReadToEndAsync();
+        var stderr = await proc.StandardError.ReadToEndAsync();
+        await proc.WaitForExitAsync();
+        return proc.ExitCode == 0 ? stdout : throw new TUnitException($"dotnet run failed for {relativePath}:\n{stdout}\n{stderr}");
+    }
+
+    /// <summary>
     /// Evaluates (without building) the project at <paramref name="relativePath"/> with
     /// <c>dotnet msbuild -getProperty/-getItem</c> and verifies the requested properties and items, each
     /// item with its own (non well-known) metadata. For projects that can't be built here, e.g. ones that

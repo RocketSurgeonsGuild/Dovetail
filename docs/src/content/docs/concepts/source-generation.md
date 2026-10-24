@@ -45,5 +45,6 @@ Dovetail.Sdk sets both as part of its host detection. Projects that don't use th
 Set either property in a project file to override its default.
 
 The generator runs in every project that references a Dovetail package, including projects that only reference one
-indirectly, for example through `Dovetail.Hosting`. The code it generates needs C# 12 or later: in a project whose
-`LangVersion` is older, it generates nothing and reports warning `DT0006` instead.
+indirectly, for example through `Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint
+with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
+generates nothing and reports warning `DT0006` instead.
