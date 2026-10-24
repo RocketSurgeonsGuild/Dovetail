@@ -117,6 +117,15 @@
     <Warning Text="Dovetail: this Uno Platform app doesn't use Uno.Extensions.Hosting, so Dovetail has no host to configure. Add Hosting to UnoFeatures to use Dovetail here." />
   </Target>
 
+  <!--
+      Managed configuration is opt-in: either DovetailEnableConfiguration=true, or explicitly enabling a
+      format (DovetailEnable{Json,Yaml,Toml}Configuration=true). The format check has to live here, not in
+      Dovetail.Configuration.targets, because that file is only imported once configuration is enabled.
+      An explicit DovetailEnableConfiguration=false still wins.
+  -->
+  <PropertyGroup>
+    <DovetailEnableConfiguration Condition="'$(DovetailEnableConfiguration)' == '' and ('$(DovetailEnableJsonConfiguration)' == 'true' or '$(DovetailEnableYamlConfiguration)' == 'true' or '$(DovetailEnableTomlConfiguration)' == 'true')">true</DovetailEnableConfiguration>
+  </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Configuration.targets" Condition="'$(DovetailEnableConfiguration)' == 'true'"/>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">

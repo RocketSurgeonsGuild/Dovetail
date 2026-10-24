@@ -1,0 +1,6 @@
+<!--
+    Stops MSBuild from walking up into the repository's Directory.Packages.props, which enables
+    central package management and repo-only GlobalPackageReferences. The SDK's implicit
+    PackageReferences carry explicit versions, like they would in any external consumer.
+-->
+<Project />

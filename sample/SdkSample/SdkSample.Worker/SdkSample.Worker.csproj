@@ -1,0 +1,12 @@
+<!--
+    OutputType=Exe makes Dovetail.Sdk detect a HostApplicationBuilder host: it injects
+    Dovetail.Hosting and generates the ConfigureDovetail() extension used in Program.cs.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SdkSample.Greetings\SdkSample.Greetings.csproj" />
+  </ItemGroup>
+</Project>
