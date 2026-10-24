@@ -51,6 +51,10 @@ internal static class ConfigurationSchemaPipeline
                           .Combine(assemblyDeclarations.Collect())
                           .Select(static (pair, _) => pair.Left.Concat(pair.Right).SelectMany(z => z).ToEquatableArray());
 
+        // Sections carry no source positions, so an edit that only moves code leaves them equal and everything after cached.
+        var sections = declarations.Select(static (declarations, _) => declarations.Select(z => z.Section).OfType<ConfigurationSection>().ToEquatableArray());
+        var diagnostics = declarations.Select(static (declarations, _) => declarations.SelectMany(z => z.Diagnostics).Distinct().ToEquatableArray());
+
         var referenceDocumentation = context
                                     .AdditionalTextsProvider
                                     .Combine(context.AnalyzerConfigOptionsProvider)
@@ -61,7 +65,7 @@ internal static class ConfigurationSchemaPipeline
                                     .Select(static (pair, _) => pair.Left)
                                     .Collect();
 
-        var described = declarations
+        var described = sections
                        .Combine(referenceDocumentation)
                        .Select(static (pair, cancellationToken) => ResolveDocumentation(pair.Left, pair.Right, cancellationToken))
                        .WithTrackingName("dovetail:configuration_sections");
@@ -74,30 +78,44 @@ internal static class ConfigurationSchemaPipeline
             described.Combine(includeRequired).Combine(supportedLanguageVersion),
             static (production, input) => Emit(production, input.Left.Left, input.Left.Right, input.Right)
         );
+
+        // Reported against the compilation's syntax trees, so #pragma warning disable works. This step re-runs on every edit,
+        // but all it does is report.
+        context.RegisterSourceOutput(
+            diagnostics.Combine(context.CompilationProvider),
+            static (production, input) =>
+            {
+                foreach (var diagnostic in input.Left)
+                {
+                    production.ReportDiagnostic(diagnostic.ToDiagnostic(input.Right));
+                }
+            }
+        );
     }
 
     /// <summary>
     ///     Fills in descriptions for types from referenced assemblies, from their XML documentation files. Only the files of the
     ///     assemblies that are actually needed are read.
     /// </summary>
-    private static EquatableArray<ConfigurationDeclaration> ResolveDocumentation(
-        EquatableArray<ConfigurationDeclaration> declarations,
+    private static EquatableArray<ConfigurationSection> ResolveDocumentation(
+        EquatableArray<ConfigurationSection> sections,
         ImmutableArray<AdditionalText> files,
         CancellationToken cancellationToken
     )
     {
         var wanted = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var declaration in declarations)
+        foreach (var section in sections)
         {
-            if (declaration.Section is { } section)
+            Collect(section.Schema, wanted);
+            foreach (var definition in section.Definitions)
             {
-                Collect(section.Schema, wanted);
+                Collect(definition.Schema, wanted);
             }
         }
 
         if (wanted.Count == 0 || files.IsEmpty)
         {
-            return declarations;
+            return sections;
         }
 
         var summaries = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -116,9 +134,15 @@ internal static class ConfigurationSchemaPipeline
         }
 
         return summaries.Count == 0
-            ? declarations
-            : declarations
-             .Select(z => z.Section is { } section ? z with { Section = section with { Schema = Apply(section.Schema, summaries) } } : z)
+            ? sections
+            : sections
+             .Select(
+                  z => z with
+                  {
+                      Schema = Apply(z.Schema, summaries),
+                      Definitions = z.Definitions.Select(definition => definition with { Schema = Apply(definition.Schema, summaries) }).ToEquatableArray(),
+                  }
+              )
              .ToEquatableArray();
     }
 
@@ -170,33 +194,19 @@ internal static class ConfigurationSchemaPipeline
         return end > start ? path[start..end] : path[start..];
     }
 
-    private static void Emit(SourceProductionContext production, EquatableArray<ConfigurationDeclaration> declarations, bool includeRequired, bool supportedLanguageVersion)
+    private static void Emit(SourceProductionContext production, EquatableArray<ConfigurationSection> sections, bool includeRequired, bool supportedLanguageVersion)
     {
-        // A nested type used by several sections reports its problems once per section; say each thing once.
-        foreach (var diagnostic in new HashSet<DiagnosticInfo>(declarations.SelectMany(z => z.Diagnostics)))
-        {
-            production.ReportDiagnostic(diagnostic.ToDiagnostic());
-        }
-
-        if (!supportedLanguageVersion)
+        if (!supportedLanguageVersion || sections.IsEmpty)
         {
             return;
         }
 
-        var sections = declarations
-                      .Select(z => z.Section)
-                      .OfType<ConfigurationSection>()
-                      .OrderBy(z => z.Path, StringComparer.OrdinalIgnoreCase)
-                      .ThenBy(z => z.Order)
-                      .ThenBy(z => z.TypeName, StringComparer.Ordinal)
-                      .ToArray();
-        if (sections.Length == 0)
-        {
-            return;
-        }
-
+        var ordered = sections
+                     .OrderBy(z => z.Path, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(z => z.Order)
+                     .ThenBy(z => z.TypeName, StringComparer.Ordinal);
         var unit = CompilationUnit()
-                  .WithAttributeLists(List(sections.Select(z => Helpers.AddAssemblyAttribute(MetadataPrefix + z.Path, JsonSchemaWriter.Write(z, includeRequired)))))
+                  .WithAttributeLists(List(ordered.Select(z => Helpers.AddAssemblyAttribute(MetadataPrefix + z.Path, JsonSchemaWriter.Write(z, includeRequired)))))
                   .AddSharedTrivia();
         production.AddSource("Dovetail_ConfigurationSchema.g.cs", unit.NormalizeWhitespace().GetText(Encoding.UTF8));
     }

@@ -61,7 +61,7 @@ internal static class Diagnostics
     public static readonly DiagnosticDescriptor InvalidConfigurationType = new(
         "DT0007",
         "Invalid configuration type",
-        "'{0}' can't be a configuration type because {1}",
+        "'{0}' can't be described as configuration: {1}",
         "Dovetail",
         DiagnosticSeverity.Error,
         true
@@ -103,10 +103,10 @@ internal static class Diagnostics
         true
     );
 
-    public static readonly DiagnosticDescriptor RecursiveConfigurationType = new(
+    public static readonly DiagnosticDescriptor ConfigurationTypeTooLarge = new(
         "DT0012",
-        "Recursive configuration type",
-        "'{0}' contains itself through '{1}', so the schema stops describing it there",
+        "Configuration type too large",
+        "'{0}' uses more than {1} distinct types, so the schema stops describing them at '{2}'",
         "Dovetail",
         DiagnosticSeverity.Warning,
         true
@@ -116,6 +116,15 @@ internal static class Diagnostics
         "DT0013",
         "Annotation not expressible in JSON Schema",
         "'{0}' on '{1}' is left out of the schema because {2}",
+        "Dovetail",
+        DiagnosticSeverity.Warning,
+        true
+    );
+
+    public static readonly DiagnosticDescriptor ConfigurationSchemaFailed = new(
+        "DT0014",
+        "Configuration schema generation failed",
+        "Dovetail couldn't describe '{0}' as configuration ({1}), so it has no schema; please report this",
         "Dovetail",
         DiagnosticSeverity.Warning,
         true

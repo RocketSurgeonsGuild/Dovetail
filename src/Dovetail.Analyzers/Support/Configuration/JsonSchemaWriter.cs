@@ -8,17 +8,42 @@ namespace Dovetail.Support.Configuration;
 ///     declaration order.
 /// </summary>
 /// <remarks>
-///     Configuration keys are case-insensitive, so every property is also matched by a case-insensitive
-///     <c>patternProperties</c> entry with the same schema: a differently-cased key is validated too. Regexes use character
-///     classes (<c>[Mm]</c>) because JSON Schema's ECMA-262 dialect has no inline <c>(?i)</c>. Editors don't show <c>default</c>,
-///     <c>minimum</c> or length keywords on hover, so those are repeated in the description.
+///     <para>
+///         The section's own schema is written inline; every object type it uses is written once under <c>definitions</c>
+///         (without <c>type</c>, so a nullable use can still accept <c>null</c>), and each use of it is a small object with the
+///         use's annotations and <c>allOf: [{"$ref": "#/definitions/…"}]</c> (draft-07 ignores siblings of a bare <c>$ref</c>).
+///         The build merging fragments moves the definitions to the document root and rewrites the references.
+///     </para>
+///     <para>
+///         Configuration keys are case-insensitive, so every property is also matched by a case-insensitive
+///         <c>patternProperties</c> entry with the same schema, and enum values accept any casing. Regexes use character classes
+///         (<c>[Mm]</c>) because JSON Schema's ECMA-262 dialect has no inline <c>(?i)</c>. Editors don't show <c>default</c>,
+///         <c>minimum</c> or length keywords on hover, so those are repeated in the description.
+///     </para>
 /// </remarks>
 internal static class JsonSchemaWriter
 {
     public static string Write(ConfigurationSection section, bool includeRequired)
     {
         var builder = new StringBuilder();
-        WriteNode(builder, section.Schema, section.Path, includeRequired);
+        var json = new ObjectWriter(builder);
+        WriteMembers(builder, json, section.Schema, section.Path, includeRequired, typed: true);
+        if (!section.Definitions.IsEmpty)
+        {
+            json.Name("definitions");
+            var definitions = new ObjectWriter(builder);
+            foreach (var definition in section.Definitions)
+            {
+                definitions.Name(definition.Name);
+                var body = new ObjectWriter(builder);
+                WriteMembers(builder, body, definition.Schema, null, includeRequired, typed: false);
+                body.End();
+            }
+
+            definitions.End();
+        }
+
+        json.End();
         return builder.ToString();
     }
 
@@ -31,7 +56,9 @@ internal static class JsonSchemaWriter
     }
 
     /// <summary>An anchored ECMA-262 pattern matching <paramref name="literals" /> case-insensitively.</summary>
-    public static string CaseInsensitivePattern(IEnumerable<string> literals) => "^(?:" + string.Join("|", literals.Select(CaseInsensitive)) + ")$";
+    public static string CaseInsensitivePattern(IEnumerable<string> literals) => "^(?:" + CaseInsensitiveAlternatives(literals) + ")$";
+
+    private static string CaseInsensitiveAlternatives(IEnumerable<string> literals) => string.Join("|", literals.Select(CaseInsensitive));
 
     private static string CaseInsensitive(string literal)
     {
@@ -59,10 +86,21 @@ internal static class JsonSchemaWriter
         return builder.ToString();
     }
 
-    private static void WriteNode(StringBuilder builder, SchemaNode node, string? title, bool includeRequired)
+    private static void WriteNode(StringBuilder builder, SchemaNode node, bool includeRequired)
     {
         var json = new ObjectWriter(builder);
-        json.Raw("type", TypeText(node));
+        WriteMembers(builder, json, node, null, includeRequired, typed: true);
+        json.End();
+    }
+
+    /// <summary>Writes a node's keywords into an object that's already open, so a section root can add <c>definitions</c> after them.</summary>
+    private static void WriteMembers(StringBuilder builder, ObjectWriter json, SchemaNode node, string? title, bool includeRequired, bool typed)
+    {
+        if (typed && node.Kind != SchemaKind.Any)
+        {
+            json.Raw("type", TypeText(node));
+        }
+
         if (title is not null)
         {
             json.String("title", title);
@@ -86,14 +124,16 @@ internal static class JsonSchemaWriter
 
         if (!node.EnumValues.IsEmpty)
         {
+            var names = CaseInsensitiveAlternatives(node.EnumValues);
             if (node.FlagsEnum)
             {
-                var names = CaseInsensitivePattern(node.EnumValues)[4..^2];
                 json.String("pattern", @"^\s*(?:" + names + @")(?:\s*,\s*(?:" + names + @"))*\s*$");
             }
             else
             {
-                json.Raw("enum", "[" + string.Join(",", node.EnumValues.Select(String).Concat(node.Nullable ? ["null"] : Array.Empty<string>())) + "]");
+                // The exact names keep completion; the pattern accepts the binder's case-insensitive, whitespace-tolerant parse.
+                var values = string.Join(",", node.EnumValues.Select(String).Concat(node.Nullable ? ["null"] : Array.Empty<string>()));
+                json.Raw("anyOf", "[{\"enum\":[" + values + "]},{\"pattern\":" + String(@"^\s*(?:" + names + @")\s*$") + "}]");
             }
         }
 
@@ -130,17 +170,26 @@ internal static class JsonSchemaWriter
         if (node.Items is not null)
         {
             json.Name("items");
-            WriteNode(builder, node.Items, null, includeRequired);
+            WriteNode(builder, node.Items, includeRequired);
         }
 
         if (node.Kind == SchemaKind.Map && node.Values is not null)
         {
             json.Name("additionalProperties");
-            WriteNode(builder, node.Values, null, includeRequired);
+            WriteNode(builder, node.Values, includeRequired);
             if (!node.KeyNames.IsEmpty)
             {
                 json.Raw("propertyNames", "{\"pattern\":" + String(CaseInsensitivePattern(node.KeyNames)) + "}");
             }
+            else if (node.KeyPattern is not null)
+            {
+                json.Raw("propertyNames", "{\"pattern\":" + String(node.KeyPattern) + "}");
+            }
+        }
+
+        if (node.Reference is not null)
+        {
+            json.Raw("allOf", "[{\"$ref\":" + String("#/definitions/" + node.Reference) + "}]");
         }
 
         if (!node.Properties.IsEmpty)
@@ -150,7 +199,7 @@ internal static class JsonSchemaWriter
             foreach (var property in node.Properties)
             {
                 properties.Name(property.Key);
-                WriteNode(builder, property.Schema, null, includeRequired);
+                WriteNode(builder, property.Schema, includeRequired);
             }
 
             properties.End();
@@ -160,7 +209,7 @@ internal static class JsonSchemaWriter
             foreach (var property in node.Properties)
             {
                 patterns.Name(CaseInsensitivePattern([property.Key]));
-                WriteNode(builder, property.Schema, null, includeRequired);
+                WriteNode(builder, property.Schema, includeRequired);
             }
 
             patterns.End();
@@ -170,8 +219,6 @@ internal static class JsonSchemaWriter
                 json.Raw("required", "[" + string.Join(",", node.Properties.Where(z => z.Required).Select(z => String(z.Key))) + "]");
             }
         }
-
-        json.End();
     }
 
     private static string TypeText(SchemaNode node)
@@ -184,6 +231,7 @@ internal static class JsonSchemaWriter
             SchemaKind.Boolean => "boolean",
             SchemaKind.Array => "array",
             SchemaKind.Object or SchemaKind.Map => "object",
+            SchemaKind.Any => throw new ArgumentOutOfRangeException(nameof(node), node.Kind, "Any has no type."),
             _ => throw new ArgumentOutOfRangeException(nameof(node), node.Kind, null),
         };
         return node.Nullable ? "[\"" + type + "\",\"null\"]" : "\"" + type + "\"";

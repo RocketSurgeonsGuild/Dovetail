@@ -25,10 +25,17 @@
       "type": "string",
       "description": "Default: Polite.",
       "default": "Polite",
-      "enum": [
-        "Polite",
-        "Casual",
-        "Shouty"
+      "anyOf": [
+        {
+          "enum": [
+            "Polite",
+            "Casual",
+            "Shouty"
+          ]
+        },
+        {
+          "pattern": "^\\s*(?:[Pp][Oo][Ll][Ii][Tt][Ee]|[Cc][Aa][Ss][Uu][Aa][Ll]|[Ss][Hh][Oo][Uu][Tt][Yy])\\s*$"
+        }
       ]
     },
     "Channels": {
@@ -39,7 +46,7 @@
     "Timeout": {
       "type": "string",
       "description": "A time span such as 00:00:30 or 1.12:00:00.",
-      "pattern": "^-?(?:\\d+|(?:\\d+\\.)?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+      "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
     },
     "Endpoint": {
       "type": [
@@ -112,41 +119,11 @@
     },
     "Retry": {
       "type": "object",
-      "description": "How to retry.",
-      "properties": {
-        "Attempts": {
-          "type": "integer",
-          "description": "Attempts before giving up. Range: 0 to 5. Default: 3.",
-          "default": 3,
-          "minimum": 0,
-          "maximum": 5
-        },
-        "Delays": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "description": "A time span such as 00:00:30 or 1.12:00:00.",
-            "pattern": "^-?(?:\\d+|(?:\\d+\\.)?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
-          }
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.RetryOptions"
         }
-      },
-      "patternProperties": {
-        "^(?:[Aa][Tt][Tt][Ee][Mm][Pp][Tt][Ss])$": {
-          "type": "integer",
-          "description": "Attempts before giving up. Range: 0 to 5. Default: 3.",
-          "default": 3,
-          "minimum": 0,
-          "maximum": 5
-        },
-        "^(?:[Dd][Ee][Ll][Aa][Yy][Ss])$": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "description": "A time span such as 00:00:30 or 1.12:00:00.",
-            "pattern": "^-?(?:\\d+|(?:\\d+\\.)?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
-          }
-        }
-      }
+      ]
     }
   },
   "patternProperties": {
@@ -171,10 +148,17 @@
       "type": "string",
       "description": "Default: Polite.",
       "default": "Polite",
-      "enum": [
-        "Polite",
-        "Casual",
-        "Shouty"
+      "anyOf": [
+        {
+          "enum": [
+            "Polite",
+            "Casual",
+            "Shouty"
+          ]
+        },
+        {
+          "pattern": "^\\s*(?:[Pp][Oo][Ll][Ii][Tt][Ee]|[Cc][Aa][Ss][Uu][Aa][Ll]|[Ss][Hh][Oo][Uu][Tt][Yy])\\s*$"
+        }
       ]
     },
     "^(?:[Cc][Hh][Aa][Nn][Nn][Ee][Ll][Ss])$": {
@@ -185,7 +169,7 @@
     "^(?:[Tt][Ii][Mm][Ee][Oo][Uu][Tt])$": {
       "type": "string",
       "description": "A time span such as 00:00:30 or 1.12:00:00.",
-      "pattern": "^-?(?:\\d+|(?:\\d+\\.)?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+      "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
     },
     "^(?:[Ee][Nn][Dd][Pp][Oo][Ii][Nn][Tt])$": {
       "type": [
@@ -258,6 +242,15 @@
     },
     "^(?:[Rr][Ee][Tt][Rr][Yy])$": {
       "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.RetryOptions"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.RetryOptions": {
       "description": "How to retry.",
       "properties": {
         "Attempts": {
@@ -272,7 +265,7 @@
           "items": {
             "type": "string",
             "description": "A time span such as 00:00:30 or 1.12:00:00.",
-            "pattern": "^-?(?:\\d+|(?:\\d+\\.)?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+            "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
           }
         }
       },
@@ -289,7 +282,7 @@
           "items": {
             "type": "string",
             "description": "A time span such as 00:00:30 or 1.12:00:00.",
-            "pattern": "^-?(?:\\d+|(?:\\d+\\.)?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+            "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
           }
         }
       }

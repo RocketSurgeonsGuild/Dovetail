@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 
 namespace Dovetail.Analyzers.Tests;
@@ -333,6 +334,279 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Describes_framework_and_collection_types()
+    {
+        var result = await WithAnnotations()
+                          .AddReferences(typeof(System.Net.IPAddress), typeof(SortedDictionary<string, int>), typeof(Queue<int>), typeof(TypeConverter))
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               public class Tags : List<string> { }
+
+                               [TypeConverter(typeof(TypeConverter))]
+                               public class Money { public decimal Amount { get; set; } public string? Currency { get; set; } }
+
+                               [DovetailConfiguration]
+                               public class TypesOptions
+                               {
+                                   public System.Globalization.CultureInfo? Culture { get; set; }
+                                   public Half Ratio { get; set; }
+                                   public Int128 Big { get; set; }
+                                   public UInt128 BigUnsigned { get; set; }
+                                   public object? Anything { get; set; }
+                                   public IConfigurationSection? Raw { get; set; }
+                                   public Tags Labels { get; set; } = new();
+                                   public System.Collections.Generic.SortedDictionary<string, int> Sorted { get; set; } = new();
+                                   public Dictionary<int, string> ByNumber { get; set; } = [];
+                                   public Dictionary<uint, string> ByUnsigned { get; set; } = [];
+                                   public Money Price { get; set; } = new();
+                                   public DateTime At { get; set; }
+                                   public DateOnly Day { get; set; }
+                                   public TimeOnly Time { get; set; }
+                                   public System.Net.IPAddress? Address { get; set; }
+                                   public Queue<int> Pending { get; set; } = new();
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Describes_nested_objects_without_requiring_their_constructors()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               public class Limits
+                               {
+                                   internal Limits() { }
+                                   public int MaxConnections { get; set; }
+                               }
+
+                               public class Seeded(int seed)
+                               {
+                                   public int Value { get; set; } = seed;
+                               }
+
+                               [DovetailConfiguration]
+                               public class ClientOptions
+                               {
+                                   public Limits Limits { get; } = new();
+                                   public Seeded Seeded { get; set; } = new(1);
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Reports_invalid_declarations()
+    {
+        var result = await WithAnnotations()
+                          .WithDiagnosticSeverity(DiagnosticSeverity.Warning)
+                          .AddSources(
+                               Usings
+                             + """
+                               [assembly: DovetailConfiguration("Untyped")]
+
+                               namespace Sample;
+
+                               [DovetailConfiguration]
+                               public class Tags : List<string> { }
+
+                               public class Outer<T>
+                               {
+                                   [DovetailConfiguration]
+                                   public class InnerOptions { public string? Value { get; set; } }
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Inherits_key_names_and_accepts_escaped_patterns()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               public class BaseOptions
+                               {
+                                   [ConfigurationKeyName("base_key")]
+                                   public virtual string? Name { get; set; }
+                               }
+
+                               [DovetailConfiguration]
+                               public class DerivedOptions : BaseOptions
+                               {
+                                   public override string? Name { get; set; }
+
+                                   [RegularExpression(@"C:\\Apps\\.*")]
+                                   public string? Folder { get; set; }
+
+                                   [RegularExpression(@"\(?id\)?")]
+                                   public string? Parenthesized { get; set; }
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Survives_empty_comments()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               /**/
+                               [DovetailConfiguration]
+                               public class QuietOptions
+                               {
+                                   /**/
+                                   public string? Name { get; set; }
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        var text = Describe(result);
+        text.ShouldContain("## Quiet");
+        text.ShouldNotContain("DT0014");
+    }
+
+    [Test]
+    public async Task Locates_diagnostics_in_source_so_pragmas_apply()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               [DovetailConfiguration]
+                               public class CallbackOptions { public Action? Callback { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        diagnostics.ShouldContain(z => z.Id == "DT0009");
+        diagnostics.ShouldAllBe(z => z.Location.SourceTree != null);
+    }
+
+    /// <summary>
+    ///     Each object type is described once and referenced, so a deep graph where every level uses the next type twice stays
+    ///     linear (with inlined copies, and every key's case-insensitive twin, it grew 4x per level).
+    /// </summary>
+    [Test]
+    public async Task Keeps_deep_type_graphs_linear()
+    {
+        var levels = string.Join(
+            "\n",
+            Enumerable.Range(1, 12).Select(z => $"public class Level{z} {{ public Level{z + 1} First {{ get; set; }} = new(); public Level{z + 1} Second {{ get; set; }} = new(); }}")
+        );
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + "namespace Sample;\n"
+                             + "[DovetailConfiguration] public class DeepOptions { public Level1 Root { get; set; } = new(); }\n"
+                             + levels
+                             + "\npublic class Level13 { public int Value { get; set; } }\npublic class Node<T> { public Node<Node<T>>? Next { get; set; } }\n"
+                             + "[DovetailConfiguration] public class EndlessOptions { public Node<int>? Start { get; set; } }\n"
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        var fragments = Fragments(result);
+        using var deep = JsonDocument.Parse(fragments["Deep"]);
+        deep.RootElement.GetProperty("definitions").EnumerateObject().Count().ShouldBe(13);
+        fragments["Deep"].Length.ShouldBeLessThan(10_000);
+        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Select(z => z.Id).ShouldBe(["DT0012"]);
+    }
+
+    /// <summary>
+    ///     The pipeline's values compare by content, so an unrelated edit leaves the sections cached instead of rebuilding and
+    ///     re-emitting them (the reason the model holds no symbols or locations).
+    /// </summary>
+    [Test]
+    public async Task Keeps_sections_cached_when_unrelated_code_changes()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               /// <summary>Settings for the greeting service.</summary>
+                               [DovetailConfiguration]
+                               public class GreetingsOptions
+                               {
+                                   public string Message { get; set; } = "Hello";
+                                   public RetryOptions Retry { get; set; } = new();
+                               }
+
+                               public class RetryOptions { public int Attempts { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        var compilation = result.InputCompilation;
+        var parseOptions = (CSharpParseOptions)compilation.SyntaxTrees.First().Options;
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new DovetailAttributesGenerator().AsSourceGenerator()],
+            parseOptions: parseOptions,
+            driverOptions: new(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true)
+        );
+        driver = driver.RunGenerators(compilation, TestContext.CancellationToken);
+        driver = driver.RunGenerators(
+            compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace Sample; public class Unrelated { }", parseOptions, cancellationToken: TestContext.CancellationToken)),
+            TestContext.CancellationToken
+        );
+
+        var steps = driver.GetRunResult().Results.Single().TrackedSteps;
+        foreach (var name in new[] { "dovetail:configuration_classes", "dovetail:configuration_sections" })
+        {
+            steps[name].SelectMany(z => z.Outputs).Select(z => z.Reason).ShouldAllBe(z => z == IncrementalStepRunReason.Cached || z == IncrementalStepRunReason.Unchanged, name);
+        }
+    }
+
+    /// <summary>The raw schema fragments in the compilation, by section.</summary>
+    private static Dictionary<string, string> Fragments(GeneratorTestResults result)
+    {
+        const string prefix = "Dovetail.ConfigurationSchema.v1:";
+        return result.FinalCompilation.Assembly.GetAttributes()
+                     .Select(z => z is { AttributeClass.Name: "AssemblyMetadataAttribute", ConstructorArguments: [{ Value: string key }, { Value: string value }] } ? (key, value) : default)
+                     .Where(z => z.key?.StartsWith(prefix, StringComparison.Ordinal) == true)
+                     .ToDictionary(z => z.key[prefix.Length..], z => z.value);
     }
 
     /// <summary>Every schema fragment (pretty-printed JSON), then the generator's diagnostics; the generated code must compile.</summary>

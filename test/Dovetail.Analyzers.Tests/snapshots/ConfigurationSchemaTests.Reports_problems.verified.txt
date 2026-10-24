@@ -85,6 +85,11 @@
       "type": [
         "object",
         "null"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.TreeOptions"
+        }
       ]
     }
   },
@@ -99,7 +104,54 @@
       "type": [
         "object",
         "null"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.TreeOptions"
+        }
       ]
+    }
+  },
+  "definitions": {
+    "Sample.TreeOptions": {
+      "properties": {
+        "Name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Child": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Sample.TreeOptions"
+            }
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Nn][Aa][Mm][Ee])$": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "^(?:[Cc][Hh][Ii][Ll][Dd])$": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Sample.TreeOptions"
+            }
+          ]
+        }
+      }
     }
   }
 }
@@ -108,6 +160,23 @@
   "type": "object",
   "title": "Unsupported",
   "properties": {
+    "Anything": {},
+    "Culture": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A culture name such as en-US."
+    },
+    "ByNumber": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^-?\\d+$"
+      }
+    },
     "Kept": {
       "type": [
         "string",
@@ -116,6 +185,23 @@
     }
   },
   "patternProperties": {
+    "^(?:[Aa][Nn][Yy][Tt][Hh][Ii][Nn][Gg])$": {},
+    "^(?:[Cc][Uu][Ll][Tt][Uu][Rr][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A culture name such as en-US."
+    },
+    "^(?:[Bb][Yy][Nn][Uu][Mm][Bb][Ee][Rr])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^-?\\d+$"
+      }
+    },
     "^(?:[Kk][Ee][Pp][Tt])$": {
       "type": [
         "string",
@@ -125,18 +211,14 @@
   }
 }
 ## Diagnostics
-DT0007 Error line 9: 'Sample.AbstractOptions' can't be a configuration type because it's abstract
-DT0007 Error line 12: 'Sample.GenericOptions<T>' can't be a configuration type because it's an open generic type
+DT0007 Error line 9: 'Sample.AbstractOptions' can't be described as configuration: it's abstract
+DT0007 Error line 12: 'Sample.GenericOptions<T>' can't be described as configuration: it's an open generic type
 DT0008 Error line 15: '' isn't a valid configuration section for 'Sample.Options': the type name is only a suffix, so pass a section path
 DT0008 Error line 18: 'A::B' isn't a valid configuration section for 'Sample.BadPathOptions': section paths can't have empty segments
-DT0009 Warning line 24: 'UnsupportedOptions.Anything' has type 'object?', which configuration binding doesn't support, so it's left out of the schema
-DT0009 Warning line 25: 'UnsupportedOptions.Culture' has type 'System.Globalization.CultureInfo?', which configuration binding doesn't support, so it's left out of the schema
 DT0009 Warning line 26: 'UnsupportedOptions.Callback' has type 'System.Action?', which configuration binding doesn't support, so it's left out of the schema
-DT0009 Warning line 27: 'UnsupportedOptions.ByNumber' has type 'System.Collections.Generic.Dictionary<int, string>', which configuration binding doesn't support, so it's left out of the schema
 DT0010 Warning line 37: 'CollidingOptions.Name' and 'CollidingOptions.Other' both bind the key 'name' (configuration keys are case-insensitive), so only 'CollidingOptions.Name' is described
 DT0011 Error line 40: 'Sample.AmbiguousOptions' can't be created from configuration because it has several public constructors with parameters and no parameterless one
 DT0011 Error line 49: 'Sample.OrphanParameterOptions' can't be created from configuration because constructor parameter 'unmatched' has no matching property
-DT0012 Warning line 59: 'Sample.TreeOptions' contains itself through 'TreeOptions.Child', so the schema stops describing it there
 DT0013 Warning line 65: '[Range]' on 'AnnotationOptions.Text' is left out of the schema because ranges only apply to numbers
 DT0013 Warning line 68: '[RegularExpression]' on 'AnnotationOptions.Pattern' is left out of the schema because it uses regular expression syntax that JSON Schema (ECMA-262) doesn't support
 DT0013 Warning line 71: '[RegularExpression]' on 'AnnotationOptions.Consonants' is left out of the schema because it uses regular expression syntax that JSON Schema (ECMA-262) doesn't support

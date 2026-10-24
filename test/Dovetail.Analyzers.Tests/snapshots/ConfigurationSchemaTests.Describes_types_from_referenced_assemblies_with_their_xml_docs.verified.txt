@@ -17,18 +17,11 @@
     },
     "Limits": {
       "type": "object",
-      "properties": {
-        "MaxConnections": {
-          "type": "integer",
-          "description": "Connections per server."
+      "allOf": [
+        {
+          "$ref": "#/definitions/ThirdParty.ClientLimits"
         }
-      },
-      "patternProperties": {
-        "^(?:[Mm][Aa][Xx][Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss])$": {
-          "type": "integer",
-          "description": "Connections per server."
-        }
-      }
+      ]
     }
   },
   "patternProperties": {
@@ -45,6 +38,15 @@
     },
     "^(?:[Ll][Ii][Mm][Ii][Tt][Ss])$": {
       "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ThirdParty.ClientLimits"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "ThirdParty.ClientLimits": {
       "properties": {
         "MaxConnections": {
           "type": "integer",

@@ -72,7 +72,8 @@ internal static class DocumentationReader
                             .Select(z => z[3..])
                     );
                 }
-                else if (trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia) || ( trivia.IsKind(SyntaxKind.MultiLineCommentTrivia) && text.StartsWith("/**", StringComparison.Ordinal) ))
+                // "/**/" is an ordinary empty comment that also starts with "/**": only longer ones have contents.
+                else if (text.Length >= 5 && ( trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia) || ( trivia.IsKind(SyntaxKind.MultiLineCommentTrivia) && text.StartsWith("/**", StringComparison.Ordinal) ) ))
                 {
                     lines.AddRange(
                         text[3..^2]

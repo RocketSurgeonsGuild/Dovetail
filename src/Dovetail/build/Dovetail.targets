@@ -88,15 +88,18 @@
   <!--
       Descriptions for configuration types from packages ([assembly: DovetailConfiguration("Section", typeof(T))]) come from the
       packages' XML documentation files: the compiler loads no docs for references, and analyzers can't read files. Pass the doc
-      file next to each package reference to the generator, which reads only the ones for the types it describes. This has to
-      run before the generated editorconfig picks up AdditionalFiles metadata. Opt out with DovetailConfigurationReferenceDocumentation=false.
+      file next to each package reference to the generator, which reads only the ones for the types it describes. Targeting
+      packs are left out (framework types aren't configuration types, and their docs run to tens of megabytes).
+      This has to run before GenerateMSBuildEditorConfigFileCore writes the AdditionalFiles metadata into the generated
+      editorconfig (GenerateMSBuildEditorConfigFile itself is empty; its DependsOnTargets run before any BeforeTargets hook).
+      Opt out with DovetailConfigurationReferenceDocumentation=false.
   -->
   <Target Name="_DovetailConfigurationReferenceDocumentation"
-          BeforeTargets="GenerateMSBuildEditorConfigFile"
+          BeforeTargets="GenerateMSBuildEditorConfigFileCore"
           DependsOnTargets="ResolveAssemblyReferences"
           Condition="'$(DovetailConfigurationReferenceDocumentation)' != 'false'">
     <ItemGroup>
-      <_DovetailReferenceDocumentation Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferencePath.NuGetPackageId)' != ''" />
+      <_DovetailReferenceDocumentation Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferencePath.NuGetPackageId)' != '' and '%(ReferencePath.FrameworkReferenceName)' == ''" />
       <AdditionalFiles Include="@(_DovetailReferenceDocumentation)" Condition="Exists('%(_DovetailReferenceDocumentation.Identity)')" DovetailReferenceDocumentation="true" />
     </ItemGroup>
   </Target>

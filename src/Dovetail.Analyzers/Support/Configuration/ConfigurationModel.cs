@@ -3,6 +3,8 @@ namespace Dovetail.Support.Configuration;
 /// <summary>The JSON Schema type a configuration value maps to.</summary>
 internal enum SchemaKind
 {
+    /// <summary>Any value: <c>object</c> and <c>IConfigurationSection</c> members bind whatever is there.</summary>
+    Any,
     Object,
     String,
     Integer,
@@ -10,7 +12,7 @@ internal enum SchemaKind
     Boolean,
     Array,
 
-    /// <summary>A dictionary: an object whose keys are free-form (or enum names) and whose values share one schema.</summary>
+    /// <summary>A dictionary: an object whose keys are free-form (or enum names, or integers) and whose values share one schema.</summary>
     Map,
 }
 
@@ -18,6 +20,11 @@ internal enum SchemaKind
 ///     The schema for one use of a type: a property, an array element, a dictionary value or a section root. Member-level
 ///     annotations (description, default, ranges, …) live on the node of the member that carries them.
 /// </summary>
+/// <remarks>
+///     An object type is described once, as a <see cref="SchemaDefinition" />; every use of it is a node with
+///     <see cref="Reference" /> set. That keeps the schema linear in the size of the type graph (each property also has a
+///     case-insensitive twin, so inlining would double it at every level) and lets recursive types refer to themselves.
+/// </remarks>
 internal sealed record SchemaNode
 {
     public SchemaKind Kind { get; init; }
@@ -78,24 +85,33 @@ internal sealed record SchemaNode
     /// <summary>Allowed key names when a map is keyed by an enum.</summary>
     public EquatableArray<string> KeyNames { get; init; } = EquatableArray<string>.Empty;
 
-    /// <summary>The members, for objects, in declaration order (base types first).</summary>
-    public EquatableArray<SchemaProperty> Properties { get; init; } = EquatableArray<SchemaProperty>.Empty;
+    /// <summary>An anchored pattern keys must match, when a map is keyed by integers.</summary>
+    public string? KeyPattern { get; init; }
 
-    /// <summary>A recursive type, cut here: the object's members aren't described again.</summary>
-    public bool Truncated { get; init; }
+    /// <summary>For a use of an object type: the name of its <see cref="SchemaDefinition" />.</summary>
+    public string? Reference { get; init; }
+
+    /// <summary>For an object's own schema (a definition or a section root): its members, in declaration order (base types first).</summary>
+    public EquatableArray<SchemaProperty> Properties { get; init; } = EquatableArray<SchemaProperty>.Empty;
 }
 
 /// <summary>A member of an object, under its configuration key.</summary>
 internal sealed record SchemaProperty(string Key, SchemaNode Schema, bool Required);
 
+/// <summary>An object type's schema, referred to by name from every use of it.</summary>
+internal sealed record SchemaDefinition(string Name, SchemaNode Schema);
+
 /// <summary>One <c>[DovetailConfiguration]</c> declaration that produced a schema.</summary>
+/// <param name="Schema">The section's own (inline) schema.</param>
+/// <param name="Definitions">The object types the section uses, including its own type when something refers back to it.</param>
 internal sealed record ConfigurationSection(
     string Path,
     int Order,
     bool RegisterOptions,
     bool ValidateOnStart,
     string TypeName,
-    SchemaNode Schema
+    SchemaNode Schema,
+    EquatableArray<SchemaDefinition> Definitions
 );
 
 /// <summary>What a declaration produced: a section (unless it was invalid) and any diagnostics.</summary>
