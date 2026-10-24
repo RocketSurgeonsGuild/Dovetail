@@ -1,4 +1,5 @@
 using Dovetail.Support;
+using Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -64,6 +65,8 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                              .Select((options, _) => options is CSharpParseOptions csharp ? csharp.LanguageVersion : LanguageVersion.Latest)
                              .WithTrackingName("dovetail:language_version");
         var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
+
+        ConfigurationSchemaPipeline.Register(context, supportedLanguageVersion);
 
         context.RegisterSourceOutput(
             languageVersion,

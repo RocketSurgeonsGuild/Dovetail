@@ -1,0 +1,63 @@
+﻿## Client
+{
+  "type": "object",
+  "title": "Client",
+  "description": "Options for the ClientOptions client.",
+  "properties": {
+    "BaseAddress": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Where requests go."
+    },
+    "Retries": {
+      "type": "integer",
+      "description": "Retries per request."
+    },
+    "Limits": {
+      "type": "object",
+      "properties": {
+        "MaxConnections": {
+          "type": "integer",
+          "description": "Connections per server."
+        }
+      },
+      "patternProperties": {
+        "^(?:[Mm][Aa][Xx][Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss])$": {
+          "type": "integer",
+          "description": "Connections per server."
+        }
+      }
+    }
+  },
+  "patternProperties": {
+    "^(?:[Bb][Aa][Ss][Ee][Aa][Dd][Dd][Rr][Ee][Ss][Ss])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Where requests go."
+    },
+    "^(?:[Rr][Ee][Tt][Rr][Ii][Ee][Ss])$": {
+      "type": "integer",
+      "description": "Retries per request."
+    },
+    "^(?:[Ll][Ii][Mm][Ii][Tt][Ss])$": {
+      "type": "object",
+      "properties": {
+        "MaxConnections": {
+          "type": "integer",
+          "description": "Connections per server."
+        }
+      },
+      "patternProperties": {
+        "^(?:[Mm][Aa][Xx][Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss])$": {
+          "type": "integer",
+          "description": "Connections per server."
+        }
+      }
+    }
+  }
+}
+## Diagnostics

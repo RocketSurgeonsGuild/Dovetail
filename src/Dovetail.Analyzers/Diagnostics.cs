@@ -57,4 +57,67 @@ internal static class Diagnostics
         DiagnosticSeverity.Warning,
         true
     );
+
+    public static readonly DiagnosticDescriptor InvalidConfigurationType = new(
+        "DT0007",
+        "Invalid configuration type",
+        "'{0}' can't be a configuration type because {1}",
+        "Dovetail",
+        DiagnosticSeverity.Error,
+        true
+    );
+
+    public static readonly DiagnosticDescriptor InvalidConfigurationSection = new(
+        "DT0008",
+        "Invalid configuration section",
+        "'{0}' isn't a valid configuration section for '{1}': {2}",
+        "Dovetail",
+        DiagnosticSeverity.Error,
+        true
+    );
+
+    public static readonly DiagnosticDescriptor UnsupportedConfigurationMember = new(
+        "DT0009",
+        "Unsupported configuration member",
+        "'{0}' has type '{1}', which configuration binding doesn't support, so it's left out of the schema",
+        "Dovetail",
+        DiagnosticSeverity.Warning,
+        true
+    );
+
+    public static readonly DiagnosticDescriptor ConfigurationKeyCollision = new(
+        "DT0010",
+        "Configuration key collision",
+        "'{0}' and '{1}' both bind the key '{2}' (configuration keys are case-insensitive), so only '{0}' is described",
+        "Dovetail",
+        DiagnosticSeverity.Warning,
+        true
+    );
+
+    public static readonly DiagnosticDescriptor UnsupportedConfigurationConstructor = new(
+        "DT0011",
+        "Configuration type can't be constructed",
+        "'{0}' can't be created from configuration because {1}",
+        "Dovetail",
+        DiagnosticSeverity.Error,
+        true
+    );
+
+    public static readonly DiagnosticDescriptor RecursiveConfigurationType = new(
+        "DT0012",
+        "Recursive configuration type",
+        "'{0}' contains itself through '{1}', so the schema stops describing it there",
+        "Dovetail",
+        DiagnosticSeverity.Warning,
+        true
+    );
+
+    public static readonly DiagnosticDescriptor InexpressibleConfigurationAnnotation = new(
+        "DT0013",
+        "Annotation not expressible in JSON Schema",
+        "'{0}' on '{1}' is left out of the schema because {2}",
+        "Dovetail",
+        DiagnosticSeverity.Warning,
+        true
+    );
 }

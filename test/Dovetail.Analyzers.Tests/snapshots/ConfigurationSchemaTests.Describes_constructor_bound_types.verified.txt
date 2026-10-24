@@ -1,0 +1,64 @@
+﻿## Connection
+{
+  "type": "object",
+  "title": "Connection",
+  "properties": {
+    "Server": {
+      "type": "string",
+      "description": "The server's address."
+    },
+    "Timeout": {
+      "type": "integer",
+      "description": "Default: 30.",
+      "default": 30
+    }
+  },
+  "patternProperties": {
+    "^(?:[Ss][Ee][Rr][Vv][Ee][Rr])$": {
+      "type": "string",
+      "description": "The server's address."
+    },
+    "^(?:[Tt][Ii][Mm][Ee][Oo][Uu][Tt])$": {
+      "type": "integer",
+      "description": "Default: 30.",
+      "default": 30
+    }
+  }
+}
+## Server
+{
+  "type": "object",
+  "title": "Server",
+  "description": "A server to connect to.",
+  "properties": {
+    "Host": {
+      "type": "string",
+      "description": "The host name."
+    },
+    "Port": {
+      "type": "integer",
+      "description": "The port to connect on. Default: 8080.",
+      "default": 8080
+    },
+    "Secure": {
+      "type": "boolean",
+      "description": "Whether to use TLS."
+    }
+  },
+  "patternProperties": {
+    "^(?:[Hh][Oo][Ss][Tt])$": {
+      "type": "string",
+      "description": "The host name."
+    },
+    "^(?:[Pp][Oo][Rr][Tt])$": {
+      "type": "integer",
+      "description": "The port to connect on. Default: 8080.",
+      "default": 8080
+    },
+    "^(?:[Ss][Ee][Cc][Uu][Rr][Ee])$": {
+      "type": "boolean",
+      "description": "Whether to use TLS."
+    }
+  }
+}
+## Diagnostics
