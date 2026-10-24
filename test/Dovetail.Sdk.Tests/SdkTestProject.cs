@@ -343,6 +343,38 @@ public sealed class SdkTestProject : IDisposable
         await Verify(new { Properties = evaluatedProperties, Items = evaluatedItems }, settings: _settings);
     }
 
+    /// <summary>
+    /// Restores the project at <paramref name="relativePath"/>, then returns the identities of its evaluated
+    /// <paramref name="itemType"/> items. For items with no metadata of their own (e.g. <c>Using</c>), which
+    /// <see cref="VerifyEvaluation"/> can't show - Verify drops their empty metadata - and for results that come from a
+    /// package's own props/targets, which are only imported once restore has generated nuget.g.props/targets.
+    /// </summary>
+    public async Task<IReadOnlyList<string>> EvaluateItemIdentities(string relativePath, string itemType)
+    {
+        var projectDirectory = Path.Combine(Directory, relativePath);
+        // Restored separately: `dotnet msbuild -restore` combined with -getItem doesn't restore at all.
+        await RunDotnet("restore", projectDirectory);
+        var stdout = await RunDotnet($"msbuild -getItem:{itemType}", projectDirectory);
+
+        using var document = System.Text.Json.JsonDocument.Parse(stdout);
+        return document.RootElement.GetProperty("Items").TryGetProperty(itemType, out var values)
+            ? values.EnumerateArray().Select(z => z.GetProperty("Identity").GetString()!).ToArray()
+            : [];
+    }
+
+    private async Task<string> RunDotnet(string arguments, string workingDirectory)
+    {
+        var psi = CreateHermeticStartInfo(arguments);
+        psi.WorkingDirectory = workingDirectory;
+        using var proc = Process.Start(psi)!;
+        var stdout = await proc.StandardOutput.ReadToEndAsync();
+        var stderr = await proc.StandardError.ReadToEndAsync();
+        await proc.WaitForExitAsync();
+        return proc.ExitCode == 0
+            ? stdout
+            : throw new TUnitException($"dotnet {arguments} failed for {workingDirectory}:\n{stdout}\n{stderr}");
+    }
+
     private static readonly HashSet<string> WellKnownItemMetadata =
     [
         "Identity", "FullPath", "RootDir", "Filename", "Extension", "RelativeDir", "Directory", "RecursiveDir", "ModifiedTime", "CreatedTime",
@@ -371,6 +403,27 @@ public sealed class SdkTestProject : IDisposable
 
         var outputFiles = result.OutputFiles.OrderBy(z => z, StringComparer.Ordinal).ToArray();
         await Verify(new { OutputFiles = outputFiles, EmbeddedResources = embeddedResources }, settings: _settings);
+    }
+
+    /// <summary>
+    /// Builds the project at <paramref name="relativePath"/> and verifies the warnings Dovetail's own targets raised (text
+    /// starting with <c>Dovetail</c>), so unrelated SDK or NuGet audit warnings can't make the snapshot machine-dependent.
+    /// Restore and build both run the SDK's targets, so the same warning can be logged twice; each is listed once.
+    /// </summary>
+    public async Task VerifyBuildWarnings(string relativePath)
+    {
+        var projectDirectory = Path.Combine(Directory, relativePath);
+        await BuildAndEvaluate(projectDirectory, "build");
+
+        var build = BinaryLog.ReadBuild(Path.Combine(projectDirectory, "msbuild.binlog"));
+        var warnings = build.FindChildrenRecursive<Warning>()
+           .Select(z => z.Text)
+           .Where(z => z.StartsWith("Dovetail", StringComparison.Ordinal))
+           .Distinct(StringComparer.Ordinal)
+           .OrderBy(z => z, StringComparer.Ordinal)
+           .ToArray();
+
+        await Verify(new { Warnings = warnings }, settings: _settings);
     }
 
     /// <summary>

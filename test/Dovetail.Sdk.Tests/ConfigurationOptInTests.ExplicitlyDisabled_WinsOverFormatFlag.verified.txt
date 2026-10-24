@@ -1,0 +1,6 @@
+﻿{
+  Properties: {
+    DovetailEnableConfiguration: false
+  },
+  Items: {}
+}

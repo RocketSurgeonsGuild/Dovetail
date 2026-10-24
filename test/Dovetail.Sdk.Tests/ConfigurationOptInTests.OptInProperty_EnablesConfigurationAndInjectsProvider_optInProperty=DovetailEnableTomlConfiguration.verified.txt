@@ -1,0 +1,13 @@
+﻿{
+  Properties: {
+    DovetailEnableConfiguration: true
+  },
+  Items: {
+    PackageReference: {
+      Dovetail.Configuration.Toml: {
+        IsImplicitlyDefined: true,
+        Version: {sdk-version}
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+<!--
+    Packs every src/*.csproj into artifacts/nuget-sample at the fixed version global.json pins
+    for Dovetail.Sdk, so this sample consumes Dovetail exactly as published packages - never via
+    ProjectReference or direct props/targets imports.
+
+        dotnet msbuild build/pack.proj
+
+    Rerun after changing anything under src/, then build/run the sample as usual.
+-->
+<Project DefaultTargets="Pack">
+  <PropertyGroup>
+    <DovetailSampleVersion>0.0.0-sample</DovetailSampleVersion>
+    <DovetailSampleFeed>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..', 'artifacts', 'nuget-sample'))</DovetailSampleFeed>
+    <DovetailSamplePackagesFolder>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '.nuget', 'packages'))</DovetailSamplePackagesFolder>
+    <_DovetailSampleGlobalJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\global.json'))</_DovetailSampleGlobalJson>
+    <_DovetailSampleProperties>Configuration=Release;Version=$(DovetailSampleVersion);PackageOutputPath=$(DovetailSampleFeed)</_DovetailSampleProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_DovetailSourceProject Include="$(MSBuildThisFileDirectory)..\..\..\src\**\*.csproj" />
+  </ItemGroup>
+
+  <Target Name="Pack">
+    <Error
+      Text="global.json must pin Dovetail.Sdk to '$(DovetailSampleVersion)' (the version this file packs)."
+      Condition="!$(_DovetailSampleGlobalJson.Contains('&quot;$(DovetailSampleVersion)&quot;'))" />
+
+    <ItemGroup>
+      <_DovetailStalePackage Include="$(DovetailSampleFeed)*.nupkg;$(DovetailSampleFeed)*.snupkg" />
+      <_DovetailStaleCacheDirectory Include="$([System.IO.Directory]::GetDirectories('$(DovetailSamplePackagesFolder)', 'dovetail*'))"
+                                    Condition="Exists('$(DovetailSamplePackagesFolder)')" />
+    </ItemGroup>
+    <Delete Files="@(_DovetailStalePackage)" />
+    <RemoveDir Directories="@(_DovetailStaleCacheDirectory)" />
+
+    <!-- Restore separately (with a distinct global property) so Pack runs against a fresh evaluation. -->
+    <MSBuild Projects="@(_DovetailSourceProject)" Targets="Restore" Properties="$(_DovetailSampleProperties);_DovetailSampleRestore=true" BuildInParallel="true" />
+    <MSBuild Projects="@(_DovetailSourceProject)" Targets="Pack" Properties="$(_DovetailSampleProperties)" BuildInParallel="true" />
+
+    <Message Importance="high" Text="Dovetail packages $(DovetailSampleVersion) -> $(DovetailSampleFeed)" />
+  </Target>
+</Project>
