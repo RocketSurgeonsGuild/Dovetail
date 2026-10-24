@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Dovetail.Build.Tasks\Dovetail.Build.Tasks.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+        <PackageReference Include="Corvus.Json.JsonSchema.Draft7" />
+    </ItemGroup>
+</Project>

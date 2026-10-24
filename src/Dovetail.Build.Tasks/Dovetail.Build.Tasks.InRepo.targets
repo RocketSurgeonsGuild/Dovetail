@@ -1,0 +1,26 @@
+<Project>
+  <!--
+      In-repo builds (src, test, sample and benchmarks import this from their Directory.Build.targets) run Dovetail's MSBuild
+      tasks from this project's output instead of a packed Dovetail: Dovetail.ConfigurationSchema.targets only registers the
+      packed copy when _DovetailBuildTasksAssembly is empty. TaskHostFactory runs each call in a short-lived task host, so no
+      long-lived MSBuild node keeps (and locks) an old copy of the DLL while it is rebuilt.
+  -->
+  <PropertyGroup>
+    <_DovetailBuildTasksAssembly>$(MSBuildThisFileDirectory)bin/$(Configuration)/netstandard2.0/Dovetail.Build.Tasks.dll</_DovetailBuildTasksAssembly>
+  </PropertyGroup>
+  <UsingTask TaskName="Dovetail.Build.Tasks.MergeConfigurationSchema" AssemblyFile="$(_DovetailBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Dovetail.Build.Tasks.WriteConfigurationSchemaSegment" AssemblyFile="$(_DovetailBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <!--
+      Builds the tasks first. Not a real reference: nothing compiles against it, no package depends on it, and an Aspire AppHost
+      doesn't make it a resource. AdditionalProperties is cleared so browser-wasm builds (see the root Directory.Build.targets)
+      don't build it for that runtime, into another folder.
+  -->
+  <ItemGroup Condition="'$(DovetailConfigurationSchema)' != 'false' and '@(ProjectReference->AnyHaveMetadataValue('Filename', 'Dovetail.Build.Tasks'))' != 'true'">
+    <ProjectReference
+      Include="$(MSBuildThisFileDirectory)Dovetail.Build.Tasks.csproj"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="all"
+      AdditionalProperties=""
+      IsAspireProjectResource="false" />
+  </ItemGroup>
+</Project>
