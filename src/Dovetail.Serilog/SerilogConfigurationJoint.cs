@@ -9,7 +9,7 @@ namespace Dovetail.Serilog;
 ///     <c>openspec/changes/dovetail-managed-configuration</c> will eventually emit for this library's
 ///     <c>appsettings.json</c> (see design.md, Decision 4). Registers
 ///     <see cref="SerilogRuntimeConfiguration" /> through the same hook
-///     (<see cref="DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions{TOptions}" />)
+///     (<see cref="DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions{TOptions}(IServiceCollection, Microsoft.Extensions.Configuration.IConfiguration, string)" />)
 ///     the generator is expected to call, so this dogfood composes without changes once the
 ///     generator lands and this handwritten registration is retired.
 /// </summary>

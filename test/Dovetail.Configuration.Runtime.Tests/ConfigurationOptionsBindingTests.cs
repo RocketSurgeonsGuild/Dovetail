@@ -10,7 +10,7 @@ namespace Dovetail.Configuration.Runtime.Tests;
 /// <summary>
 ///     Verifies the runtime integration surface that generated <c>IConfigurationJoint</c> implementations
 ///     (see <c>openspec/changes/dovetail-managed-configuration</c>) are expected to compose with:
-///     <see cref="DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions{TOptions}" /> plus the
+///     <see cref="DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions{TOptions}(IServiceCollection, IConfiguration, string)" /> plus the
 ///     JSON/YAML/TOML runtime <see cref="IConfigurationSource" />s, exercising <see cref="IOptions{TOptions}" />
 ///     resolution (task 6.3) and <see cref="IOptionsMonitor{TOptions}" /> reload-on-file-change (task 6.4)
 ///     across all three supported formats.

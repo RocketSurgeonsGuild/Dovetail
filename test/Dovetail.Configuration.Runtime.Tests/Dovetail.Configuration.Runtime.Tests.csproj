@@ -7,6 +7,8 @@
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Yaml\Dovetail.Configuration.Yaml.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Configuration.Toml\Dovetail.Configuration.Toml.csproj" />
+        <!-- Host start for the ValidateOnStart tests. -->
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
     </ItemGroup>
     <ItemGroup>
         <!-- Fixtures for the embedded configuration joints, named the way the Dovetail SDK (and, for the Some.Root.* files, other tools) name embedded resources. -->
