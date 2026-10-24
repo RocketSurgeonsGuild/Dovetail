@@ -8,11 +8,11 @@ All spikes ran on Linux with SDK 11.0.100-rc.2.26504.105 (MSBuild 18.12, Roslyn 
 
 **GO for PR B.** No spike found a blocker. Every risk that could be tested here either held up or has a tested fix; the Visual Studio questions (S1) still need a Windows run. The plan changes below are small and add ~3–4 days (P3's per-version binder rules, P2's embedded SchemaStore). Only P4's Visual Studio work depends on S1, so P1–P3 can start.
 
-Decisions needed before P1:
+Decisions made after P0 (2026-10-24):
 
-1. **Quoted numbers and booleans** (`"30"`, `"true"`): the binder accepts them, but strict types flag them in all three editors. Either keep strict types and accept those false positives, or accept numeric and boolean strings through an `anyOf` with a pattern, in which case ranges are only checked for unquoted values.
-2. **Values under differently-cased keys**: either accept that `retries: 99` goes unchecked, or add a case-insensitive `patternProperties` entry per key, which validates and hovers them in every engine but makes Taplo report a bad canonical value twice.
-3. **Descriptions for third-party types** in the assembly-level form: either none in v1, or Dovetail's targets pass package XML doc files to the generator as `AdditionalFiles`.
+1. **Quoted numbers and booleans** (`"30"`, `"true"`): keep strict types. Ranges are always checked, and quoted values get an "Incorrect type" warning even though the binder accepts them.
+2. **Values under differently-cased keys**: validate them. Each library fragment gives every key a case-insensitive `patternProperties` entry with the same subschema, so `retries: 99` is checked and hovered in every engine. Taplo reports a bad canonical value twice, and fragments roughly double in size.
+3. **Descriptions for third-party types** in the assembly-level form: Dovetail's targets pass the XML doc files of package references to the generator as `AdditionalFiles`, and the generator reads only the file for the type's assembly. This is part of P1.
 
 ## S1: Visual Studio schema segments (needs a Windows run)
 
@@ -145,7 +145,8 @@ Cost: P3 grows by ~2–3 days for the per-version rules and the second parity ru
 
 ## Changes to the plan
 
-- P1: XML doc descriptions come from trivia parsing, not `GetDocumentationCommentXml()`; third-party types in the assembly-level form get no XML descriptions in v1 unless the `AdditionalFiles` route is taken (S2).
+- P1: XML doc descriptions come from trivia parsing, not `GetDocumentationCommentXml()`. Third-party types in the assembly-level form get descriptions from package XML doc files passed as `AdditionalFiles`; +~1–2 days (S2, decision 3).
+- P1: fragments give every key a case-insensitive `patternProperties` entry (decision 2). The task derives each object's key list from the fragments' `properties`, so fragments need no separate name list (S3).
 - P1/P2: the schema writer embeds SchemaStore, closes overlapping sections once, adds `patternErrorMessage` and `doNotSuggest`, pairs `deprecated` with `deprecationMessage`, titles sections, and puts ranges and defaults into descriptions; +~1 day (S4).
 - P2: the task compiles against System.Text.Json / System.Reflection.Metadata 9.0.0 compile-only, takes absolute paths only, and resolves section casing deterministically (S3).
 - P3: binder semantics are pinned per Binder major version (10 vs 11), immutable types and `required` members follow documented Dovetail rules, and source-gen's `NotSupportedException`s aren't reproduced; +2–3 days (S5).
