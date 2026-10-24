@@ -71,12 +71,25 @@
     </ItemGroup>
     <Delete Files="@(_StaleDovetailPackage)" />
     <!--
+        Restore and Pack run as separate calls: with "Restore;Pack" in one call, Pack reuses the evaluation made before
+        restore, so on a clean checkout (no obj/project.assets.json yet) it builds without any package-provided
+        references and fails (e.g. CS0518 'System.String' is not defined). The extra global property gives the restore
+        call its own evaluation, so Pack evaluates afresh once the restore outputs exist.
+    -->
+    <MSBuild
+      Projects="@(_DovetailSrcProject)"
+      Targets="Restore"
+      Properties="Configuration=$(Configuration);VersionSuffix=local;_DovetailSdkTestsRestore=true"
+      RemoveProperties="TargetFramework;RuntimeIdentifier"
+      BuildInParallel="true"
+    />
+    <!--
         Packed as a prerelease (1.0.0-local), as any dev build is: the packages depend on prereleases (the .NET 11 RC packages for
         net11.0, and DryIoc's preview), which a stable version would flag as NU5104.
     -->
     <MSBuild
       Projects="@(_DovetailSrcProject)"
-      Targets="Restore;Pack"
+      Targets="Pack"
       Properties="Configuration=$(Configuration);VersionSuffix=local"
       RemoveProperties="TargetFramework;RuntimeIdentifier"
       BuildInParallel="true"

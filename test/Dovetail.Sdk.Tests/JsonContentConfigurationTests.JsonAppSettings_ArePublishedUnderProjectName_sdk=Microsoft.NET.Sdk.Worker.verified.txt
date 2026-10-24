@@ -1,0 +1,4 @@
+﻿[
+  app.Development.json,
+  app.json
+]

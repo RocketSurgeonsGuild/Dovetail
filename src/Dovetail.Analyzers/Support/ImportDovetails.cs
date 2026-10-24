@@ -15,6 +15,7 @@ internal static class ImportDovetails
         Request request
     )
     {
+        if (!request.BuildConfig.ImportAssembly) return;
 
         var exportConfig = request.BuildConfig.ExportConfiguration;
         var referenceMethods = request
@@ -24,6 +25,15 @@ internal static class ImportDovetails
                               .ToImmutableList();
 
         var functionBody = referenceMethods.Count == 0 ? Block(YieldStatement(SyntaxKind.YieldBreakStatement)) : addEnumerateExportStatements(referenceMethods);
+
+        // Only pin the host type when the build says what it is: an explicit DovetailHostType first, then test projects.
+        // Pinning it unconditionally (it used to always be UnitTest) wins over the hosting helpers'
+        // AddIfMissing(DovetailHostType.Live), so real applications ran UnitTest-only joints and skipped Live-only ones.
+        var hostTypeName = PinnableHostTypes.FirstOrDefault(z => string.Equals(z, request.BuildConfig.HostType.Trim(), StringComparison.OrdinalIgnoreCase))
+         ?? ( request.BuildConfig.IsTestProject ? "UnitTest" : null );
+        ArgumentSyntax[] hostTypeArguments = hostTypeName is null
+            ? []
+            : [Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailHostType"), IdentifierName(hostTypeName)))];
 
         var importsClass =
             ClassDeclaration(request.BuildConfig.ImportConfiguration.ClassName)
@@ -78,7 +88,7 @@ internal static class ImportDovetails
                                 )
                         ).WithArgumentList(ArgumentList())
                     )),
-                        Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,IdentifierName("DovetailHostType"),IdentifierName("UnitTest"))),
+                                                        ..hostTypeArguments,
                                                         Argument(BinaryExpression(                        SyntaxKind.CoalesceExpression,                        IdentifierName("categories"),                        CollectionExpression()                    ))
                                                     ]
                                                 )
@@ -208,6 +218,9 @@ internal static class ImportDovetails
             return block;
         }
     }
+
+    /// <summary>The <c>DovetailHostType</c> values a build may pin; anything else (e.g. <c>Undefined</c>) leaves it to the host.</summary>
+    private static readonly string[] PinnableHostTypes = ["Live", "UnitTest"];
 
     public record Request
     (

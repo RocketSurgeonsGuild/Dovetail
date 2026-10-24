@@ -146,7 +146,9 @@ internal static class ExportDovetails
                      )
                  )
                 .AddSharedTrivia()
-                .WithAttributeLists(msBuildConfig.ExportConfiguration.ToAttributes());
+                // Without the Dovetail.Export.* metadata, referencing assemblies don't import these joints; the class is still
+                // emitted so this assembly's own Imports keeps picking them up.
+                .WithAttributeLists(msBuildConfig.ExportAssembly ? msBuildConfig.ExportConfiguration.ToAttributes() : default);
 
         cu = cu.AddMembers(
             msBuildConfig.ExportConfiguration is { Namespace.Length: > 0 } data

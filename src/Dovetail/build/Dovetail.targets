@@ -13,6 +13,24 @@
     <DovetailExportClassName Condition="'$(DovetailExportClassName)' == ''">Exports</DovetailExportClassName>
     <DovetailExportMethodName Condition="'$(DovetailExportMethodName)' == ''">Joints</DovetailExportMethodName>
   </PropertyGroup>
+  <!--
+      Whether the generator emits this assembly's Imports class (ImportDovetailAssembly) and advertises its joints to
+      referencing assemblies (ExportDovetailAssembly). Dovetail.Sdk sets both during host detection, which runs before
+      this file; these defaults cover projects that don't use the SDK, including ones that only get Dovetail
+      transitively: test projects import but don't export, applications (Exe or WinExe) do both, libraries only export.
+  -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">false</ExportDovetailAssembly>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">false</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleProperty Include="RootNamespace"/>
     <CompilerVisibleProperty Include="IsTestProject"/>
@@ -21,6 +39,8 @@
     <CompilerVisibleProperty Include="DovetailCategory"/>
     <CompilerVisibleProperty Include="DovetailHostType"/>
     <CompilerVisibleProperty Include="DovetailAssignExternal"/>
+    <CompilerVisibleProperty Include="ImportDovetailAssembly"/>
+    <CompilerVisibleProperty Include="ExportDovetailAssembly"/>
 
     <CompilerVisibleProperty Include="DovetailImportNamespace"/>
     <CompilerVisibleProperty Include="DovetailImportClassName"/>

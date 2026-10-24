@@ -48,4 +48,13 @@ internal static class Diagnostics
         DiagnosticSeverity.Error,
         true
     );
+
+    public static readonly DiagnosticDescriptor UnsupportedLanguageVersion = new(
+        "DT0006",
+        "C# version too old for Dovetail source generation",
+        "Dovetail's source generator needs C# 12 or later, but this project uses C# {0}, so no Dovetail code was generated; set LangVersion to 12 or later to enable it",
+        "Dovetail",
+        DiagnosticSeverity.Warning,
+        true
+    );
 }

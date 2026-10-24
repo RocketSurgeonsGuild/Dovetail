@@ -68,6 +68,20 @@
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings*.json" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <!--
+      The Web SDK globs *.json as Content rather than None, so without these the file is copied (and published) under its
+      original name while the generated joint loads $(MSBuildProjectName).json - a FileNotFoundException at startup.
+    -->
+    <Content Update="$(MSBuildProjectDirectory)\appsettings*.json"
+      Pack="true"
+      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      PackageCopyToOutput="true"
+      CopyToOutputDirectory="PreserveNewest"
+      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      Visible="false" />
+    <Content Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
+    <Content Update="$(MSBuildProjectDirectory)\appsettings*.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
     <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.json"
       Exclude="@(EmbeddedResource)"
       LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
