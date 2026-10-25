@@ -64,6 +64,7 @@ public static class DovetailConfigurationSchemaEndpointExtensions
         if (!IsEnabledFor(endpoints.ServiceProvider.GetRequiredService<IHostEnvironment>(), environments)) return null;
 
         var schema = new SchemaFileCache(baseDirectory, fallbackDirectory);
+        // The cast selects the RequestDelegate overload, which unlike the Delegate overloads does not need reflection.
         return endpoints.MapGet(RoutePattern, (RequestDelegate)schema.HandleAsync);
     }
 
@@ -134,25 +135,15 @@ public static class DovetailConfigurationSchemaEndpointExtensions
         }
     }
 
-    private sealed class LoadedSchema
+    private sealed class LoadedSchema(string path, DateTime lastWriteTimeUtc, long length, byte[] content)
     {
-        private readonly string _path;
-        private readonly DateTime _lastWriteTimeUtc;
-        private readonly long _length;
+        private readonly string _path = path;
+        private readonly DateTime _lastWriteTimeUtc = lastWriteTimeUtc;
+        private readonly long _length = length;
 
-        public LoadedSchema(string path, DateTime lastWriteTimeUtc, long length, byte[] content)
-        {
-            _path = path;
-            _lastWriteTimeUtc = lastWriteTimeUtc;
-            _length = length;
-            Content = content;
-            // A strong validator over the bytes served: the same schema yields the same ETag across restarts and instances.
-            ETag = new EntityTagHeaderValue($"\"{Convert.ToHexStringLower(SHA256.HashData(content).AsSpan(0, 16))}\"");
-        }
+        public byte[] Content { get; } = content;
 
-        public byte[] Content { get; }
-
-        public EntityTagHeaderValue ETag { get; }
+        public EntityTagHeaderValue ETag { get; } = new EntityTagHeaderValue($"\"{Convert.ToHexStringLower(SHA256.HashData(content).AsSpan(0, 16))}\"");
 
         public bool Matches(FileInfo file) =>
             _length == file.Length && _lastWriteTimeUtc == file.LastWriteTimeUtc && string.Equals(_path, file.FullName, StringComparison.Ordinal);
