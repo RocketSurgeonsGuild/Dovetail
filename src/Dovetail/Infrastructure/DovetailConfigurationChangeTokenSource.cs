@@ -8,9 +8,9 @@ namespace Dovetail.Infrastructure;
 ///     returns for that name reloads.
 /// </summary>
 /// <remarks>
-///     An <see cref="IOptionsChangeTokenSource{TOptions}" /> has one fixed name, so each name needs its own. The provider is
-///     asked for the configuration each time a token is requested, which is when the options monitor starts watching and after
-///     each change.
+///     An <see cref="IOptionsChangeTokenSource{TOptions}" /> has one fixed name, and Dovetail registers one for the default name.
+///     The monitor's <see cref="DovetailOptionsMonitorCache{TOptions}" /> covers the other names. The provider is asked for the
+///     configuration each time a token is requested, which is when the options monitor starts watching and after each change.
 /// </remarks>
 /// <param name="provider">Supplies the configuration for the name.</param>
 /// <param name="name">The options name this source signals changes for.</param>

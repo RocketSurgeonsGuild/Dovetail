@@ -26,10 +26,11 @@ namespace Dovetail;
 ///         name, such as one loaded for each tenant, while the section path stays the same.
 ///     </para>
 ///     <para>
-///         Reloads reach <see cref="IOptionsMonitor{TOptions}" /> through a change token source that watches the configuration
-///         this provider returns for a name. Dovetail registers one for the default name. For every other name, call
-///         <see cref="DovetailConfigurationOptionsExtensions.AddDovetailConfigurationChangeTokenSource{TOptions}(Microsoft.Extensions.DependencyInjection.IServiceCollection, string)" />
-///         up front, such as for each known tenant. <see cref="IOptionsSnapshot{TOptions}" /> needs no registration.
+///         Reloads reach <see cref="IOptionsMonitor{TOptions}" /> through the configuration this provider returns for a name.
+///         For the default name a change token source watches it and tells <see cref="IOptionsMonitor{TOptions}.OnChange" />
+///         listeners. For another name the monitor's cache watches the configuration it created the options from, and
+///         creates them again on the next read after a reload, without telling listeners.
+///         <see cref="IOptionsSnapshot{TOptions}" /> reads current values for every name.
 ///     </para>
 /// </remarks>
 [PublicAPI]

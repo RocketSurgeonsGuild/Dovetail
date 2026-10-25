@@ -205,20 +205,12 @@ post-configure and validators for a name (`Configure<T>("tenant-a", ...)`) run o
 
 #### Reloads for named options
 
-`IOptionsSnapshot<T>` needs nothing: it creates its options for each scope from the current configuration. An
-`IOptionsMonitor<T>` takes its change token sources when it is created, and a source has one fixed name, so the monitor
-only sees reloads of the names you registered a source for. Dovetail registers one for the default name, which asks the
-provider for the default configuration. Register one for every other name up front, for example for each known tenant:
-
-```c#
-services.AddDovetailConfigurationChangeTokenSource<FarewellOptions>("tenant-a");
-services.AddDovetailConfigurationChangeTokenSource<FarewellOptions>("tenant-b");
-```
-
-The source watches the configuration your provider returns for that name; registering the same type and name twice has no
-effect. A name without a source is created once and not reloaded by the monitor. Because the source asks the provider for
-the configuration when the monitor is created, a source for a non-default name only makes sense with a provider of your own:
-with the default provider it throws, and so does resolving `IOptionsMonitor<T>` for that type.
+`IOptionsSnapshot<T>` creates its options for each scope from the current configuration, so it always reads current
+values. An `IOptionsMonitor<T>` follows reloads of the default options through a change token source Dovetail registers,
+and tells `OnChange` listeners. For a named options, the monitor's cache watches the configuration your provider returned
+for that name when it created the options, and drops the instance when it reloads. The next `Get("tenant-a")` creates it
+again from the reloaded configuration, so there is nothing to register per name. `OnChange` listeners aren't told about
+named options, so read the value with `Get(name)` instead of relying on a notification.
 
 ### `RegisterOptions` and `ValidateOnStart`
 
