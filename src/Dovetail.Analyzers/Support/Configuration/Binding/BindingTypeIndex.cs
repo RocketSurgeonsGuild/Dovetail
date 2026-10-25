@@ -55,9 +55,9 @@ internal sealed class BindingTypeIndex
         var isDictionaryWithUnsupportedKey = propertyType is DictionarySpec dictionary && !KeyIsSupported(dictionary);
         var isCollectionThatCantBeReplaced = !property.CanSet
          && propertyType is CollectionWithCtorInitSpec
-            {
-                InstantiationStrategy: CollectionInstantiationStrategy.CopyConstructor or CollectionInstantiationStrategy.LinqToDictionary,
-            };
+         {
+             InstantiationStrategy: CollectionInstantiationStrategy.CopyConstructor or CollectionInstantiationStrategy.LinqToDictionary,
+         };
         return !isDictionaryWithUnsupportedKey && !isCollectionThatCantBeReplaced;
     }
 
@@ -134,12 +134,9 @@ internal sealed class BindingMethods(BindingTypeIndex index)
 
     private bool TryRegisterTransitiveTypes(TypeRef typeRef)
     {
-        if (_seenTransitiveTypes.TryGetValue(typeRef, out var isValid))
-        {
-            return isValid;
-        }
-
-        return _seenTransitiveTypes[typeRef] = TryRegisterCore();
+        return _seenTransitiveTypes.TryGetValue(typeRef, out var isValid)
+            ? isValid
+            : _seenTransitiveTypes[typeRef] = TryRegisterCore();
 
         bool TryRegisterCore()
         {
@@ -151,69 +148,69 @@ internal sealed class BindingMethods(BindingTypeIndex index)
                     RegisterParsable(parsable);
                     return true;
                 case DictionarySpec dictionary:
-                {
-                    // The base case for recursive object graphs.
-                    _seenTransitiveTypes.Add(typeRef, true);
-                    var shouldRegister = index.CanBindTo(typeRef)
-                     && TryRegisterTransitiveTypes(dictionary.KeyTypeRef)
-                     && TryRegisterTransitiveTypes(dictionary.ElementTypeRef)
-                     && TryRegisterBindCore(dictionary);
-                    if (shouldRegister && dictionary.InstantiationStrategy is CollectionInstantiationStrategy.LinqToDictionary)
                     {
-                        UsesLinq = true;
-                    }
+                        // The base case for recursive object graphs.
+                        _seenTransitiveTypes.Add(typeRef, true);
+                        var shouldRegister = index.CanBindTo(typeRef)
+                         && TryRegisterTransitiveTypes(dictionary.KeyTypeRef)
+                         && TryRegisterTransitiveTypes(dictionary.ElementTypeRef)
+                         && TryRegisterBindCore(dictionary);
+                        if (shouldRegister && dictionary.InstantiationStrategy is CollectionInstantiationStrategy.LinqToDictionary)
+                        {
+                            UsesLinq = true;
+                        }
 
-                    return shouldRegister;
-                }
+                        return shouldRegister;
+                    }
                 case CollectionSpec collection:
-                {
-                    _seenTransitiveTypes.Add(typeRef, true);
-                    if (index.GetTypeSpec(collection.ElementTypeRef) is ComplexTypeSpec)
                     {
-                        UsesLinq = true;
-                    }
+                        _seenTransitiveTypes.Add(typeRef, true);
+                        if (index.GetTypeSpec(collection.ElementTypeRef) is ComplexTypeSpec)
+                        {
+                            UsesLinq = true;
+                        }
 
-                    return TryRegisterTransitiveTypes(collection.ElementTypeRef) && TryRegisterBindCore(collection);
-                }
+                        return TryRegisterTransitiveTypes(collection.ElementTypeRef) && TryRegisterBindCore(collection);
+                    }
                 case ObjectSpec objectSpec:
-                {
-                    // Every object type is registered: some throw at run time.
-                    _seenTransitiveTypes.Add(typeRef, true);
-                    var hasBindableMembers = index.HasBindableMembers(objectSpec);
-
-                    // A parameterized constructor binds its parameters in Initialize even without other bindable members.
-                    var needsInitializeMethod = objectSpec is { InstantiationStrategy: ObjectInstantiationStrategy.ParameterizedConstructor, InitExceptionMessage: null };
-                    if (hasBindableMembers || needsInitializeMethod)
                     {
-                        foreach (var property in objectSpec.Properties)
+                        // Every object type is registered: some throw at run time.
+                        _seenTransitiveTypes.Add(typeRef, true);
+                        var hasBindableMembers = index.HasBindableMembers(objectSpec);
+
+                        // A parameterized constructor binds its parameters in Initialize even without other bindable members.
+                        var needsInitializeMethod = objectSpec is { InstantiationStrategy: ObjectInstantiationStrategy.ParameterizedConstructor, InitExceptionMessage: null };
+                        if (hasBindableMembers || needsInitializeMethod)
                         {
-                            // Types only reachable through members that aren't bound aren't needed, unless a constructor parameter
-                            // binds them.
-                            if (!index.ShouldBindTo(property) && property.MatchingCtorParam is null)
+                            foreach (var property in objectSpec.Properties)
                             {
-                                continue;
+                                // Types only reachable through members that aren't bound aren't needed, unless a constructor parameter
+                                // binds them.
+                                if (!index.ShouldBindTo(property) && property.MatchingCtorParam is null)
+                                {
+                                    continue;
+                                }
+
+                                TryRegisterTransitiveTypes(property.TypeRef);
+                                if (index.GetTypeSpec(property.TypeRef) is ComplexTypeSpec)
+                                {
+                                    AsConfigWithChildren = true;
+                                }
                             }
 
-                            TryRegisterTransitiveTypes(property.TypeRef);
-                            if (index.GetTypeSpec(property.TypeRef) is ComplexTypeSpec)
+                            if (hasBindableMembers)
                             {
-                                AsConfigWithChildren = true;
+                                TryRegisterBindCore(objectSpec);
+                            }
+
+                            if (needsInitializeMethod)
+                            {
+                                Initialize.Add(objectSpec);
                             }
                         }
 
-                        if (hasBindableMembers)
-                        {
-                            TryRegisterBindCore(objectSpec);
-                        }
-
-                        if (needsInitializeMethod)
-                        {
-                            Initialize.Add(objectSpec);
-                        }
+                        return true;
                     }
-
-                    return true;
-                }
                 default:
                     return true;
             }

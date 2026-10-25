@@ -8,18 +8,17 @@ namespace Dovetail.Support.Configuration.Binding;
 internal sealed class SourceWriter
 {
     private readonly StringBuilder _builder = new();
-    private int _indentation;
 
     public int Indentation
     {
-        get => _indentation;
-        set => _indentation = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value));
+        get;
+        set => field = value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(value));
     }
 
     /// <summary>Writes each line of <paramref name="text" /> at the current indentation.</summary>
     public void WriteLine(string text)
     {
-        if (_indentation == 0)
+        if (Indentation == 0)
         {
             _builder.Append(text).Append('\n');
             return;
@@ -30,7 +29,7 @@ internal sealed class SourceWriter
             var content = line.TrimEnd('\r');
             if (content.Length > 0)
             {
-                _builder.Append(' ', 4 * _indentation).Append(content);
+                _builder.Append(' ', 4 * Indentation).Append(content);
             }
 
             _builder.Append('\n');

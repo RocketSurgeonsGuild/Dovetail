@@ -1,14 +1,13 @@
 // Ported from dotnet/runtime (MIT): ConfigurationBindingGenerator.Parser and KnownTypeSymbols, minus the call-site
 // interception; the roots here are the [DovetailConfiguration] types. See BindingModel.cs.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.CodeAnalysis;
 
 namespace Dovetail.Support.Configuration.Binding;
 
 /// <summary>Analyses an options type and every type reachable from it, the way Microsoft's binding generator does.</summary>
-internal sealed class BindingParser
+internal sealed class BindingParser(Compilation compilation, BinderVersion version)
 {
     private const string CannotBindToConstructorParameter =
         "Cannot create instance of type '{0}' because one or more parameters cannot be bound to. Constructor parameters cannot be declared as in, out, or ref. Invalid parameters are: '{1}'";
@@ -27,15 +26,35 @@ internal sealed class BindingParser
 
     private const int MaxTypes = 1000;
 
-    private readonly KnownTypes _types;
+    /// <summary>How the special types that bind from a string are parsed; any other special type isn't parsable from a string.</summary>
+    private static readonly Dictionary<SpecialType, StringParsableTypeKind> SpecialTypeKinds = new()
+    {
+        [SpecialType.System_String] = StringParsableTypeKind.AssignFromSectionValue,
+        [SpecialType.System_Object] = StringParsableTypeKind.AssignFromSectionValue,
+        [SpecialType.System_Boolean] = StringParsableTypeKind.Parse,
+        [SpecialType.System_Char] = StringParsableTypeKind.Parse,
+        [SpecialType.System_Single] = StringParsableTypeKind.Float,
+        [SpecialType.System_Double] = StringParsableTypeKind.Float,
+        [SpecialType.System_Decimal] = StringParsableTypeKind.Float,
+        [SpecialType.System_Byte] = StringParsableTypeKind.Integer,
+        [SpecialType.System_Int16] = StringParsableTypeKind.Integer,
+        [SpecialType.System_Int32] = StringParsableTypeKind.Integer,
+        [SpecialType.System_Int64] = StringParsableTypeKind.Integer,
+        [SpecialType.System_SByte] = StringParsableTypeKind.Integer,
+        [SpecialType.System_UInt16] = StringParsableTypeKind.Integer,
+        [SpecialType.System_UInt32] = StringParsableTypeKind.Integer,
+        [SpecialType.System_UInt64] = StringParsableTypeKind.Integer,
+        [SpecialType.System_DateTime] = StringParsableTypeKind.ParseInvariant,
+    };
+
+    private readonly KnownTypes _types = new(compilation, version);
     private readonly Queue<ITypeSymbol> _typesToParse = new();
+
+    // A collection expression can't take the comparer here: the analyzer also builds against Roslyn 5.0 (C# 14).
+#pragma warning disable IDE0028
     private readonly Dictionary<ITypeSymbol, TypeSpec> _createdTypeSpecs = new(SymbolEqualityComparer.Default);
     private readonly HashSet<ITypeSymbol> _visitedTypes = new(SymbolEqualityComparer.Default);
-
-    public BindingParser(Compilation compilation, BinderVersion version)
-    {
-        _types = new(compilation, version);
-    }
+#pragma warning restore IDE0028
 
     /// <summary>The binder version a compilation follows: the major version of the Microsoft.Extensions.Configuration.Binder it references.</summary>
     public static BinderVersion VersionOf(Compilation compilation) =>
@@ -82,35 +101,20 @@ internal sealed class BindingParser
         return knownTypeRef ?? TypeRef.From(type);
     }
 
-    private TypeSpec CreateTypeSpec(ITypeSymbol type)
-    {
-        if (IsNullable(type, out var underlyingType))
-        {
-            return new NullableSpec(type, EnqueueTransitiveType(underlyingType));
-        }
-
-        if (IsParsableFromString(type, out var kind))
-        {
-            return new ParsableFromStringSpec(type, kind);
-        }
-
-        if (type.TypeKind is TypeKind.Array)
-        {
-            return CreateArraySpec((IArrayTypeSymbol)type);
-        }
-
-        if (IsCollection(type))
-        {
-            return CreateCollectionSpec((INamedTypeSymbol)type) ?? CreateObjectSpec((INamedTypeSymbol)type);
-        }
-
-        if (SymbolEqualityComparer.Default.Equals(type, _types.IConfigurationSection))
-        {
-            return new ConfigurationSectionSpec(type);
-        }
-
-        return type is INamedTypeSymbol named ? CreateObjectSpec(named) : new UnsupportedTypeSpec(type);
-    }
+    private TypeSpec CreateTypeSpec(ITypeSymbol type) =>
+        IsNullable(type, out var underlyingType)
+            ? new NullableSpec(type, EnqueueTransitiveType(underlyingType))
+            : IsParsableFromString(type, out var kind)
+                ? new ParsableFromStringSpec(type, kind)
+                : type.TypeKind is TypeKind.Array
+                    ? CreateArraySpec((IArrayTypeSymbol)type)
+                    : IsCollection(type)
+                        ? CreateCollectionSpec((INamedTypeSymbol)type) ?? CreateObjectSpec((INamedTypeSymbol)type)
+                        : SymbolEqualityComparer.Default.Equals(type, _types.IConfigurationSection)
+                            ? new ConfigurationSectionSpec(type)
+                            : type is INamedTypeSymbol named
+                                ? CreateObjectSpec(named)
+                                : new UnsupportedTypeSpec(type);
 
     private static bool IsNullable(ITypeSymbol type, [NotNullWhen(true)] out ITypeSymbol? underlyingType)
     {
@@ -144,36 +148,31 @@ internal sealed class BindingParser
             return true;
         }
 
-        kind = named.SpecialType switch
-        {
-            SpecialType.System_String or SpecialType.System_Object => StringParsableTypeKind.AssignFromSectionValue,
-            SpecialType.System_Boolean or SpecialType.System_Char => StringParsableTypeKind.Parse,
-            SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal => StringParsableTypeKind.Float,
-            SpecialType.System_Byte
-             or SpecialType.System_Int16
-             or SpecialType.System_Int32
-             or SpecialType.System_Int64
-             or SpecialType.System_SByte
-             or SpecialType.System_UInt16
-             or SpecialType.System_UInt32
-             or SpecialType.System_UInt64 => StringParsableTypeKind.Integer,
-            SpecialType.System_DateTime => StringParsableTypeKind.ParseInvariant,
-            SpecialType.None when Is(type, _types.CultureInfo) => StringParsableTypeKind.CultureInfo,
-            SpecialType.None when Is(type, _types.DateTimeOffset)
+        kind = named.SpecialType is SpecialType.None ? KindOfWellKnownType(type) : KindOfSpecialType(named.SpecialType);
+        return kind != StringParsableTypeKind.None;
+    }
+
+    private static StringParsableTypeKind KindOfSpecialType(SpecialType specialType) =>
+        SpecialTypeKinds.TryGetValue(specialType, out var kind) ? kind : StringParsableTypeKind.None;
+
+    private StringParsableTypeKind KindOfWellKnownType(ITypeSymbol type) =>
+        Is(type, _types.CultureInfo)
+            ? StringParsableTypeKind.CultureInfo
+            : Is(type, _types.DateTimeOffset)
              || Is(type, _types.DateOnly)
              || Is(type, _types.TimeOnly)
              || Is(type, _types.TimeSpan)
              || Is(type, _types.Int128)
              || Is(type, _types.Half)
-             || Is(type, _types.UInt128) => StringParsableTypeKind.ParseInvariant,
-            SpecialType.None when Is(type, _types.Uri) => StringParsableTypeKind.Uri,
-            SpecialType.None when Is(type, _types.Version) || Is(type, _types.Guid) => StringParsableTypeKind.Parse,
-            _ => StringParsableTypeKind.None,
-        };
-        return kind != StringParsableTypeKind.None;
+             || Is(type, _types.UInt128)
+                ? StringParsableTypeKind.ParseInvariant
+                : Is(type, _types.Uri)
+                    ? StringParsableTypeKind.Uri
+                    : Is(type, _types.Version) || Is(type, _types.Guid)
+                        ? StringParsableTypeKind.Parse
+                        : StringParsableTypeKind.None;
 
-        static bool Is(ITypeSymbol type, ITypeSymbol? known) => SymbolEqualityComparer.Default.Equals(type, known);
-    }
+    private static bool Is(ITypeSymbol type, ITypeSymbol? known) => SymbolEqualityComparer.Default.Equals(type, known);
 
     private TypeSpec CreateArraySpec(IArrayTypeSymbol type) =>
         type.Rank > 1 || IsUnsupportedType(type.ElementType)
@@ -574,24 +573,16 @@ internal sealed class BindingParser
 
     private bool IsCollection(ITypeSymbol type) => type is INamedTypeSymbol named && GetInterface(named, _types.IEnumerable) is not null;
 
-    private static INamedTypeSymbol? GetInterface(INamedTypeSymbol type, INamedTypeSymbol? @interface)
-    {
-        if (@interface is null)
-        {
-            return null;
-        }
-
-        if (IsInterfaceMatch(type, @interface))
-        {
-            return type;
-        }
-
-        return @interface.IsGenericType
-            ? type.AllInterfaces.FirstOrDefault(
-                z => z.IsGenericType && SymbolEqualityComparer.Default.Equals(z.ConstructUnboundGenericType(), @interface)
-            )
-            : type.AllInterfaces.FirstOrDefault(z => SymbolEqualityComparer.Default.Equals(z, @interface));
-    }
+    private static INamedTypeSymbol? GetInterface(INamedTypeSymbol type, INamedTypeSymbol? @interface) =>
+        @interface is null
+            ? null
+            : IsInterfaceMatch(type, @interface)
+                ? type
+                : @interface.IsGenericType
+                    ? type.AllInterfaces.FirstOrDefault(
+                        z => z.IsGenericType && SymbolEqualityComparer.Default.Equals(z.ConstructUnboundGenericType(), @interface)
+                    )
+                    : type.AllInterfaces.FirstOrDefault(z => SymbolEqualityComparer.Default.Equals(z, @interface));
 
     private static bool IsInterfaceMatch(INamedTypeSymbol type, INamedTypeSymbol? @interface) =>
         @interface is not null
@@ -647,79 +638,43 @@ internal sealed class BindingParser
     private static bool IsEnum(ITypeSymbol type) => type is INamedTypeSymbol { EnumUnderlyingType: not null };
 
     /// <summary>The well-known types the analysis compares against.</summary>
-    private sealed class KnownTypes
+    private sealed class KnownTypes(Compilation compilation, BinderVersion version)
     {
-        public KnownTypes(Compilation compilation, BinderVersion version)
-        {
-            Compilation = compilation;
-            String = compilation.GetSpecialType(SpecialType.System_String);
-            CultureInfo = compilation.GetTypeByMetadataName("System.Globalization.CultureInfo");
-            DateOnly = compilation.GetTypeByMetadataName("System.DateOnly");
-            DateTimeOffset = compilation.GetTypeByMetadataName("System.DateTimeOffset");
-            Guid = compilation.GetTypeByMetadataName("System.Guid");
-            Half = compilation.GetTypeByMetadataName("System.Half");
-            Int128 = compilation.GetTypeByMetadataName("System.Int128");
-            TimeOnly = compilation.GetTypeByMetadataName("System.TimeOnly");
-            TimeSpan = compilation.GetTypeByMetadataName("System.TimeSpan");
-            UInt128 = compilation.GetTypeByMetadataName("System.UInt128");
-            Uri = compilation.GetTypeByMetadataName("System.Uri");
-            Version = compilation.GetTypeByMetadataName("System.Version");
+        public Compilation Compilation { get; } = compilation;
+        public INamedTypeSymbol String { get; } = compilation.GetSpecialType(SpecialType.System_String);
+        public INamedTypeSymbol? CultureInfo { get; } = compilation.GetTypeByMetadataName("System.Globalization.CultureInfo");
+        public INamedTypeSymbol? DateOnly { get; } = compilation.GetTypeByMetadataName("System.DateOnly");
+        public INamedTypeSymbol? DateTimeOffset { get; } = compilation.GetTypeByMetadataName("System.DateTimeOffset");
+        public INamedTypeSymbol? Guid { get; } = compilation.GetTypeByMetadataName("System.Guid");
+        public INamedTypeSymbol? Half { get; } = compilation.GetTypeByMetadataName("System.Half");
+        public INamedTypeSymbol? Int128 { get; } = compilation.GetTypeByMetadataName("System.Int128");
+        public INamedTypeSymbol? TimeOnly { get; } = compilation.GetTypeByMetadataName("System.TimeOnly");
+        public INamedTypeSymbol? TimeSpan { get; } = compilation.GetTypeByMetadataName("System.TimeSpan");
+        public INamedTypeSymbol? UInt128 { get; } = compilation.GetTypeByMetadataName("System.UInt128");
+        public INamedTypeSymbol? Uri { get; } = compilation.GetTypeByMetadataName("System.Uri");
+        public INamedTypeSymbol? Version { get; } = compilation.GetTypeByMetadataName("System.Version");
 
-            // [ConfigurationIgnore] is new in .NET 11; version 10 of the generator doesn't know it.
-            ConfigurationIgnoreAttribute = version >= BinderVersion.V11
-                ? compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.ConfigurationIgnoreAttribute")
-                : null;
-            ConfigurationKeyNameAttribute = compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.ConfigurationKeyNameAttribute");
-            IConfigurationSection = compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.IConfigurationSection");
+        // [ConfigurationIgnore] is new in .NET 11; version 10 of the generator doesn't know it.
+        public INamedTypeSymbol? ConfigurationIgnoreAttribute { get; } = version >= BinderVersion.V11
+            ? compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.ConfigurationIgnoreAttribute")
+            : null;
 
-            IEnumerable = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
-            IDictionary = compilation.GetTypeByMetadataName("System.Collections.IDictionary");
-            GenericICollectionUnbound = compilation.GetSpecialType(SpecialType.System_Collections_Generic_ICollection_T).ConstructUnboundGenericType();
-            GenericIDictionaryUnbound = compilation.GetTypeByMetadataName("System.Collections.Generic.IDictionary`2")?.ConstructUnboundGenericType();
-            GenericIEnumerableUnbound = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T).ConstructUnboundGenericType();
-            GenericIListUnbound = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IList_T).ConstructUnboundGenericType();
-            IReadOnlyDictionaryUnbound = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyDictionary`2")?.ConstructUnboundGenericType();
-            IReadOnlyCollectionUnbound = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1")?.ConstructUnboundGenericType();
-            IReadOnlyListUnbound = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1")?.ConstructUnboundGenericType();
-            IReadOnlySetUnbound = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlySet`1")?.ConstructUnboundGenericType();
-            ISetUnbound = compilation.GetTypeByMetadataName("System.Collections.Generic.ISet`1")?.ConstructUnboundGenericType();
-
-            SerializationInfo = compilation.GetTypeByMetadataName("System.Runtime.Serialization.SerializationInfo");
-            MemberInfo = compilation.GetTypeByMetadataName("System.Reflection.MemberInfo");
-            ParameterInfo = compilation.GetTypeByMetadataName("System.Reflection.ParameterInfo");
-            Delegate = compilation.GetSpecialType(SpecialType.System_Delegate);
-        }
-
-        public Compilation Compilation { get; }
-        public INamedTypeSymbol String { get; }
-        public INamedTypeSymbol? CultureInfo { get; }
-        public INamedTypeSymbol? DateOnly { get; }
-        public INamedTypeSymbol? DateTimeOffset { get; }
-        public INamedTypeSymbol? Guid { get; }
-        public INamedTypeSymbol? Half { get; }
-        public INamedTypeSymbol? Int128 { get; }
-        public INamedTypeSymbol? TimeOnly { get; }
-        public INamedTypeSymbol? TimeSpan { get; }
-        public INamedTypeSymbol? UInt128 { get; }
-        public INamedTypeSymbol? Uri { get; }
-        public INamedTypeSymbol? Version { get; }
-        public INamedTypeSymbol? ConfigurationIgnoreAttribute { get; }
-        public INamedTypeSymbol? ConfigurationKeyNameAttribute { get; }
-        public INamedTypeSymbol? IConfigurationSection { get; }
-        public INamedTypeSymbol IEnumerable { get; }
-        public INamedTypeSymbol? IDictionary { get; }
-        public INamedTypeSymbol GenericICollectionUnbound { get; }
-        public INamedTypeSymbol? GenericIDictionaryUnbound { get; }
-        public INamedTypeSymbol GenericIEnumerableUnbound { get; }
-        public INamedTypeSymbol GenericIListUnbound { get; }
-        public INamedTypeSymbol? IReadOnlyDictionaryUnbound { get; }
-        public INamedTypeSymbol? IReadOnlyCollectionUnbound { get; }
-        public INamedTypeSymbol? IReadOnlyListUnbound { get; }
-        public INamedTypeSymbol? IReadOnlySetUnbound { get; }
-        public INamedTypeSymbol? ISetUnbound { get; }
-        public INamedTypeSymbol? SerializationInfo { get; }
-        public INamedTypeSymbol? MemberInfo { get; }
-        public INamedTypeSymbol? ParameterInfo { get; }
-        public INamedTypeSymbol Delegate { get; }
+        public INamedTypeSymbol? ConfigurationKeyNameAttribute { get; } = compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.ConfigurationKeyNameAttribute");
+        public INamedTypeSymbol? IConfigurationSection { get; } = compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.IConfigurationSection");
+        public INamedTypeSymbol IEnumerable { get; } = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
+        public INamedTypeSymbol? IDictionary { get; } = compilation.GetTypeByMetadataName("System.Collections.IDictionary");
+        public INamedTypeSymbol GenericICollectionUnbound { get; } = compilation.GetSpecialType(SpecialType.System_Collections_Generic_ICollection_T).ConstructUnboundGenericType();
+        public INamedTypeSymbol? GenericIDictionaryUnbound { get; } = compilation.GetTypeByMetadataName("System.Collections.Generic.IDictionary`2")?.ConstructUnboundGenericType();
+        public INamedTypeSymbol GenericIEnumerableUnbound { get; } = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T).ConstructUnboundGenericType();
+        public INamedTypeSymbol GenericIListUnbound { get; } = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IList_T).ConstructUnboundGenericType();
+        public INamedTypeSymbol? IReadOnlyDictionaryUnbound { get; } = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyDictionary`2")?.ConstructUnboundGenericType();
+        public INamedTypeSymbol? IReadOnlyCollectionUnbound { get; } = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1")?.ConstructUnboundGenericType();
+        public INamedTypeSymbol? IReadOnlyListUnbound { get; } = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1")?.ConstructUnboundGenericType();
+        public INamedTypeSymbol? IReadOnlySetUnbound { get; } = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlySet`1")?.ConstructUnboundGenericType();
+        public INamedTypeSymbol? ISetUnbound { get; } = compilation.GetTypeByMetadataName("System.Collections.Generic.ISet`1")?.ConstructUnboundGenericType();
+        public INamedTypeSymbol? SerializationInfo { get; } = compilation.GetTypeByMetadataName("System.Runtime.Serialization.SerializationInfo");
+        public INamedTypeSymbol? MemberInfo { get; } = compilation.GetTypeByMetadataName("System.Reflection.MemberInfo");
+        public INamedTypeSymbol? ParameterInfo { get; } = compilation.GetTypeByMetadataName("System.Reflection.ParameterInfo");
+        public INamedTypeSymbol Delegate { get; } = compilation.GetSpecialType(SpecialType.System_Delegate);
     }
 }

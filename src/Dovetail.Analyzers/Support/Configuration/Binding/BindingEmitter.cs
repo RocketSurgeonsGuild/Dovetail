@@ -210,13 +210,13 @@ internal sealed class BindingEmitter
         {
             var name = BindingSyntax.EscapeIdentifier(parameter.Name);
             constructorArguments.Add(
-                parameter.RefKind switch
-                {
-                    Microsoft.CodeAnalysis.RefKind.Ref => $"ref {name}",
-                    Microsoft.CodeAnalysis.RefKind.Out => "out _",
-                    Microsoft.CodeAnalysis.RefKind.In => $"in {name}",
-                    _ => name,
-                }
+                parameter.RefKind is Microsoft.CodeAnalysis.RefKind.Ref
+                    ? $"ref {name}"
+                    : parameter.RefKind is Microsoft.CodeAnalysis.RefKind.Out
+                        ? "out _"
+                        : parameter.RefKind is Microsoft.CodeAnalysis.RefKind.In
+                            ? $"in {name}"
+                            : name
             );
             EmitBindImplForLocal(parameter, null);
         }
@@ -277,6 +277,8 @@ internal sealed class BindingEmitter
                 case ConfigurationSectionSpec:
                     _writer.WriteLine($"{declaration} = configuration.GetSection({keyLiteral});");
                     return;
+                default:
+                    break;
             }
 
             var bang = memberType.IsValueType ? "" : "!";
@@ -409,7 +411,7 @@ internal sealed class BindingEmitter
             );
         }
 
-        foreach (var type in _methods.ParsePrimitive.OrderBy(z => BindingTypeIndex.GetParseMethodName(z), StringComparer.Ordinal))
+        foreach (var type in _methods.ParsePrimitive.OrderBy(BindingTypeIndex.GetParseMethodName, StringComparer.Ordinal))
         {
             EmitBlankLineIfRequired();
             EmitPrimitiveParseMethod(type);
@@ -432,6 +434,7 @@ internal sealed class BindingEmitter
             StringParsableTypeKind.ParseInvariant => $"{typeName}.Parse(value, {invariantCulture})",
             StringParsableTypeKind.CultureInfo => $"{CultureInfo}.GetCultureInfo(value)",
             StringParsableTypeKind.Uri => "new global::System.Uri(value, global::System.UriKind.RelativeOrAbsolute)",
+            StringParsableTypeKind.None or StringParsableTypeKind.AssignFromSectionValue or StringParsableTypeKind.Enum => null,
             _ => null,
         };
         if (parsedValue is null)
@@ -502,6 +505,8 @@ internal sealed class BindingEmitter
                 EmitBindingLogic(complex, "value", "section", InitializationKind.Declaration, ValueDefaulting.None);
                 _writer.WriteLine($"{addExpression}(value);");
                 break;
+            default:
+                break;
         }
 
         EmitEndBlock();
@@ -542,60 +547,62 @@ internal sealed class BindingEmitter
                     _writer.WriteLine($"{instanceIdentifier}[{parsedKey}] = section;");
                     break;
                 case ComplexTypeSpec complexElement:
-                {
-                    if (keyType.StringParsableTypeKind is not StringParsableTypeKind.AssignFromSectionValue)
                     {
-                        // Parse the key once, for both the look-up and the add.
-                        _writer.WriteLine($"{keyType.TypeRef.FullyQualifiedName} key = {parsedKey};");
-                        parsedKey = "key";
-                    }
-
-                    var isValueType = complexElement.IsValueType;
-                    var elementTypeName = complexElement.TypeRef.FullyQualifiedName + ( isValueType ? "" : "?" );
-                    var useExistingElement = $"{instanceIdentifier}.TryGetValue({parsedKey}, out {elementTypeName} element)";
-
-                    // An existing key binds into the existing element, unless it's a null reference.
-                    if (!isValueType)
-                    {
-                        useExistingElement += " && element is not null";
-                    }
-
-                    if (_typeIndex.CanInstantiate(complexElement))
-                    {
-                        // A new element created through a parameterized constructor mustn't have its constructor-bound properties
-                        // bound again; whether it's new is only known at run time.
-                        string? constructedExpression = null;
-                        if (!isValueType && ShouldEmitBoundThroughConstructorParameter(complexElement))
+                        if (keyType.StringParsableTypeKind is not StringParsableTypeKind.AssignFromSectionValue)
                         {
-                            constructedExpression = GetIncrementalIdentifier("boundThroughConstructor");
-                            _writer.WriteLine($"bool {constructedExpression} = false;");
+                            // Parse the key once, for both the look-up and the add.
+                            _writer.WriteLine($"{keyType.TypeRef.FullyQualifiedName} key = {parsedKey};");
+                            parsedKey = "key";
                         }
 
-                        EmitStartBlock($"if (!({useExistingElement}))");
-                        EmitObjectInit(complexElement, "element", InitializationKind.SimpleAssignment, "section");
-                        if (constructedExpression is not null)
+                        var isValueType = complexElement.IsValueType;
+                        var elementTypeName = complexElement.TypeRef.FullyQualifiedName + ( isValueType ? "" : "?" );
+                        var useExistingElement = $"{instanceIdentifier}.TryGetValue({parsedKey}, out {elementTypeName} element)";
+
+                        // An existing key binds into the existing element, unless it's a null reference.
+                        if (!isValueType)
                         {
-                            _writer.WriteLine($"{constructedExpression} = true;");
+                            useExistingElement += " && element is not null";
                         }
 
-                        EmitEndBlock();
-                        EmitElementBindingLogic(constructedExpression);
-                    }
-                    else
-                    {
-                        EmitStartBlock($"if ({useExistingElement})");
-                        EmitElementBindingLogic(null);
-                        EmitEndBlock();
-                    }
+                        if (_typeIndex.CanInstantiate(complexElement))
+                        {
+                            // A new element created through a parameterized constructor mustn't have its constructor-bound properties
+                            // bound again; whether it's new is only known at run time.
+                            string? constructedExpression = null;
+                            if (!isValueType && ShouldEmitBoundThroughConstructorParameter(complexElement))
+                            {
+                                constructedExpression = GetIncrementalIdentifier("boundThroughConstructor");
+                                _writer.WriteLine($"bool {constructedExpression} = false;");
+                            }
 
-                    void EmitElementBindingLogic(string? constructedExpression)
-                    {
-                        EmitBindingLogic(complexElement, "element", "section", InitializationKind.None, ValueDefaulting.None, constructedExpression: constructedExpression);
-                        _writer.WriteLine($"{instanceIdentifier}[{parsedKey}] = element;");
-                    }
+                            EmitStartBlock($"if (!({useExistingElement}))");
+                            EmitObjectInit(complexElement, "element", InitializationKind.SimpleAssignment, "section");
+                            if (constructedExpression is not null)
+                            {
+                                _writer.WriteLine($"{constructedExpression} = true;");
+                            }
 
+                            EmitEndBlock();
+                            EmitElementBindingLogic(constructedExpression);
+                        }
+                        else
+                        {
+                            EmitStartBlock($"if ({useExistingElement})");
+                            EmitElementBindingLogic(null);
+                            EmitEndBlock();
+                        }
+
+                        void EmitElementBindingLogic(string? constructedExpression)
+                        {
+                            EmitBindingLogic(complexElement, "element", "section", InitializationKind.None, ValueDefaulting.None, constructedExpression: constructedExpression);
+                            _writer.WriteLine($"{instanceIdentifier}[{parsedKey}] = element;");
+                        }
+
+                        break;
+                    }
+                default:
                     break;
-                }
             }
         }
     }
@@ -692,70 +699,70 @@ internal sealed class BindingEmitter
         switch (_typeIndex.GetEffectiveTypeSpec(member.TypeRef))
         {
             case ParsableFromStringSpec parsable:
-            {
-                // The reflection binder doesn't bind set-only properties either.
-                if (!( canSet && canGet ))
                 {
-                    return true;
-                }
-
-                EmitBlankLineIfRequired();
-                var valueIdentifier = GetIncrementalIdentifier("value");
-
-                // Version 11: a value-type parameter can't take null (without a default that falls through to the throw, with one
-                // it keeps the default), and a parameter's default survives a null value.
-                var requireValue = V11 && bindingToLocal && !member.TypeRef.CanBeNull && member is ParameterSpec;
-                var hasDeclaredDefault = V11 && bindingToLocal && member is ParameterSpec { ErrorOnFailedBinding: false };
-                var valueCondition = requireValue ? $" && {valueIdentifier} is not null" : "";
-                EmitStartBlock($"if (TryGetConfigurationValue(configuration, key: {keyLiteral}, out string? {valueIdentifier}){valueCondition})");
-
-                // Nullable members can be set to null; string and object take the value as is anyway.
-                var emitNullCheck = member.TypeRef.CanBeNull && ( parsable.StringParsableTypeKind != StringParsableTypeKind.AssignFromSectionValue || hasDeclaredDefault );
-
-                // Version 11 turns an empty value into null for Nullable<T>, as the reflection binder's TryConvertValue does.
-                var treatEmptyValueAsNull = V11 && member.TypeRef.SpecialType is Microsoft.CodeAnalysis.SpecialType.System_Nullable_T;
-                if (emitNullCheck)
-                {
-                    var nullValue = hasDeclaredDefault ? member.DefaultValueExpr : "null";
-                    EmitStartBlock(treatEmptyValueAsNull ? $"if (string.IsNullOrEmpty({valueIdentifier}))" : $"if ({valueIdentifier} is null)");
-                    _writer.WriteLine($"{memberAccessExpression} = {nullValue};");
-                    EmitEndBlock();
-                    EmitStartBlock("else");
-                }
-
-                EmitBindingLogic(
-                    parsable,
-                    valueIdentifier,
-                    sectionPathExpression,
-                    parsed => _writer.WriteLine($"{memberAccessExpression} = {parsed};"),
-                    checkForNullSectionValue: !V11 || ( !( emitNullCheck && treatEmptyValueAsNull ) && !requireValue )
-                );
-                if (emitNullCheck)
-                {
-                    EmitEndBlock();
-                }
-
-                EmitEndBlock();
-                if (initializationKind == InitializationKind.Declaration)
-                {
-                    EmitStartBlock("else if (defaultValueIfNotFound)");
-                    if (!parsable.TypeRef.CanBeNull)
+                    // The reflection binder doesn't bind set-only properties either.
+                    if (!( canSet && canGet ))
                     {
-                        _writer.WriteLine($"{memberAccessExpression} = {memberAccessExpression};");
+                        return true;
                     }
-                    else
+
+                    EmitBlankLineIfRequired();
+                    var valueIdentifier = GetIncrementalIdentifier("value");
+
+                    // Version 11: a value-type parameter can't take null (without a default that falls through to the throw, with one
+                    // it keeps the default), and a parameter's default survives a null value.
+                    var requireValue = V11 && bindingToLocal && !member.TypeRef.CanBeNull && member is ParameterSpec;
+                    var hasDeclaredDefault = V11 && bindingToLocal && member is ParameterSpec { ErrorOnFailedBinding: false };
+                    var valueCondition = requireValue ? $" && {valueIdentifier} is not null" : "";
+                    EmitStartBlock($"if (TryGetConfigurationValue(configuration, key: {keyLiteral}, out string? {valueIdentifier}){valueCondition})");
+
+                    // Nullable members can be set to null; string and object take the value as is anyway.
+                    var emitNullCheck = member.TypeRef.CanBeNull && ( parsable.StringParsableTypeKind != StringParsableTypeKind.AssignFromSectionValue || hasDeclaredDefault );
+
+                    // Version 11 turns an empty value into null for Nullable<T>, as the reflection binder's TryConvertValue does.
+                    var treatEmptyValueAsNull = V11 && member.TypeRef.SpecialType is Microsoft.CodeAnalysis.SpecialType.System_Nullable_T;
+                    if (emitNullCheck)
                     {
-                        _writer.WriteLine($"var currentValue = {memberAccessExpression};");
-                        EmitStartBlock("if (currentValue is not null)");
-                        _writer.WriteLine($"{memberAccessExpression} = currentValue;");
+                        var nullValue = hasDeclaredDefault ? member.DefaultValueExpr : "null";
+                        EmitStartBlock(treatEmptyValueAsNull ? $"if (string.IsNullOrEmpty({valueIdentifier}))" : $"if ({valueIdentifier} is null)");
+                        _writer.WriteLine($"{memberAccessExpression} = {nullValue};");
+                        EmitEndBlock();
+                        EmitStartBlock("else");
+                    }
+
+                    EmitBindingLogic(
+                        parsable,
+                        valueIdentifier,
+                        sectionPathExpression,
+                        parsed => _writer.WriteLine($"{memberAccessExpression} = {parsed};"),
+                        checkForNullSectionValue: !V11 || ( !( emitNullCheck && treatEmptyValueAsNull ) && !requireValue )
+                    );
+                    if (emitNullCheck)
+                    {
                         EmitEndBlock();
                     }
 
                     EmitEndBlock();
-                }
+                    if (initializationKind == InitializationKind.Declaration)
+                    {
+                        EmitStartBlock("else if (defaultValueIfNotFound)");
+                        if (!parsable.TypeRef.CanBeNull)
+                        {
+                            _writer.WriteLine($"{memberAccessExpression} = {memberAccessExpression};");
+                        }
+                        else
+                        {
+                            _writer.WriteLine($"var currentValue = {memberAccessExpression};");
+                            EmitStartBlock("if (currentValue is not null)");
+                            _writer.WriteLine($"{memberAccessExpression} = currentValue;");
+                            EmitEndBlock();
+                        }
 
-                return true;
-            }
+                        EmitEndBlock();
+                    }
+
+                    return true;
+                }
             case ConfigurationSectionSpec:
                 if (canSet)
                 {
@@ -765,36 +772,36 @@ internal sealed class BindingEmitter
 
                 return true;
             case ComplexTypeSpec complex:
-            {
-                // A parameterized-constructor object with nothing to bind is skipped.
-                if (!_typeIndex.HasBindableMembers(complex)
-                 && !complex.IsValueType
-                 && complex is ObjectSpec { InstantiationStrategy: ObjectInstantiationStrategy.ParameterizedConstructor })
                 {
-                    return false;
-                }
+                    // A parameterized-constructor object with nothing to bind is skipped.
+                    if (!_typeIndex.HasBindableMembers(complex)
+                     && !complex.IsValueType
+                     && complex is ObjectSpec { InstantiationStrategy: ObjectInstantiationStrategy.ParameterizedConstructor })
+                    {
+                        return false;
+                    }
 
-                EmitBlankLineIfRequired();
-                var configSection = GetIncrementalIdentifier("value");
-                _writer.WriteLine($"var {configSection} = {sectionExpression};");
-                var sectionIdentifier = GetIncrementalIdentifier("section");
-                EmitStartBlock($"if (AsConfigWithChildren({configSection}) is {IConfigurationSection} {sectionIdentifier})");
-                EmitBindingLogicForComplexMember(member, memberAccessExpression, sectionIdentifier, canSet, bindingToLocal);
-                EmitEndBlock();
-
-                // Without children, an empty value gives an array (or IEnumerable<T>) member an empty array.
-                if (( complex is ArraySpec || complex.IsExactIEnumerableOfT ) && canSet)
-                {
-                    var valueIdentifier = GetIncrementalIdentifier("value");
-                    EmitStartBlock(
-                        $"if ({memberAccessExpression} is null && TryGetConfigurationValue({configSection}, key: null, out string? {valueIdentifier}) && {valueIdentifier} == string.Empty)"
-                    );
-                    _writer.WriteLine($"{memberAccessExpression} = global::System.Array.Empty<{( (CollectionSpec)complex ).ElementTypeRef.FullyQualifiedName}>();");
+                    EmitBlankLineIfRequired();
+                    var configSection = GetIncrementalIdentifier("value");
+                    _writer.WriteLine($"var {configSection} = {sectionExpression};");
+                    var sectionIdentifier = GetIncrementalIdentifier("section");
+                    EmitStartBlock($"if (AsConfigWithChildren({configSection}) is {IConfigurationSection} {sectionIdentifier})");
+                    EmitBindingLogicForComplexMember(member, memberAccessExpression, sectionIdentifier, canSet, bindingToLocal);
                     EmitEndBlock();
-                }
 
-                return _typeIndex.CanInstantiate(complex);
-            }
+                    // Without children, an empty value gives an array (or IEnumerable<T>) member an empty array.
+                    if (( complex is ArraySpec || complex.IsExactIEnumerableOfT ) && canSet)
+                    {
+                        var valueIdentifier = GetIncrementalIdentifier("value");
+                        EmitStartBlock(
+                            $"if ({memberAccessExpression} is null && TryGetConfigurationValue({configSection}, key: null, out string? {valueIdentifier}) && {valueIdentifier} == string.Empty)"
+                        );
+                        _writer.WriteLine($"{memberAccessExpression} = global::System.Array.Empty<{( (CollectionSpec)complex ).ElementTypeRef.FullyQualifiedName}>();");
+                        EmitEndBlock();
+                    }
+
+                    return _typeIndex.CanInstantiate(complex);
+                }
             default:
                 return false;
         }
@@ -989,12 +996,11 @@ internal sealed class BindingEmitter
     )
     {
         var kind = type.StringParsableTypeKind;
-        var parsedValue = kind switch
-        {
-            StringParsableTypeKind.AssignFromSectionValue => sectionValueExpression,
-            StringParsableTypeKind.Enum => $"ParseEnum<{type.TypeRef.FullyQualifiedName}>({sectionValueExpression}, {sectionPathExpression})",
-            _ => $"{BindingTypeIndex.GetParseMethodName(type)}({sectionValueExpression}, {sectionPathExpression})",
-        };
+        var parsedValue = kind is StringParsableTypeKind.AssignFromSectionValue
+            ? sectionValueExpression
+            : kind is StringParsableTypeKind.Enum
+                ? $"ParseEnum<{type.TypeRef.FullyQualifiedName}>({sectionValueExpression}, {sectionPathExpression})"
+                : $"{BindingTypeIndex.GetParseMethodName(type)}({sectionValueExpression}, {sectionPathExpression})";
         if (!checkForNullSectionValue || kind == StringParsableTypeKind.AssignFromSectionValue)
         {
             writeOnSuccess?.Invoke(parsedValue);
@@ -1074,6 +1080,7 @@ internal sealed class BindingEmitter
             case InitializationKind.SimpleAssignment:
                 _writer.WriteLine($"{memberAccessExpression} = {initExpression};");
                 break;
+            case InitializationKind.None:
             default:
                 break;
         }
@@ -1136,5 +1143,5 @@ internal sealed class BindingEmitter
         _emitBlankLineBeforeNextStatement = true;
     }
 
-    private string GetIncrementalIdentifier(string prefix) => prefix + ( _valueSuffixIndex++ ).ToString(System.Globalization.CultureInfo.InvariantCulture);
+    private string GetIncrementalIdentifier(string prefix) => prefix + _valueSuffixIndex++.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
