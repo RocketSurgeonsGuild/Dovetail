@@ -455,7 +455,7 @@ public sealed class SdkTestProject : IDisposable
     /// package's own props/targets, which are only imported once restore has generated nuget.g.props/targets.
     /// </summary>
     public async Task<IReadOnlyList<string>> EvaluateItemIdentities(string relativePath, string itemType) =>
-        (await EvaluateItems(relativePath, itemType)).Select(z => z["Identity"]).ToArray();
+        ( await EvaluateItems(relativePath, itemType) ).Select(z => z["Identity"]).ToArray();
 
     /// <summary>
     /// Like <see cref="EvaluateItemIdentities"/>, but returns every item with its metadata (<c>Identity</c> included), and runs

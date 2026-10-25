@@ -98,9 +98,8 @@ after the first build, close and reopen the file.
 > [!NOTE]
 > Segments only affect Visual Studio's JSON editor. YAML and TOML files get nothing from them in Visual Studio.
 
-The segments are checked in MSBuild evaluations and design-time builds in the repository's tests. Whether Visual Studio itself
-picks up items a target adds, and how it merges two segments that describe the same section, has not been verified in Visual
-Studio.
+The repository's tests check the items MSBuild produces, including in a design-time build. Whether Visual Studio itself picks
+up items a target adds, and how it merges two segments that describe the same section, has not been verified in Visual Studio.
 
 ## JetBrains Rider
 

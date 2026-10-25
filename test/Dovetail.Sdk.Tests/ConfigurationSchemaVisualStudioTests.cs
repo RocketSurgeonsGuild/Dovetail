@@ -15,9 +15,10 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
     private const string ResolveReferences = "-t:ResolveAssemblyReferences";
 
     /// <summary>
-    /// What Visual Studio runs on load, instead of a build: it asks for the compilation references without compiling.
+    /// What a Visual Studio design-time build runs to get the references, without compiling (its project system's
+    /// CollectResolvedCompilationReferencesDesignTime, which only exists inside Visual Studio, builds on this target).
     /// </summary>
-    private const string DesignTimeReferences = "-t:CollectResolvedCompilationReferencesDesignTime -p:DesignTimeBuild=true -p:BuildingInsideVisualStudio=true";
+    private const string DesignTimeReferences = "-t:ResolveAssemblyReferencesDesignTime -p:DesignTimeBuild=true -p:BuildingInsideVisualStudio=true";
 
     private const string FilePathPattern = @"appsettings\..*json";
 
