@@ -66,12 +66,56 @@ documentation file that ships with the package, when there is one.
 
 | Attribute                               | Section                                                                                                                           |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `[DovetailConfiguration]`               | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings`. |
+| `[DovetailConfiguration]`               | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings` (in the declared [key style](#key-style)). |
 | `[DovetailConfiguration("Http:Retry")]` | The path you give. `:` nests sections. Keys are case-insensitive.                                                                 |
 | `[assembly: DovetailConfiguration<T>]`  | The same rule as the class form, applied to `T`.                                                                                  |
 
 There is no prefix. A name that would become empty after stripping the suffix (a class called `Options`) is an error
 ([`DT0008`](#diagnostics)); give it a path.
+
+### Key style
+
+`KeyStyle` on `[DovetailConfiguration]` (and on `DovetailConfiguration<T>`) picks how the keys of the section are spelled.
+The default is `Pascal`, which is what every declaration without a `KeyStyle` already gets. The style is set per
+attribute; there is no assembly-wide or MSBuild default.
+
+| `KeyStyle` | `RetryCount` | `HTTPServer` | `Level2Cache` | `HttpClientOptions` section |
+| ---------- | ------------ | ------------ | ------------- | --------------------------- |
+| `Pascal`   | `RetryCount` | `HTTPServer` | `Level2Cache` | `HttpClient`                |
+| `Camel`    | `retryCount` | `httpServer` | `level2Cache` | `httpClient`                |
+| `Dash`     | `retry-count` | `http-server` | `level2-cache` | `http-client`              |
+
+```csharp
+[DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
+public class HttpClientOptions // section "http-client"
+{
+    public int RetryCount { get; set; } // key "retry-count"
+    public RetryPolicy Retry { get; set; } = new(); // "retry:max-attempts" through RetryPolicy.MaxAttempts
+}
+```
+
+- **What it covers.** The key of every bound property and constructor parameter of the options type and of every object
+  type nested in it (in lists and dictionary values too). The generated binder reads those keys, and the schema uses them
+  for `properties`, the case-insensitive `patternProperties` twins and the strict `propertyNames`.
+- **What it leaves alone.** Dictionary keys, enum values and every other piece of data are never restyled, and neither
+  is an explicit section string (`"Http:Retry"` is used as written, segment by segment).
+- **Word splitting** is `System.Text.Json`'s: `Camel` is `JsonNamingPolicy.CamelCase` and `Dash` is
+  `JsonNamingPolicy.KebabCaseLower`, so `HTTPServer` is `httpServer` and `http-server`, and `Http2Enabled` is
+  `http2Enabled` and `http2-enabled`. `Pascal` only upper-cases the first letter of the declared name.
+- **`[ConfigurationKeyName]` wins.** An explicit key name is used verbatim, in every style.
+- **Derived section names** follow the style, after the `Options`, `Settings`, `Configuration` or `Config` suffix is
+  removed: `GreetingsOptions` is `Greetings`, `greetings` and `greetings`; `HttpClientOptions` is `HttpClient`,
+  `httpClient` and `http-client`.
+- **Case.** Configuration keys ignore case, so `Camel` against `Pascal` only changes the spelling the schema suggests;
+  `retryCount` and `RetryCount` bind the same value. `Dash` changes the key the binder reads: a value written as
+  `RetryCount` no longer binds (`retry-count` does), and the schema's `patternProperties` only accept the dash keys in
+  any case.
+- **One style per type.** The generated binder exists once for each type, so a type reached from sections of different
+  styles, such as a `RetryOptions` used by a camel section and a dash section, can't be bound correctly. The later
+  declaration is reported as [`DT0016`](#diagnostics) and produces nothing, the same way as `DT0015`. Use the same
+  `KeyStyle` for every section that reaches the type, or give the shared type `[ConfigurationKeyName]` attributes (a type
+  whose keys don't depend on the style isn't a conflict). Sections with `RegisterOptions = false` bind nothing, so they
+  can't conflict.
 
 ### One section per type
 
@@ -201,7 +245,7 @@ The generator follows Microsoft's configuration binding source generator, not th
 
 A type with a `[TypeConverter]` is described as an object, because the binder ignores converters. A member the binder
 can't bind is left out of both the schema and the binder, with warning [`DT0009`](#diagnostics). `[ConfigurationKeyName]`
-renames a key, and from binder 11 `[ConfigurationIgnore]` leaves a member out.
+renames a key (see [Key style](#key-style) for restyling them all), and from binder 11 `[ConfigurationIgnore]` leaves a member out.
 
 ### Annotations that reach the schema
 
@@ -398,6 +442,7 @@ MyLibrary/
 | `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                                                                |
 | `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                                                                       |
 | `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                        |
+| `DT0016` | Error    | A type is bound with more than one key style. The later declaration is reported and produces nothing; use the same `KeyStyle`, or give the shared type `[ConfigurationKeyName]`. |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one
 indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under

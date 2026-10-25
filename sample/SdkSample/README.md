@@ -37,7 +37,7 @@ joints never register the options themselves.
 | ------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SdkSample.Greetings`     | `Greetings`, `Farewell`          | the basics: a class with `[Description]` and `[Range]`, and a positional record with a `<param>` description. `IGreeter`                                                                                                                                                                            |
 | `SdkSample.Notifications` | `Notifications`                  | a plain enum and a `[Flags]` enum, `TimeSpan`, `Uri`, `List<string>`, a `Dictionary<string, ChannelOptions>` of documented nested objects with `[Range]`, `[Description]`, `[EmailAddress]` and an `[Obsolete("Use Sender instead.")]` property. `INotifier`                                        |
-| `SdkSample.Storage`       | `Storage`, `Archive`             | the generated factory path: a positional record with constructor defaults, and a class with a `required` member and `init`-only properties. `[RegularExpression]`, a `string[]` and `[ConfigurationKeyName("retention-days")]`. `IStore`                                                            |
+| `SdkSample.Storage`       | `Storage`, `Archive`             | the generated factory path: a positional record with constructor defaults, and a class with a `required` member and `init`-only properties. `[RegularExpression]`, a `string[]`, `KeyStyle = ConfigurationKeyStyle.Dash` (so the keys are `max-file-size-mb`, `allowed-extensions` and the sections `storage` and `archive`) and `[ConfigurationKeyName("keep-days")]`, which wins over the style. `IStore`                                                            |
 | `SdkSample.Diagnostics`   | `Diagnostics`, `Host`, `Console` | types the library doesn't own, through `[assembly: DovetailConfiguration<HostOptions>("Host")]` and `[assembly: DovetailConfiguration<ConsoleLifetimeOptions>("Console")]`, whose descriptions in the schema come from the XML docs shipped in `Microsoft.Extensions.Hosting`. `IDiagnosticsReport` |
 
 Both hosts reference all four libraries. Each host's merged `obj/appsettings.schema.json` combines the sections of
@@ -54,7 +54,7 @@ the rest alone:
 | Host               | Overrides                                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | `SdkSample.Worker` | `Greetings:Repeat: 2`, `Notifications:MinimumLevel: Info`, `Notifications:Sender`, `Host:ShutdownTimeout: 00:00:05` |
-| `SdkSample.Web`    | `Farewell:Exclamations: 3`, `Storage:MaxFileSizeMb: 128`, `Console:SuppressStatusMessages: true`                    |
+| `SdkSample.Web`    | `Farewell:Exclamations: 3`, `storage:max-file-size-mb: 128`, `Console:SuppressStatusMessages: true`                    |
 
 ## Running it
 
@@ -111,10 +111,13 @@ curl http://127.0.0.1:5198/.well-known/dovetail/configuration-schema
     - Misspell a key under `Notifications`, for example `Recipent:`. The strict schema flags it as an unknown key and
       lists the known ones. Keys are case-insensitive, so `recipients:` is fine.
     - Write `Timeout: soon` or `Enabled: maybe`. A wrong type or format is flagged.
-    - Set `RateLimitPerMinute: 0` under a channel, or `Storage: MaxFileSizeMb: 5000`. Both are outside their `[Range]`.
+    - Set `RateLimitPerMinute: 0` under a channel, or `storage: max-file-size-mb: 5000`. Both are outside their `[Range]`.
     - Add `From: ops@example.com` under `Notifications`. The obsolete property is marked deprecated, with the
       message "Use Sender instead."
-    - In `Archive`, set `Name: Not Valid`. It doesn't match the `[RegularExpression]`.
+    - In `archive`, set `name: Not Valid`. It doesn't match the `[RegularExpression]`.
+    - Write `MaxFileSizeMb` under `storage`. `Storage` is declared in dash case, so only `max-file-size-mb` is known and the
+      PascalCase spelling is flagged as an unknown key (it would not bind either). The other libraries keep the default
+      PascalCase keys.
     - Hover over `Host:ShutdownTimeout` or `Console:SuppressStatusMessages`. The text is Microsoft's own XML documentation
       for `HostOptions` and `ConsoleLifetimeOptions`, not something written in this sample.
 4. The same schema covers `appsettings*.json` and `appsettings*.toml` files placed in a host project.

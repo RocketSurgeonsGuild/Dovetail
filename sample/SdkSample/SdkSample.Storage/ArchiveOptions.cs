@@ -7,9 +7,10 @@ namespace SdkSample.Storage;
 /// <summary>
 ///     How files are archived. A class with a <see langword="required" /> member and <see langword="init" />-only properties,
 ///     which the options pipeline can't create on its own: Dovetail builds it with an object initializer and then binds the
-///     rest.
+///     rest. Its keys are in dash case, like <see cref="StorageOptions" />: <c>allowed-extensions</c>, and the section is
+///     <c>archive</c>.
 /// </summary>
-[DovetailConfiguration]
+[DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
 public sealed class ArchiveOptions
 {
     /// <summary>
@@ -19,9 +20,10 @@ public sealed class ArchiveOptions
     public required string Name { get; init; }
 
     /// <summary>
-    ///     How many days an archived file is kept. Read from the key <c>retention-days</c> instead of the property name.
+    ///     How many days an archived file is kept. Read from the key <c>keep-days</c>: an explicit
+    ///     <c>[ConfigurationKeyName]</c> wins over the <c>retention-days</c> the dash style would give.
     /// </summary>
-    [ConfigurationKeyName("retention-days")]
+    [ConfigurationKeyName("keep-days")]
     [Range(1, 3650)]
     public int RetentionDays { get; init; } = 30;
 

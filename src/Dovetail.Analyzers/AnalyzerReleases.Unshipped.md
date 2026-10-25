@@ -12,3 +12,4 @@ DT0012 | Dovetail | Warning | DT0012: a configuration type's graph has more dist
 DT0013 | Dovetail | Warning | DT0013: an annotation (e.g. a regular expression or a non-numeric range) can't be expressed in JSON Schema
 DT0014 | Dovetail | Warning | DT0014: the generator failed while describing a configuration type; the type gets no schema, the rest of the build is unaffected
 DT0015 | Dovetail | Error | DT0015: an options type is configured by both a [DovetailConfiguration] class attribute and an [assembly: DovetailConfiguration<T>]; the class declaration is used
+DT0016 | Dovetail | Error | DT0016: a type is reached from [DovetailConfiguration] sections of different KeyStyles, so the generated binder can't read the right keys for both; the later declaration is ignored

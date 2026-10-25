@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Dovetail.Support.Configuration.Binding;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -141,15 +142,58 @@ internal static class ConfigurationSchemaPipeline
     ///     and the assembly form naming the same type. The class declaration is kept, and the assembly one is replaced by a
     ///     declaration that only reports DT0015, so it produces no section, registration or schema fragment.
     /// </summary>
+    /// <remarks>
+    ///     The generated binder exists once for each type, so it can read only one set of keys for it. A later declaration whose
+    ///     binder would read different keys for a type an earlier one already binds (the same nested type under another
+    ///     <c>KeyStyle</c>) is replaced the same way, by one that only reports DT0016.
+    /// </remarks>
     private static IEnumerable<ConfigurationDeclaration> RejectRepeatedTypes(IEnumerable<ConfigurationDeclaration> declarations)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var boundKeys = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var declaration in declarations)
         {
-            yield return declaration.TypeName is null || seen.Add(declaration.TypeName)
-                ? declaration
-                : new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationTypeDeclaredTwice, null, declaration.TypeName) with { Location = declaration.Location } }.ToEquatableArray());
+            if (declaration.TypeName is not null && !seen.Add(declaration.TypeName))
+            {
+                yield return new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationTypeDeclaredTwice, null, declaration.TypeName) with { Location = declaration.Location } }.ToEquatableArray());
+                continue;
+            }
+
+            if (declaration is { Options: { } options } && ConflictingKeyType(options, boundKeys) is { } conflict)
+            {
+                yield return new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationKeyStyleConflict, null, conflict) with { Location = declaration.Location } }.ToEquatableArray());
+                continue;
+            }
+
+            yield return declaration;
         }
+    }
+
+    /// <summary>
+    ///     The first object type of <paramref name="options" /> the binder already reads under different keys, or
+    ///     <see langword="null" />. Otherwise the keys of its types are recorded.
+    /// </summary>
+    private static string? ConflictingKeyType(ConfigurationOptions options, Dictionary<string, string> boundKeys)
+    {
+        var keys = options
+                  .Types
+                  .OfType<ObjectSpec>()
+                  .Select(z => (z.FullName, Name: z.TypeRef.FullyQualifiedName, Keys: string.Join("\n", z.Properties.Select(property => property.Name + "=" + property.ConfigurationKeyName))))
+                  .ToArray();
+        foreach (var (fullName, name, signature) in keys)
+        {
+            if (boundKeys.TryGetValue(name, out var existing) && !string.Equals(existing, signature, StringComparison.Ordinal))
+            {
+                return fullName;
+            }
+        }
+
+        foreach (var (_, name, signature) in keys)
+        {
+            boundKeys[name] = signature;
+        }
+
+        return null;
     }
 
     /// <summary>

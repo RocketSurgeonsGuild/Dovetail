@@ -138,4 +138,13 @@ internal static class Diagnostics
         DiagnosticSeverity.Warning,
         true
     );
+
+    public static readonly DiagnosticDescriptor ConfigurationKeyStyleConflict = new(
+        "DT0016",
+        "Configuration key style conflict",
+        "'{0}' is bound with more than one key style; use the same KeyStyle for every section that reaches it, or give the shared type [ConfigurationKeyName] attributes",
+        "Dovetail",
+        DiagnosticSeverity.Error,
+        true
+    );
 }
