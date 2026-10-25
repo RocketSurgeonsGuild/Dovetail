@@ -391,6 +391,45 @@ references, the project's own assembly and the properties above.
 Merging runs in a compiled MSBuild task (`Dovetail.Build.Tasks`) that reads the fragments with `System.Reflection.Metadata`,
 so no assembly is loaded and nothing is embedded in your application.
 
+### Serilog
+
+`Dovetail.Serilog` ships a schema for the `Serilog` section, in the format
+[Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) reads, so a host that
+references it gets completion and validation for `Serilog` without any setup. The section is dynamic (sinks, enrichers and
+their arguments come from other packages), so no options type can describe it and the generator has nothing to emit.
+`Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the
+pipeline above unchanged: the library's `ConfigurationSchema.json` is packed at the package root, and a host merges the
+fragment into its `appsettings.schema.json` like any other.
+
+The fragment follows the rules of the `Serilog` definition in SchemaStore's `appsettings.json` schema, the one the merged
+file embeds by default, so the two never disagree about a value. It models these keys:
+
+- **`MinimumLevel`**, as a level name (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`, and `Off` as in
+  SchemaStore's list; the names are matched exactly) or as an object with `Default`, `Override` (a map from a source such as
+  `Microsoft.AspNetCore` to a level) and `ControlledBy`. In the object form a value may also be a switch reference, a
+  `$` and a name; SchemaStore's pattern for that is loose enough to accept any plain word too, and the fragment keeps it.
+  A number, or an unknown name in the string form, is flagged.
+- **`Enrich`** and **`Filter`**, as a non-empty list of unique items, a single name, or a map of items by name. An item
+  is a method name (letters, digits and underscores, not starting with a digit, so `Some.Namespace.WithThing` is flagged) or
+  `{ "Name": ..., "Args": { ... } }` with `Name` required. `Name` completes the well-known enrichers and filters and accepts
+  any other method name. `Args` keys must be identifiers and their values are not checked, since their shape belongs to
+  the extension method.
+- **`Properties`**, a map of strings.
+- **`$schema`**, a string.
+
+`Using`, `WriteTo`, `AuditTo`, `Destructure`, `LevelSwitches` and `FilterSwitches` are not modelled by the fragment. They
+are listed so the strict merged schema keeps accepting them, with a description and no constraint on their value. SchemaStore's
+schema, part of the same merged file, still checks them.
+
+What differs from SchemaStore's schema, and why it is harmless:
+
+- **Casing.** Configuration keys ignore case, so the fragment, like every Dovetail fragment, accepts any casing of its keys.
+  SchemaStore's schema lists them case-sensitively, and both apply in the merged file, so `minimumlevel` is flagged by
+  SchemaStore's half.
+- **Flat keys.** SchemaStore's schema accepts the flat forms `"WriteTo:Async"` and `"Enrich:0"`, which Serilog reads. The
+  strict merge closes the `Serilog` section with the names it knows, so those are flagged. Use the array or object form, or set
+  `DovetailConfigurationSchemaStrict` to `false`.
+
 ### Serving the schema
 
 Applications built on Dovetail.Hosting.Web can serve the merged schema over HTTP at

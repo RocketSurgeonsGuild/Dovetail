@@ -5,6 +5,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Dovetail.Build.Tasks\Dovetail.Build.Tasks.csproj" />
         <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Dovetail.Serilog\Dovetail.Serilog.csproj" />
         <PackageReference Include="Corvus.Json.JsonSchema.Draft7" />
     </ItemGroup>
     <ItemGroup>
