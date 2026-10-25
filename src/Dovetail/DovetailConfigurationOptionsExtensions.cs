@@ -204,8 +204,8 @@ public static class DovetailConfigurationOptionsExtensions
     {
         var builder = services.AddOptions<TOptions>();
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, DovetailConfigurationChangeTokenSource<TOptions>>(
-                static provider => new DovetailConfigurationChangeTokenSource<TOptions>(provider.GetRequiredService<IConfiguration>())
+            ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, ConfigurationChangeTokenSource<TOptions>>(
+                static provider => new ConfigurationChangeTokenSource<TOptions>(provider.GetRequiredService<IConfiguration>())
             )
         );
         return builder;
