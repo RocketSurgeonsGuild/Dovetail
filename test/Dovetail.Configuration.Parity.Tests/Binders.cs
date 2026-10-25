@@ -22,7 +22,7 @@ internal static class Binders
     {
         var services = new ServiceCollection();
         services.AddSingleton(configuration);
-        foreach (var joint in Exports.Joints().Select(z => z.Joint).OfType<IServiceJoint>())
+        foreach (var joint in global::Dovetail.Configuration.Parity.Tests.Rivets.Exports.Joints().Select(z => z.Joint).OfType<IServiceJoint>())
         {
             joint.Register(null!, services);
         }

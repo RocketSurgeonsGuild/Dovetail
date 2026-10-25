@@ -31,7 +31,7 @@ public sealed class GeneratedJointTests
                     )
                    .Build()
             );
-        foreach (var joint in Exports.Joints().Select(z => z.Joint).OfType<IServiceJoint>())
+        foreach (var joint in global::Dovetail.Configuration.Aot.Tests.Rivets.Exports.Joints().Select(z => z.Joint).OfType<IServiceJoint>())
         {
             joint.Register(null!, services);
         }
