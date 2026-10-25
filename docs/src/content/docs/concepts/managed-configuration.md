@@ -78,7 +78,8 @@ There is no prefix. A name that would become empty after stripping the suffix (a
 A type has exactly one section, so it is declared once. There are two attribute forms:
 
 - `[DovetailConfiguration]` (or `[DovetailConfiguration("Section")]`) on the class. It can't be repeated on a type.
-- `[assembly: DovetailConfiguration<T>("Section")]` for a type you don't own. The compiler allows it once per `T`.
+- `[assembly: DovetailConfiguration<T>("Section")]` for a type you don't own. Repeat it for each type; naming the same `T`
+  twice is [`DT0015`](#diagnostics) as well.
 
 Declaring a type with both forms is an error ([`DT0015`](#diagnostics)). The diagnostic is reported on the assembly
 attribute; the class declaration is the one that produces the schema fragment and the registration, and the assembly

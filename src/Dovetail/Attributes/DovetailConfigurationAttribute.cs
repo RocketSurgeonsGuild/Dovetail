@@ -62,15 +62,14 @@ public sealed class DovetailConfigurationAttribute : Attribute
 /// </summary>
 /// <remarks>
 ///     <para>
-///         The section path follows the same rules as <see cref="DovetailConfigurationAttribute" />. A type has one section: each
-///         <c>DovetailConfiguration&lt;T&gt;</c> can be applied once per <typeparamref name="T" />, as the compiler enforces, and a
-///         type that is also declared with the class form is reported as DT0015.
+///         The section path follows the same rules as <see cref="DovetailConfigurationAttribute" />. Apply it once for each type you
+///         configure. A type has one section: naming it twice, or also declaring it with the class form, is reported as DT0015.
 ///     </para>
 ///     <para>Only works with source generators enabled.</para>
 /// </remarks>
 /// <typeparam name="T">The options type.</typeparam>
 [PublicAPI]
-[AttributeUsage(AttributeTargets.Assembly)]
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 [Conditional("CodeGeneration")]
 public sealed class DovetailConfigurationAttribute<T> : Attribute
     where T : class
