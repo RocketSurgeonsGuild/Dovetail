@@ -143,6 +143,75 @@ public sealed class NamedOptionsTests
         monitor.Get("tenant-a").Port.ShouldBe(1);
     }
 
+    [Test]
+    public async Task ChangeTokenSource_ForANamedOptions_ReloadsOnlyThatName()
+    {
+        var tenantA = TestConfiguration.Build(("Server:Port", "1"));
+        var tenantB = TestConfiguration.Build(("Server:Port", "2"));
+        var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build());
+        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
+        services.AddDovetailConfigurationChangeTokenSource<ServerRecord>("tenant-a");
+        services.AddDovetailConfigurationChangeTokenSource<ServerRecord>("tenant-a");
+        services.AddSingleton<IDovetailConfigurationProvider>(
+            new PerNameProvider(new() { [Options.DefaultName] = TestConfiguration.Build(("Server:Port", "80")), ["tenant-a"] = tenantA, ["tenant-b"] = tenantB })
+        );
+
+        services.Count(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<ServerRecord>)).ShouldBe(2);
+        await using var provider = services.BuildServiceProvider();
+
+        var monitor = provider.GetRequiredService<IOptionsMonitor<ServerRecord>>();
+        monitor.Get("tenant-a").Port.ShouldBe(1);
+        monitor.Get("tenant-b").Port.ShouldBe(2);
+        var changes = new List<string?>();
+        using var subscription = monitor.OnChange((_, name) => changes.Add(name));
+
+        tenantA["Server:Port"] = "11";
+        tenantA.Reload();
+        tenantB["Server:Port"] = "22";
+
+        changes.ShouldBe(["tenant-a"]);
+        monitor.Get("tenant-a").Port.ShouldBe(11);
+        monitor.Get("tenant-b").Port.ShouldBe(2);
+        monitor.CurrentValue.Port.ShouldBe(80);
+    }
+
+    [Test]
+    public async Task NamedOptions_WithoutAChangeTokenSource_AreNotReloadedByTheMonitor()
+    {
+        var tenantB = TestConfiguration.Build(("Server:Port", "2"));
+        var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build());
+        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
+        services.AddSingleton<IDovetailConfigurationProvider>(
+            new PerNameProvider(new() { [Options.DefaultName] = TestConfiguration.Build(("Server:Port", "80")), ["tenant-b"] = tenantB })
+        );
+
+        await using var provider = services.BuildServiceProvider();
+
+        var monitor = provider.GetRequiredService<IOptionsMonitor<ServerRecord>>();
+        monitor.Get("tenant-b").Port.ShouldBe(2);
+
+        tenantB["Server:Port"] = "22";
+        tenantB.Reload();
+
+        // The monitor caches the instance it created, and nothing tells it to drop it.
+        monitor.Get("tenant-b").Port.ShouldBe(2);
+        // A snapshot creates its options from the current configuration, with no registration.
+        using var scope = provider.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<ServerRecord>>().Get("tenant-b").Port.ShouldBe(22);
+    }
+
+    [Test]
+    public async Task ChangeTokenSource_ForANonDefaultName_NeedsAProviderThatSuppliesIt()
+    {
+        var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build());
+        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
+        services.AddDovetailConfigurationChangeTokenSource<ServerRecord>("tenant-a");
+
+        await using var provider = services.BuildServiceProvider();
+
+        Should.Throw<InvalidOperationException>( provider.GetRequiredService<IOptionsMonitor<ServerRecord>> ).Message.ShouldContain("tenant-a");
+    }
+
     private sealed class PerNameProvider(Dictionary<string, IConfiguration> configurations) : IDovetailConfigurationProvider
     {
         public IConfiguration GetConfiguration(string optionsName) =>

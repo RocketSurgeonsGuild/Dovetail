@@ -110,8 +110,8 @@ registration path uses reflection. To bind a type with reflection, use Microsoft
 - The configuration comes from the `IDovetailConfigurationProvider` in the service provider, resolved when the options are
   first created. For the default options it is the application's complete `IConfiguration`. `create` receives that
   configuration's section at `sectionPath` (such as `Http:Retry`). An empty path throws.
-- One change token source per type, watching the application's `IConfiguration`, makes `IOptionsMonitor<T>` and
-  `IOptionsSnapshot<T>` see reloads of the default options.
+- A change token source for the default name, watching the configuration the provider returns for it, makes
+  `IOptionsMonitor<T>` and `IOptionsSnapshot<T>` see reloads of the default options.
 - The call registers an `IOptionsFactory<T>` with `TryAdd`: the first registration for a type wins, and later calls are
   ignored. A factory your application registers itself wins over Dovetail's, so `create` is never called for that type.
 - The factory derives from `OptionsFactory<T>`, so configure and post-configure actions and validators still run on the
@@ -145,9 +145,24 @@ var tenantB = snapshot.Get("tenant-b");
 ```
 
 A provider you register replaces the default one, whether it comes before or after the options. Configure,
-post-configure and validators for a name (`Configure<T>("tenant-a", ...)`) run on the instance created for that name. The
-change token source Dovetail registers watches the application's `IConfiguration`, so if the configurations your provider
-returns reload, also register an `IOptionsChangeTokenSource<T>` with that name for each of them.
+post-configure and validators for a name (`Configure<T>("tenant-a", ...)`) run on the instance created for that name.
+
+#### Reloads for named options
+
+`IOptionsSnapshot<T>` needs nothing: it creates its options for each scope from the current configuration. An
+`IOptionsMonitor<T>` takes its change token sources when it is created, and a source has one fixed name, so the monitor
+only sees reloads of the names you registered a source for. Dovetail registers one for the default name, which asks the
+provider for the default configuration. Register one for every other name up front, for example for each known tenant:
+
+```c#
+services.AddDovetailConfigurationChangeTokenSource<FarewellOptions>("tenant-a");
+services.AddDovetailConfigurationChangeTokenSource<FarewellOptions>("tenant-b");
+```
+
+The source watches the configuration your provider returns for that name; registering the same type and name twice has no
+effect. A name without a source is created once and not reloaded by the monitor. Because the source asks the provider for
+the configuration when the monitor is created, a source for a non-default name only makes sense with a provider of your own:
+with the default provider it throws, and so does resolving `IOptionsMonitor<T>` for that type.
 
 ### `RegisterOptions` and `ValidateOnStart`
 

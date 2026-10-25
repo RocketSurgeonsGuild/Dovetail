@@ -47,10 +47,11 @@ public static class DovetailConfigurationOptionsExtensions
     ///         <see cref="IConfiguration" /> for the default name, and throws for any other options name, so named options need
     ///         a provider of your own (for example one that returns a configuration per tenant). <paramref name="create" /> is
     ///         called for every name with the section at <paramref name="sectionPath" /> of the configuration the provider
-    ///         returned for it. One <see cref="IOptionsChangeTokenSource{TOptions}" /> per type watches the application's
-    ///         configuration, so <see cref="IOptionsMonitor{TOptions}" /> and <see cref="IOptionsSnapshot{TOptions}" /> observe
-    ///         reloads of the default options. For named options whose configurations can reload, register an
-    ///         <see cref="IOptionsChangeTokenSource{TOptions}" /> with that name yourself.
+    ///         returned for it. A change token source for the default name watches the configuration the provider returns for it,
+    ///         so <see cref="IOptionsMonitor{TOptions}" /> and <see cref="IOptionsSnapshot{TOptions}" /> observe reloads of the
+    ///         default options. For named options, <see cref="IOptionsSnapshot{TOptions}" /> needs nothing more, and
+    ///         <see cref="IOptionsMonitor{TOptions}" /> needs
+    ///         <see cref="AddDovetailConfigurationChangeTokenSource{TOptions}(IServiceCollection, string)" /> for each name.
     ///     </para>
     ///     <para>
     ///         On .NET 11, don't give a type registered this way asynchronous validators: the options pipeline only runs them
@@ -80,11 +81,7 @@ public static class DovetailConfigurationOptionsExtensions
         ArgumentNullException.ThrowIfNull(create);
 
         var builder = services.AddOptions<TOptions>();
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, ConfigurationChangeTokenSource<TOptions>>(
-                static provider => new ConfigurationChangeTokenSource<TOptions>(provider.GetRequiredService<IConfiguration>())
-            )
-        );
+        AddChangeTokenSource<TOptions>(services, Options.DefaultName);
         services.TryAddSingleton<IDovetailConfigurationProvider>(static provider => new DefaultDovetailConfigurationProvider(provider.GetRequiredService<IConfiguration>()));
         services.TryAdd(
             ServiceDescriptor.Transient<IOptionsFactory<TOptions>, DovetailOptionsFactory<TOptions>>(provider => new DovetailOptionsFactory<TOptions>(
@@ -98,5 +95,61 @@ public static class DovetailConfigurationOptionsExtensions
             )
         );
         return builder;
+    }
+
+    /// <summary>
+    ///     Makes <see cref="IOptionsMonitor{TOptions}" /> observe reloads of the options named <paramref name="optionsName" />,
+    ///     which it does for the default name already.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Registers an <see cref="IOptionsChangeTokenSource{TOptions}" /> that watches the configuration the
+    ///         <see cref="IDovetailConfigurationProvider" /> returns for <paramref name="optionsName" />. An
+    ///         <see cref="IOptionsMonitor{TOptions}" /> takes its change token sources when it is created, and a source has one
+    ///         fixed name, so call this for each name up front, such as for each known tenant, before the first
+    ///         <see cref="IOptionsMonitor{TOptions}" /> for the type is resolved. A name without a source is created once and not
+    ///         reloaded by the monitor.
+    ///     </para>
+    ///     <para>
+    ///         <see cref="IOptionsSnapshot{TOptions}" /> needs no registration: it creates its options for each scope from the
+    ///         current configuration.
+    ///     </para>
+    ///     <para>
+    ///         The source asks the provider for the configuration when the monitor is created. The default provider throws for
+    ///         every name but the default one, so a registration for another name needs a provider of your own, or resolving the
+    ///         monitor throws. Registering the same options type and name again has no effect.
+    ///     </para>
+    /// </remarks>
+    /// <typeparam name="TOptions">The options type.</typeparam>
+    /// <param name="services">The service collection to register against.</param>
+    /// <param name="optionsName">The options name, as passed to <see cref="IOptionsMonitor{TOptions}.Get(string?)" />.</param>
+    /// <returns>The <paramref name="services" />, for chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="optionsName" /> is <see langword="null" />.</exception>
+    public static IServiceCollection AddDovetailConfigurationChangeTokenSource<TOptions>(this IServiceCollection services, string optionsName)
+        where TOptions : class
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(optionsName);
+
+        AddChangeTokenSource<TOptions>(services, optionsName);
+        return services;
+    }
+
+    private static void AddChangeTokenSource<TOptions>(IServiceCollection services, string optionsName)
+        where TOptions : class
+    {
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(DovetailChangeTokenSourceMarker<TOptions>)
+         && descriptor.ImplementationInstance is DovetailChangeTokenSourceMarker<TOptions> marker
+         && marker.Name == optionsName))
+        {
+            return;
+        }
+
+        services.AddSingleton(new DovetailChangeTokenSourceMarker<TOptions>(optionsName));
+        services.AddSingleton<IOptionsChangeTokenSource<TOptions>>(provider => new DovetailConfigurationChangeTokenSource<TOptions>(
+                provider.GetRequiredService<IDovetailConfigurationProvider>(),
+                optionsName
+            )
+        );
     }
 }
