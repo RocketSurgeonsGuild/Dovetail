@@ -18,8 +18,9 @@ namespace Dovetail.Attributes;
 ///         <see cref="DovetailConfigurationAttribute{T}" />.
 ///     </para>
 ///     <para>
-///         <see cref="KeyStyle" /> picks how the keys of the type and of the types nested in it are spelled (Pascal, camel or dash
-///         case). A type that several sections reach has to use the same style in all of them; DT0016 reports a mismatch.
+///         <see cref="KeyStyle" /> picks how the keys of the type and of the types nested in it are spelled (as declared, Pascal,
+///         camel, dash or underscore case). A type that several sections reach has to spell its keys the same way in all of them;
+///         DT0016 reports a mismatch.
 ///     </para>
 ///     <para>
 ///         The generated registration reads its own section from the application's complete <c>IConfiguration</c> and creates or
@@ -62,7 +63,7 @@ public sealed class DovetailConfigurationAttribute : Attribute
     /// <summary>
     ///     How the configuration keys are spelled: those of every bound property and constructor parameter of the options type and
     ///     of the object types nested in it, and the default section path derived from the type name. The default is
-    ///     <see cref="ConfigurationKeyStyle.Pascal" />. See <see cref="ConfigurationKeyStyle" />.
+    ///     <see cref="ConfigurationKeyStyle.Undefined" />, which keeps the declared names. See <see cref="ConfigurationKeyStyle" />.
     /// </summary>
     public ConfigurationKeyStyle KeyStyle { get; set; }
 }
@@ -116,7 +117,7 @@ public sealed class DovetailConfigurationAttribute<T> : Attribute
     /// <summary>
     ///     How the configuration keys are spelled: those of every bound property and constructor parameter of the options type and
     ///     of the object types nested in it, and the default section path derived from the type name. The default is
-    ///     <see cref="ConfigurationKeyStyle.Pascal" />. See <see cref="ConfigurationKeyStyle" />.
+    ///     <see cref="ConfigurationKeyStyle.Undefined" />, which keeps the declared names. See <see cref="ConfigurationKeyStyle" />.
     /// </summary>
     public ConfigurationKeyStyle KeyStyle { get; set; }
 }

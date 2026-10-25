@@ -61,7 +61,7 @@ There is no `Order` and no stacking, de-duplication or merging: a type has one s
 
 The schema follows the binder's view of a type: it leaves out `[ConfigurationIgnore]` members from version 11, and lists static properties the binder sets and the declared properties of interfaces and abstract classes (the binder fills an existing instance of those). A root the binder can't create reports DT0011.
 
-The binder reads the keys of the section's `KeyStyle` (Pascal, camel or dash case, with `[ConfigurationKeyName]` winning); because the binder is generated once per type, a type reached under two styles is DT0016.
+The binder reads the keys of the section's `KeyStyle` (as declared by default, or Pascal, camel, dash or underscore case, with `[ConfigurationKeyName]` winning); because the binder is generated once per type, a type whose effective keys differ between two sections is DT0016.
 
 Microsoft's own quirks are kept. For example:
 

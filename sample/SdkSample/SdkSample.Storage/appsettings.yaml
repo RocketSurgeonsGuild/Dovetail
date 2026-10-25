@@ -5,8 +5,8 @@ storage:
 
 archive:
   name: sdk-sample
-  keep-days: 30
-  allowed-extensions:
+  keep_days: 30
+  allowed_extensions:
     - .txt
     - .json
     - .csv

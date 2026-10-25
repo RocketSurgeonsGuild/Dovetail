@@ -121,9 +121,18 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     [Test]
     [Arguments("Camel")]
     [Arguments("Dash")]
+    [Arguments("Underscore")]
     public async Task Reads_the_keys_of_the_declared_key_style(string style)
     {
         var result = await WithBinder(11).AddSources(ConfigurationKeyStyleSources.Styled(style)).Build().GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Reads_declared_names_when_undefined_and_upper_cased_first_letters_for_pascal()
+    {
+        var result = await WithBinder(11).AddSources(ConfigurationKeyStyleSources.LowerCaseNames).Build().GenerateAsync(TestContext.CancellationToken);
 
         await Verify(Describe(result));
     }

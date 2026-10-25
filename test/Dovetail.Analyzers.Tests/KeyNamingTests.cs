@@ -5,9 +5,9 @@ using Dovetail.Support.Configuration;
 namespace Dovetail.Analyzers.Tests;
 
 /// <summary>
-///     The generator's own spelling of camel-case and dash-case keys (it targets netstandard2.0, so it can't use
-///     <see cref="JsonNamingPolicy" />) must agree with the real <see cref="JsonNamingPolicy.CamelCase" /> and
-///     <see cref="JsonNamingPolicy.KebabCaseLower" /> for every input.
+///     The generator's own spelling of camel-case, dash-case and underscore-case keys (it targets netstandard2.0, so it can't use
+///     <see cref="JsonNamingPolicy" />) must agree with the real <see cref="JsonNamingPolicy.CamelCase" />,
+///     <see cref="JsonNamingPolicy.KebabCaseLower" /> and <see cref="JsonNamingPolicy.SnakeCaseLower" /> for every input.
 /// </summary>
 public class KeyNamingTests
 {
@@ -59,7 +59,14 @@ public class KeyNamingTests
     }
 
     [Test]
-    public Task Camel_and_dash_match_JsonNamingPolicy_on_generated_names()
+    public Task Underscore_matches_JsonNamingPolicy_on_the_corpus()
+    {
+        Mismatches(Corpus, KeyNaming.Underscore, JsonNamingPolicy.SnakeCaseLower).ShouldBeEmpty();
+        return Task.CompletedTask;
+    }
+
+    [Test]
+    public Task Camel_dash_and_underscore_match_JsonNamingPolicy_on_generated_names()
     {
         // A fixed seed keeps a failure reproducible.
         var random = new Random(20260101);
@@ -78,29 +85,35 @@ public class KeyNamingTests
 
         Mismatches(names, KeyNaming.Camel, JsonNamingPolicy.CamelCase).ShouldBeEmpty();
         Mismatches(names, KeyNaming.Dash, JsonNamingPolicy.KebabCaseLower).ShouldBeEmpty();
+        Mismatches(names, KeyNaming.Underscore, JsonNamingPolicy.SnakeCaseLower).ShouldBeEmpty();
         return Task.CompletedTask;
     }
 
     [Test]
-    [Arguments("HTTPServer", "HTTPServer", "httpServer", "http-server")]
-    [Arguments("UseSSL", "UseSSL", "useSSL", "use-ssl")]
-    [Arguments("XMLHttpRequest", "XMLHttpRequest", "xmlHttpRequest", "xml-http-request")]
-    [Arguments("Level2Cache", "Level2Cache", "level2Cache", "level2-cache")]
-    [Arguments("Http2Enabled", "Http2Enabled", "http2Enabled", "http2-enabled")]
-    [Arguments("RetryCount", "RetryCount", "retryCount", "retry-count")]
-    [Arguments("name", "Name", "name", "name")]
-    [Arguments("_private", "_private", "_private", "_private")]
-    [Arguments("snake_case", "Snake_case", "snake_case", "snake_case")]
-    [Arguments("X", "X", "x", "x")]
-    [Arguments("", "", "", "")]
-    [Arguments("Greetings", "Greetings", "greetings", "greetings")]
-    [Arguments("HttpClient", "HttpClient", "httpClient", "http-client")]
-    [Arguments("OpenAI", "OpenAI", "openAI", "open-ai")]
-    public Task Spells_names_in_each_style(string name, string pascal, string camel, string dash)
+    [Arguments("HTTPServer", "HTTPServer", "httpServer", "http-server", "http_server")]
+    [Arguments("UseSSL", "UseSSL", "useSSL", "use-ssl", "use_ssl")]
+    [Arguments("XMLHttpRequest", "XMLHttpRequest", "xmlHttpRequest", "xml-http-request", "xml_http_request")]
+    [Arguments("Level2Cache", "Level2Cache", "level2Cache", "level2-cache", "level2_cache")]
+    [Arguments("Http2Enabled", "Http2Enabled", "http2Enabled", "http2-enabled", "http2_enabled")]
+    [Arguments("RetryCount", "RetryCount", "retryCount", "retry-count", "retry_count")]
+    [Arguments("MaxFileSizeMb", "MaxFileSizeMb", "maxFileSizeMb", "max-file-size-mb", "max_file_size_mb")]
+    [Arguments("name", "Name", "name", "name", "name")]
+    [Arguments("myKey", "MyKey", "myKey", "my-key", "my_key")]
+    [Arguments("_private", "_private", "_private", "_private", "_private")]
+    [Arguments("snake_case", "Snake_case", "snake_case", "snake_case", "snake_case")]
+    [Arguments("X", "X", "x", "x", "x")]
+    [Arguments("", "", "", "", "")]
+    [Arguments("Greetings", "Greetings", "greetings", "greetings", "greetings")]
+    [Arguments("HttpClient", "HttpClient", "httpClient", "http-client", "http_client")]
+    [Arguments("OpenAI", "OpenAI", "openAI", "open-ai", "open_ai")]
+    public Task Spells_names_in_each_style(string name, string pascal, string camel, string dash, string underscore)
     {
+        // Undefined keeps the declared name; Pascal only upper-cases its first letter.
+        KeyNaming.Apply(name, KeyStyle.Undefined).ShouldBe(name);
         KeyNaming.Apply(name, KeyStyle.Pascal).ShouldBe(pascal);
         KeyNaming.Apply(name, KeyStyle.Camel).ShouldBe(camel);
         KeyNaming.Apply(name, KeyStyle.Dash).ShouldBe(dash);
+        KeyNaming.Apply(name, KeyStyle.Underscore).ShouldBe(underscore);
         return Task.CompletedTask;
     }
 

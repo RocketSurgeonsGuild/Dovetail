@@ -4,6 +4,52 @@ namespace Dovetail.Analyzers.Tests;
 internal static class ConfigurationKeyStyleSources
 {
     /// <summary>
+    ///     Declared names that start in lower case, in an <c>Undefined</c> and a <c>Pascal</c> section: the first keeps the names as
+    ///     written, the second upper-cases the first letter. Each section has its own nested types, because the binder is per type.
+    /// </summary>
+    public const string LowerCaseNames = """
+        using System;
+        using System.Collections.Generic;
+        using Dovetail.Attributes;
+
+        namespace Sample;
+
+        [DovetailConfiguration("Declared")]
+        public class DeclaredOptions
+        {
+            public string? myKey { get; set; }
+            public int retryCount { get; set; }
+            public string NormalName { get; set; } = "";
+            public DeclaredInner inner { get; set; } = new();
+            public List<DeclaredItem> itemList { get; set; } = [];
+        }
+
+        public class DeclaredInner { public int waitTime { get; set; } }
+
+        public class DeclaredItem { public string? itemName { get; set; } }
+
+        [DovetailConfiguration("DeclaredRecord")]
+        public record DeclaredRecord(string hostName, int portNumber = 80);
+
+        [DovetailConfiguration("Pascal", KeyStyle = ConfigurationKeyStyle.Pascal)]
+        public class PascalOptions
+        {
+            public string? myKey { get; set; }
+            public int retryCount { get; set; }
+            public string NormalName { get; set; } = "";
+            public PascalInner inner { get; set; } = new();
+            public List<PascalItem> itemList { get; set; } = [];
+        }
+
+        public class PascalInner { public int waitTime { get; set; } }
+
+        public class PascalItem { public string? itemName { get; set; } }
+
+        [DovetailConfiguration("PascalRecord", KeyStyle = ConfigurationKeyStyle.Pascal)]
+        public record PascalRecord(string hostName, int portNumber = 80);
+        """;
+
+    /// <summary>
     ///     A section with a nested object, a list of objects, dictionaries, a <c>[ConfigurationKeyName]</c> override, a record and
     ///     an init-only type, all in <paramref name="style" />.
     /// </summary>

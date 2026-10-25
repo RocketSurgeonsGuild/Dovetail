@@ -88,7 +88,7 @@ internal sealed class ModelBuilder
 
         var registerOptions = true;
         var validateOnStart = false;
-        var keyStyle = KeyStyle.Pascal;
+        var keyStyle = KeyStyle.Undefined;
         foreach (var named in attribute.NamedArguments)
         {
             switch (named.Key)

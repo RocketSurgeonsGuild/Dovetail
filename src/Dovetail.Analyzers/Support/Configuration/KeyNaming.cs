@@ -6,28 +6,30 @@ namespace Dovetail.Support.Configuration;
 /// <summary>The analyzer's copy of <c>Dovetail.Attributes.ConfigurationKeyStyle</c>; the values are the same.</summary>
 internal enum KeyStyle
 {
-    Pascal = 0,
-    Camel = 1,
-    Dash = 2,
+    Undefined = 0,
+    Pascal = 1,
+    Camel = 2,
+    Dash = 3,
+    Underscore = 4,
 }
 
 /// <summary>
 ///     Spells a declared member or type name in a <see cref="KeyStyle" />. <see cref="KeyStyle.Camel" /> and
-///     <see cref="KeyStyle.Dash" /> reimplement <c>JsonNamingPolicy.CamelCase</c> and <c>JsonNamingPolicy.KebabCaseLower</c> (the
-///     generator targets netstandard2.0, where <c>System.Text.Json</c> naming policies don't exist), so word splitting matches what
-///     developers know from JSON. The tests compare both against the real policies.
+///     <see cref="KeyStyle.Dash" /> and <see cref="KeyStyle.Underscore" /> reimplement <c>JsonNamingPolicy.CamelCase</c>,
+///     <c>JsonNamingPolicy.KebabCaseLower</c> and <c>JsonNamingPolicy.SnakeCaseLower</c> (the generator targets netstandard2.0,
+///     where <c>System.Text.Json</c> naming policies don't exist), so word splitting matches what developers know from JSON. The
+///     tests compare all three against the real policies. <see cref="KeyStyle.Undefined" /> keeps the declared name.
 /// </summary>
 internal static class KeyNaming
 {
-    private const char DashSeparator = '-';
-
     /// <summary>The key for a declared name, in <paramref name="style" />.</summary>
     public static string Apply(string name, KeyStyle style) => style switch
     {
         KeyStyle.Pascal => Pascal(name),
         KeyStyle.Camel => Camel(name),
         KeyStyle.Dash => Dash(name),
-        _ => Pascal(name),
+        KeyStyle.Underscore => Underscore(name),
+        _ => name,
     };
 
     /// <summary>The name with its first letter upper-cased.</summary>
@@ -80,7 +82,12 @@ internal static class KeyNaming
     }
 
     /// <summary>Like <c>JsonNamingPolicy.KebabCaseLower</c>: lower-case words joined with <c>-</c>.</summary>
-    public static string Dash(string name)
+    public static string Dash(string name) => Separated(name, '-');
+
+    /// <summary>Like <c>JsonNamingPolicy.SnakeCaseLower</c>: lower-case words joined with <c>_</c>.</summary>
+    public static string Underscore(string name) => Separated(name, '_');
+
+    private static string Separated(string name, char separator)
     {
         var builder = new StringBuilder(name.Length + name.Length / 4 + 1);
         var state = SeparatorState.NotStarted;
@@ -95,14 +102,14 @@ internal static class KeyNaming
                     case SeparatorState.LowercaseLetterOrDigit:
                     case SeparatorState.SpaceSeparator:
                         // An upper-case letter after lower-case letters, digits or spaces starts a new word.
-                        builder.Append(DashSeparator);
+                        builder.Append(separator);
                         break;
                     case SeparatorState.UppercaseLetter:
                         // In a run of upper-case letters only the last one starts a word, and only when lower-case follows:
                         // XMLReader is xml-reader, SHA512Hash is sha512-hash.
                         if (index + 1 < name.Length && char.IsLower(name[index + 1]))
                         {
-                            builder.Append(DashSeparator);
+                            builder.Append(separator);
                         }
 
                         break;
@@ -119,7 +126,7 @@ internal static class KeyNaming
                 if (state == SeparatorState.SpaceSeparator)
                 {
                     // Spaces between words collapse to one separator.
-                    builder.Append(DashSeparator);
+                    builder.Append(separator);
                 }
 
                 builder.Append(current);

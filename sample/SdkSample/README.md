@@ -33,17 +33,18 @@ Every library is a plain class library in the style of `SdkSample.Greetings`: op
 `IOptions<T>`. Dovetail's generated binder fills the options and its generated joint loads the YAML file, so the
 joints never register the options themselves.
 
-| Library                   | Section(s)                       | Shows                                                                                                                                                                                                                                                                                               |
-| ------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SdkSample.Greetings`     | `Greetings`, `Farewell`          | the basics: a class with `[Description]` and `[Range]`, and a positional record with a `<param>` description. `IGreeter`                                                                                                                                                                            |
-| `SdkSample.Notifications` | `Notifications`                  | a plain enum and a `[Flags]` enum, `TimeSpan`, `Uri`, `List<string>`, a `Dictionary<string, ChannelOptions>` of documented nested objects with `[Range]`, `[Description]`, `[EmailAddress]` and an `[Obsolete("Use Sender instead.")]` property. `INotifier`                                        |
-| `SdkSample.Storage`       | `Storage`, `Archive`             | the generated factory path: a positional record with constructor defaults, and a class with a `required` member and `init`-only properties. `[RegularExpression]`, a `string[]`, dash-case keys (`KeyStyle`) and `[ConfigurationKeyName("keep-days")]`. `IStore`                                    |
-| `SdkSample.Diagnostics`   | `Diagnostics`, `Host`, `Console` | types the library doesn't own, through `[assembly: DovetailConfiguration<HostOptions>("Host")]` and `[assembly: DovetailConfiguration<ConsoleLifetimeOptions>("Console")]`, whose descriptions in the schema come from the XML docs shipped in `Microsoft.Extensions.Hosting`. `IDiagnosticsReport` |
+| Library                   | Section(s)                       | Shows                                                                                                                                                                                                                                                                                                               |
+| ------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SdkSample.Greetings`     | `Greetings`, `Farewell`          | the basics: a class with `[Description]` and `[Range]`, and a positional record with a `<param>` description. `IGreeter`                                                                                                                                                                                            |
+| `SdkSample.Notifications` | `Notifications`                  | a plain enum and a `[Flags]` enum, `TimeSpan`, `Uri`, `List<string>`, a `Dictionary<string, ChannelOptions>` of documented nested objects with `[Range]`, `[Description]`, `[EmailAddress]` and an `[Obsolete("Use Sender instead.")]` property. `INotifier`                                                        |
+| `SdkSample.Storage`       | `Storage`, `Archive`             | the generated factory path: a positional record with constructor defaults, and a class with a `required` member and `init`-only properties. `[RegularExpression]`, a `string[]`, dash-case (`Storage`) and underscore-case (`Archive`) keys through `KeyStyle`, and `[ConfigurationKeyName("keep_days")]`. `IStore` |
+| `SdkSample.Diagnostics`   | `Diagnostics`, `Host`, `Console` | types the library doesn't own, through `[assembly: DovetailConfiguration<HostOptions>("Host")]` and `[assembly: DovetailConfiguration<ConsoleLifetimeOptions>("Console")]`, whose descriptions in the schema come from the XML docs shipped in `Microsoft.Extensions.Hosting`. `IDiagnosticsReport`                 |
 
-`SdkSample.Storage` declares `KeyStyle = ConfigurationKeyStyle.Dash`, so its sections are `storage` and `archive` and its keys
-`root`, `max-file-size-mb`, `allowed-extensions` and so on; the binder reads those keys and the schema suggests them. The
-explicit `[ConfigurationKeyName("keep-days")]` wins over the `retention-days` the style would give. The other libraries keep
-the default PascalCase keys.
+`SdkSample.Storage` shows two key styles. `StorageOptions` declares `KeyStyle = ConfigurationKeyStyle.Dash`, so its section
+is `storage` and its keys `root`, `max-file-size-mb` and `compress`. `ArchiveOptions` declares
+`KeyStyle = ConfigurationKeyStyle.Underscore`: section `archive`, keys `name`, `allowed_extensions` and `keep_days`. The
+binder reads those keys and the schema suggests them. The explicit `[ConfigurationKeyName("keep_days")]` wins over the
+`retention_days` the style would give. The other libraries keep the declared PascalCase keys.
 
 Both hosts reference all four libraries. Each host's merged `obj/appsettings.schema.json` combines the sections of
 every one of them (plus SchemaStore's `Logging`, `Kestrel` and the rest of the stock settings).
@@ -120,9 +121,9 @@ curl http://127.0.0.1:5198/.well-known/dovetail/configuration-schema
     - Add `From: ops@example.com` under `Notifications`. The obsolete property is marked deprecated, with the
       message "Use Sender instead."
     - In `archive`, set `name: Not Valid`. It doesn't match the `[RegularExpression]`.
-    - Write `MaxFileSizeMb` under `storage`. `Storage` is declared in dash case, so only `max-file-size-mb` is known and the
-      PascalCase spelling is flagged as an unknown key (it would not bind either). The other libraries keep the default
-      PascalCase keys.
+    - Write `MaxFileSizeMb` under `storage`, or `AllowedExtensions` under `archive`. `Storage` is declared in dash case and
+      `Archive` in underscore case, so only `max-file-size-mb` and `allowed_extensions` are known; the PascalCase spellings
+      are flagged as unknown keys (they would not bind either). The other libraries keep their declared PascalCase keys.
     - Hover over `Host:ShutdownTimeout` or `Console:SuppressStatusMessages`. The text is Microsoft's own XML documentation
       for `HostOptions` and `ConsoleLifetimeOptions`, not something written in this sample.
 4. The same schema covers `appsettings*.json` and `appsettings*.toml` files placed in a host project.

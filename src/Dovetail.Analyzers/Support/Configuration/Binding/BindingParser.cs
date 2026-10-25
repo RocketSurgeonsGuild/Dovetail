@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 namespace Dovetail.Support.Configuration.Binding;
 
 /// <summary>Analyses an options type and every type reachable from it, the way Microsoft's binding generator does.</summary>
-internal sealed class BindingParser(Compilation compilation, BinderVersion version, KeyStyle keyStyle = KeyStyle.Pascal)
+internal sealed class BindingParser(Compilation compilation, BinderVersion version, KeyStyle keyStyle = KeyStyle.Undefined)
 {
     private const string CannotBindToConstructorParameter =
         "Cannot create instance of type '{0}' because one or more parameters cannot be bound to. Constructor parameters cannot be declared as in, out, or ref. Invalid parameters are: '{1}'";

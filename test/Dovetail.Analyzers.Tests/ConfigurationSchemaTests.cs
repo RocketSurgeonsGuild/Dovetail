@@ -735,6 +735,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
     [Test]
     [Arguments("Camel")]
     [Arguments("Dash")]
+    [Arguments("Underscore")]
     public async Task Spells_keys_in_the_declared_key_style(string style)
     {
         var result = await WithAnnotations()
@@ -812,7 +813,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
     }
 
     [Test]
-    public async Task Keeps_the_default_key_style_as_declared()
+    public async Task Treats_the_undefined_and_pascal_styles_alike_for_ordinary_names()
     {
         const string members = """
             public string Message { get; set; } = "";
@@ -825,7 +826,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                              + $$"""
                                  namespace Sample;
 
-                                 [DovetailConfiguration("Default")]
+                                 [DovetailConfiguration("Default", KeyStyle = ConfigurationKeyStyle.Undefined)]
                                  public class DefaultOptions { {{members}} }
 
                                  [DovetailConfiguration("Explicit", KeyStyle = ConfigurationKeyStyle.Pascal)]
@@ -839,10 +840,74 @@ public class ConfigurationSchemaTests() : GeneratorTest()
 
         result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
         var fragments = Fragments(result);
-        // The same declarations produce the same schema: a style of Pascal is what's used without one.
+        // Ordinary C# names are Pascal case already, so Undefined and Pascal spell the same keys. That is also why the Nested type
+        // they share is not a conflict: the binder reads the same keys either way.
+        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
         fragments["Explicit"].ShouldBe(fragments["Default"].Replace("\"title\":\"Default\"", "\"title\":\"Explicit\"", StringComparison.Ordinal));
         fragments["Default"].ShouldContain("\"RetryCount\"");
         fragments["Default"].ShouldContain("\"WaitTime\"");
+    }
+
+    [Test]
+    public async Task Respells_only_for_pascal_when_the_declared_name_starts_in_lower_case()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(ConfigurationKeyStyleSources.LowerCaseNames)
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Rejects_a_type_that_undefined_and_pascal_spell_differently()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               [DovetailConfiguration("First")]
+                               public class FirstOptions { public LowerNested Inner { get; set; } = new(); }
+
+                               [DovetailConfiguration("Second", KeyStyle = ConfigurationKeyStyle.Pascal)]
+                               public class SecondOptions { public LowerNested Inner { get; set; } = new(); }
+
+                               public class LowerNested { public int waitTime { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        diagnostics.Select(z => z.Id).ShouldBe(["DT0016"]);
+        Fragments(result).Keys.ShouldBe(["First"]);
+    }
+
+    [Test]
+    public async Task Derives_underscore_section_names()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Underscore)]
+                               public class HttpClientOptions { public int MaxConnections { get; set; } }
+
+                               [DovetailConfiguration("Explicit:Section", KeyStyle = ConfigurationKeyStyle.Underscore)]
+                               public class ExplicitOptions { public int MaxConnections { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        Fragments(result).Keys.ShouldBe(["http_client", "Explicit:Section"], ignoreOrder: true);
+        Fragments(result)["http_client"].ShouldContain("\"max_connections\"");
     }
 
     [Test]

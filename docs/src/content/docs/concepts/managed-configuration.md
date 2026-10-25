@@ -76,46 +76,57 @@ There is no prefix. A name that would become empty after stripping the suffix (a
 ### Key style
 
 `KeyStyle` on `[DovetailConfiguration]` (and on `DovetailConfiguration<T>`) picks how the keys of the section are spelled.
-The default is `Pascal`, which is what every declaration without a `KeyStyle` already gets. The style is set per
-attribute; there is no assembly-wide or MSBuild default.
+It is set per attribute; there is no assembly-wide or MSBuild default. There are five values:
 
-| `KeyStyle` | `RetryCount`  | `HTTPServer`  | `Level2Cache`  | `HttpClientOptions` section |
-| ---------- | ------------- | ------------- | -------------- | --------------------------- |
-| `Pascal`   | `RetryCount`  | `HTTPServer`  | `Level2Cache`  | `HttpClient`                |
-| `Camel`    | `retryCount`  | `httpServer`  | `level2Cache`  | `httpClient`                |
-| `Dash`     | `retry-count` | `http-server` | `level2-cache` | `http-client`               |
+| `KeyStyle`   | What the canonical key is                            | `MaxFileSizeMb`    | `HTTPServer`  | `HttpClientOptions` section |
+| ------------ | ---------------------------------------------------- | ------------------ | ------------- | --------------------------- |
+| `Undefined`  | The declared name exactly as written. The default.   | `MaxFileSizeMb`    | `HTTPServer`  | `HttpClient`                |
+| `Pascal`     | The declared name with its first letter upper-cased. | `MaxFileSizeMb`    | `HTTPServer`  | `HttpClient`                |
+| `Camel`      | Lower camel case (`JsonNamingPolicy.CamelCase`).     | `maxFileSizeMb`    | `httpServer`  | `httpClient`                |
+| `Dash`       | Lower-case words joined with `-` (`KebabCaseLower`). | `max-file-size-mb` | `http-server` | `http-client`               |
+| `Underscore` | Lower-case words joined with `_` (`SnakeCaseLower`). | `max_file_size_mb` | `http_server` | `http_client`               |
 
 ```csharp
-[DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
-public class HttpClientOptions // section "http-client"
+[DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Underscore)]
+public class HttpClientOptions // section "http_client"
 {
-    public int RetryCount { get; set; } // key "retry-count"
-    public RetryPolicy Retry { get; set; } = new(); // "retry:max-attempts" through RetryPolicy.MaxAttempts
+    public int MaxFileSizeMb { get; set; } // key "max_file_size_mb"
+    public RetryPolicy Retry { get; set; } = new(); // "retry:max_attempts" through RetryPolicy.MaxAttempts
 }
 ```
 
+- **`Undefined` respells nothing.** The binder literal, the schema's `properties` key, the strict closing of the section
+  and the derived section path (after the suffix is stripped) are the names as declared. Configuration keys are
+  case-insensitive, so data in any casing binds, as long as the letters are right: `maxfilesizemb`, `MaxFileSizeMb` and
+  `MAXFILESIZEMB` are the same key. Dashes and underscores are other letters, so `max-file-size-mb` does not match
+  `MaxFileSizeMb`.
+- **`Pascal` is an explicit style.** It upper-cases the first letter of a declared name. C# property names already start
+  in upper case, so for them `Undefined` and `Pascal` give identical output; they differ for a member declared as
+  `myKey`, which stays `myKey` under `Undefined` and becomes `MyKey` under `Pascal`.
 - **What it covers.** The key of every bound property and constructor parameter of the options type and of every object
   type nested in it (in lists and dictionary values too). The generated binder reads those keys, and the schema uses them
   for `properties`, the case-insensitive `patternProperties` twins and the strict `propertyNames`.
 - **What it leaves alone.** Dictionary keys, enum values and every other piece of data are never restyled, and neither
   is an explicit section string (`"Http:Retry"` is used as written, segment by segment).
-- **Word splitting** is `System.Text.Json`'s: `Camel` is `JsonNamingPolicy.CamelCase` and `Dash` is
-  `JsonNamingPolicy.KebabCaseLower`, so `HTTPServer` is `httpServer` and `http-server`, and `Http2Enabled` is
-  `http2Enabled` and `http2-enabled`. `Pascal` only upper-cases the first letter of the declared name.
+- **Word splitting** is `System.Text.Json`'s: `Camel` is `JsonNamingPolicy.CamelCase`, `Dash` is
+  `JsonNamingPolicy.KebabCaseLower` and `Underscore` is `JsonNamingPolicy.SnakeCaseLower`, so `HTTPServer` is
+  `httpServer`, `http-server` and `http_server`, and `Http2Enabled` is `http2Enabled`, `http2-enabled` and
+  `http2_enabled`.
 - **`[ConfigurationKeyName]` wins.** An explicit key name is used verbatim, in every style.
 - **Derived section names** follow the style, after the `Options`, `Settings`, `Configuration` or `Config` suffix is
   removed: `GreetingsOptions` is `Greetings`, `greetings` and `greetings`; `HttpClientOptions` is `HttpClient`,
-  `httpClient` and `http-client`.
-- **Case.** Configuration keys ignore case, so `Camel` against `Pascal` only changes the spelling the schema suggests;
-  `retryCount` and `RetryCount` bind the same value. `Dash` changes the key the binder reads: a value written as
-  `RetryCount` no longer binds (`retry-count` does), and the schema's `patternProperties` only accept the dash keys in
-  any case.
-- **One style per type.** The generated binder exists once for each type, so a type reached from sections of different
-  styles, such as a `RetryOptions` used by a camel section and a dash section, can't be bound correctly. The later
-  declaration is reported as [`DT0016`](#diagnostics) and produces nothing, the same way as `DT0015`. Use the same
-  `KeyStyle` for every section that reaches the type, or give the shared type `[ConfigurationKeyName]` attributes (a type
-  whose keys don't depend on the style isn't a conflict). Sections with `RegisterOptions = false` bind nothing, so they
-  can't conflict.
+  `httpClient`, `http-client` and `http_client`.
+- **Case.** Because keys ignore case, `Camel` against `Undefined` or `Pascal` only changes the spelling the schema
+  suggests; `maxFileSizeMb` and `MaxFileSizeMb` bind the same value. `Dash` and `Underscore` change the letters the
+  binder reads: a value written as `MaxFileSizeMb` no longer binds (`max-file-size-mb` or `max_file_size_mb` does), and the
+  schema's `patternProperties` only accept those keys in any case.
+- **One spelling per type.** The generated binder exists once for each type, so a type reached from sections that spell
+  its keys differently, such as a `RetryOptions` used by a camel section and a dash section, can't be bound correctly.
+  The later declaration is reported as [`DT0016`](#diagnostics) and produces nothing, the same way as `DT0015`. The
+  comparison is of the effective keys, not of the style names: `Undefined` and `Pascal` do not conflict on ordinary
+  names, which spell the same keys, but do on a member declared in lower case. Use the same `KeyStyle` for every section
+  that reaches the type, or give the shared type `[ConfigurationKeyName]` attributes (a type whose keys don't depend on
+  the style isn't a conflict). Sections with `RegisterOptions = false` bind nothing, so they can't conflict.
 
 ### One section per type
 
