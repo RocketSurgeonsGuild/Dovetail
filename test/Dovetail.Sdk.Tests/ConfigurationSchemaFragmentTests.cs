@@ -1,3 +1,5 @@
+using Microsoft.Build.Utilities.ProjectCreation;
+
 namespace Dovetail.Sdk.Tests;
 
 /// <summary>
