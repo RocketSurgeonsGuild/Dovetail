@@ -38,12 +38,20 @@
         the WebAssembly boot manifest).
     -->
     <CopyDebugSymbolFilesFromPackages>false</CopyDebugSymbolFilesFromPackages>
+    <!--
+        The generated host code calls Uno.Extensions.Hosting's IApplicationBuilder.Build(), which Uno marks as not trim-safe
+        (RequiresUnreferencedCode); the WebAssembly head turns on the trim analyzers, so IL2026 would be reported for it.
+    -->
+    <NoWarn Condition="$(TargetFramework.EndsWith('browserwasm'))">$(NoWarn);IL2026</NoWarn>
     <CopyDocumentationFilesFromPackages>false</CopyDocumentationFilesFromPackages>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Dovetail.Hosting.Uno\Dovetail.Hosting.Uno.csproj" />
     <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+    <!-- Uno brings in 10.0.12 of both transitively, which have known vulnerabilities (NU1902/NU1903); 10.0.13 fixes them. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
 
     <DovetailHost
       Include="Uno"

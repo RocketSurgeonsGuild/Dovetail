@@ -18,7 +18,7 @@
       DovetailConfigurationSchema=false                    no schema files at all.
       DovetailConfigurationSchemaHost=true|false           overrides which projects are hosts: by default test projects
                                                            (IsTestProject), and applications (Dovetail.Sdk's detection, or
-                                                           OutputType Exe/WinExe without the SDK).
+                                                           OutputType Exe/WinExe or an Android app without the SDK).
       DovetailConfigurationSchemaStrict=false              leaves Dovetail's sections open (no propertyNames) in the host file.
       DovetailConfigurationSchemaIncludeSchemaStore=false  leaves SchemaStore's appsettings schema out of the host file.
 
@@ -46,7 +46,7 @@
       <_DovetailConfigurationSchemaIsHost>$(DovetailConfigurationSchemaHost)</_DovetailConfigurationSchemaIsHost>
       <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == '' and '$(IsTestProject)' == 'true'">true</_DovetailConfigurationSchemaIsHost>
       <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == ''">$(_DovetailApplicationDetected)</_DovetailConfigurationSchemaIsHost>
-      <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">true</_DovetailConfigurationSchemaIsHost>
+      <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true')">true</_DovetailConfigurationSchemaIsHost>
 
       <_DovetailConfigurationSchemaRole>None</_DovetailConfigurationSchemaRole>
       <_DovetailConfigurationSchemaRole Condition="'$(DovetailConfigurationSchema)' != 'false' and '$(_DovetailConfigurationSchemaIsHost)' == 'true'">Host</_DovetailConfigurationSchemaRole>

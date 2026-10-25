@@ -17,13 +17,14 @@
       Whether the generator emits this assembly's Imports class (ImportDovetailAssembly) and advertises its joints to
       referencing assemblies (ExportDovetailAssembly). Dovetail.Sdk sets both during host detection, which runs before
       this file; these defaults cover projects that don't use the SDK, including ones that only get Dovetail
-      transitively: test projects import but don't export, applications (Exe or WinExe) do both, libraries only export.
+      transitively: test projects import but don't export, applications (Exe, WinExe or an Android app) do both, libraries only export.
   -->
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
     <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">false</ExportDovetailAssembly>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">
+  <!-- The .NET for Android SDK rewrites an app's OutputType from Exe to Library, so an Android app is recognised by AndroidApplication. -->
+  <PropertyGroup Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true'">
     <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
     <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
   </PropertyGroup>
