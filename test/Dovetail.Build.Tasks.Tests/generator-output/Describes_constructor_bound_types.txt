@@ -1,4 +1,4 @@
-﻿## Connection
+## Connection
 {
   "type": "object",
   "title": "Connection",

@@ -1,4 +1,4 @@
-﻿## Hosting
+## Hosting
 {
   "type": "object",
   "title": "Hosting",
