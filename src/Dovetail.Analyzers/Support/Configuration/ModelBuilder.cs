@@ -807,6 +807,8 @@ internal sealed class ModelBuilder
 
     private static string? Literal(object value, SchemaNode node) => value switch
     {
+        // An empty string tells an editor nothing (the description hint would read "Default: ."), so it is not a default.
+        string { Length: 0 } => null,
         string text when node.Kind == SchemaKind.String && node.EnumValues.IsEmpty => JsonSchemaWriter.String(text),
         char character when node.Kind == SchemaKind.String => JsonSchemaWriter.String(character.ToString()),
         bool boolean when node.Kind == SchemaKind.Boolean => boolean ? "true" : "false",

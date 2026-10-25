@@ -444,6 +444,44 @@ public class ConfigurationSchemaTests() : GeneratorTest()
     }
 
     [Test]
+    public async Task Skips_empty_string_defaults()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               [DovetailConfiguration]
+                               public class BlankOptions
+                               {
+                                   /// <summary>Who to greet.</summary>
+                                   public string Name { get; set; } = "";
+
+                                   public string Greeting { get; set; } = "Hi";
+                               }
+
+                               [DovetailConfiguration]
+                               public record BlankRecordOptions(string Name = "", string Greeting = "Hi");
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        foreach (var section in new[] { "Blank", "BlankRecord" })
+        {
+            using var document = JsonDocument.Parse(Fragments(result)[section]);
+            var properties = document.RootElement.GetProperty("properties");
+            var name = properties.GetProperty("Name");
+            name.TryGetProperty("default", out _).ShouldBeFalse(section);
+            ( name.TryGetProperty("description", out var description) ? description.GetString() ?? "" : "" ).ShouldNotContain("Default:", Case.Sensitive, section);
+            properties.GetProperty("Greeting").GetProperty("default").GetString().ShouldBe("Hi", section);
+            properties.GetProperty("Greeting").GetProperty("description").GetString().ShouldContain("Default: Hi.", Case.Sensitive, section);
+        }
+    }
+
+    [Test]
     public async Task Rejects_a_type_configured_by_both_the_class_and_the_assembly_form()
     {
         var result = await WithAnnotations()
