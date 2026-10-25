@@ -1,4 +1,4 @@
-﻿## Derived
+## Derived
 {
   "type": "object",
   "title": "Derived",

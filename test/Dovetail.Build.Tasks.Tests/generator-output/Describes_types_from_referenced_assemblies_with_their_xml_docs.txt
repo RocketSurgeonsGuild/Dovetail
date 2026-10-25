@@ -1,4 +1,4 @@
-﻿## Client
+## Client
 {
   "type": "object",
   "title": "Client",

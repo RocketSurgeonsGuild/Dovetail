@@ -1,5 +1,4 @@
 using Dovetail.Attributes;
-using Dovetail.Configuration.Aot.Tests.Rivets;
 using Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

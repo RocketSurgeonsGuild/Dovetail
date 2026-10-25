@@ -15,7 +15,18 @@
     }
   ],
   "yaml.schemas": {
-    "./SdkSample.Worker/obj/appsettings.schema.json": ["SdkSample.Worker/appsettings*.yaml", "SdkSample.Worker/appsettings*.yml", "SdkSample.Greetings/appsettings*.yaml", "SdkSample.Greetings/appsettings*.yml", "SdkSample.Notifications/appsettings*.yaml", "SdkSample.Notifications/appsettings*.yml", "SdkSample.Storage/appsettings*.yaml", "SdkSample.Storage/appsettings*.yml", "SdkSample.Diagnostics/appsettings*.yaml", "SdkSample.Diagnostics/appsettings*.yml"],
+    "./SdkSample.Worker/obj/appsettings.schema.json": [
+      "SdkSample.Worker/appsettings*.yaml",
+      "SdkSample.Worker/appsettings*.yml",
+      "SdkSample.Greetings/appsettings*.yaml",
+      "SdkSample.Greetings/appsettings*.yml",
+      "SdkSample.Notifications/appsettings*.yaml",
+      "SdkSample.Notifications/appsettings*.yml",
+      "SdkSample.Storage/appsettings*.yaml",
+      "SdkSample.Storage/appsettings*.yml",
+      "SdkSample.Diagnostics/appsettings*.yaml",
+      "SdkSample.Diagnostics/appsettings*.yml"
+    ],
     "./SdkSample.Web/obj/appsettings.schema.json": ["SdkSample.Web/appsettings*.yaml", "SdkSample.Web/appsettings*.yml"]
   },
   "evenBetterToml.schema.associations": {

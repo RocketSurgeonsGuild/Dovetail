@@ -1,4 +1,4 @@
-﻿## Annotation
+## Annotation
 {
   "type": "object",
   "title": "Annotation",
