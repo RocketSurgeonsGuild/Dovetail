@@ -454,16 +454,29 @@ public sealed class SdkTestProject : IDisposable
     /// <see cref="VerifyEvaluation"/> can't show - Verify drops their empty metadata - and for results that come from a
     /// package's own props/targets, which are only imported once restore has generated nuget.g.props/targets.
     /// </summary>
-    public async Task<IReadOnlyList<string>> EvaluateItemIdentities(string relativePath, string itemType)
+    public async Task<IReadOnlyList<string>> EvaluateItemIdentities(string relativePath, string itemType) =>
+        (await EvaluateItems(relativePath, itemType)).Select(z => z["Identity"]).ToArray();
+
+    /// <summary>
+    /// Like <see cref="EvaluateItemIdentities"/>, but returns every item with its metadata (<c>Identity</c> included), and runs
+    /// <c>dotnet msbuild</c> with <paramref name="msbuildArguments"/> (say <c>-t:ResolveAssemblyReferences</c>, to see the items
+    /// targets add, or <c>-p:Name=value</c>).
+    /// </summary>
+    public async Task<IReadOnlyList<IReadOnlyDictionary<string, string>>> EvaluateItems(string relativePath, string itemType, string msbuildArguments = "")
     {
         var projectDirectory = Path.Combine(Directory, relativePath);
         // Restored separately: `dotnet msbuild -restore` combined with -getItem doesn't restore at all.
         await RunDotnet("restore", projectDirectory);
-        var stdout = await RunDotnet($"msbuild -getItem:{itemType}", projectDirectory);
+        var stdout = await RunDotnet($"msbuild {msbuildArguments} -getItem:{itemType}", projectDirectory);
 
         using var document = System.Text.Json.JsonDocument.Parse(stdout);
         return document.RootElement.GetProperty("Items").TryGetProperty(itemType, out var values)
-            ? values.EnumerateArray().Select(z => z.GetProperty("Identity").GetString()!).ToArray()
+            ? values.EnumerateArray()
+               .Select(
+                    item => (IReadOnlyDictionary<string, string>)item.EnumerateObject()
+                       .ToDictionary(metadata => metadata.Name, metadata => metadata.Value.GetString() ?? "")
+                )
+               .ToArray()
             : [];
     }
 
