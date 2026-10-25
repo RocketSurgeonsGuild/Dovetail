@@ -107,9 +107,9 @@ internal sealed class EditorSettingsMappings(string schemaUrl, string jsonFileMa
         while (common < fromParts.Length && common < toParts.Length && string.Equals(fromParts[common], toParts[common], comparison)) common++;
 
         // Nothing in common, not even the root: a different drive (or a UNC share).
-        if (common == 0 && Path.DirectorySeparatorChar == '\\' && fromParts.Length > 0 && toParts.Length > 0) return null;
-
-        return string.Join("/", Enumerable.Repeat("..", fromParts.Length - common).Concat(toParts.Skip(common)));
+        return common == 0 && Path.DirectorySeparatorChar == '\\' && fromParts.Length > 0 && toParts.Length > 0
+            ? null
+            : string.Join("/", Enumerable.Repeat("..", fromParts.Length - common).Concat(toParts.Skip(common)));
 
         static string[] Split(string path) => path.Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
     }

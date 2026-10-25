@@ -101,9 +101,8 @@ internal sealed class JsoncParser
 
         var root = parser.ParseValue(0);
         parser.SkipTrivia();
-        if (parser._position != text.Length) throw parser.Error("unexpected content after the root value");
 
-        return new(text, root);
+        return parser._position == text.Length ? new(text, root) : throw parser.Error("unexpected content after the root value");
     }
 
     private FormatException Error(string message) => new($"{message} (at offset {_position})");
@@ -141,16 +140,17 @@ internal sealed class JsoncParser
 
     private JsoncNode ParseValue(int depth)
     {
-        if (_position >= _text.Length) throw Error("unexpected end of text");
-        if (depth > MaxDepth) throw Error("nested too deeply");
-
-        return _text[_position] switch
-        {
-            '{' => ParseObject(depth),
-            '[' => ParseArray(depth),
-            '"' => ParseString(),
-            _ => ParseLiteral(),
-        };
+        return _position >= _text.Length
+            ? throw Error("unexpected end of text")
+            : depth > MaxDepth
+                ? throw Error("nested too deeply")
+                : _text[_position] switch
+                {
+                    '{' => ParseObject(depth),
+                    '[' => ParseArray(depth),
+                    '"' => ParseString(),
+                    _ => ParseLiteral(),
+                };
     }
 
     private JsoncObject ParseObject(int depth)
@@ -184,13 +184,9 @@ internal sealed class JsoncParser
                 _position++;
                 trailingComma = _position;
             }
-            else if (_position < _text.Length && _text[_position] == '}')
-            {
-                trailingComma = -1;
-            }
             else
             {
-                throw Error("expected ',' or '}'");
+                trailingComma = _position < _text.Length && _text[_position] == '}' ? -1 : throw Error("expected ',' or '}'");
             }
         }
     }
@@ -218,13 +214,9 @@ internal sealed class JsoncParser
                 _position++;
                 trailingComma = _position;
             }
-            else if (_position < _text.Length && _text[_position] == ']')
-            {
-                trailingComma = -1;
-            }
             else
             {
-                throw Error("expected ',' or ']'");
+                trailingComma = _position < _text.Length && _text[_position] == ']' ? -1 : throw Error("expected ',' or ']'");
             }
         }
     }

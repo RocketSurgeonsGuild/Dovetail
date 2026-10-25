@@ -146,9 +146,9 @@ internal static class ConfigurationSchemaPipeline
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var declaration in declarations)
         {
-            yield return  declaration.TypeName is null || seen.Add(declaration.TypeName) 
+            yield return declaration.TypeName is null || seen.Add(declaration.TypeName)
                 ? declaration
-                :   new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationTypeDeclaredTwice, null, declaration.TypeName) with { Location = declaration.Location } }.ToEquatableArray());
+                : new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationTypeDeclaredTwice, null, declaration.TypeName) with { Location = declaration.Location } }.ToEquatableArray());
         }
     }
 

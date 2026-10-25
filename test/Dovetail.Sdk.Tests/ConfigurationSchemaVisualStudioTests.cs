@@ -48,7 +48,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         );
 
     private static string[] Identities(IReadOnlyList<IReadOnlyDictionary<string, string>> segments) =>
-        segments.Select(z => Path.GetFullPath(z["Identity"])).OrderBy(z => z, StringComparer.Ordinal).ToArray();
+        [.. segments.Select(z => Path.GetFullPath(z["Identity"])).OrderBy(z => z, StringComparer.Ordinal)];
 
     private static void ShouldAllMatchTheFilePattern(IReadOnlyList<IReadOnlyDictionary<string, string>> segments)
     {
@@ -169,7 +169,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
             identities.Count(z => IsPackageSchema(z, package)).ShouldBe(1);
         }
 
-        identities.ShouldBe(identities.Distinct().ToArray());
+        identities.Length.ShouldBe(identities.Distinct().Count());
         ShouldAllMatchTheFilePattern(segments);
         File.Exists(identities.Single(z => IsPackageSchema(z, packages[0]))).ShouldBeTrue();
     }

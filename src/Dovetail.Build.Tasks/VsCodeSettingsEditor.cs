@@ -67,7 +67,7 @@ internal static class VsCodeSettingsEditor
     {
         original ??= [];
         var hasBom = original.Length >= Utf8Bom.Length && original.Take(Utf8Bom.Length).SequenceEqual(Utf8Bom);
-        var body = hasBom ? original.Skip(Utf8Bom.Length).ToArray() : original;
+        var body = hasBom ? [.. original.Skip(Utf8Bom.Length)] : original;
         if (body.Length >= 2 && ( ( body[0] == 0xFF && body[1] == 0xFE ) || ( body[0] == 0xFE && body[1] == 0xFF ) ))
         {
             return Rejected("the file isn't UTF-8");
@@ -268,7 +268,7 @@ internal static class VsCodeSettingsEditor
 
             if (missing.Count > 0)
             {
-                Append(root.Start, root.End - 1, root.Members.Count == 0 ? -1 : root.Members[root.Members.Count - 1].Value.End, root.Members.Count == 0 ? -1 : root.Members[root.Members.Count - 1].NameStart, root.TrailingCommaEnd, missing.Select(key => (Func<string, bool, string>)( (indent, multiline) => new Renderer(newLine, _unit, multiline).Section(key, mappings, indent) )).ToArray());
+                Append(root.Start, root.End - 1, root.Members.Count == 0 ? -1 : root.Members[root.Members.Count - 1].Value.End, root.Members.Count == 0 ? -1 : root.Members[root.Members.Count - 1].NameStart, root.TrailingCommaEnd, [.. missing.Select(key => (Func<string, bool, string>)( (indent, multiline) => new Renderer(newLine, _unit, multiline).Section(key, mappings, indent) ))]);
             }
 
             return null;
@@ -355,7 +355,7 @@ internal static class VsCodeSettingsEditor
                         var wanted = mappings.YamlGlobs.Where(z => !present.Contains(z, StringComparer.Ordinal)).ToArray();
                         if (wanted.Length > 0)
                         {
-                            Append(globs.Start, globs.End - 1, globs.Items.Count == 0 ? -1 : globs.Items[globs.Items.Count - 1].End, globs.Items.Count == 0 ? -1 : globs.Items[globs.Items.Count - 1].Start, globs.TrailingCommaEnd, wanted.Select(glob => (Func<string, bool, string>)( (_, _) => Renderer.QuoteString(glob) )).ToArray());
+                            Append(globs.Start, globs.End - 1, globs.Items.Count == 0 ? -1 : globs.Items[globs.Items.Count - 1].End, globs.Items.Count == 0 ? -1 : globs.Items[globs.Items.Count - 1].Start, globs.TrailingCommaEnd, [.. wanted.Select(glob => (Func<string, bool, string>)( (_, _) => Renderer.QuoteString(glob) ))]);
                         }
 
                         return null;
