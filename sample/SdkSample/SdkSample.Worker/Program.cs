@@ -8,3 +8,4 @@ using var host = await builder.ConfigureDovetail();
 
 var greeter = host.Services.GetRequiredService<IGreeter>();
 Console.WriteLine(greeter.Greet("SdkSample.Worker"));
+Console.WriteLine(greeter.Farewell("SdkSample.Worker"));

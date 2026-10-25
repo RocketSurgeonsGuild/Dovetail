@@ -13,4 +13,5 @@ Dovetail is a joint-driven application wiring library for .NET. It uses a Roslyn
 
 <CardGrid>
   <LinkCard title="Custom Dovetails" href="/guides/custom-joints/" description="Learn how to create and distribute your own joints." />
+  <LinkCard title="Editor Setup" href="/guides/editor-setup/" description="Get completion and validation for your configuration files in VS Code, Visual Studio and Rider." />
 </CardGrid>

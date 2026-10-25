@@ -1,243 +1,313 @@
 ---
 title: Managed Configuration
-description: Author library configuration once and have it packaged, typed, and wired into any host application automatically.
-tags: [source-generator, configuration, msbuild]
+description: Declare a library's configuration as code and get typed options, a reflection-free binder, and a JSON Schema for editors, merged per application.
+tags: [source-generator, configuration, msbuild, json-schema]
 ---
-
-import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 # Managed Configuration
 
-Dovetail extends the same "compile-time discovery + generated wiring" approach it already uses for
-[Dovetail](./introduction) to **configuration**. A library drops an `appsettings`-style
-file into its project, and Dovetail takes care of the rest: packaging the file into the NuGet
-package, copying it into a same-solution host application during development, generating a
-strongly-typed configuration class, and registering it with `IOptions<T>` — all without a single
-line of hand-written binding code.
+A library that ships configuration describes it once, as a C# type. Dovetail's source generator reads that type and
+produces two things from the same model:
+
+- a **binder** that fills the type from `IConfiguration` and registers it as `IOptions<T>`, with no reflection, so it is
+  AOT and trimming safe;
+- a **JSON Schema** fragment that describes the type's section. The build merges the fragments of every referenced
+  library into one schema for the application, which editors use for completion, hover documentation and validation of
+  `appsettings.json`, YAML and TOML files. See [Editor setup](../guides/editor-setup).
+
+The library's default values still ship as an `appsettings` file, which Dovetail packs and copies into hosts
+([below](#shipping-default-values)).
 
 > [!NOTE]
-> This feature is opt-in. Existing Dovetail consumers see no behavior change until they enable it
-> (see [MSBuild Surface Reference](#msbuild-surface-reference) below).
+> The schema and the generated binder need C# 12 or later. In a project with an older `LangVersion` the generator emits
+> nothing and reports [`DT0006`](#diagnostics).
 
-## The problem this solves
+## Declaring a section
 
-Without a managed pipeline, a library that ships configuration has to:
-
-- Hand-author an options class that mirrors the config file's shape.
-- Hand-wire `IConfiguration` binding, usually in a `[Dovetail]`-decorated class.
-- Ensure the config file itself is actually packed into the NuGet package and lands next to the
-  consuming application at run time.
-
-Every library reinvents this, config keys drift from what's actually consumed, and there's no
-compile-time guarantee that a library's configuration surface is registered in the host at all.
-
-## Authoring configuration in a library
-
-Add a configuration file using the jointal `appsettings` naming pattern and Dovetail discovers
-it automatically — most libraries need zero explicit MSBuild declaration:
-
-```
-MyLibrary/
-├── appsettings.json
-├── appsettings.Development.json
-├── appsettings.local.json   # never packed, never committed — see below
-└── MyLibrary.csproj
-```
-
-If you need to include a file that doesn't match the jointal naming pattern, declare it
-explicitly with the `DovetailConfiguration` item:
-
-```xml
-<ItemGroup>
-  <DovetailConfiguration Include="settings/feature-flags.json" />
-</ItemGroup>
-```
-
-Supported formats are JSON, YAML (`.yaml`/`.yml`), and TOML.
-
-### Layering and precedence
-
-Files sharing a base name layer in ascending precedence, mirroring the familiar ASP.NET Core
-`appsettings.json` / `appsettings.{Environment}.json` pattern, with one addition:
-
-1. `appsettings.{ext}` — base configuration.
-2. `appsettings.{Environment}.{ext}` — environment-specific overrides.
-3. `appsettings.local.{ext}` — highest precedence, developer-machine-only overrides.
-
-`appsettings.local.{ext}` is a pseudo-environment layer that always applies on top of whichever
-environment is active. It is **never packed** into the NuGet package and Dovetail scaffolds a
-`.gitignore` entry for it by default, so it's safe to drop personal secrets, local ports, or
-feature toggles into it without fear of committing or shipping them.
-
-### Generated configuration class
-
-For each configuration file, Dovetail generates a `sealed partial class` **inside the owning
-library's own root namespace** — not the consuming application's — named after the file. For
-example, `appsettings.json` in `MyLibrary` generates `MyLibrary.AppSettingsConfiguration`.
-
-Generating the class in the owning library (rather than the consumer) avoids name collisions
-across libraries and lets the library bind and use its own configuration internally, in addition
-to exposing it to consumers.
-
-### Type inference
-
-Dovetail infers a specific CLR type for each leaf value based on its shape, applied in this order
-(first strict match wins):
-
-1. `TimeSpan` — duration-shaped strings (`d.hh:mm:ss[.fffffff]` / `hh:mm:ss`).
-2. `DateOnly` — ISO 8601 date-only (`yyyy-MM-dd`).
-3. `TimeOnly` — time-only, no date component (`HH:mm[:ss[.fff]]`).
-4. `DateTimeOffset` — ISO 8601 date+time, with or without an offset.
-5. Fallback — `bool`, `int`/`long`, `double`, else `string`.
-
-Each check is anchored to a strict format regex before attempting a parse, so values like
-`"14:30"` and `"2024-01-01"` resolve unambiguously instead of guessing.
-
-> [!TIP]
-> If inference guesses the "wrong" type for a value, regenerating the property as `string` and
-> parsing it yourself is the current escape hatch. A more targeted per-property override is being
-> tracked — see [open questions](#known-limitations--open-questions).
-
-### Opt-in NodaTime types
-
-If your library already references [NodaTime](https://nodatime.org/), you can opt the generator
-into emitting NodaTime types instead of the BCL equivalents:
-
-| Inferred shape | BCL type (default) | NodaTime type (opt-in) |
-| -------------- | ------------------ | ---------------------- |
-| Duration       | `TimeSpan`         | `Duration`             |
-| Date           | `DateOnly`         | `LocalDate`            |
-| Time           | `TimeOnly`         | `LocalTime`            |
-| Date + time    | `DateTimeOffset`   | `OffsetDateTime`       |
-
-Enabling the NodaTime property without an actual `NodaTime` reference is a compile-time error
-(`DOVETAIL_CFG002`) rather than a silent fallback to BCL types — a generated public API's shape
-should never depend on an easily-missed reference. NodaTime mode is a **per-library** decision:
-a library built with NodaTime types self-declares that fact, so a mismatch with a consumer that
-doesn't reference NodaTime surfaces as a compile error, not a runtime failure.
-
-## Consuming configuration from a host application
-
-Nothing extra is required in the host application beyond referencing the library. When a library
-declares configuration:
-
-- Its config file(s) are copied into the host's output directory at build time (when referenced
-  via a same-solution `ProjectReference`) or restored from the packed NuGet content (when
-  referenced as a package) — either way, the on-disk layout matches, so debug-time behavior
-  mirrors packaged behavior.
-- A generated, host-visible `DovetailConfigurationManifest` lists every referenced assembly that
-  contributes configuration and its relative config path, so the host can enumerate configuration
-  sources at build time instead of relying on joint alone.
-- The library's generated `IConfigurationJoint` is automatically included in the library's
-  exported joint set — you do **not** need to add `[Dovetail]` yourself, since
-  `IConfigurationJoint` instances are generator-authored, not user-decorated.
-- Standard `IOptions<T>` / `IOptionsMonitor<T>` resolve the generated configuration type once the
-  host application starts, and `IOptionsMonitor<T>` picks up file changes for reload, the same as
-  any other `Microsoft.Extensions.Configuration` source.
+Put `[DovetailConfiguration]` on the options class:
 
 ```c#
-public class MyService
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Dovetail.Attributes;
+
+/// <summary>Options for the greetings this library prints.</summary>
+[DovetailConfiguration]
+public sealed class GreetingsOptions
 {
-    private readonly IOptionsMonitor<MyLibrary.AppSettingsConfiguration> _options;
+    /// <summary>What the greeting says before the name.</summary>
+    [Description("The text that comes before the name, e.g. \"Hello\".")]
+    public string Message { get; set; } = "";
 
-    public MyService(IOptionsMonitor<MyLibrary.AppSettingsConfiguration> options)
-        => _options = options;
-
-    public void DoWork()
-    {
-        var current = _options.CurrentValue;
-        // ...
-    }
+    /// <summary>How many times the greeting is said.</summary>
+    [Range(1, 5)]
+    public int Repeat { get; set; } = 1;
 }
 ```
 
-### Validating configuration
+Consume it the usual way, with `IOptions<GreetingsOptions>`, `IOptionsSnapshot<T>` or `IOptionsMonitor<T>`. The
+generator also exports a joint (`DovetailConfigurationOptions`) that registers the binding in every host that references
+the assembly, so there is nothing to call. The [`SdkSample.Greetings`](https://github.com/RocketSurgeonsGuild/Dovetail/tree/main/sample/SdkSample/SdkSample.Greetings)
+project is a working example.
 
-`AddDovetailConfigurationOptions<TOptions>` returns the standard `OptionsBuilder<TOptions>`, so the
-usual validation calls chain straight onto it:
+### Types you don't own
 
-```c#
-services
-   .AddDovetailConfigurationOptions<MyLibrary.AppSettingsConfiguration>(configuration, "MyLibrary")
-   .Validate<AppSettingsConfigurationValidator>() // an IValidateOptions<AppSettingsConfiguration>
-   .ValidateOnStart();
-```
-
-On .NET 11, `OptionsBuilder<TOptions>` also accepts asynchronous validation, for checks that need I/O
-(a reachable endpoint, an existing database):
+To bind a type from another library, pass it on the assembly. This registers `HostOptions` under `Hosting`:
 
 ```c#
-services
-   .AddDovetailConfigurationOptions<MyLibrary.AppSettingsConfiguration>(configuration, "MyLibrary")
-   .Validate<IHttpClientFactory>(
-        static async (options, http, cancellationToken) =>
-        {
-            using var response = await http.CreateClient().GetAsync(options.Endpoint, cancellationToken);
-            return response.IsSuccessStatusCode;
-        },
-        "MyLibrary:Endpoint is not reachable"
-    )
-   .ValidateOnStart();
+[assembly: DovetailConfiguration("Hosting", typeof(HostOptions))]
 ```
 
-Asynchronous validators run while the host starts (`IHost.StartAsync`), through the built-in
-`IAsyncStartupValidator`. Keep these .NET 11 limits in mind:
+The assembly form always needs the type. Descriptions for third-party types come from the XML documentation file that
+ships with the package, when there is one.
 
-- Options that have only asynchronous validators can't be read synchronously before startup finishes.
-  Reading them throws an `OptionsValidationException`.
-- `IOptionsSnapshot<T>`, and `IOptionsMonitor<T>` after a reload, validate synchronously only. Keep a
-  synchronous validator too if those paths must reject bad values.
-- A custom startup validator should implement `IAsyncStartupValidator`. The synchronous
-  `IStartupValidator` is obsolete on .NET 11 (`SYSLIB0066`).
+### Section names
 
-None of this needs anything from Dovetail. It's the standard options pipeline that
-`AddDovetailConfigurationOptions` hands back.
+| Attribute                                      | Section                                                                                                                           |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `[DovetailConfiguration]`                      | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings`. |
+| `[DovetailConfiguration("Http:Retry")]`        | The path you give. `:` nests sections. Keys are case-insensitive.                                                                 |
+| `[assembly: DovetailConfiguration(typeof(T))]` | The same rule as the class form, applied to `T`.                                                                                  |
 
-### Transitive configuration
+There is no prefix. A name that would become empty after stripping the suffix (a class called `Options`) is an error
+([`DT0008`](#diagnostics)); give it a path.
 
-A library's own configuration dependencies flow to its dependents without redeclaration. If
-`LibraryA` references `LibraryB`, and `LibraryB` declares configuration, a host application that
-only references `LibraryA` still sees `LibraryB`'s configuration in its manifest and export set —
-the generator reuses the same reference-graph walk already used to flatten transitive
-[Dovetail exports](./source-generation).
+### Declaring a type under several sections
 
-## MSBuild Surface Reference
+`AllowMultiple` is on, so one type can describe several sections, from one assembly or from many. All of them bind into
+the type's one default `IOptions<T>`, **stacked**: sections apply in order of the attribute's `Order` property (lower
+first, default `0`), then by section path, so later sections override keys set by earlier ones. A path registered twice
+for the same type applies once. The schema shows the type under every section.
 
-| Property / Item                   | Default                            | Purpose                                                                                                                                                                                                                                                                                                                                                   |
-| --------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DovetailEnableConfiguration`     | `false`                            | Gates the entire managed-configuration pipeline for a project. Existing Dovetail consumers see no behavior change until this is set to `true` (or a format flag below is).                                                                                                                                                                                |
-| `DovetailEnableYamlConfiguration` | `true` when no other format is set | Adds the YAML configuration provider. Setting it to `true` also enables the pipeline.                                                                                                                                                                                                                                                                     |
-| `DovetailEnableJsonConfiguration` | `false`                            | Adds the JSON configuration provider. Setting it to `true` also enables the pipeline, and YAML is then no longer added by default.                                                                                                                                                                                                                        |
-| `DovetailEnableTomlConfiguration` | `false`                            | Adds the TOML configuration provider. Setting it to `true` also enables the pipeline, and YAML is then no longer added by default.                                                                                                                                                                                                                        |
-| `DovetailConfiguration` (item)    | Dovetailally globbed               | Declares a configuration file to include in the pipeline. Dovetailal `appsettings.{ext}` / `appsettings.{Environment}.{ext}` / `appsettings.local.{ext}` files (`.json`/`.yaml`/`.yml`/`.toml`) are discovered automatically — most projects don't need to add this item explicitly. Use it to include files that don't match the jointal naming pattern. |
-| NodaTime type-mode property       | `false`                            | Opts the generator into emitting [NodaTime](https://nodatime.org/) types (`LocalDate`, `LocalTime`, `OffsetDateTime`, `Duration`) instead of BCL equivalents. Requires an actual `NodaTime` package reference in the same project, or the generator reports `DOVETAIL_CFG002`.                                                                            |
+```c#
+[DovetailConfiguration("Defaults:Http")]
+[DovetailConfiguration("Services:Billing:Http", Order = 1)]
+public sealed class HttpOptions { /* ... */ }
+```
+
+Mutable classes go through the standard options pipeline (`IConfigureOptions<T>`), so your own `Configure<T>` and
+`PostConfigure<T>` calls keep working: ones registered before the first Dovetail registration for the type run first,
+ones registered after it run last.
+
+### `RegisterOptions` and `ValidateOnStart`
+
+| Property          | Default | Effect                                                                                                  |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Order`           | `0`     | Where the section applies when a type is stacked.                                                       |
+| `RegisterOptions` | `true`  | `false` only describes the section in the schema. Nothing is registered, so you bind the type yourself. |
+| `ValidateOnStart` | `false` | Validates the options when the host starts, instead of the first time they are read.                    |
+
+## Validation
+
+Dovetail never turns on `ValidateDataAnnotations`. `[Range]`, `[MinLength]` and the other annotations describe the
+schema, which is how editors flag a bad value; they are not enforced at run time. To enforce rules, write an
+`[OptionsValidator]` class, the options validation source generator from `Microsoft.Extensions.Options`:
+
+```c#
+[OptionsValidator]
+public sealed partial class GreetingsOptionsValidator : IValidateOptions<GreetingsOptions>;
+```
+
+Dovetail registers every such validator in the assembly for the option types it registers, with `TryAddEnumerable`, so
+it never duplicates one you added yourself. Add `ValidateOnStart = true` on the attribute and a bad configuration fails
+the host at startup.
+
+## Supported types
+
+The generator follows Microsoft's configuration binding source generator, not the serializer:
+
+- `string`, `bool`, every numeric type (including `Half`, `Int128` and `UInt128`), `char`, enums (any casing), `TimeSpan`,
+  `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid`, `Version`, `Uri`, `CultureInfo`, `byte[]`;
+- `Nullable<T>` of the above;
+- nested classes, structs and records, and recursive types (the schema uses `$ref`);
+- arrays, lists, sets and the other collection types the binder supports, and dictionaries with string, enum or integer
+  keys;
+- `object` and `IConfigurationSection`, which accept any value.
+
+A type with a `[TypeConverter]` is described as an object, because the binder ignores converters. A member the binder
+can't bind is left out of both the schema and the binder, with warning [`DT0009`](#diagnostics). `[ConfigurationKeyName]`
+renames a key, and from binder 11 `[ConfigurationIgnore]` leaves a member out.
+
+### Annotations that reach the schema
+
+| Source                                      | Schema                                                    |
+| ------------------------------------------- | --------------------------------------------------------- |
+| `[Description]`, else the XML `<summary>`   | `description`. For a record parameter, its `<param>`.     |
+| `[Range]`, length attributes                | `minimum`/`maximum`, `minLength`/`maxLength`, item counts |
+| `[RegularExpression]`                       | `pattern`, when the expression can be anchored            |
+| `[Url]`, `[EmailAddress]`                   | `format`                                                  |
+| `[Obsolete]`                                | `deprecated` and a deprecation message                    |
+| A constant initializer or parameter default | `default`                                                 |
+
+Ranges and defaults are also written into the description, since editors don't show them. The XML summary is read from
+the source whether or not `GenerateDocumentationFile` is on. `<inheritdoc />` and `<include>` produce no description.
+Annotations that JSON Schema can't express are dropped with [`DT0013`](#diagnostics).
+
+Fragments are permissive: nothing is `required` unless you set `<DovetailConfigurationSchemaRequired>true</DovetailConfigurationSchemaRequired>`,
+which marks `required` members, `[Required]` properties and value-type constructor parameters without defaults.
+
+## The generated binder
+
+Dovetail doesn't call Microsoft's binding generator. A source generator never sees another generator's output, so the
+calls in Dovetail's own code would not be intercepted. Instead it **ports** that generator: the parser, the type
+specifications and the emitter from dotnet/runtime (MIT), at tags `v10.0.13` and `v11.0.0-rc.2`. The rules follow the
+**major version of `Microsoft.Extensions.Configuration.Binder`** that the project references (version 11 when it
+references none), not the target framework, because a net10.0 application can reference Binder 11.
+
+What the two versions do differently:
+
+| Case                                           | Binder 10              | Binder 11                    |
+| ---------------------------------------------- | ---------------------- | ---------------------------- |
+| `Nullable<T>` set to `""`                      | value kept             | `null`                       |
+| String or object constructor parameter missing | throws                 | `null`                       |
+| Value-type constructor parameter set to `""`   | default                | throws                       |
+| Nullable or reference-type parameter missing   | throws                 | `null` (structs still throw) |
+| Parameter with a default, set to null          | `null`                 | the default                  |
+| Properties bound through the constructor       | bound again afterwards | not bound again              |
+| `[ConfigurationIgnore]`                        | ignored                | honoured, in the schema too  |
+
+The same data is bound three ways in the parity tests (Microsoft's generator, the reflection binder, Dovetail's) on both
+versions.
+
+### Records and other immutable types
+
+Types the options pipeline can't create (constructor parameters, `init`-only or `required` members) get a generated
+**options factory** instead of `IConfigureOptions<T>`. It creates the instance from the stacked sections, merged key by
+key, and still runs your validators:
+
+```c#
+[DovetailConfiguration]
+public sealed record FarewellOptions(string Message, [property: Range(0, 5)] int Exclamations);
+```
+
+### Where Dovetail differs from Microsoft's generator, on purpose
+
+1. **Object-initializer types.** Microsoft's generator never sets `init`-only members of a type with a parameterless
+   constructor, and can't create a type with `required` members (CS9035). Dovetail creates them with an object
+   initializer, then binds the rest. A missing key keeps the member's own initial value, as the reflection binder does;
+   a `required` member with no value gets `default`.
+2. **`required` members that can't be bound** (an unsupported type or `[ConfigurationIgnore]`) are set to `default!`, so
+   the generated code compiles. [`DT0009`](#diagnostics) reports the member.
+3. **Empty sections still produce an instance** for factory types. `Get<T>()` returns `null` there, but `IOptions<T>.Value`
+   can't be `null`. A missing required constructor parameter throws the first time the options are read.
+4. **No `NotSupportedException`s** and no `BindNonPublicProperties`.
+5. **Self-expanding generics** such as `class Node<T> { Node<Node<T>> Next; }` are treated as unsupported past a nesting
+   depth of 10 or 1,000 types, instead of making the analysis run forever. The schema reports
+   [`DT0012`](#diagnostics) for the same graphs.
+
+Microsoft's own quirks are kept. A positional record's extra `init`-only property is set to `default` when its key is
+missing, overriding its initializer, and Binder 10 binds constructor-bound collections twice.
+
+Registration also differs from `services.Configure<T>(section)` in that every section registered for a type, from any
+assembly, applies in one place in `Order`, and the configuration's reload token feeds `IOptionsMonitor<T>`. The
+`IConfiguration` is resolved from the container when the options are first created.
+
+## The schema
+
+### Library fragments
+
+Each assembly embeds one fragment per section as
+`[assembly: AssemblyMetadata("Dovetail.ConfigurationSchema.v1:<Section>", "<JSON Schema>")]`. Each fragment is a
+Draft-07 schema of the section's value, with every object type described once under `definitions`. Every key also has a
+case-insensitive `patternProperties` entry with the same schema, so `retries: 99` is checked even when written as
+`Retries`.
+
+A library project also writes the fragments as `ConfigurationSchema.json` (permissive, rooted at the configuration root
+like Aspire's) and packs it at the NuGet package root, so Visual Studio and other tools that understand Aspire's layout
+can use it. A library with no sections writes nothing.
+
+### The merged application schema
+
+Applications (detected by Dovetail.Sdk, or `OutputType` of `Exe` or `WinExe`) and test projects merge their own fragments
+and those of every referenced assembly into `obj/appsettings.schema.json`. The file is a stable path editors can point at,
+is copied to the output directory next to `appsettings.json`, and is always published. Hosts that embed their
+configuration (MAUI, Uno) keep it in `obj/` only. A host that targets several frameworks writes it from the first one.
+
+- **It is strict.** Each Dovetail section, and the object types it uses, accepts only its own keys. The check is a
+  case-insensitive `propertyNames` pattern rather than `additionalProperties: false`, so `message` is accepted and
+  `Mesage` is flagged, with an error that lists the known keys. The root, parents shared between sections, dictionaries
+  and sections declared by more than one assembly stay open for keys of other sources.
+- **It includes SchemaStore's `appsettings.json` schema**, embedded rather than referenced, so `Logging`, `Kestrel`
+  and `ConnectionStrings` complete too, online or offline. The copy ships with Dovetail and is refreshed each release (Apache-2.0).
+- **It is deterministic.** Sections compare ignoring case; when libraries spell a section differently, the
+  ordinal-smallest spelling is displayed. A section several assemblies declare is merged into one object. The same
+  references always produce a byte-identical file.
+
+| Property                                        | Default  | Effect                                                                         |
+| ----------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
+| `DovetailConfigurationSchema`                   | on       | `false` writes no schema files at all.                                         |
+| `DovetailConfigurationSchemaHost`               | detected | `true` or `false` overrides which projects count as hosts.                     |
+| `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail's sections open (no `propertyNames`) in the host file. |
+| `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore's schema out.                                       |
+| `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`, in the fragments.                 |
 
 ```xml
 <PropertyGroup>
-  <DovetailEnableConfiguration>true</DovetailEnableConfiguration>
-  <!-- Opt into NodaTime types for date/time/duration properties -->
-  <DovetailConfigurationUseNodaTime>true</DovetailConfigurationUseNodaTime>
+  <!-- Permissive: unknown keys under Dovetail sections aren't flagged -->
+  <DovetailConfigurationSchemaStrict>false</DovetailConfigurationSchemaStrict>
 </PropertyGroup>
-
-<ItemGroup>
-  <!-- Only needed for files that don't match the jointal appsettings naming pattern -->
-  <DovetailConfiguration Include="settings/feature-flags.json" />
-</ItemGroup>
 ```
 
 > [!NOTE]
-> The exact property name for the NodaTime opt-in is still settling as the feature lands; the
-> shape above reflects the current design and may be renamed before release. Check the
-> `Dovetail.Sdk` package's `.props`/`.targets` for the authoritative, currently-shipping name.
+> Editors flag a quoted number such as `"Timeout": "30"` as an incorrect type, although the .NET binder accepts it.
+> Dovetail keeps the schema strict about types so that ranges are always checked.
 
-## Known limitations / open questions
+The build target is `AfterTargets="CoreCompile"` and skips design-time builds. It writes only when its inputs change.
+Merging runs in a compiled MSBuild task (`Dovetail.Build.Tasks`) that reads the fragments with `System.Reflection.Metadata`,
+so no assembly is loaded and nothing is embedded in your application.
 
-A few design questions are still open and may change how this feature looks before it's finalized:
+### Serving the schema
 
-- Whether an explicit per-property type override is needed for cases where inference guesses wrong.
-- The exact generated-type naming joint when a library declares more than one configuration file.
-- Whether the host-visible manifest should also be emitted as a human-readable file (e.g. for
-  tooling/ops visibility) in addition to the generated type.
+With `DovetailConfigurationSchemaEndpoint` set to `true`, Dovetail.Hosting.Web maps
+`GET /.well-known/dovetail/configuration-schema`, which returns the merged schema. It is off by default.
+`DovetailConfigurationSchemaEndpointEnvironments` limits it to a list of environments. See [Editor setup](../guides/editor-setup#the-schema-endpoint).
 
-See the [managed configuration open questions](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/openspec/changes/dovetail-managed-configuration/open-questions.md)
-for the full list and current thinking on each.
+## Shipping default values
+
+Defaults still live in a normal `appsettings` file in the library. The SDK renames it, packs it, and loads it into the
+host's configuration, where the generated binder picks it up:
+
+```
+MyLibrary/
+├── appsettings.yaml
+├── appsettings.Development.yaml
+├── appsettings.local.yaml   # never packed, never committed
+└── MyLibrary.csproj
+```
+
+- `appsettings.{ext}` becomes `MyLibrary.{ext}` (`appsettings.Production.json` becomes `MyLibrary.Production.json`), so several
+  libraries can ship their own file into one output directory.
+- The files are packed under `contentFiles/any/any/configuration/`, copied to a same-solution host's output directory
+  through a `ProjectReference`, and restored from the package otherwise.
+- The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and
+  `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the
+  project ignores `appsettings.local.*`.
+- JSON, YAML and TOML are supported. Opt in with `DovetailEnableConfiguration`; YAML is the default format, and
+  `DovetailEnableJsonConfiguration` or `DovetailEnableTomlConfiguration` chooses another. Hosts with no file system
+  (MAUI, Uno) read copies embedded in the assembly: `DovetailEmbedConfiguration`.
+
+| Property                          | Default                            | Purpose                                                                                             |
+| --------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `DovetailEnableConfiguration`     | `false`                            | Turns the pipeline on. Existing consumers see no change until it or a format flag is set.           |
+| `DovetailEnableYamlConfiguration` | `true` when no other format is set | Adds the YAML provider. Setting it to `true` also enables the pipeline.                             |
+| `DovetailEnableJsonConfiguration` | `false`                            | Adds the JSON provider. Setting it to `true` also enables the pipeline, replacing the YAML default. |
+| `DovetailEnableTomlConfiguration` | `false`                            | Adds the TOML provider. Setting it to `true` also enables the pipeline, replacing the YAML default. |
+| `DovetailPackConfiguration`       | `true`, `false` if not packable    | Packs the library's configuration files into the package.                                           |
+
+## Diagnostics
+
+| Id       | Severity | Meaning                                                                                                                     |
+| -------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `DT0006` | Warning  | The project's C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                 |
+| `DT0007` | Error    | The type can't be described as configuration, for example an assembly attribute without a type.                             |
+| `DT0008` | Error    | The section isn't valid for the type: empty, or a name that is empty once the suffix is removed.                            |
+| `DT0009` | Warning  | A member has a type configuration binding doesn't support. It is left out of the schema and the binder.                     |
+| `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                     |
+| `DT0011` | Error    | The type can't be created from configuration, for example an ambiguous constructor or a parameter that matches no property. |
+| `DT0012` | Warning  | The type graph uses too many distinct types, so the schema stops describing them at the member named.                       |
+| `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                |
+| `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                       |
+
+The generator runs in every project that references a Dovetail package, including those that only reference one
+indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under
+[Source Generation](./source-generation).

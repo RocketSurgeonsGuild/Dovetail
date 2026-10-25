@@ -1,2 +1,7 @@
 Greetings:
-    Message: Hello from SdkSample.Greetings.yaml
+  Message: Hello from SdkSample.Greetings.yaml
+  Repeat: 1
+
+Farewell:
+  Message: Goodbye from SdkSample.Greetings.yaml
+  Exclamations: 1

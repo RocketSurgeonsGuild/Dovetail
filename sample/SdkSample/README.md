@@ -12,18 +12,23 @@ with the SDK version pinned in [`global.json`](global.json) under `msbuild-sdks`
 
 ## What it exercises
 
-| Project               | Shape                                | The SDK should...                                                                                                         |
-| --------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `SdkSample.Greetings` | plain class library                  | inject `Dovetail`, export its `[DovetailExport]` joints, rename `appsettings.yaml` to `SdkSample.Greetings.yaml` and generate a YAML configuration joint for it |
-| `SdkSample.Worker`    | `OutputType=Exe`                     | detect a `HostApplicationBuilder` host, inject `Dovetail.Hosting`, generate `ConfigureDovetail()`                         |
-| `SdkSample.Web`       | `Microsoft.NET.Sdk.Web`              | detect a `WebApplicationBuilder` host, inject `Dovetail.Hosting.Web`, generate `ConfigureDovetail()`                      |
+| Project               | Shape                   | The SDK should...                                                                                                                                               |
+| --------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SdkSample.Greetings` | plain class library     | inject `Dovetail`, export its `[DovetailExport]` joints, rename `appsettings.yaml` to `SdkSample.Greetings.yaml` and generate a YAML configuration joint for it |
+| `SdkSample.Worker`    | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
+| `SdkSample.Web`       | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Dovetail.Hosting.Web`, generate `ConfigureDovetail()`                                                            |
 
 `DovetailEnableConfiguration=true` (set in `Directory.Build.props`) additionally injects
 `Dovetail.Configuration.Yaml` into every project. YAML is the default format; setting
 `DovetailEnableJsonConfiguration` or `DovetailEnableTomlConfiguration` instead opts into that format.
 
-Both hosts resolve `IGreeter`, which is registered by the library's exported joint using the
-`Greetings:Message` value from the library's YAML file.
+Both hosts resolve `IGreeter`, which is registered by the library's exported joint. It reads
+`GreetingsOptions` (a class, section `Greetings`) and `FarewellOptions` (a positional record, section
+`Farewell`) through `IOptions<T>`; both are declared with `[DovetailConfiguration]`, bound from the library's
+YAML file by Dovetail's generated binder, and described in each host's merged
+`obj/appsettings.schema.json`. [`.vscode/settings.json`](.vscode/settings.json) maps those schemas to the
+`appsettings*` files for JSON, YAML and TOML; build a host once, then open
+`SdkSample.Greetings/appsettings.yaml` in VS Code to try completion.
 
 ## Running it
 
@@ -41,6 +46,7 @@ Expected worker output:
 
 ```text
 Hello from SdkSample.Greetings.yaml, SdkSample.Worker!
+Goodbye from SdkSample.Greetings.yaml, SdkSample.Worker!
 ```
 
 Rerun the pack step after changing anything under `src/`. It also clears the Dovetail entries from
