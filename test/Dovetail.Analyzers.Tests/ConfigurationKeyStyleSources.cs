@@ -64,7 +64,7 @@ internal static class ConfigurationKeyStyleSources
           {
               public required string DisplayName { get; set; }
               public int RetryLimit { get; init; } = 5;
-              public InitOnlyDetails MoreDetails { get; init; } = new();
+              public InitOnlyDetails? MoreDetails { get; init; }
           }
 
           public class InitOnlyDetails

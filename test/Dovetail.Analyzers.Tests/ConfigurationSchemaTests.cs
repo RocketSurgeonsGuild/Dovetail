@@ -757,17 +757,14 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                                [DovetailConfiguration]
                                public class GreetingsOptions { public string? Message { get; set; } }
 
-                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Camel)]
-                               public class GreetingsSettings { public string? Message { get; set; } }
-
-                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
-                               public class GreetingsConfig { public string? Message { get; set; } }
-
                                [DovetailConfiguration]
                                public class HttpClientOptions { public string? BaseAddress { get; set; } }
 
                                [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Camel)]
                                public class HttpClientSettings { public string? BaseAddress { get; set; } }
+
+                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Camel)]
+                               public class OpenAIConfig { public string? ApiKey { get; set; } }
 
                                [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
                                public class HttpClientConfiguration { public string? BaseAddress { get; set; } }
@@ -843,7 +840,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
         var fragments = Fragments(result);
         // The same declarations produce the same schema: a style of Pascal is what's used without one.
-        fragments["Explicit"].ShouldBe(fragments["Default"].Replace("DefaultOptions", "ExplicitOptions", StringComparison.Ordinal));
+        fragments["Explicit"].ShouldBe(fragments["Default"].Replace("\"title\":\"Default\"", "\"title\":\"Explicit\"", StringComparison.Ordinal));
         fragments["Default"].ShouldContain("\"RetryCount\"");
         fragments["Default"].ShouldContain("\"WaitTime\"");
     }
