@@ -502,12 +502,39 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
+        // Two assembly attributes for different types must compile (the attribute has to allow several uses on the assembly).
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
         var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
         diagnostics.Select(z => z.Id).ShouldBe(["DT0015"]);
         diagnostics[0].GetMessage(CultureInfo.InvariantCulture).ShouldBe("'Sample.TwiceOptions' is configured more than once; a type can have only one [DovetailConfiguration]");
         // The assembly attribute is the one reported, and only the class declaration produces a fragment.
         diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).ShouldContain("\"Second\"");
         Fragments(result).Keys.ShouldBe(["First", "Elsewhere"], ignoreOrder: true);
+    }
+
+    [Test]
+    public async Task Rejects_a_type_named_twice_in_the_assembly_form()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               [assembly: DovetailConfiguration<Sample.RepeatedOptions>("First")]
+                               [assembly: DovetailConfiguration<Sample.RepeatedOptions>("Second")]
+
+                               namespace Sample;
+
+                               public class RepeatedOptions { public string? Value { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        diagnostics.Select(z => z.Id).ShouldBe(["DT0015"]);
+        // The first declaration wins and the repeat produces nothing.
+        Fragments(result).Keys.ShouldBe(["First"]);
     }
 
     [Test]
