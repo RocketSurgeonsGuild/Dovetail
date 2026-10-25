@@ -3,6 +3,14 @@
     Dovetail.Hosting.Web and generates the ConfigureDovetail() extension used in Program.cs.
 -->
 <Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <!--
+        Serves the merged configuration schema at /.well-known/dovetail/configuration-schema, only while developing: the
+        schema describes every setting the application reads, so it isn't something to expose by default.
+    -->
+    <DovetailConfigurationSchemaEndpoint>true</DovetailConfigurationSchemaEndpoint>
+    <DovetailConfigurationSchemaEndpointEnvironments>Development</DovetailConfigurationSchemaEndpointEnvironments>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SdkSample.Greetings\SdkSample.Greetings.csproj" />
   </ItemGroup>
