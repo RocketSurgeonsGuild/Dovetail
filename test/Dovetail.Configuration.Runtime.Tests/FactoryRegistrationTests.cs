@@ -7,9 +7,9 @@ using Microsoft.Extensions.Options;
 namespace Dovetail.Configuration.Runtime.Tests;
 
 /// <summary>
-///     Covers the reflection-free creating overload of <see cref="DovetailConfigurationOptionsExtensions" />, which generated
-///     configuration joints call for types the options pipeline can't create. <see cref="ServerRecord.Create" /> and
-///     <see cref="EndpointOptions.Create" /> stand in for the generated factories.
+///     Covers <see cref="DovetailConfigurationOptionsExtensions" /> for types the options pipeline can't create itself (no
+///     parameterless constructor, or init-only members). <see cref="ServerRecord.Create" /> and
+///     <see cref="EndpointOptions.Create" /> stand in for the generated <c>Create…</c> methods.
 /// </summary>
 public sealed class FactoryRegistrationTests
 {
@@ -76,19 +76,6 @@ public sealed class FactoryRegistrationTests
     }
 
     [Test]
-    public async Task Create_ThenAppliesBindRegistrations_OntoTheCreatedInstance()
-    {
-        var services = new ServiceCollection()
-                      .AddSingleton<IConfiguration>(TestConfiguration.Build(("Server:Host", "example.org"), ("Server:Tags:0", "created"), ("ExtraServer:Tags:0", "bound")));
-        services.AddDovetailConfigurationOptions<ServerRecord>("ExtraServer", ServerRecord.BindTags);
-        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
-
-        await using var provider = services.BuildServiceProvider();
-
-        provider.GetRequiredService<IOptions<ServerRecord>>().Value.Tags.ShouldBe(["created", "bound"]);
-    }
-
-    [Test]
     public async Task Create_Reload_ReachesMonitorAndSnapshot_Once()
     {
         var configuration = TestConfiguration.Build(("Server:Host", "example.org"), ("Server:Port", "8080"));
@@ -114,30 +101,25 @@ public sealed class FactoryRegistrationTests
     }
 
     [Test]
-    public async Task Create_LeavesNamedOptionsToTheBaseFactory()
-    {
-        var services = new ServiceCollection()
-                      .AddSingleton<IConfiguration>(TestConfiguration.Build(("Endpoint:Url", "https://example.org"), ("Server:Port", "8080")));
-        services.AddDovetailConfigurationOptions("Endpoint", EndpointOptions.Create);
-        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
-
-        await using var provider = services.BuildServiceProvider();
-
-        var endpoints = provider.GetRequiredService<IOptionsMonitor<EndpointOptions>>();
-        endpoints.CurrentValue.Url.ShouldBe("https://example.org");
-        endpoints.Get("named").Url.ShouldBe("http://localhost");
-
-        // The base factory needs a public parameterless constructor, which ServerRecord doesn't have.
-        Should.Throw<MissingMethodException>(() => provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().Get("named"));
-    }
-
-    [Test]
-    public async Task Create_KeepsAFactoryAlreadyRegisteredForTheType()
+    public async Task Create_ApplicationFactoryRegisteredBeforehand_Wins()
     {
         var registered = new ServerRecord("registered", 1);
         var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build(("Server:Host", "example.org")));
         services.AddSingleton<IOptionsFactory<ServerRecord>>(new FixedFactory(registered));
         services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
+
+        await using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<IOptions<ServerRecord>>().Value.ShouldBeSameAs(registered);
+    }
+
+    [Test]
+    public async Task Create_ApplicationFactoryRegisteredAfterwards_Wins()
+    {
+        var registered = new ServerRecord("registered", 1);
+        var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build(("Server:Host", "example.org")));
+        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
+        services.AddSingleton<IOptionsFactory<ServerRecord>>(new FixedFactory(registered));
 
         await using var provider = services.BuildServiceProvider();
 

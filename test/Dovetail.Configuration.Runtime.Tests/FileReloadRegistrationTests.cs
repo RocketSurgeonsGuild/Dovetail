@@ -5,14 +5,14 @@ using Microsoft.Extensions.Options;
 namespace Dovetail.Configuration.Runtime.Tests;
 
 /// <summary>
-///     Checks that a change to a JSON file reaches options registered through both reflection-free overloads of
-///     <see cref="DovetailConfigurationOptionsExtensions" />, through <see cref="IOptionsMonitor{TOptions}" /> and
+///     Checks that a change to a JSON file reaches options registered through
+///     <see cref="DovetailConfigurationOptionsExtensions" />, for a type the options pipeline could create and one it couldn't, through <see cref="IOptionsMonitor{TOptions}" /> and
 ///     <see cref="IOptionsSnapshot{TOptions}" />.
 /// </summary>
 public sealed class FileReloadRegistrationTests
 {
     [Test]
-    public async Task JsonFileChange_ReachesMonitorAndSnapshot_ForBindingAndCreatingSections()
+    public async Task JsonFileChange_ReachesMonitorAndSnapshot_ForParameterlessAndParameterizedTypes()
     {
         var directory = Path.Combine(Path.GetTempPath(), "dovetail-config-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
@@ -28,7 +28,7 @@ public sealed class FileReloadRegistrationTests
             try
             {
                 var services = new ServiceCollection().AddSingleton<IConfiguration>(configuration);
-                services.AddDovetailConfigurationOptions<GreetingsOptions>("Greetings", GreetingsOptions.Bind);
+                services.AddDovetailConfigurationOptions("Greetings", GreetingsOptions.Create);
                 services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
 
                 await using var provider = services.BuildServiceProvider();

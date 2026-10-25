@@ -5,8 +5,9 @@ using Microsoft.Extensions.Options;
 namespace Dovetail.Configuration.Runtime.Tests;
 
 /// <summary>
-///     Stand-in for a mutable configuration type: the options pipeline creates it, and <see cref="Bind" /> stands in for the
-///     generated binder, setting scalars and appending list items the way the configuration binder does.
+///     Stand-in for a mutable configuration type with a public parameterless constructor: <see cref="Create" /> stands in for the
+///     generated <c>Create…</c> method, which constructs it and then binds, setting scalars and appending list items the way the
+///     configuration binder does.
 /// </summary>
 public sealed class GreetingsOptions
 {
@@ -14,14 +15,17 @@ public sealed class GreetingsOptions
 
     public List<string> Recipients { get; } = [];
 
-    public static void Bind(IConfiguration configuration, GreetingsOptions options)
+    public static GreetingsOptions Create(IConfiguration configuration)
     {
+        var options = new GreetingsOptions();
         if (configuration["Message"] is { } message) options.Message = message;
 
         foreach (var recipient in configuration.GetSection("Recipients").GetChildren())
         {
             if (recipient.Value is { } value) options.Recipients.Add(value);
         }
+
+        return options;
     }
 }
 
@@ -41,16 +45,12 @@ public sealed record ServerRecord(string Host, int Port)
             configuration["Host"] ?? "localhost",
             int.TryParse(configuration["Port"], NumberStyles.Integer, CultureInfo.InvariantCulture, out var port) ? port : 80
         );
-        BindTags(configuration, server);
-        return server;
-    }
-
-    public static void BindTags(IConfiguration configuration, ServerRecord server)
-    {
         foreach (var tag in configuration.GetSection("Tags").GetChildren())
         {
             if (tag.Value is { } value) server.Tags.Add(value);
         }
+
+        return server;
     }
 }
 

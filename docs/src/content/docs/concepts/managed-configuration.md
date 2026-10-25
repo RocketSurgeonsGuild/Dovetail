@@ -89,34 +89,80 @@ provider supplies when the options are first created, and creates or binds its o
 de-duplicate or merge sections. The generated joint registers an assembly's types by section path, then type name, and
 the standard options pipeline does the rest.
 
-Mutable classes go through the standard options pipeline (`IConfigureOptions<T>`), so your own `Configure<T>` and
-`PostConfigure<T>` calls keep working: ones registered before a Dovetail registration for the type run before it, and
-ones registered after it run after it.
+Every type is created by generated code and registered through an `IOptionsFactory<T>`, so your own `Configure<T>`,
+`PostConfigure<T>` and validators run on the created instance, whenever they were registered.
 
 ### Registering by hand
 
-The generated joint calls the public `AddDovetailConfigurationOptions` extension methods on `IServiceCollection`. You can
-call them yourself, for example for a type declared with `RegisterOptions = false`. All three return the
-`OptionsBuilder<TOptions>`, so `Validate` and `ValidateOnStart()` chain as usual.
+The generated joint calls one public extension method on `IServiceCollection`, `AddDovetailConfigurationOptions`. You can
+call it yourself, for example for a type declared with `RegisterOptions = false`. It returns the `OptionsBuilder<TOptions>`,
+so `Validate` and `ValidateOnStart()` chain as usual.
 
-| Overload                                                                          | Does                                                                                                                                                                                                                                                          |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AddDovetailConfigurationOptions<T>(configuration, sectionKey)`                   | Binds `T` to `configuration.GetSection(sectionKey)` with `OptionsBuilder<T>.Bind`. It uses the `configuration` you pass, wires reload tokens, and is reflection based: it carries `RequiresUnreferencedCode` and `RequiresDynamicCode`, so it isn't AOT safe. |
-| `AddDovetailConfigurationOptions<T>(sectionPath, Action<IConfiguration, T> bind)` | **Bind.** The options pipeline creates `T` (public parameterless constructor) and `bind` fills it from the section at `sectionPath`. Reflection free.                                                                                                         |
-| `AddDovetailConfigurationOptions<T>(sectionPath, Func<IConfiguration, T> create)` | **Create.** For types the pipeline can't create (constructor parameters, `init` or `required` members). `create` builds the instance from the section at `sectionPath`. Reflection free.                                                                      |
+| Overload                                                                          | Does                                                                                                                                                     |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AddDovetailConfigurationOptions<T>(sectionPath, Func<IConfiguration, T> create)` | Creates the default `T` with `create`, from the section at `sectionPath`, and watches the configuration for reloads. Reflection free, so it is AOT safe. |
 
-Semantics of the two reflection-free overloads, which are what the generated code calls:
+There is one overload because everything is created through generated create code: for a type with a public parameterless
+constructor the generator emits `new T()` followed by the bind, and for the rest the constructor or initializer call. No
+registration path uses reflection. To bind a type with reflection, use Microsoft's `Configure<T>(IConfiguration)` or
+`AddOptions<T>().Bind(...)` yourself.
 
-- The `IConfiguration` is the application's complete one, resolved from the service provider when the options are first
-  created. `bind` and `create` receive its section at `sectionPath` (such as `Http:Retry`). An empty path throws.
-- Each adds one change token source per type, so `IOptionsMonitor<T>` and `IOptionsSnapshot<T>` see reloads.
-- **Bind** adds an `IConfigureOptions<T>` on every call, even for the same type and path. They run in registration order,
-  together with your own `Configure<T>` calls. Only the default (unnamed) options are bound.
-- **Create** registers an `IOptionsFactory<T>` with `TryAdd`: the first factory registered for a type wins, whether it
-  was yours or another assembly's, and later calls are ignored. The factory derives from `OptionsFactory<T>`, so
-  configure and post-configure actions and validators still run on the instance it creates. Only the default options
-  come from `create`; named options are created by the base class, which needs a public parameterless constructor. On
-  .NET 11, don't give such a type asynchronous validators: they fail synchronous validation through a derived factory.
+- The configuration comes from the `IDovetailConfigurationProvider` in the service provider, resolved when the options are
+  first created. For the default options it is the application's complete `IConfiguration`. `create` receives that
+  configuration's section at `sectionPath` (such as `Http:Retry`). An empty path throws.
+- A change token source for the default name, watching the configuration the provider returns for it, makes
+  `IOptionsMonitor<T>` and `IOptionsSnapshot<T>` see reloads of the default options.
+- The call registers an `IOptionsFactory<T>` with `TryAdd`: the first registration for a type wins, and later calls are
+  ignored. A factory your application registers itself wins over Dovetail's, so `create` is never called for that type.
+- The factory derives from `OptionsFactory<T>`, so configure and post-configure actions and validators still run on the
+  instance `create` returns, for named options too. On .NET 11, don't give such a type asynchronous validators: they fail
+  synchronous validation through a derived factory.
+
+### Named options and multi-tenancy
+
+`create` runs for every options name, with the section at `sectionPath` of the configuration that
+`IDovetailConfigurationProvider.GetConfiguration(optionsName)` returns. The name is the one you pass to
+`IOptionsMonitor<T>.Get(name)` or `IOptionsSnapshot<T>.Get(name)`; the default options use `Options.DefaultName`, the
+empty string.
+
+```c#
+public interface IDovetailConfigurationProvider
+{
+    IConfiguration GetConfiguration(string optionsName);
+}
+```
+
+The default provider returns the application's `IConfiguration` for the default name and **throws an
+`InvalidOperationException` for any other name**, naming the options and asking you to register a provider. So named
+options on a type Dovetail registers don't work until you register your own provider. A multi-tenant application can
+return a different configuration root per tenant, and the same section path then yields different options per name:
+
+```c#
+services.AddSingleton<IDovetailConfigurationProvider, TenantConfigurationProvider>();
+
+var tenantA = snapshot.Get("tenant-a");
+var tenantB = snapshot.Get("tenant-b");
+```
+
+A provider you register replaces the default one, whether it comes before or after the options. Configure,
+post-configure and validators for a name (`Configure<T>("tenant-a", ...)`) run on the instance created for that name.
+
+#### Reloads for named options
+
+`IOptionsSnapshot<T>` needs nothing: it creates its options for each scope from the current configuration. An
+`IOptionsMonitor<T>` takes its change token sources when it is created, and a source has one fixed name, so the monitor
+only sees reloads of the names you registered a source for. Dovetail registers one for the default name, which asks the
+provider for the default configuration. Register one for every other name up front, for example for each known tenant:
+
+```c#
+services.AddDovetailConfigurationChangeTokenSource<FarewellOptions>("tenant-a");
+services.AddDovetailConfigurationChangeTokenSource<FarewellOptions>("tenant-b");
+```
+
+The source watches the configuration your provider returns for that name; registering the same type and name twice has no
+effect. A name without a source is created once and not reloaded by the monitor. Because the source asks the provider for
+the configuration when the monitor is created, a source for a non-default name only makes sense with a provider of your own:
+with the default provider it throws, and so does resolving `IOptionsMonitor<T>` for that type.
 
 ### `RegisterOptions` and `ValidateOnStart`
 
@@ -200,9 +246,9 @@ versions.
 
 ### Records and other immutable types
 
-Types the options pipeline can't create (constructor parameters, `init`-only or `required` members) get a generated
-**options factory** instead of `IConfigureOptions<T>`. It creates the instance from the type's section, and still runs your
-validators.
+Types the options pipeline can't create (constructor parameters, `init`-only or `required` members) are registered like any
+other type: the generated create code builds the instance from the type's section, and your `Configure<T>` and validators
+still run on it.
 
 ```c#
 [DovetailConfiguration]

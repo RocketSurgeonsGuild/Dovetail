@@ -477,7 +477,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
             name.TryGetProperty("default", out _).ShouldBeFalse(section);
             ( name.TryGetProperty("description", out var description) ? description.GetString() ?? "" : "" ).ShouldNotContain("Default:", Case.Sensitive, section);
             properties.GetProperty("Greeting").GetProperty("default").GetString().ShouldBe("Hi", section);
-            properties.GetProperty("Greeting").GetProperty("description").GetString().ShouldContain("Default: Hi.", Case.Sensitive, section);
+            properties.GetProperty("Greeting").GetProperty("description").GetString()!.ShouldContain("Default: Hi.", Case.Sensitive, section);
         }
     }
 

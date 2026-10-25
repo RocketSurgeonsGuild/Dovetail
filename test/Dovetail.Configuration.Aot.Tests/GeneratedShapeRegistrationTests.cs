@@ -45,10 +45,10 @@ public sealed class GeneratedShapeRegistrationTests
     private static void Register(IServiceCollection services)
     {
         OptionsBuilderExtensions.ValidateOnStart(
-            DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<GreetingsOptions>(
+            DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions(
                 services,
                 "Greetings",
-                static (configuration, instance) => Binder.BindGreetings(configuration, instance)
+                static configuration => Binder.CreateGreetings(configuration)
             )
         );
         DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions(
@@ -75,9 +75,11 @@ public sealed class GeneratedShapeRegistrationTests
     // Stands in for the generated binder.
     private static class Binder
     {
-        public static void BindGreetings(IConfiguration configuration, GreetingsOptions instance)
+        public static GreetingsOptions CreateGreetings(IConfiguration configuration)
         {
+            var instance = new GreetingsOptions();
             if (configuration["Message"] is { } message) instance.Message = message;
+            return instance;
         }
 
         public static ServerRecord CreateServer(IConfiguration configuration) =>
