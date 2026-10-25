@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
-using Dovetail.Hosting;
 using Dovetail.Testing.Joints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
