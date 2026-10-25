@@ -258,6 +258,7 @@
     OutputFiles: [
       DovetailPkgTestLib1.yaml,
       DovetailPkgTestLib2.json,
+      appsettings.schema.json,
       host.runtimeconfig.dev.json
     ]
   }

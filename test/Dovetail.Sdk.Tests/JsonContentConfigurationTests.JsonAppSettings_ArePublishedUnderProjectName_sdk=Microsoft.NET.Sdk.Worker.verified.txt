@@ -1,4 +1,5 @@
 ﻿[
   app.Development.json,
-  app.json
+  app.json,
+  appsettings.schema.json
 ]

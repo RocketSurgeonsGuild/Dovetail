@@ -18,5 +18,6 @@
         />
     </ItemGroup>
     <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Build.Tasks/Dovetail.Build.Tasks.InRepo.targets" />
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

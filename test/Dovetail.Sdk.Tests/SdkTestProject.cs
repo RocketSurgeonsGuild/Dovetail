@@ -121,7 +121,11 @@ public sealed class SdkTestProject : IDisposable
         return this;
     }
 
-    public async Task VerifyProjects()
+    /// <summary>
+    /// Builds every tracked project and verifies its evaluation snapshot, generated sources and output files. Passing
+    /// <paramref name="files"/> (paths relative to the scaffold) verifies their text as well (see <see cref="FileTargets"/>).
+    /// </summary>
+    public async Task VerifyProjects(params string[] files)
     {
         var results = new List<ProjectEvaluationResult>();
         foreach (var project in _projects)
@@ -130,7 +134,13 @@ public sealed class SdkTestProject : IDisposable
             results.Add(await BuildAndEvaluate(relativePath, "build"));
         }
 
-        await Verify(results, settings: _settings);
+        if (files.Length == 0)
+        {
+            await Verify(results, settings: _settings);
+            return;
+        }
+
+        await Verify(results, FileTargets(files), settings: _settings);
     }
 
     /// <summary>
@@ -140,7 +150,7 @@ public sealed class SdkTestProject : IDisposable
     /// actual file listing - the MSBuild evaluation snapshot alone can't tell you what a
     /// <c>Pack="true"</c>/<c>PackagePath</c> item actually produced inside the archive.
     /// </summary>
-    public async Task VerifyProjectsAndPackages()
+    public async Task VerifyProjectsAndPackages(params string[] files)
     {
         var results = new List<ProjectEvaluationResult>();
         var packages = new List<PackageVerificationResult>();
@@ -153,8 +163,70 @@ public sealed class SdkTestProject : IDisposable
             packages.Add(ReadPackage(nupkg));
         }
 
-        await Verify(new { Projects = results, Packages = packages }, settings: _settings);
+        if (files.Length == 0)
+        {
+            await Verify(new { Projects = results, Packages = packages }, settings: _settings);
+            return;
+        }
+
+        await Verify(new { Projects = results, Packages = packages }, FileTargets(files), settings: _settings);
     }
+
+    /// <summary>
+    /// The text of a file the scaffold's builds wrote, at <paramref name="relativePath"/> from the scaffold directory.
+    /// </summary>
+    public string ReadFile(string relativePath)
+    {
+        var path = Path.Combine(Directory, relativePath);
+        return File.Exists(path) ? File.ReadAllText(path) : throw new TUnitException($"{relativePath} doesn't exist.");
+    }
+
+    /// <summary>
+    /// The text of <paramref name="entry"/> in the package <c>dotnet pack</c> produced for the project at
+    /// <paramref name="relativePath"/>.
+    /// </summary>
+    public string ReadPackageFile(string relativePath, string entry)
+    {
+        var projectDirectory = Path.Combine(Directory, relativePath);
+        var nupkg = System.IO.Directory.EnumerateFiles(projectDirectory, "*.nupkg", SearchOption.AllDirectories).SingleOrDefault() ?? throw new TUnitException($"No .nupkg for {relativePath}");
+        using var reader = new PackageArchiveReader(nupkg);
+        using var text = new StreamReader(reader.GetStream(entry));
+        return text.ReadToEnd();
+    }
+
+    /// <summary>
+    /// Every warning (<c>code: text</c>) the last build, pack or publish of the project at <paramref name="relativePath"/>
+    /// logged, read from its binary log.
+    /// </summary>
+    public IReadOnlyList<string> Warnings(string relativePath) =>
+        BinaryLog.ReadBuild(Path.Combine(Directory, relativePath, "msbuild.binlog"))
+                 .FindChildrenRecursive<Warning>()
+                 .Select(z => $"{z.Code}: {z.Text}")
+                 .Distinct(StringComparer.Ordinal)
+                 .ToArray();
+
+    /// <summary>
+    /// Each of <paramref name="files"/> (paths relative to the scaffold) as a snapshot of its own, named after the file. In an
+    /// <c>appsettings.schema.json</c>, the SchemaStore schema Dovetail embeds becomes a placeholder: it is large, and the
+    /// Dovetail.Build.Tasks tests cover it.
+    /// </summary>
+    private VerifyTests.Target[] FileTargets(IEnumerable<string> files) =>
+        [.. files
+           .Select(
+                file =>
+                {
+                    var text = ReadFile(file);
+                    if (Path.GetFileName(file) == "appsettings.schema.json"
+                     && System.Text.Json.Nodes.JsonNode.Parse(text)?["definitions"] is System.Text.Json.Nodes.JsonObject definitions
+                     && definitions.ContainsKey("SchemaStoreAppSettings"))
+                    {
+                        definitions["SchemaStoreAppSettings"] = "{SchemaStore's appsettings schema}";
+                        text = definitions.Root.ToJsonString(new() { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping, });
+                    }
+
+                    return new VerifyTests.Target("json", text, Path.GetFileNameWithoutExtension(file));
+                }
+            )];
 
     /// <summary>
     /// Packs the project at <paramref name="relativePath"/> (e.g. <c>"lib1"</c>) and registers the
@@ -274,7 +346,7 @@ public sealed class SdkTestProject : IDisposable
     /// <c>ResolvedFileToPublish</c> rather than reusing the build's bin/ contents directly, so
     /// this is not guaranteed by <see cref="VerifyProjects"/> passing.
     /// </summary>
-    public async Task VerifyPublish(string hostRelativePath)
+    public async Task VerifyPublish(string hostRelativePath, params string[] files)
     {
         var hostDirectory = Path.Combine(Directory, hostRelativePath);
         var psi = CreateHermeticStartInfo("publish -bl");
@@ -296,7 +368,13 @@ public sealed class SdkTestProject : IDisposable
         .OrderBy(z => z)
         .ToHashSet();
 
-        await Verify(publishFiles, settings: _settings);
+        if (files.Length == 0)
+        {
+            await Verify(publishFiles, settings: _settings);
+            return;
+        }
+
+        await Verify(publishFiles, FileTargets(files), settings: _settings);
     }
 
     /// <summary>
@@ -313,6 +391,17 @@ public sealed class SdkTestProject : IDisposable
         var stderr = await proc.StandardError.ReadToEndAsync();
         await proc.WaitForExitAsync();
         return proc.ExitCode == 0 ? stdout : throw new TUnitException($"dotnet run failed for {relativePath}:\n{stdout}\n{stderr}");
+    }
+
+    /// <summary>
+    /// Runs <c>dotnet build</c> (plus <paramref name="arguments"/>) for the project at <paramref name="relativePath"/> and returns
+    /// the build's binary log, for behaviour that only shows across builds (incrementality, stale outputs).
+    /// </summary>
+    public async Task<Build> BuildProject(string relativePath, string arguments = "")
+    {
+        var projectDirectory = Path.Combine(Directory, relativePath);
+        await RunDotnet($"build -bl {arguments}", projectDirectory);
+        return BinaryLog.ReadBuild(Path.Combine(projectDirectory, "msbuild.binlog"));
     }
 
     /// <summary>

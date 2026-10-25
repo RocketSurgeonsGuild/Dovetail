@@ -1,5 +1,6 @@
 <Project>
   <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Build.Tasks/Dovetail.Build.Tasks.InRepo.targets" />
   <ItemGroup>
     <ProjectReference
       Include="$(MSBuildThisFileDirectory)../src/Dovetail.Analyzers/Dovetail.Analyzers.csproj"
