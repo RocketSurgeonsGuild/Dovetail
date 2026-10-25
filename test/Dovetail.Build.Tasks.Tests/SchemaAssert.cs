@@ -32,18 +32,35 @@ internal static class SchemaAssert
 
     public static void ShouldBeValidDraft07(string json)
     {
-        var result = Draft7Schema.Parse(json).Validate(ValidationContext.ValidContext, ValidationLevel.Detailed);
-        var failures = result.Results.Where(z => !z.Valid && !IsSchemaStoreRegexFormat(z)).Select(z => $"{z.Location}: {z.Message}").ToArray();
+        // Corvus checks "format": "regex" for a pattern with a stricter dialect than ECMA-262 and rejects valid ones (\d in
+        // Dovetail's own, named groups in SchemaStore's), failing the schemas around them too. Every pattern of Dovetail's is
+        // checked as an ECMAScript regular expression by ShouldBeWellFormed instead, so neutralize them here.
+        var result = Draft7Schema.Parse(NeutralizePatterns(json)).Validate(ValidationContext.ValidContext, ValidationLevel.Detailed);
+        var failures = result.Results.Where(z => !z.Valid).Select(z => $"{z.Location}: {z.Message}").ToArray();
         failures.ShouldBeEmpty(string.Join(Environment.NewLine, failures));
     }
 
-    /// <summary>
-    ///     Corvus checks <c>"format": "regex"</c> with a stricter regex dialect than ECMA-262, and rejects a few of SchemaStore's own
-    ///     (valid) patterns: named groups, and <c>#</c> inside a group. Dovetail's patterns are checked as ECMAScript separately.
-    /// </summary>
-    private static bool IsSchemaStoreRegexFormat(Corvus.Json.ValidationResult result) =>
-        result.Message?.StartsWith("Validation format - should have been 'regex'", StringComparison.Ordinal) == true
-     && result.Location?.DocumentLocation.ToString().StartsWith("#/definitions/" + SchemaStoreAppSettings.DefinitionName + "/", StringComparison.Ordinal) == true;
+    private static string NeutralizePatterns(string json)
+    {
+        var document = JsonNode.Parse(json)!;
+        foreach (var schema in Objects(document).ToArray())
+        {
+            if (schema["pattern"] is JsonValue pattern && pattern.TryGetValue<string>(out _)) schema["pattern"] = ".*";
+
+            // patternProperties keys are patterns too (SchemaStore's use named groups); keep the schemas, number the keys.
+            if (schema["patternProperties"] is JsonObject patternProperties)
+            {
+                var entries = patternProperties.ToArray();
+                patternProperties.Clear();
+                for (var index = 0; index < entries.Length; index++)
+                {
+                    patternProperties[$"^p{index}$"] = entries[index].Value;
+                }
+            }
+        }
+
+        return document.ToJsonString();
+    }
 
     public static bool IsValidDraft07(string json) => Draft7Schema.Parse(json).Validate(ValidationContext.ValidContext, ValidationLevel.Flag).IsValid;
 
@@ -141,6 +158,7 @@ internal static class SchemaAssert
            .Concat(DovetailDefinitions(document).SelectMany(z => Objects(z.Value)))
            .SelectMany(
                 z => ( z["patternProperties"] is JsonObject patternProperties ? patternProperties.Select(p => p.Key) : [] )
+                   .Concat(z["pattern"] is JsonValue keyword && keyword.TryGetValue<string>(out var text) ? [text] : [])
                    .Concat(z["propertyNames"] is JsonObject { } names && names["pattern"] is JsonValue pattern ? [pattern.GetValue<string>()] : [])
             );
 }

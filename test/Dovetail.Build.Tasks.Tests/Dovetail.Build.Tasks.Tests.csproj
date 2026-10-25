@@ -7,4 +7,8 @@
         <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
         <PackageReference Include="Corvus.Json.JsonSchema.Draft7" />
     </ItemGroup>
+    <ItemGroup>
+        <!-- Copies of the generator's snapshots in Dovetail.Analyzers.Tests (see GeneratorOutputTests). -->
+        <None Include="generator-output/*.txt" CopyToOutputDirectory="PreserveNewest" LinkBase="generator-output" />
+    </ItemGroup>
 </Project>
