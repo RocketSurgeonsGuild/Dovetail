@@ -73,10 +73,32 @@ Set `DovetailScaffoldEditorSettings` to `true` in the application's project file
 ```
 
 On build, Dovetail creates or updates **only its own** entries in `.vscode/settings.json` (`json.schemas`,
-`yaml.schemas` and `evenBetterToml.schema.associations`). Comments, trailing commas, indentation and a byte-order mark
-are preserved, other settings are untouched, and re-running changes nothing. If the file can't be updated safely, for
-example because it isn't valid JSON, the build reports a warning with the snippet to paste and leaves the file as it
-was. Dovetail never adds `$schema` keys or `# yaml-language-server` modelines to your configuration files.
+`yaml.schemas` and `evenBetterToml.schema.associations`), pointing at the application's `obj/appsettings.schema.json`.
+Comments, trailing commas, indentation, line endings and a byte-order mark are preserved, other settings and other
+entries in those three maps are untouched, and re-running changes nothing (the file isn't even rewritten, so its
+timestamp stays). Dovetail never adds `$schema` keys or `# yaml-language-server` modelines to your configuration files.
+
+Each application gets entries of its own, keyed by its schema path, so several applications in one repository can
+share one settings file. Dovetail recognises its entries by that path: an entry that already maps the application's
+schema only gets whatever is missing (a file pattern, a glob), and anything you added to it stays. If you move a
+project, delete its old entries by hand.
+
+The file goes in the folder that holds `.vscode`: the nearest ancestor of the project that contains a `.git` entry, or
+the project folder when there is none. Set `DovetailEditorSettingsDirectory` to use another folder (a relative path is
+relative to the project). The folder must contain the project, because VS Code resolves the schema path relative to the
+folder it has open. The file and the `.vscode` folder are created only when they don't exist.
+
+Only applications write the file, once per build (from the first target framework of a project that targets several),
+never in design-time builds, and not when `DovetailConfigurationSchema` is `false`.
+
+If the file can't be updated safely, because it isn't valid JSON with comments, isn't UTF-8, has an unexpected shape
+(say `json.schemas` isn't an array) or is read-only, Dovetail leaves it as it is and the build reports a warning with
+the entries to paste. Fix the file, or set `DovetailScaffoldEditorSettings` to `false`, to get rid of the warning.
+
+| Property                          | Default  | Effect                               |
+| --------------------------------- | -------- | ------------------------------------ |
+| `DovetailScaffoldEditorSettings`  | off      | `true` writes the mappings on build. |
+| `DovetailEditorSettingsDirectory` | git root | The folder that holds `.vscode`.     |
 
 It is off by default because it edits a file that is probably checked in.
 
