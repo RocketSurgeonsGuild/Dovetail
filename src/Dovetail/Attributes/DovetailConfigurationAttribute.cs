@@ -18,6 +18,10 @@ namespace Dovetail.Attributes;
 ///         <see cref="DovetailConfigurationAttribute{T}" />.
 ///     </para>
 ///     <para>
+///         <see cref="KeyStyle" /> picks how the keys of the type and of the types nested in it are spelled (Pascal, camel or dash
+///         case). A type that several sections reach has to use the same style in all of them; DT0016 reports a mismatch.
+///     </para>
+///     <para>
 ///         The generated registration reads its own section from the application's complete <c>IConfiguration</c> and creates or
 ///         binds the options.
 ///     </para>
@@ -54,6 +58,13 @@ public sealed class DovetailConfigurationAttribute : Attribute
     ///     Whether to validate the options when the host starts. The default is <see langword="false" />.
     /// </summary>
     public bool ValidateOnStart { get; set; }
+
+    /// <summary>
+    ///     How the configuration keys are spelled: those of every bound property and constructor parameter of the options type and
+    ///     of the object types nested in it, and the default section path derived from the type name. The default is
+    ///     <see cref="ConfigurationKeyStyle.Pascal" />. See <see cref="ConfigurationKeyStyle" />.
+    /// </summary>
+    public ConfigurationKeyStyle KeyStyle { get; set; }
 }
 
 /// <summary>
@@ -64,6 +75,7 @@ public sealed class DovetailConfigurationAttribute : Attribute
 ///     <para>
 ///         The section path follows the same rules as <see cref="DovetailConfigurationAttribute" />. Apply it once for each type you
 ///         configure. A type has one section: naming it twice, or also declaring it with the class form, is reported as DT0015.
+///         <see cref="KeyStyle" /> works as it does on the class form.
 ///     </para>
 ///     <para>Only works with source generators enabled.</para>
 /// </remarks>
@@ -100,4 +112,11 @@ public sealed class DovetailConfigurationAttribute<T> : Attribute
     ///     Whether to validate the options when the host starts. The default is <see langword="false" />.
     /// </summary>
     public bool ValidateOnStart { get; set; }
+
+    /// <summary>
+    ///     How the configuration keys are spelled: those of every bound property and constructor parameter of the options type and
+    ///     of the object types nested in it, and the default section path derived from the type name. The default is
+    ///     <see cref="ConfigurationKeyStyle.Pascal" />. See <see cref="ConfigurationKeyStyle" />.
+    /// </summary>
+    public ConfigurationKeyStyle KeyStyle { get; set; }
 }

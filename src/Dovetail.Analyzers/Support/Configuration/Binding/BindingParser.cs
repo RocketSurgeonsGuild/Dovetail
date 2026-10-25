@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 namespace Dovetail.Support.Configuration.Binding;
 
 /// <summary>Analyses an options type and every type reachable from it, the way Microsoft's binding generator does.</summary>
-internal sealed class BindingParser(Compilation compilation, BinderVersion version)
+internal sealed class BindingParser(Compilation compilation, BinderVersion version, KeyStyle keyStyle = KeyStyle.Pascal)
 {
     private const string CannotBindToConstructorParameter =
         "Cannot create instance of type '{0}' because one or more parameters cannot be bound to. Constructor parameters cannot be declared as in, out, or ref. Invalid parameters are: '{1}'";
@@ -450,7 +450,7 @@ internal sealed class BindingParser(Compilation compilation, BinderVersion versi
                 var keyName = attributes.FirstOrDefault(z => SymbolEqualityComparer.Default.Equals(z.AttributeClass, _types.ConfigurationKeyNameAttribute))
                                         ?.ConstructorArguments.FirstOrDefault()
                                         .Value as string
-                 ?? property.Name;
+                 ?? KeyNaming.Apply(property.Name, keyStyle);
                 var isIgnored = _types.ConfigurationIgnoreAttribute is { } ignore
                  && attributes.Any(z => SymbolEqualityComparer.Default.Equals(z.AttributeClass, ignore));
                 var spec = new PropertySpec(property, TypeRef.From(property.Type), keyName, isIgnored);

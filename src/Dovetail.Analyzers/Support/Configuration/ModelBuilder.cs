@@ -51,15 +51,19 @@ internal sealed class ModelBuilder
     private readonly Location? _declarationLocation;
     private readonly CancellationToken _cancellationToken;
 
+    /// <summary>How keys that have no <c>[ConfigurationKeyName]</c> are spelled.</summary>
+    private readonly KeyStyle _keyStyle;
+
     /// <summary><c>[ConfigurationIgnore]</c>, when the binder honours it (version 11 on).</summary>
     private readonly INamedTypeSymbol? _ignoreAttribute;
 
     private string _rootTypeName = "";
     private bool _reportedTooLarge;
 
-    private ModelBuilder(Location? declarationLocation, INamedTypeSymbol? ignoreAttribute, CancellationToken cancellationToken)
+    private ModelBuilder(Location? declarationLocation, INamedTypeSymbol? ignoreAttribute, KeyStyle keyStyle, CancellationToken cancellationToken)
     {
         _declarationLocation = declarationLocation;
+        _keyStyle = keyStyle;
         _ignoreAttribute = ignoreAttribute;
         _cancellationToken = cancellationToken;
     }
@@ -84,6 +88,7 @@ internal sealed class ModelBuilder
 
         var registerOptions = true;
         var validateOnStart = false;
+        var keyStyle = KeyStyle.Pascal;
         foreach (var named in attribute.NamedArguments)
         {
             switch (named.Key)
@@ -94,6 +99,9 @@ internal sealed class ModelBuilder
                 case "ValidateOnStart" when named.Value.Value is bool value:
                     validateOnStart = value;
                     break;
+                case "KeyStyle" when named.Value.Value is int value && Enum.IsDefined(typeof(KeyStyle), value):
+                    keyStyle = (KeyStyle)value;
+                    break;
                 default:
                     break;
             }
@@ -103,6 +111,7 @@ internal sealed class ModelBuilder
         var builder = new ModelBuilder(
             attribute.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation(),
             version >= BinderVersion.V11 ? compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.ConfigurationIgnoreAttribute") : null,
+            keyStyle,
             cancellationToken
         );
         ConfigurationSection? result = null;
@@ -113,7 +122,7 @@ internal sealed class ModelBuilder
             if (result is { RegisterOptions: true } && type is not null)
             {
                 // The binder's own rules for creating the type are stricter in places (e.g. ref parameters).
-                var types = new BindingParser(compilation, version).Parse(type, cancellationToken);
+                var types = new BindingParser(compilation, version, keyStyle).Parse(type, cancellationToken);
                 var index = new BindingTypeIndex(types);
                 if (index.TryGetTypeSpec(TypeRef.From(type), out var spec) && spec is ObjectSpec root && !index.CanInstantiate(root))
                 {
@@ -145,8 +154,8 @@ internal sealed class ModelBuilder
         );
     }
 
-    /// <summary>The default section name: the type name without an Options/Settings/Configuration/Config suffix.</summary>
-    public static string DefaultSectionName(string typeName)
+    /// <summary>The type name without an Options/Settings/Configuration/Config suffix.</summary>
+    public static string StripSectionSuffix(string typeName)
     {
         foreach (var suffix in SectionSuffixes)
         {
@@ -173,7 +182,9 @@ internal sealed class ModelBuilder
             return null;
         }
 
-        var path = section ?? DefaultSectionName(type.Name);
+        // An explicit section is used as written; a derived one follows the key style.
+        var stripped = StripSectionSuffix(type.Name);
+        var path = section ?? KeyNaming.Apply(stripped, _keyStyle);
         if (InvalidSectionReason(path, section is null) is { } sectionReason)
         {
             Report(Diagnostics.InvalidConfigurationSection, _declarationLocation ?? LocationOf(type), path, _rootTypeName, sectionReason);
@@ -287,7 +298,7 @@ internal sealed class ModelBuilder
         var constructor = TryResolveConstructor(type, null, out var resolved) ? resolved : null;
         var properties = new List<SchemaProperty>();
         var keys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var member in BindableMembers(type, constructor, _ignoreAttribute))
+        foreach (var member in BindableMembers(type, constructor, _ignoreAttribute, _keyStyle))
         {
             _cancellationToken.ThrowIfCancellationRequested();
             var node = BuildMember(member);
@@ -356,7 +367,7 @@ internal sealed class ModelBuilder
 
     private readonly record struct Member(string Key, IPropertySymbol Property, IParameterSymbol? Parameter, bool Required);
 
-    private static IEnumerable<Member> BindableMembers(INamedTypeSymbol type, IMethodSymbol? constructor, INamedTypeSymbol? ignoreAttribute)
+    private static IEnumerable<Member> BindableMembers(INamedTypeSymbol type, IMethodSymbol? constructor, INamedTypeSymbol? ignoreAttribute, KeyStyle keyStyle)
     {
         foreach (var property in AllProperties(type, ignoreAttribute))
         {
@@ -369,7 +380,7 @@ internal sealed class ModelBuilder
                 continue;
             }
 
-            var key = ConfigurationKeyName(property) ?? property.Name;
+            var key = ConfigurationKeyName(property) ?? KeyNaming.Apply(property.Name, keyStyle);
             var required = property.IsRequired
              || HasAttribute(property, DataAnnotations + "RequiredAttribute")
              || ( parameter is { HasExplicitDefaultValue: false } && parameter.Type is { IsValueType: true } && parameter.Type.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T );

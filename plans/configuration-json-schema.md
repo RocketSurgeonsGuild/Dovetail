@@ -107,6 +107,7 @@ Goals:
     - recursive type cut;
     - inexpressible annotation;
     - LangVersion (from PR A).
+- `KeyStyle` (`ConfigurationKeyStyle`: `Pascal`, `Camel`, `Dash`; per attribute, default `Pascal`) spells the keys of a section's type and everything nested in it, and its derived section name, in both the schema and the binder; `[ConfigurationKeyName]` always wins, and a type reached under two styles is DT0016.
 - Delete dead `GetDovetailConfigurationReferences`. Make `GetAssemblyMetadataAttributes` tolerate duplicate keys (it uses `ToImmutableDictionary` today).
 
 ### P2: Compiled task + library/host files (6–8 d)

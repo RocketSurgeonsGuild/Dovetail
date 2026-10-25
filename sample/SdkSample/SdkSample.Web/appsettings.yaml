@@ -2,8 +2,8 @@
 Farewell:
   Exclamations: 3
 
-Storage:
-  MaxFileSizeMb: 128
+storage:
+  max-file-size-mb: 128
 
 Console:
   SuppressStatusMessages: true

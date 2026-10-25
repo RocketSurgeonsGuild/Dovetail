@@ -732,6 +732,193 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         }
     }
 
+    [Test]
+    [Arguments("Camel")]
+    [Arguments("Dash")]
+    public async Task Spells_keys_in_the_declared_key_style(string style)
+    {
+        var result = await WithAnnotations()
+                          .AddSources(ConfigurationKeyStyleSources.Styled(style))
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Derives_section_names_in_each_key_style()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               [DovetailConfiguration]
+                               public class GreetingsOptions { public string? Message { get; set; } }
+
+                               [DovetailConfiguration]
+                               public class HttpClientOptions { public string? BaseAddress { get; set; } }
+
+                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Camel)]
+                               public class HttpClientSettings { public string? BaseAddress { get; set; } }
+
+                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Camel)]
+                               public class OpenAIConfig { public string? ApiKey { get; set; } }
+
+                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
+                               public class HttpClientConfiguration { public string? BaseAddress { get; set; } }
+
+                               [DovetailConfiguration("Http:RetryPolicy", KeyStyle = ConfigurationKeyStyle.Dash)]
+                               public class ExplicitSectionOptions { public int MaxAttempts { get; set; } }
+
+                               [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
+                               public class OpenAIOptions { public string? ApiKey { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Styles_the_assembly_form_like_the_class_form()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               [assembly: DovetailConfiguration<Sample.ThirdPartyOptions>(KeyStyle = ConfigurationKeyStyle.Dash)]
+                               [assembly: DovetailConfiguration<Sample.CamelThirdPartyOptions>("Third:Camel", KeyStyle = ConfigurationKeyStyle.Camel)]
+
+                               namespace Sample;
+
+                               public class ThirdPartyOptions
+                               {
+                                   public string ConnectionString { get; set; } = "";
+                                   public ThirdPartyPool PoolSettings { get; set; } = new();
+                               }
+
+                               public class ThirdPartyPool { public int MaxSize { get; set; } }
+
+                               public class CamelThirdPartyOptions { public int RetryCount { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Keeps_the_default_key_style_as_declared()
+    {
+        const string members = """
+            public string Message { get; set; } = "";
+            public int RetryCount { get; set; }
+            public Nested Inner { get; set; } = new();
+            """;
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + $$"""
+                                 namespace Sample;
+
+                                 [DovetailConfiguration("Default")]
+                                 public class DefaultOptions { {{members}} }
+
+                                 [DovetailConfiguration("Explicit", KeyStyle = ConfigurationKeyStyle.Pascal)]
+                                 public class ExplicitOptions { {{members}} }
+
+                                 public class Nested { public int WaitTime { get; set; } }
+                                 """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        var fragments = Fragments(result);
+        // The same declarations produce the same schema: a style of Pascal is what's used without one.
+        fragments["Explicit"].ShouldBe(fragments["Default"].Replace("\"title\":\"Default\"", "\"title\":\"Explicit\"", StringComparison.Ordinal));
+        fragments["Default"].ShouldContain("\"RetryCount\"");
+        fragments["Default"].ShouldContain("\"WaitTime\"");
+    }
+
+    [Test]
+    public async Task Rejects_a_nested_type_bound_with_two_key_styles()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               [DovetailConfiguration("First", KeyStyle = ConfigurationKeyStyle.Camel)]
+                               public class FirstOptions { public RetryOptions Retry { get; set; } = new(); }
+
+                               [DovetailConfiguration("Second", KeyStyle = ConfigurationKeyStyle.Dash)]
+                               public class SecondOptions { public RetryOptions Retry { get; set; } = new(); }
+
+                               [DovetailConfiguration("Third", KeyStyle = ConfigurationKeyStyle.Camel)]
+                               public class ThirdOptions { public RetryOptions Retry { get; set; } = new(); }
+
+                               public class RetryOptions { public int MaxAttempts { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        diagnostics.Select(z => z.Id).ShouldBe(["DT0016"]);
+        diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Error);
+        diagnostics[0].GetMessage(CultureInfo.InvariantCulture)
+                      .ShouldBe(
+                           "'Sample.RetryOptions' is bound with more than one key style; use the same KeyStyle for every section that reaches it, or give the shared type [ConfigurationKeyName] attributes"
+                       );
+        // The later declaration is the one reported, and it produces nothing; the earlier ones, and a later one in the same style, still do.
+        diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).ShouldContain("\"Second\"");
+        Fragments(result).Keys.ShouldBe(["First", "Third"], ignoreOrder: true);
+        result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).ShouldContain("Dovetail_ConfigurationOptions.g.cs");
+    }
+
+    [Test]
+    public async Task Allows_a_shared_type_when_its_keys_do_not_depend_on_the_style()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               [DovetailConfiguration("A", KeyStyle = ConfigurationKeyStyle.Camel)]
+                               public class AOptions { public NamedRetry Retry { get; set; } = new(); public SharedRetry Shared { get; set; } = new(); }
+
+                               [DovetailConfiguration("B", KeyStyle = ConfigurationKeyStyle.Dash)]
+                               public class BOptions { public NamedRetry Retry { get; set; } = new(); }
+
+                               // Described only: nothing is bound, so there is no binder to disagree with.
+                               [DovetailConfiguration("C", KeyStyle = ConfigurationKeyStyle.Dash, RegisterOptions = false)]
+                               public class COptions { public SharedRetry Shared { get; set; } = new(); }
+
+                               public class NamedRetry
+                               {
+                                   [ConfigurationKeyName("max_attempts")]
+                                   public int MaxAttempts { get; set; }
+                               }
+
+                               public class SharedRetry { public int MaxAttempts { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
+        Fragments(result).Keys.ShouldBe(["A", "B", "C"], ignoreOrder: true);
+    }
+
     /// <summary>The raw schema fragments in the compilation, by section.</summary>
     private static Dictionary<string, string> Fragments(GeneratorTestResults result)
     {

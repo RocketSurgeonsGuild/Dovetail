@@ -1,0 +1,142 @@
+﻿## Greetings
+{
+  "type": "object",
+  "title": "Greetings",
+  "properties": {
+    "Message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Mm][Ee][Ss][Ss][Aa][Gg][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## http-client
+{
+  "type": "object",
+  "title": "http-client",
+  "properties": {
+    "base-address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Bb][Aa][Ss][Ee]-[Aa][Dd][Dd][Rr][Ee][Ss][Ss])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## Http:RetryPolicy
+{
+  "type": "object",
+  "title": "Http:RetryPolicy",
+  "properties": {
+    "max-attempts": {
+      "type": "integer"
+    }
+  },
+  "patternProperties": {
+    "^(?:[Mm][Aa][Xx]-[Aa][Tt][Tt][Ee][Mm][Pp][Tt][Ss])$": {
+      "type": "integer"
+    }
+  }
+}
+## HttpClient
+{
+  "type": "object",
+  "title": "HttpClient",
+  "properties": {
+    "BaseAddress": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Bb][Aa][Ss][Ee][Aa][Dd][Dd][Rr][Ee][Ss][Ss])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## httpClient
+{
+  "type": "object",
+  "title": "httpClient",
+  "properties": {
+    "baseAddress": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Bb][Aa][Ss][Ee][Aa][Dd][Dd][Rr][Ee][Ss][Ss])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## open-ai
+{
+  "type": "object",
+  "title": "open-ai",
+  "properties": {
+    "api-key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Aa][Pp][Ii]-[Kk][Ee][Yy])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## openAI
+{
+  "type": "object",
+  "title": "openAI",
+  "properties": {
+    "apiKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Aa][Pp][Ii][Kk][Ee][Yy])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## Diagnostics

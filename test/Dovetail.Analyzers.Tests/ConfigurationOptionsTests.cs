@@ -119,6 +119,41 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     }
 
     [Test]
+    [Arguments("Camel")]
+    [Arguments("Dash")]
+    public async Task Reads_the_keys_of_the_declared_key_style(string style)
+    {
+        var result = await WithBinder(11).AddSources(ConfigurationKeyStyleSources.Styled(style)).Build().GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Keeps_styled_options_cached_when_unrelated_code_changes()
+    {
+        var result = await WithBinder(11).AddSources(ConfigurationKeyStyleSources.Styled("Dash")).Build().GenerateAsync(TestContext.CancellationToken);
+
+        var compilation = result.InputCompilation;
+        var parseOptions = (CSharpParseOptions)compilation.SyntaxTrees.First().Options;
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [new DovetailAttributesGenerator().AsSourceGenerator()],
+            parseOptions: parseOptions,
+            driverOptions: new(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true)
+        );
+        driver = driver.RunGenerators(compilation, TestContext.CancellationToken);
+        driver = driver.RunGenerators(
+            compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("namespace Sample; public class Unrelated { }", parseOptions, cancellationToken: TestContext.CancellationToken)),
+            TestContext.CancellationToken
+        );
+
+        var steps = driver.GetRunResult().Results.Single().TrackedSteps;
+        foreach (var name in new[] { "dovetail:configuration_classes", "dovetail:configuration_options", "dovetail:configuration_sections" })
+        {
+            steps[name].SelectMany(z => z.Outputs).Select(z => z.Reason).ShouldAllBe(z => z == IncrementalStepRunReason.Cached || z == IncrementalStepRunReason.Unchanged, name);
+        }
+    }
+
+    [Test]
     [Arguments(10)]
     [Arguments(11)]
     public async Task Compiles_every_supported_shape(int binder)
