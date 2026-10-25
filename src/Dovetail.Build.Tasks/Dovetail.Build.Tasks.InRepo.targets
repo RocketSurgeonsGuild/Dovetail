@@ -10,6 +10,7 @@
   </PropertyGroup>
   <UsingTask TaskName="Dovetail.Build.Tasks.MergeConfigurationSchema" AssemblyFile="$(_DovetailBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Dovetail.Build.Tasks.WriteConfigurationSchemaSegment" AssemblyFile="$(_DovetailBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Dovetail.Build.Tasks.ScaffoldEditorSettings" AssemblyFile="$(_DovetailBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <!--
       Builds the tasks first. Not a real reference: nothing compiles against it, no package depends on it, and an Aspire AppHost
       doesn't make it a resource. AdditionalProperties is cleared so browser-wasm builds (see the root Directory.Build.targets)
