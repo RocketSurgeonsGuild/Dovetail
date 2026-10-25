@@ -64,11 +64,11 @@ documentation file that ships with the package, when there is one.
 
 ### Section names
 
-| Attribute                                      | Section                                                                                                                           |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `[DovetailConfiguration]`                      | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings`. |
-| `[DovetailConfiguration("Http:Retry")]`        | The path you give. `:` nests sections. Keys are case-insensitive.                                                                 |
-| `[assembly: DovetailConfiguration<T>]`         | The same rule as the class form, applied to `T`.                                                                                  |
+| Attribute                               | Section                                                                                                                           |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `[DovetailConfiguration]`               | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings`. |
+| `[DovetailConfiguration("Http:Retry")]` | The path you give. `:` nests sections. Keys are case-insensitive.                                                                 |
+| `[assembly: DovetailConfiguration<T>]`  | The same rule as the class form, applied to `T`.                                                                                  |
 
 There is no prefix. A name that would become empty after stripping the suffix (a class called `Options`) is an error
 ([`DT0008`](#diagnostics)); give it a path.
@@ -301,7 +301,7 @@ MyLibrary/
 | Id       | Severity | Meaning                                                                                                                     |
 | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `DT0006` | Warning  | The project's C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                 |
-| `DT0007` | Error    | The type can't be described as configuration, for example an interface, a collection or an open generic type.  |
+| `DT0007` | Error    | The type can't be described as configuration, for example an interface, a collection or an open generic type.               |
 | `DT0008` | Error    | The section isn't valid for the type: empty, or a name that is empty once the suffix is removed.                            |
 | `DT0009` | Warning  | A member has a type configuration binding doesn't support. It is left out of the schema and the binder.                     |
 | `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                     |
@@ -309,7 +309,7 @@ MyLibrary/
 | `DT0012` | Warning  | The type graph uses too many distinct types, so the schema stops describing them at the member named.                       |
 | `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                |
 | `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                       |
-| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`.                 |
+| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`.                  |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one
 indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under
