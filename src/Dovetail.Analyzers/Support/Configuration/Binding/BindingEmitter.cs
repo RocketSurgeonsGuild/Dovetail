@@ -54,16 +54,17 @@ internal sealed class BindingEmitter
 
     private bool V11 => _version >= BinderVersion.V11;
 
-    /// <summary>The name of the entry point that binds an existing instance of a type: <c>Bind…(configuration, instance)</c>.</summary>
+    /// <summary>The name of the helper that binds an existing instance of a type: <c>Bind…(configuration, instance)</c>.</summary>
     public static string BindMethodName(TypeSpec type) => "Bind" + type.IdentifierCompatibleSubstring;
 
-    /// <summary>The name of the entry point that creates an instance of a type: <c>Create…(configuration)</c>.</summary>
+    /// <summary>The name of the entry point that creates an instance of a type: <c>Create…(configuration)</c>, which every root has.</summary>
     public static string CreateMethodName(TypeSpec type) => "Create" + type.IdentifierCompatibleSubstring;
 
     /// <summary>
-    ///     The members of the binder class: entry points for <paramref name="bindRoots" /> (bound into the instance the options
-    ///     pipeline creates, like <c>services.Configure&lt;T&gt;(section)</c>) and <paramref name="createRoots" /> (created from
-    ///     configuration, like <c>section.Get&lt;T&gt;()</c>), then the helpers they use.
+    ///     The members of the binder class: a <c>Create…</c> entry point for every root, then the helpers they use. The
+    ///     <paramref name="bindRoots" /> are created with their public parameterless constructor and bound the way
+    ///     <c>services.Configure&lt;T&gt;(section)</c> binds the instance the options pipeline creates. The
+    ///     <paramref name="createRoots" /> are created from configuration, like <c>section.Get&lt;T&gt;()</c>.
     /// </summary>
     public static string Emit(
         BindingTypeIndex typeIndex,
@@ -76,7 +77,8 @@ internal sealed class BindingEmitter
         var emitter = new BindingEmitter(typeIndex, methods, version);
         foreach (var root in bindRoots)
         {
-            emitter.EmitBindEntryPoint(root);
+            emitter.EmitBindHelper(root);
+            emitter.EmitCreateAndBindEntryPoint(root);
         }
 
         foreach (var root in createRoots)
@@ -90,10 +92,10 @@ internal sealed class BindingEmitter
         return emitter._writer.ToString();
     }
 
-    private void EmitBindEntryPoint(ObjectSpec type)
+    private void EmitBindHelper(ObjectSpec type)
     {
         EmitBlankLineIfRequired();
-        EmitStartBlock($"public static void {BindMethodName(type)}({IConfiguration} configuration, {type.TypeRef.FullyQualifiedName} instance)");
+        EmitStartBlock($"private static void {BindMethodName(type)}({IConfiguration} configuration, {type.TypeRef.FullyQualifiedName} instance)");
         if (_typeIndex.HasBindableMembers(type))
         {
             // BindCoreMain: a section with neither a value nor children leaves the instance as it is.
@@ -110,6 +112,19 @@ internal sealed class BindingEmitter
             EmitBindingLogic(type, "temp", "configuration", InitializationKind.None, ValueDefaulting.None);
         }
 
+        EmitEndBlock();
+        _emitBlankLineBeforeNextStatement = true;
+    }
+
+    private void EmitCreateAndBindEntryPoint(ObjectSpec type)
+    {
+        EmitBlankLineIfRequired();
+        EmitStartBlock($"public static {type.TypeRef.FullyQualifiedName} {CreateMethodName(type)}({IConfiguration} configuration)");
+
+        // What the options pipeline does for a type it can create: construct it, then bind the section onto it.
+        _writer.WriteLine($"var instance = new {type.TypeRef.FullyQualifiedName}();");
+        _writer.WriteLine($"{BindMethodName(type)}(configuration, instance);");
+        _writer.WriteLine("return instance;");
         EmitEndBlock();
         _emitBlankLineBeforeNextStatement = true;
     }

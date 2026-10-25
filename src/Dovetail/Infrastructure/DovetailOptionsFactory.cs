@@ -4,25 +4,25 @@ using Microsoft.Extensions.Options;
 namespace Dovetail.Infrastructure;
 
 /// <summary>
-///     Creates the default (unnamed) <typeparamref name="TOptions" /> from its configuration section, for types the options
-///     pipeline can't create with a public parameterless constructor. The base class then runs the configure, post-configure and
-///     validation steps as usual.
+///     Creates <typeparamref name="TOptions" /> from its configuration section, for every options name. The base class then runs
+///     the configure, post-configure and validation steps as usual.
 /// </summary>
 /// <remarks>
-///     Named options are created by the base class.
+///     The configuration for a name comes from the <see cref="IDovetailConfigurationProvider" />, which the default
+///     implementation supplies for the default name only.
 /// </remarks>
-/// <typeparam name="TOptions">The options type.</typeparam>
+/// <typeparam name="TOptions">The options type. <see cref="OptionsFactory{TOptions}" /> is annotated as needing its public parameterless constructor, so this is too.</typeparam>
 /// <remarks>
 ///     Initializes a new instance of the <see cref="DovetailOptionsFactory{TOptions}" /> class.
 /// </remarks>
-/// <param name="configuration">The application's configuration.</param>
+/// <param name="provider">Supplies the configuration to create each named instance from.</param>
 /// <param name="path">The path of the section to create from.</param>
 /// <param name="create">Creates an instance from the section.</param>
 /// <param name="setups">The configuration actions to run.</param>
 /// <param name="postConfigures">The initialization actions to run.</param>
 /// <param name="validations">The validations to run.</param>
 internal sealed class DovetailOptionsFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(
-    IConfiguration configuration,
+    IDovetailConfigurationProvider provider,
     string path,
     Func<IConfiguration, TOptions> create,
     IEnumerable<IConfigureOptions<TOptions>> setups,
@@ -32,15 +32,14 @@ internal sealed class DovetailOptionsFactory<[DynamicallyAccessedMembers(Dynamic
     : OptionsFactory<TOptions>(setups, postConfigures, validations)
     where TOptions : class
 {
-    private readonly IConfiguration _configuration = configuration;
+    private readonly IDovetailConfigurationProvider _provider = provider;
     private readonly string _path = path;
     private readonly Func<IConfiguration, TOptions> _create = create;
 
     /// <summary>
-    ///     Creates the instance. The default name is created from the configuration section; other names by the base class.
+    ///     Creates the instance from the section of the configuration the provider returns for the name.
     /// </summary>
     /// <param name="name">The name of the options instance to create.</param>
     /// <returns>The created instance.</returns>
-    protected override TOptions CreateInstance(string name) =>
-        name == Options.DefaultName ? _create(_configuration.GetSection(_path)) : base.CreateInstance(name);
+    protected override TOptions CreateInstance(string name) => _create(_provider.GetConfiguration(name).GetSection(_path));
 }

@@ -150,16 +150,14 @@ internal static class ConfigurationOptionsEmitter
 
     private static string Registration(ConfigurationOptions registration, ObjectSpec root)
     {
-        // Types the options pipeline can't create (constructor parameters, init-only or required members) get a factory.
-        var bind = root.InstantiationStrategy is ObjectInstantiationStrategy.ParameterizedConstructor
-            ? $"static configuration => {BinderClassName}.{BindingEmitter.CreateMethodName(root)}(configuration)"
-            : $"static (configuration, instance) => {BinderClassName}.{BindingEmitter.BindMethodName(root)}(configuration, instance)";
+        // Every root is created by its generated Create entry point, which also binds types the options pipeline could create.
+        var create = $"static configuration => {BinderClassName}.{BindingEmitter.CreateMethodName(root)}(configuration)";
         var call = "global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<"
           + registration.Type.FullyQualifiedName
           + ">(services, "
           + SymbolDisplay.FormatLiteral(registration.Path, quote: true)
           + ", "
-          + bind
+          + create
           + ")";
         return registration.ValidateOnStart ? $"global::Microsoft.Extensions.DependencyInjection.OptionsBuilderExtensions.ValidateOnStart({call})" : call;
     }

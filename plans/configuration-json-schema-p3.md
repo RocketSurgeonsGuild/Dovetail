@@ -18,16 +18,16 @@ Framework types are fully qualified, because the binder is emitted into the cons
 
 The rules follow the major version of the compilation's `Microsoft.Extensions.Configuration.Binder` reference (`BinderVersion`; version 11 when there's none). The differences between 10 and 11 are the ones in the two generators' source:
 
-| | 10 | 11 |
-|---|---|---|
-| `Nullable<T>` set to `""` | value kept | null |
-| string/object ctor parameter missing | throws | null |
-| value-type ctor parameter set to `""` | default | throws (the parse fails) |
-| nullable or reference-type ctor parameter missing | throws | null (structs still throw) |
-| parameter with a default, set to null | null | the default |
-| properties bound through the constructor | bound again by `BindCore` | not bound again (`boundThroughConstructor`) |
-| null get-only complex member | a new instance is bound and dropped | skipped |
-| `[ConfigurationIgnore]` | not honoured | honoured, in the schema too |
+|                                                   | 10                                  | 11                                          |
+| ------------------------------------------------- | ----------------------------------- | ------------------------------------------- |
+| `Nullable<T>` set to `""`                         | value kept                          | null                                        |
+| string/object ctor parameter missing              | throws                              | null                                        |
+| value-type ctor parameter set to `""`             | default                             | throws (the parse fails)                    |
+| nullable or reference-type ctor parameter missing | throws                              | null (structs still throw)                  |
+| parameter with a default, set to null             | null                                | the default                                 |
+| properties bound through the constructor          | bound again by `BindCore`           | not bound again (`boundThroughConstructor`) |
+| null get-only complex member                      | a new instance is bound and dropped | skipped                                     |
+| `[ConfigurationIgnore]`                           | not honoured                        | honoured, in the schema too                 |
 
 Some version 10 output doesn't compile: unescaped keyword identifiers, `Name = Name` for a parameter named `name`, and `Items = Items` self-assignments (CS1717). Those use the version 11 form in both modes; none of them changes behaviour.
 
@@ -36,19 +36,18 @@ Some version 10 output doesn't compile: unescaped keyword identifiers, `Name = N
 Each `[DovetailConfiguration]` assembly gets `Dovetail_ConfigurationOptions.g.cs`. It holds:
 
 - a private `DovetailConfigurationOptions : IServiceJoint`, nested in the assembly's exports class. The exports list it first, so configuration binds before other joints configure options in code. `Imports` includes the assembly's own exports when it has the joint;
-- a file-local `DovetailConfigurationBinder` with one entry point per root type.
+- a file-local `DovetailConfigurationBinder` with one `Create…` entry point per root type.
 
-There are two kinds of entry point:
+Every root has one entry point, `Create…(configuration)`, and the joint registers every type through it. It is built two ways:
 
-- **`Bind…(configuration, instance)`** is for types the options pipeline can create, those with a public parameterless constructor. It's `BindCoreMain`: a section with neither a value nor children leaves the instance alone; otherwise `BindCore(…, defaultValueIfNotFound: false)`, as `services.Configure<T>(section)` does.
-- **`Create…(configuration)`** is for the rest, constructor parameters, init-only or `required` members. It's `GetCore`: `Initialize…`, then `BindCore(…, defaultValueIfNotFound: true)`. The difference is that it still creates an instance for an empty section, where `Get<T>()` returns null: `IOptions<T>.Value` can't be null. A missing required constructor parameter therefore throws when the options are first read.
+- **Types the options pipeline can create**, those with a public parameterless constructor: `var instance = new T(); Bind…(configuration, instance); return instance;`. The `Bind…` helper is private. It's `BindCoreMain`: a section with neither a value nor children leaves the instance alone; otherwise `BindCore(…, defaultValueIfNotFound: false)`, as `services.Configure<T>(section)` does.
+- **The rest**, constructor parameters, init-only or `required` members. It's `GetCore`: `Initialize…`, then `BindCore(…, defaultValueIfNotFound: true)`. The difference is that it still creates an instance for an empty section, where `Get<T>()` returns null: `IOptions<T>.Value` can't be null. A missing required constructor parameter therefore throws when the options are first read.
 
-The joint calls `AddDovetailConfigurationOptions<T>(services, path, bind or create)`, in path then type name order, and `ValidateOnStart` when asked. Every `[OptionsValidator]` class in the assembly that validates a registered type is added with `TryAddEnumerable`. The runtime API (`src/Dovetail/DovetailConfigurationOptionsExtensions.cs`):
+There is one public overload because everything is created through generated create code, with no reflection anywhere. The joint calls `AddDovetailConfigurationOptions<T>(services, path, create)`, in path then type name order, and `ValidateOnStart` when asked. Every `[OptionsValidator]` class in the assembly that validates a registered type is added with `TryAddEnumerable`. The runtime API (`src/Dovetail/DovetailConfigurationOptionsExtensions.cs`):
 
-- resolves the application's complete `IConfiguration` from the container when options are first created, like `BindConfiguration`, and reads only its own section from it;
-- adds one `IConfigureOptions<T>` per bind registration (not de-duplicated; a type has one section, but two assemblies may register it), which the standard options pipeline applies in registration order;
-- adds one `IOptionsFactory<T>` (`OptionsFactory<T>` subclass) for created types, with `TryAdd`: an existing factory wins, so only the first create registration for a type counts, as with any DI registration;
-- watches the configuration's reload token, with one `IOptionsChangeTokenSource<T>` per type.
+- resolves an `IDovetailConfigurationProvider` from the container when options are first created and reads only its own section from the configuration it returns for the options name. The default provider (`TryAddSingleton`, so an application's wins) returns the application's complete `IConfiguration`, like `BindConfiguration`, for the default name and throws `InvalidOperationException` for any other, so named options (for example one per tenant) need an application-registered provider;
+- adds one `IOptionsFactory<T>` (`OptionsFactory<T>` subclass), with `TryAdd`: an existing factory wins, whether the application's or an earlier registration's, so only the first registration for a type counts, and a factory the application registers itself wins over ours. Configure, post-configure and validators still run on the created instance, in the base class, for every options name. The factory has no fallback to the base class's own creation, so the `DynamicallyAccessedMembers` annotation stays only because `OptionsFactory<T>` declares it (the trim analyzer reports IL2091 without it);
+- watches the application's configuration reload token, with Microsoft's `ConfigurationChangeTokenSource<T>`, one per type (default name only; applications supplying per-name configurations register their own `IOptionsChangeTokenSource<T>` for those names).
 
 There is no `Order` and no stacking, de-duplication or merging: a type has one section (DT0015 rejects a class attribute plus an assembly `DovetailConfiguration<T>` for one type), each library consumes its own section and the pipeline does the rest.
 
@@ -73,10 +72,11 @@ These belong in the managed-configuration docs (P5).
 
 - **Analyzer tests** (`ConfigurationOptionsTests`): snapshots of the generated file for a mutable options class and for records, init-only and constructor types, under both binder versions; the generated code compiles; joint registration order (path, then type name), validators, `ValidateOnStart` and opting out; `[ConfigurationIgnore]` by version; and caching.
 - **Parity tests** (`test/Dovetail.Configuration.Parity.Tests`, 266 per target framework): the same types and data bound three ways:
-  - Microsoft's generator (`EnableConfigurationBindingGenerator`, `Configure<T>` → `IOptions<T>` for mutable types, `Get<T>()` for factory types);
-  - the reflection binder (through a generic helper the generator can't intercept);
-  - Dovetail's joint → `IOptions<T>`.
+    - Microsoft's generator (`EnableConfigurationBindingGenerator`, `Configure<T>` → `IOptions<T>` for mutable types, `Get<T>()` for factory types);
+    - the reflection binder (through a generic helper the generator can't intercept);
+    - Dovetail's joint → `IOptions<T>`.
 
-  They run on net10.0 (Binder 10) and net11.0 (Binder 11), from the S5 case matrix plus reload, collections of records and init-only types. Microsoft's generator is the oracle except for the differences above, which are asserted against the reflection binder or the documented behaviour.
-- **Runtime tests** (`test/Dovetail.Configuration.Runtime.Tests`): registration (two registrations of one type from different assemblies: bind steps apply in registration order, the first factory wins), factories, validators, `ValidateOnStart`, reload, with hand-written delegates.
+    They run on net10.0 (Binder 10) and net11.0 (Binder 11), from the S5 case matrix plus reload, collections of records and init-only types. Microsoft's generator is the oracle except for the differences above, which are asserted against the reflection binder or the documented behaviour.
+
+- **Runtime tests** (`test/Dovetail.Configuration.Runtime.Tests`): registration (two registrations of one type from different assemblies: the first factory wins; an application-registered factory wins), factories, validators, `ValidateOnStart`, reload, with hand-written delegates.
 - **AOT** (`test/Dovetail.Configuration.Aot.Tests`): the real generated joint and binder for a class, a record and an init-only type compile with IL2026, IL3050 and IL2091 as errors, and bind.

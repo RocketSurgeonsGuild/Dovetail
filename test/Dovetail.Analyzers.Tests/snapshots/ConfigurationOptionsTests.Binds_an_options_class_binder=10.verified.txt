@@ -18,7 +18,7 @@ public static partial class Exports
     {
         public void Register(global::Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
-            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.GreetingsOptions>(services, "Greetings", static (configuration, instance) => DovetailConfigurationBinder.BindSample__GreetingsOptions(configuration, instance));
+            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.GreetingsOptions>(services, "Greetings", static configuration => DovetailConfigurationBinder.CreateSample__GreetingsOptions(configuration));
         }
     }
 }
@@ -27,7 +27,7 @@ public static partial class Exports
 [System.CodeDom.Compiler.GeneratedCode("Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 file static class DovetailConfigurationBinder
 {
-    public static void BindSample__GreetingsOptions(global::Microsoft.Extensions.Configuration.IConfiguration configuration, global::Sample.GreetingsOptions instance)
+    private static void BindSample__GreetingsOptions(global::Microsoft.Extensions.Configuration.IConfiguration configuration, global::Sample.GreetingsOptions instance)
     {
         if (!HasValueOrChildren(configuration))
         {
@@ -36,6 +36,13 @@ file static class DovetailConfigurationBinder
 
         var temp = instance;
         BindCore(configuration, ref temp, defaultValueIfNotFound: false);
+    }
+
+    public static global::Sample.GreetingsOptions CreateSample__GreetingsOptions(global::Microsoft.Extensions.Configuration.IConfiguration configuration)
+    {
+        var instance = new global::Sample.GreetingsOptions();
+        BindSample__GreetingsOptions(configuration, instance);
+        return instance;
     }
 
     public static void BindCore(global::Microsoft.Extensions.Configuration.IConfiguration configuration, ref global::Sample.GreetingsOptions instance, bool defaultValueIfNotFound)
