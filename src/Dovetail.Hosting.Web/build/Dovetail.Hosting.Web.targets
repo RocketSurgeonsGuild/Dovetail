@@ -1,0 +1,58 @@
+<Project>
+  <!--
+    Dovetail.Hosting.Web.targets
+    Optional endpoint that serves the application's merged configuration JSON Schema:
+
+      GET /.well-known/dovetail/configuration-schema
+
+    Off by default; nothing is generated unless the project opts in.
+
+    Properties:
+      DovetailConfigurationSchemaEndpoint              - 'true' maps the endpoint through a generated host joint (default: off).
+      DovetailConfigurationSchemaEndpointEnvironments  - optional semicolon-separated environment names; the endpoint is only mapped
+                                                         when the host environment is one of them (default: every environment).
+      DovetailConfigurationSchemaEndpointSourceFallback - 'false' keeps the project's obj/ path out of the compiled application. By
+                                                         default it is embedded so the endpoint can find appsettings.schema.json when
+                                                         the output directory has no copy, except in publishing and
+                                                         ContinuousIntegrationBuild builds, which must not carry a build machine path.
+
+    The joint is emitted from DovetailConfigurationSchemaEndpoint.cs.template, the same way Dovetail.Joints.targets emits joints.
+    It is a [DovetailExport] class, so the Dovetail source generator adds it to this assembly's Imports; it has no effect in
+    applications that are not built on Dovetail.Hosting.Web.
+  -->
+  <PropertyGroup>
+    <_DovetailConfigurationSchemaEndpointTemplateFile>$(MSBuildThisFileDirectory)DovetailConfigurationSchemaEndpoint.cs.template</_DovetailConfigurationSchemaEndpointTemplateFile>
+  </PropertyGroup>
+
+  <!--
+      Only applications get the joint: a library that set the property would export it to every host that references it,
+      and a host that also set the property would then map the route twice.
+  -->
+  <Target Name="_DovetailGenerateConfigurationSchemaEndpointJoint"
+          BeforeTargets="CoreCompile;XamlPreCompile"
+          Condition="'$(DovetailConfigurationSchemaEndpoint)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
+    <PropertyGroup>
+      <_DovetailSchemaEndpointFallback Condition="'$(DovetailConfigurationSchemaEndpointSourceFallback)' == '' and '$(_IsPublishing)' != 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</_DovetailSchemaEndpointFallback>
+      <_DovetailSchemaEndpointFallback Condition="'$(DovetailConfigurationSchemaEndpointSourceFallback)' != ''">$(DovetailConfigurationSchemaEndpointSourceFallback)</_DovetailSchemaEndpointFallback>
+      <!-- The merged schema lives in the project's intermediate directory (a stable path editors can point at). -->
+      <_DovetailSchemaEndpointObjectDirectory Condition="'$(_DovetailSchemaEndpointFallback)' == 'true'">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(BaseIntermediateOutputPath)'))</_DovetailSchemaEndpointObjectDirectory>
+      <_DovetailSchemaEndpointFallbackLiteral>null</_DovetailSchemaEndpointFallbackLiteral>
+      <_DovetailSchemaEndpointFallbackLiteral Condition="'$(_DovetailSchemaEndpointObjectDirectory)' != ''">"$(_DovetailSchemaEndpointObjectDirectory.Replace('\', '\\').Replace('"', '\"'))"</_DovetailSchemaEndpointFallbackLiteral>
+      <_DovetailSchemaEndpointEnvironmentsLiteral>null</_DovetailSchemaEndpointEnvironmentsLiteral>
+      <_DovetailSchemaEndpointEnvironmentsLiteral Condition="'$(DovetailConfigurationSchemaEndpointEnvironments)' != ''">"$(DovetailConfigurationSchemaEndpointEnvironments.Replace('\', '\\').Replace('"', '\"'))"</_DovetailSchemaEndpointEnvironmentsLiteral>
+      <_DovetailSchemaEndpointContent>$([System.IO.File]::ReadAllText('$(_DovetailConfigurationSchemaEndpointTemplateFile)'))</_DovetailSchemaEndpointContent>
+      <_DovetailSchemaEndpointContent>$(_DovetailSchemaEndpointContent.Replace('{FallbackDirectory}', '$(_DovetailSchemaEndpointFallbackLiteral)'))</_DovetailSchemaEndpointContent>
+      <_DovetailSchemaEndpointContent>$(_DovetailSchemaEndpointContent.Replace('{Environments}', '$(_DovetailSchemaEndpointEnvironmentsLiteral)'))</_DovetailSchemaEndpointContent>
+      <_DovetailSchemaEndpointOutputFile>$(IntermediateOutputPath)DovetailConfigurationSchemaEndpoint.g.cs</_DovetailSchemaEndpointOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailSchemaEndpointOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailSchemaEndpointContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_DovetailSchemaEndpointOutputFile)" />
+      <FileWrites Include="$(_DovetailSchemaEndpointOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>
