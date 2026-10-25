@@ -37,8 +37,13 @@ joints never register the options themselves.
 | ------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SdkSample.Greetings`     | `Greetings`, `Farewell`          | the basics: a class with `[Description]` and `[Range]`, and a positional record with a `<param>` description. `IGreeter`                                                                                                                                                                            |
 | `SdkSample.Notifications` | `Notifications`                  | a plain enum and a `[Flags]` enum, `TimeSpan`, `Uri`, `List<string>`, a `Dictionary<string, ChannelOptions>` of documented nested objects with `[Range]`, `[Description]`, `[EmailAddress]` and an `[Obsolete("Use Sender instead.")]` property. `INotifier`                                        |
-| `SdkSample.Storage`       | `Storage`, `Archive`             | the generated factory path: a positional record with constructor defaults, and a class with a `required` member and `init`-only properties. `[RegularExpression]`, a `string[]`, `KeyStyle = ConfigurationKeyStyle.Dash` (so the keys are `max-file-size-mb`, `allowed-extensions` and the sections `storage` and `archive`) and `[ConfigurationKeyName("keep-days")]`, which wins over the style. `IStore`                                                            |
+| `SdkSample.Storage`       | `Storage`, `Archive`             | the generated factory path: a positional record with constructor defaults, and a class with a `required` member and `init`-only properties. `[RegularExpression]`, a `string[]`, dash-case keys (`KeyStyle`) and `[ConfigurationKeyName("keep-days")]`. `IStore`                                    |
 | `SdkSample.Diagnostics`   | `Diagnostics`, `Host`, `Console` | types the library doesn't own, through `[assembly: DovetailConfiguration<HostOptions>("Host")]` and `[assembly: DovetailConfiguration<ConsoleLifetimeOptions>("Console")]`, whose descriptions in the schema come from the XML docs shipped in `Microsoft.Extensions.Hosting`. `IDiagnosticsReport` |
+
+`SdkSample.Storage` declares `KeyStyle = ConfigurationKeyStyle.Dash`, so its sections are `storage` and `archive` and its keys
+`root`, `max-file-size-mb`, `allowed-extensions` and so on; the binder reads those keys and the schema suggests them. The
+explicit `[ConfigurationKeyName("keep-days")]` wins over the `retention-days` the style would give. The other libraries keep
+the default PascalCase keys.
 
 Both hosts reference all four libraries. Each host's merged `obj/appsettings.schema.json` combines the sections of
 every one of them (plus SchemaStore's `Logging`, `Kestrel` and the rest of the stock settings).
@@ -54,7 +59,7 @@ the rest alone:
 | Host               | Overrides                                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | `SdkSample.Worker` | `Greetings:Repeat: 2`, `Notifications:MinimumLevel: Info`, `Notifications:Sender`, `Host:ShutdownTimeout: 00:00:05` |
-| `SdkSample.Web`    | `Farewell:Exclamations: 3`, `storage:max-file-size-mb: 128`, `Console:SuppressStatusMessages: true`                    |
+| `SdkSample.Web`    | `Farewell:Exclamations: 3`, `storage:max-file-size-mb: 128`, `Console:SuppressStatusMessages: true`                 |
 
 ## Running it
 

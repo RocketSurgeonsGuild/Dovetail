@@ -64,11 +64,11 @@ documentation file that ships with the package, when there is one.
 
 ### Section names
 
-| Attribute                               | Section                                                                                                                           |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Attribute                               | Section                                                                                                                                                                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `[DovetailConfiguration]`               | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings` (in the declared [key style](#key-style)). |
-| `[DovetailConfiguration("Http:Retry")]` | The path you give. `:` nests sections. Keys are case-insensitive.                                                                 |
-| `[assembly: DovetailConfiguration<T>]`  | The same rule as the class form, applied to `T`.                                                                                  |
+| `[DovetailConfiguration("Http:Retry")]` | The path you give. `:` nests sections. Keys are case-insensitive.                                                                                                           |
+| `[assembly: DovetailConfiguration<T>]`  | The same rule as the class form, applied to `T`.                                                                                                                            |
 
 There is no prefix. A name that would become empty after stripping the suffix (a class called `Options`) is an error
 ([`DT0008`](#diagnostics)); give it a path.
@@ -79,11 +79,11 @@ There is no prefix. A name that would become empty after stripping the suffix (a
 The default is `Pascal`, which is what every declaration without a `KeyStyle` already gets. The style is set per
 attribute; there is no assembly-wide or MSBuild default.
 
-| `KeyStyle` | `RetryCount` | `HTTPServer` | `Level2Cache` | `HttpClientOptions` section |
-| ---------- | ------------ | ------------ | ------------- | --------------------------- |
-| `Pascal`   | `RetryCount` | `HTTPServer` | `Level2Cache` | `HttpClient`                |
-| `Camel`    | `retryCount` | `httpServer` | `level2Cache` | `httpClient`                |
-| `Dash`     | `retry-count` | `http-server` | `level2-cache` | `http-client`              |
+| `KeyStyle` | `RetryCount`  | `HTTPServer`  | `Level2Cache`  | `HttpClientOptions` section |
+| ---------- | ------------- | ------------- | -------------- | --------------------------- |
+| `Pascal`   | `RetryCount`  | `HTTPServer`  | `Level2Cache`  | `HttpClient`                |
+| `Camel`    | `retryCount`  | `httpServer`  | `level2Cache`  | `httpClient`                |
+| `Dash`     | `retry-count` | `http-server` | `level2-cache` | `http-client`               |
 
 ```csharp
 [DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Dash)]
@@ -430,18 +430,18 @@ MyLibrary/
 
 ## Diagnostics
 
-| Id       | Severity | Meaning                                                                                                                                                                     |
-| -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DT0006` | Warning  | The project's C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                                                                 |
-| `DT0007` | Error    | The type can't be described as configuration: an interface, a static or abstract class, a struct or enum, an open generic type, or a collection.                            |
-| `DT0008` | Error    | The section isn't valid for the type: empty, an empty segment (`A::B`), or a name that is only a suffix such as `Options`.                                                  |
-| `DT0009` | Warning  | A member has a type configuration binding doesn't support. It is left out of the schema and the binder.                                                                     |
-| `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                                                                     |
-| `DT0011` | Error    | The type can't be created from configuration: no public constructor, several public constructors with parameters and none without, or a parameter that matches no property. |
-| `DT0012` | Warning  | The type graph uses more than 200 distinct types, so the schema stops describing them at the member named.                                                                  |
-| `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                                                                |
-| `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                                                                       |
-| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                        |
+| Id       | Severity | Meaning                                                                                                                                                                          |
+| -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DT0006` | Warning  | The project's C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                                                                      |
+| `DT0007` | Error    | The type can't be described as configuration: an interface, a static or abstract class, a struct or enum, an open generic type, or a collection.                                 |
+| `DT0008` | Error    | The section isn't valid for the type: empty, an empty segment (`A::B`), or a name that is only a suffix such as `Options`.                                                       |
+| `DT0009` | Warning  | A member has a type configuration binding doesn't support. It is left out of the schema and the binder.                                                                          |
+| `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                                                                          |
+| `DT0011` | Error    | The type can't be created from configuration: no public constructor, several public constructors with parameters and none without, or a parameter that matches no property.      |
+| `DT0012` | Warning  | The type graph uses more than 200 distinct types, so the schema stops describing them at the member named.                                                                       |
+| `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                                                                     |
+| `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                                                                            |
+| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                             |
 | `DT0016` | Error    | A type is bound with more than one key style. The later declaration is reported and produces nothing; use the same `KeyStyle`, or give the shared type `[ConfigurationKeyName]`. |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one

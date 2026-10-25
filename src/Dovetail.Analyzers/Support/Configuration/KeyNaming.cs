@@ -24,6 +24,7 @@ internal static class KeyNaming
     /// <summary>The key for a declared name, in <paramref name="style" />.</summary>
     public static string Apply(string name, KeyStyle style) => style switch
     {
+        KeyStyle.Pascal => Pascal(name),
         KeyStyle.Camel => Camel(name),
         KeyStyle.Dash => Dash(name),
         _ => Pascal(name),
@@ -86,56 +87,57 @@ internal static class KeyNaming
         for (var index = 0; index < name.Length; index++)
         {
             var current = name[index];
-            switch (CharUnicodeInfo.GetUnicodeCategory(current))
+            var category = CharUnicodeInfo.GetUnicodeCategory(current);
+            if (category == UnicodeCategory.UppercaseLetter)
             {
-                case UnicodeCategory.UppercaseLetter:
-                    switch (state)
-                    {
-                        case SeparatorState.LowercaseLetterOrDigit:
-                        case SeparatorState.SpaceSeparator:
-                            // An upper-case letter after lower-case letters, digits or spaces starts a new word.
-                            builder.Append(DashSeparator);
-                            break;
-                        case SeparatorState.UppercaseLetter:
-                            // In a run of upper-case letters only the last one starts a word, and only when lower-case follows:
-                            // XMLReader is xml-reader, SHA512Hash is sha512-hash.
-                            if (index + 1 < name.Length && char.IsLower(name[index + 1]))
-                            {
-                                builder.Append(DashSeparator);
-                            }
-
-                            break;
-                        default:
-                            break;
-                    }
-
-                    builder.Append(char.ToLowerInvariant(current));
-                    state = SeparatorState.UppercaseLetter;
-                    break;
-                case UnicodeCategory.LowercaseLetter:
-                case UnicodeCategory.DecimalDigitNumber:
-                    if (state == SeparatorState.SpaceSeparator)
-                    {
-                        // Spaces between words collapse to one separator.
+                switch (state)
+                {
+                    case SeparatorState.LowercaseLetterOrDigit:
+                    case SeparatorState.SpaceSeparator:
+                        // An upper-case letter after lower-case letters, digits or spaces starts a new word.
                         builder.Append(DashSeparator);
-                    }
+                        break;
+                    case SeparatorState.UppercaseLetter:
+                        // In a run of upper-case letters only the last one starts a word, and only when lower-case follows:
+                        // XMLReader is xml-reader, SHA512Hash is sha512-hash.
+                        if (index + 1 < name.Length && char.IsLower(name[index + 1]))
+                        {
+                            builder.Append(DashSeparator);
+                        }
 
-                    builder.Append(current);
-                    state = SeparatorState.LowercaseLetterOrDigit;
-                    break;
-                case UnicodeCategory.SpaceSeparator:
-                    // Spaces at the start and end are dropped.
-                    if (state != SeparatorState.NotStarted)
-                    {
-                        state = SeparatorState.SpaceSeparator;
-                    }
+                        break;
+                    case SeparatorState.NotStarted:
+                    default:
+                        break;
+                }
 
-                    break;
-                default:
-                    // Anything else (including the separator itself and surrogates) is kept and restarts word detection.
-                    builder.Append(current);
-                    state = SeparatorState.NotStarted;
-                    break;
+                builder.Append(char.ToLowerInvariant(current));
+                state = SeparatorState.UppercaseLetter;
+            }
+            else if (category is UnicodeCategory.LowercaseLetter or UnicodeCategory.DecimalDigitNumber)
+            {
+                if (state == SeparatorState.SpaceSeparator)
+                {
+                    // Spaces between words collapse to one separator.
+                    builder.Append(DashSeparator);
+                }
+
+                builder.Append(current);
+                state = SeparatorState.LowercaseLetterOrDigit;
+            }
+            else if (category == UnicodeCategory.SpaceSeparator)
+            {
+                // Spaces at the start and end are dropped.
+                if (state != SeparatorState.NotStarted)
+                {
+                    state = SeparatorState.SpaceSeparator;
+                }
+            }
+            else
+            {
+                // Anything else (including the separator itself and surrogates) is kept and restarts word detection.
+                builder.Append(current);
+                state = SeparatorState.NotStarted;
             }
         }
 
