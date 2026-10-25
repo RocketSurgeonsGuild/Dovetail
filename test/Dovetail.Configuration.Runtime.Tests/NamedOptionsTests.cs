@@ -209,7 +209,7 @@ public sealed class NamedOptionsTests
 
         await using var provider = services.BuildServiceProvider();
 
-        Should.Throw<InvalidOperationException>( provider.GetRequiredService<IOptionsMonitor<ServerRecord>> ).Message.ShouldContain("tenant-a");
+        Should.Throw<InvalidOperationException>(provider.GetRequiredService<IOptionsMonitor<ServerRecord>>).Message.ShouldContain("tenant-a");
     }
 
     private sealed class PerNameProvider(Dictionary<string, IConfiguration> configurations) : IDovetailConfigurationProvider

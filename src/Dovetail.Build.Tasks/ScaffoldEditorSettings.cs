@@ -65,8 +65,10 @@ public sealed class ScaffoldEditorSettings : Microsoft.Build.Utilities.Task
                 Updated = true;
                 Log.LogMessage(MessageImportance.Normal, "Dovetail: mapped {0} in {1}", outcome.Mappings!.SchemaUrl, outcome.SettingsFile);
                 break;
-            default:
+            case EditorSettingsStatus.Unchanged:
                 Log.LogMessage(MessageImportance.Low, "Dovetail: {0} already maps {1}", outcome.SettingsFile, outcome.Mappings!.SchemaUrl);
+                break;
+            default:
                 break;
         }
 

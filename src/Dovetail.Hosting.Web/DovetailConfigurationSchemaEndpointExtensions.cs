@@ -64,8 +64,11 @@ public static class DovetailConfigurationSchemaEndpointExtensions
         if (!IsEnabledFor(endpoints.ServiceProvider.GetRequiredService<IHostEnvironment>(), environments)) return null;
 
         var schema = new SchemaFileCache(baseDirectory, fallbackDirectory);
-        // The cast selects the RequestDelegate overload, which unlike the Delegate overloads does not need reflection.
+        // The cast selects the RequestDelegate overload, which unlike the Delegate overloads does not need reflection; without it the
+        // compiler binds the reflection-based Delegate overload, so IDE0004 (redundant cast) must not be applied.
+#pragma warning disable IDE0004
         return endpoints.MapGet(RoutePattern, (RequestDelegate)schema.HandleAsync);
+#pragma warning restore IDE0004
     }
 
     private static bool IsEnabledFor(IHostEnvironment environment, string? environments)

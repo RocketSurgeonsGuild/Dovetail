@@ -8,7 +8,6 @@ namespace Dovetail.Build.Tasks.Tests;
 /// </summary>
 public class VsCodeSettingsEditorTests
 {
-    private const string Url = "./src/Host/obj/appsettings.schema.json";
     private const string OtherUrl = "./src/Other/obj/appsettings.schema.json";
 
     private static readonly EditorSettingsMappings Host = Mappings("src/Host");
@@ -115,7 +114,7 @@ public class VsCodeSettingsEditorTests
         var result = VsCodeSettingsEditor.Apply(Bytes("", bom: true), Host);
 
         result.Content.Take(3).ShouldBe(new byte[] { 0xEF, 0xBB, 0xBF });
-        new UTF8Encoding(false).GetString(result.Content.Skip(3).ToArray()).ShouldBe(HostEntries);
+        new UTF8Encoding(false).GetString(result.Content[3..]).ShouldBe(HostEntries);
     }
 
     [Test]
@@ -211,7 +210,7 @@ public class VsCodeSettingsEditorTests
         result.Status.ShouldBe(EditorSettingsStatus.Updated);
         result.Content.Take(3).ShouldBe(new byte[] { 0xEF, 0xBB, 0xBF });
         result.Content.Skip(3).Take(3).ShouldNotBe(new byte[] { 0xEF, 0xBB, 0xBF });
-        ShouldMap(new UTF8Encoding(false).GetString(result.Content.Skip(3).ToArray()), Host);
+        ShouldMap(new UTF8Encoding(false).GetString(result.Content[3..]), Host);
     }
 
     [Test]
