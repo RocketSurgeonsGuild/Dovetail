@@ -1,4 +1,5 @@
 using System.Globalization;
+using Dovetail.Support.Configuration.Binding;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -49,20 +50,26 @@ internal sealed class ModelBuilder
     private readonly List<DiagnosticInfo> _diagnostics = [];
     private readonly Location? _declarationLocation;
     private readonly CancellationToken _cancellationToken;
+
+    /// <summary><c>[ConfigurationIgnore]</c>, when the binder honours it (version 11 on).</summary>
+    private readonly INamedTypeSymbol? _ignoreAttribute;
+
     private string _rootTypeName = "";
     private bool _reportedTooLarge;
 
-    private ModelBuilder(Location? declarationLocation, CancellationToken cancellationToken)
+    private ModelBuilder(Location? declarationLocation, INamedTypeSymbol? ignoreAttribute, CancellationToken cancellationToken)
     {
         _declarationLocation = declarationLocation;
+        _ignoreAttribute = ignoreAttribute;
         _cancellationToken = cancellationToken;
     }
 
     /// <summary>Builds the section for one <c>[DovetailConfiguration]</c> attribute.</summary>
     /// <param name="attribute">The attribute.</param>
     /// <param name="attributedType">The class it's on, or <see langword="null" /> on the assembly.</param>
+    /// <param name="compilation">The compilation, for the binder's view of the type.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public static ConfigurationDeclaration Build(AttributeData attribute, INamedTypeSymbol? attributedType, CancellationToken cancellationToken)
+    public static ConfigurationDeclaration Build(AttributeData attribute, INamedTypeSymbol? attributedType, Compilation compilation, CancellationToken cancellationToken)
     {
         string? section = null;
         ITypeSymbol? type = attributedType;
@@ -101,8 +108,14 @@ internal sealed class ModelBuilder
             }
         }
 
-        var builder = new ModelBuilder(attribute.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation(), cancellationToken);
+        var version = BindingParser.VersionOf(compilation);
+        var builder = new ModelBuilder(
+            attribute.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation(),
+            version >= BinderVersion.V11 ? compilation.GetTypeByMetadataName("Microsoft.Extensions.Configuration.ConfigurationIgnoreAttribute") : null,
+            cancellationToken
+        );
         ConfigurationSection? result = null;
+        ConfigurationOptions? options = null;
         try
         {
             if (attributedType is null && !hasTypeArgument)
@@ -117,6 +130,25 @@ internal sealed class ModelBuilder
             else
             {
                 result = builder.BuildSection(type, section, order, registerOptions, validateOnStart);
+                if (result is { RegisterOptions: true } && type is not null)
+                {
+                    // The binder's own rules for creating the type are stricter in places (e.g. ref parameters).
+                    var types = new BindingParser(compilation, version).Parse(type, cancellationToken);
+                    var index = new BindingTypeIndex(types);
+                    if (index.TryGetTypeSpec(TypeRef.From(type), out var spec) && spec is ObjectSpec root && !index.CanInstantiate(root))
+                    {
+                        builder.Report(
+                            Diagnostics.UnsupportedConfigurationConstructor,
+                            builder._declarationLocation,
+                            type.ToDisplayString(),
+                            root.InitFailureReason ?? "the configuration binder can't create it"
+                        );
+                    }
+                    else
+                    {
+                        options = new(result.Path, result.Order, result.ValidateOnStart, TypeRef.From(type), version, types);
+                    }
+                }
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -125,7 +157,7 @@ internal sealed class ModelBuilder
             builder.Report(Diagnostics.ConfigurationSchemaFailed, builder._declarationLocation, type?.ToDisplayString() ?? "?", exception.GetType().Name + ": " + exception.Message);
         }
 
-        return new(result, builder._diagnostics.ToEquatableArray());
+        return new(result, builder._diagnostics.ToEquatableArray(), options);
     }
 
     /// <summary>The default section name: the type name without an Options/Settings/Configuration/Config suffix.</summary>
@@ -270,7 +302,7 @@ internal sealed class ModelBuilder
         var constructor = TryResolveConstructor(type, null, out var resolved) ? resolved : null;
         var properties = new List<SchemaProperty>();
         var keys = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var member in BindableMembers(type, constructor))
+        foreach (var member in BindableMembers(type, constructor, _ignoreAttribute))
         {
             _cancellationToken.ThrowIfCancellationRequested();
             var node = BuildMember(member);
@@ -318,7 +350,7 @@ internal sealed class ModelBuilder
             return false;
         }
 
-        var properties = AllProperties(type);
+        var properties = AllProperties(type, _ignoreAttribute);
         if (parameterized[0].Parameters.FirstOrDefault(z => !properties.Any(p => string.Equals(p.Name, z.Name, StringComparison.OrdinalIgnoreCase))) is { } orphan)
         {
             ReportConstructor(reportAt, type, $"constructor parameter '{orphan.Name}' has no matching property");
@@ -339,9 +371,9 @@ internal sealed class ModelBuilder
 
     private readonly record struct Member(string Key, IPropertySymbol Property, IParameterSymbol? Parameter, bool Required);
 
-    private static IEnumerable<Member> BindableMembers(INamedTypeSymbol type, IMethodSymbol? constructor)
+    private static IEnumerable<Member> BindableMembers(INamedTypeSymbol type, IMethodSymbol? constructor, INamedTypeSymbol? ignoreAttribute)
     {
-        foreach (var property in AllProperties(type))
+        foreach (var property in AllProperties(type, ignoreAttribute))
         {
             var parameter = constructor?.Parameters.FirstOrDefault(z => string.Equals(z.Name, property.Name, StringComparison.OrdinalIgnoreCase));
             var bindable = parameter is not null
@@ -360,8 +392,8 @@ internal sealed class ModelBuilder
         }
     }
 
-    /// <summary>Public instance properties with a public getter, base types first; a redeclared property keeps its base position.</summary>
-    private static List<IPropertySymbol> AllProperties(INamedTypeSymbol type)
+    /// <summary>Public properties with a public getter, base types first; a redeclared property keeps its base position.</summary>
+    private static List<IPropertySymbol> AllProperties(INamedTypeSymbol type, INamedTypeSymbol? ignoreAttribute)
     {
         var chain = new List<INamedTypeSymbol>();
         for (var current = type; current is { SpecialType: not SpecialType.System_Object }; current = current.BaseType)
@@ -372,11 +404,26 @@ internal sealed class ModelBuilder
         chain.Reverse();
         var properties = new List<IPropertySymbol>();
         var index = new Dictionary<string, int>(StringComparer.Ordinal);
+        var ignored = new Dictionary<string, bool>(StringComparer.Ordinal);
         foreach (var property in chain.SelectMany(z => z.GetMembers().OfType<IPropertySymbol>()))
         {
-            if (property is { IsStatic: true } or { IsIndexer: true } || property.DeclaredAccessibility != Accessibility.Public || property.GetMethod is not { DeclaredAccessibility: Accessibility.Public })
+            // Static properties count: the binder sets them too.
+            if (property is { IsIndexer: true } || property.DeclaredAccessibility != Accessibility.Public || property.GetMethod is not { DeclaredAccessibility: Accessibility.Public })
             {
                 continue;
+            }
+
+            // The binder reads [ConfigurationIgnore] off the first declaration of an overridden property, and off the most derived
+            // one of a redeclared (new) property.
+            if (ignoreAttribute is not null)
+            {
+                var declaration = property;
+                while (declaration.OverriddenProperty is { } overridden)
+                {
+                    declaration = overridden;
+                }
+
+                ignored[property.Name] = declaration.GetAttributes().Any(z => SymbolEqualityComparer.Default.Equals(z.AttributeClass, ignoreAttribute));
             }
 
             if (index.TryGetValue(property.Name, out var existing))
@@ -390,7 +437,7 @@ internal sealed class ModelBuilder
             }
         }
 
-        return properties;
+        return ignored.Count == 0 ? properties : [.. properties.Where(z => !ignored.TryGetValue(z.Name, out var value) || !value)];
     }
 
     /// <summary>Get-only properties the binder still fills: mutable collections and objects, updated in place.</summary>
@@ -398,7 +445,7 @@ internal sealed class ModelBuilder
         type is INamedTypeSymbol named
      && ( Dictionary(named) is not null || Element(named) is not null
             ? named.TypeKind == TypeKind.Class || named.OriginalDefinition.MetadataName is "IList`1" or "ICollection`1" or "ISet`1" or "IDictionary`2"
-            : named is { TypeKind: TypeKind.Class, SpecialType: SpecialType.None, IsAbstract: false } && !IsSystemType(named) );
+            : named is { TypeKind: TypeKind.Class or TypeKind.Interface, SpecialType: SpecialType.None } && !IsSystemType(named) );
 
     private SchemaNode? BuildMember(Member member)
     {
@@ -443,7 +490,8 @@ internal sealed class ModelBuilder
                 ? MapKeys(keyType) is { } keys && BuildType(valueType, via) is { } values ? keys with { Values = values } : null
                 : Element(named) is { } elementType
                     ? BuildType(elementType, via) is { } items ? new() { Kind = SchemaKind.Array, Items = items } : null
-                    : named is { TypeKind: TypeKind.Class or TypeKind.Struct, IsAbstract: false } && !IsSystemType(named)
+                    // Interfaces and abstract classes can't be created, but the binder fills an existing instance's declared properties.
+                    : named is { TypeKind: TypeKind.Class or TypeKind.Struct or TypeKind.Interface } && !IsSystemType(named)
                         ? Define(named, via) is { } name ? Reference(name) : new() { Kind = SchemaKind.Any }
                         : null;
         }

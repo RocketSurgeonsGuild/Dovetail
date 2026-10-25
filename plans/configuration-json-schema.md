@@ -1,6 +1,6 @@
 # Plan: Dovetail configuration → JSON Schema (code-first, merged per application)
 
-Status: design agreed (2026-10-24). PR A is on `fix/dovetail-bugs-and-analyzer-flow`. P0 is done ([results, plan changes and follow-up decisions](configuration-json-schema-p0.md)), which supersede this file where they differ; P1 is in progress.
+Status: design agreed (2026-10-24). PR A is on `fix/dovetail-bugs-and-analyzer-flow`. P0 is done ([results, plan changes and follow-up decisions](configuration-json-schema-p0.md)), which supersede this file where they differ. P1 and [P3](configuration-json-schema-p3.md) are done; P2 is in progress.
 
 ## Context
 

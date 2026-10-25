@@ -21,7 +21,7 @@ internal static class ImportDovetails
         var referenceMethods = request
                               .Compilation.GetDovetailReferences()
                               .Select(refer => refer.ToString())
-                              .Concat(request.ExportedDovetails.Length > 0 ? [$"{( exportConfig.Namespace is { Length: > 0 } ? $"{exportConfig.Namespace}." : "" )}{exportConfig.ClassName}.{exportConfig.MethodName}"] : [])
+                              .Concat(request.ExportedDovetails.Length > 0 || request.HasConfigurationOptions ? [$"{( exportConfig.Namespace is { Length: > 0 } ? $"{exportConfig.Namespace}." : "" )}{exportConfig.ClassName}.{exportConfig.MethodName}"] : [])
                               .ToImmutableList();
 
         var functionBody = referenceMethods.Count == 0 ? Block(YieldStatement(SyntaxKind.YieldBreakStatement)) : addEnumerateExportStatements(referenceMethods);
@@ -226,7 +226,8 @@ internal static class ImportDovetails
     (
         Compilation Compilation,
         MsBuildConfig BuildConfig,
-        ImmutableArray<INamedTypeSymbol> ExportedDovetails
+        ImmutableArray<INamedTypeSymbol> ExportedDovetails,
+        bool HasConfigurationOptions
     );
 
 }

@@ -19,7 +19,12 @@ internal static class ConfigurationSchemaPipeline
     /// <summary>Marks the XML documentation files of package references, which Dovetail's targets pass in as additional files.</summary>
     private const string ReferenceDocumentationMetadata = "build_metadata.AdditionalFiles.DovetailReferenceDocumentation";
 
-    public static void Register(IncrementalGeneratorInitializationContext context, IncrementalValueProvider<bool> supportedLanguageVersion)
+    /// <summary>Registers the schema and options outputs; the result says whether this assembly exports an options joint.</summary>
+    public static IncrementalValueProvider<bool> Register(
+        IncrementalGeneratorInitializationContext context,
+        IncrementalValueProvider<bool> supportedLanguageVersion,
+        IncrementalValueProvider<MsBuildConfig> msBuildConfig
+    )
     {
         var classDeclarations = context
                                .SyntaxProvider
@@ -28,7 +33,14 @@ internal static class ConfigurationSchemaPipeline
                                     static (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax,
                                     static (syntaxContext, cancellationToken) => syntaxContext
                                                                                .Attributes
-                                                                               .Select(z => ModelBuilder.Build(z, (INamedTypeSymbol)syntaxContext.TargetSymbol, cancellationToken))
+                                                                               .Select(
+                                                                                    z => ModelBuilder.Build(
+                                                                                        z,
+                                                                                        (INamedTypeSymbol)syntaxContext.TargetSymbol,
+                                                                                        syntaxContext.SemanticModel.Compilation,
+                                                                                        cancellationToken
+                                                                                    )
+                                                                                )
                                                                                .ToEquatableArray()
                                 )
                                .WithTrackingName("dovetail:configuration_classes");
@@ -41,7 +53,7 @@ internal static class ConfigurationSchemaPipeline
                                        static (node, _) => node is CompilationUnitSyntax,
                                        static (syntaxContext, cancellationToken) => syntaxContext
                                                                                   .Attributes
-                                                                                  .Select(z => ModelBuilder.Build(z, null, cancellationToken))
+                                                                                  .Select(z => ModelBuilder.Build(z, null, syntaxContext.SemanticModel.Compilation, cancellationToken))
                                                                                   .ToEquatableArray()
                                    )
                                   .WithTrackingName("dovetail:configuration_assembly");
@@ -54,6 +66,22 @@ internal static class ConfigurationSchemaPipeline
         // Sections carry no source positions, so an edit that only moves code leaves them equal and everything after cached.
         var sections = declarations.Select(static (declarations, _) => declarations.Select(z => z.Section).OfType<ConfigurationSection>().ToEquatableArray());
         var diagnostics = declarations.Select(static (declarations, _) => declarations.SelectMany(z => z.Diagnostics).Distinct().ToEquatableArray());
+        var options = declarations
+                     .Select(static (declarations, _) => declarations.Select(z => z.Options).OfType<ConfigurationOptions>().ToEquatableArray())
+                     .WithTrackingName("dovetail:configuration_options");
+
+        // [OptionsValidator] classes for the options types are registered with them.
+        var validators = context
+                        .SyntaxProvider
+                        .ForAttributeWithMetadataName(
+                             "Microsoft.Extensions.Options.OptionsValidatorAttribute",
+                             static (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax,
+                             static (syntaxContext, _) => ConfigurationOptionsEmitter.ReadValidator((INamedTypeSymbol)syntaxContext.TargetSymbol, syntaxContext.SemanticModel.Compilation)
+                         )
+                        .Where(static z => z is not null)
+                        .Select(static (z, _) => z!)
+                        .Collect()
+                        .Select(static (z, _) => z.OrderBy(validator => validator.TypeName, StringComparer.Ordinal).ToEquatableArray());
 
         var referenceDocumentation = context
                                     .AdditionalTextsProvider
@@ -79,6 +107,18 @@ internal static class ConfigurationSchemaPipeline
             static (production, input) => Emit(production, input.Left.Left, input.Left.Right, input.Right)
         );
 
+        context.RegisterSourceOutput(
+            options.Combine(validators).Combine(msBuildConfig).Combine(supportedLanguageVersion),
+            static (production, input) =>
+            {
+                if (input.Right
+                 && ConfigurationOptionsEmitter.Emit(input.Left.Right.ExportConfiguration, input.Left.Left.Left, input.Left.Left.Right) is { } source)
+                {
+                    production.AddSource("Dovetail_ConfigurationOptions.g.cs", source);
+                }
+            }
+        );
+
         // Reported against the compilation's syntax trees, so #pragma warning disable works. This step re-runs on every edit,
         // but all it does is report.
         context.RegisterSourceOutput(
@@ -91,6 +131,8 @@ internal static class ConfigurationSchemaPipeline
                 }
             }
         );
+
+        return options.Select(static (options, _) => !options.IsEmpty);
     }
 
     /// <summary>

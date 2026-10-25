@@ -66,7 +66,7 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                              .WithTrackingName("dovetail:language_version");
         var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
 
-        ConfigurationSchemaPipeline.Register(context, supportedLanguageVersion);
+        var hasConfigurationOptions = ConfigurationSchemaPipeline.Register(context, supportedLanguageVersion, msBuildConfig);
 
         context.RegisterSourceOutput(
             languageVersion,
@@ -83,11 +83,12 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
             msBuildConfig
                .Combine(context.CompilationProvider)
                .Combine(exportedDovetails)
+               .Combine(hasConfigurationOptions)
                .Combine(supportedLanguageVersion),
             static (productionContext, tuple) =>
             {
                 if (!tuple.Right) return;
-                ExportDovetails.HandleDovetailExports(productionContext, new(tuple.Left.Left.Left, tuple.Left.Right));
+                ExportDovetails.HandleDovetailExports(productionContext, new(tuple.Left.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Right));
             }
         );
 
@@ -97,11 +98,15 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                .CompilationProvider
                .Combine(exportedDovetails)
                .Combine(msBuildConfig)
+               .Combine(hasConfigurationOptions)
                .Combine(supportedLanguageVersion),
             static (productionContext, tuple) =>
             {
                 if (!tuple.Right) return;
-                ImportDovetails.HandleDovetailImports(productionContext, new(tuple.Left.Left.Left, tuple.Left.Right, tuple.Left.Left.Right));
+                ImportDovetails.HandleDovetailImports(
+                    productionContext,
+                    new(tuple.Left.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Left.Left.Right, tuple.Left.Right)
+                );
             }
         );
     }

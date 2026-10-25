@@ -26,7 +26,8 @@ public class ConfigurationSchemaTests() : GeneratorTest()
 
         """;
 
-    private GeneratorTestContextBuilder WithAnnotations() => Builder.AddReferences(typeof(RangeAttribute), typeof(DescriptionAttribute), typeof(TypeConverterAttribute), typeof(Uri));
+    private GeneratorTestContextBuilder WithAnnotations() =>
+        Builder.AddConfigurationOptionsReferences().AddReferences(typeof(RangeAttribute), typeof(DescriptionAttribute), typeof(TypeConverterAttribute), typeof(Uri));
 
     [Test]
     public async Task Describes_an_options_class()
@@ -284,6 +285,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
 
         const string documentationPath = "/packages/thirdparty/1.0.0/lib/net10.0/ThirdParty.xml";
         var result = await Builder
+                          .AddConfigurationOptionsReferences()
                           .AddCompilationReferences(thirdParty)
                           .AddSources("[assembly: Dovetail.Attributes.DovetailConfiguration(\"Client\", typeof(ThirdParty.ClientOptions))]")
                           .AddAdditionalText(
@@ -476,6 +478,41 @@ public class ConfigurationSchemaTests() : GeneratorTest()
     }
 
     [Test]
+    public async Task Describes_the_declared_members_of_interfaces_and_abstract_classes()
+    {
+        // The binder can't create these, but fills an existing instance's declared properties, so the keys are valid.
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               namespace Sample;
+
+                               public interface IShape { int Sides { get; set; } }
+                               public class Square : IShape { public int Sides { get; set; } = 4; public string? Fill { get; set; } }
+                               public abstract class Base { public string? Name { get; set; } }
+                               public class Derived : Base { public string? Extra { get; set; } }
+
+                               [DovetailConfiguration]
+                               public class ShapesOptions
+                               {
+                                   public IShape Shape { get; set; } = new Square();
+                                   public Base Item { get; } = new Derived();
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
+        using var shapes = JsonDocument.Parse(Fragments(result)["Shapes"]);
+        var definitions = shapes.RootElement.GetProperty("definitions");
+        definitions.GetProperty("Sample.IShape").GetProperty("properties").EnumerateObject().Select(z => z.Name).ShouldBe(["Sides"]);
+        definitions.GetProperty("Sample.Base").GetProperty("properties").EnumerateObject().Select(z => z.Name).ShouldBe(["Name"]);
+        shapes.RootElement.GetProperty("properties").EnumerateObject().Select(z => z.Name).ShouldBe(["Shape", "Item"], ignoreOrder: true);
+    }
+
+    [Test]
     public async Task Survives_empty_comments()
     {
         var result = await WithAnnotations()
@@ -545,6 +582,8 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
+        // The binder stops at a generic nesting depth as well, and what it generates still compiles.
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
         var fragments = Fragments(result);
         using var deep = JsonDocument.Parse(fragments["Deep"]);
         deep.RootElement.GetProperty("definitions").EnumerateObject().Count().ShouldBe(13);

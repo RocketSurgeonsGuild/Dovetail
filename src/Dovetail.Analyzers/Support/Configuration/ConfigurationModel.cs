@@ -114,5 +114,8 @@ internal sealed record ConfigurationSection(
     EquatableArray<SchemaDefinition> Definitions
 );
 
-/// <summary>What a declaration produced: a section (unless it was invalid) and any diagnostics.</summary>
-internal sealed record ConfigurationDeclaration(ConfigurationSection? Section, EquatableArray<DiagnosticInfo> Diagnostics);
+/// <summary>
+///     What a declaration produced: a section (unless it was invalid), what it registers with the options pipeline (unless it
+///     opted out) and any diagnostics.
+/// </summary>
+internal sealed record ConfigurationDeclaration(ConfigurationSection? Section, EquatableArray<DiagnosticInfo> Diagnostics, ConfigurationOptions? Options = null);
