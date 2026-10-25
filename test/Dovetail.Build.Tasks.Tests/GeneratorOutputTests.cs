@@ -107,7 +107,7 @@ public class GeneratorOutputTests
 
         void Flush()
         {
-            if (section is not null && section != "Diagnostics") fragments.Add(Parse(section, string.Join('\n', json)));
+            if (section is not null and not "Diagnostics") fragments.Add(Parse(section, string.Join('\n', json)));
             json.Clear();
         }
 
