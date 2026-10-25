@@ -23,11 +23,3 @@ internal sealed class DovetailConfigurationChangeTokenSource<TOptions>(IDovetail
     /// <inheritdoc />
     public IChangeToken GetChangeToken() => provider.GetConfiguration(name).GetReloadToken();
 }
-
-/// <summary>
-///     Records that a <see cref="DovetailConfigurationChangeTokenSource{TOptions}" /> is registered for an options name, so that
-///     registering one again doesn't add a second.
-/// </summary>
-/// <param name="Name">The options name.</param>
-/// <typeparam name="TOptions">The options type.</typeparam>
-internal sealed record DovetailChangeTokenSourceMarker<TOptions>(string Name);

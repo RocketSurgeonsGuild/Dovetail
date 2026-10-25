@@ -151,7 +151,6 @@ public sealed class NamedOptionsTests
         var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build());
         services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
         services.AddDovetailConfigurationChangeTokenSource<ServerRecord>("tenant-a");
-        services.AddDovetailConfigurationChangeTokenSource<ServerRecord>("tenant-a");
         services.AddSingleton<IDovetailConfigurationProvider>(
             new PerNameProvider(new() { [Options.DefaultName] = TestConfiguration.Build(("Server:Port", "80")), ["tenant-a"] = tenantA, ["tenant-b"] = tenantB })
         );

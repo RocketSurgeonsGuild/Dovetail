@@ -81,7 +81,15 @@ public static class DovetailConfigurationOptionsExtensions
         ArgumentNullException.ThrowIfNull(create);
 
         var builder = services.AddOptions<TOptions>();
-        AddChangeTokenSource<TOptions>(services, Options.DefaultName);
+
+        // TryAddEnumerable keys on the implementation type, so registering the same options type again doesn't add a second source.
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, DovetailConfigurationChangeTokenSource<TOptions>>(provider => new DovetailConfigurationChangeTokenSource<TOptions>(
+                    provider.GetRequiredService<IDovetailConfigurationProvider>(),
+                    Options.DefaultName
+                )
+            )
+        );
         services.TryAddSingleton<IDovetailConfigurationProvider>(static provider => new DefaultDovetailConfigurationProvider(provider.GetRequiredService<IConfiguration>()));
         services.TryAdd(
             ServiceDescriptor.Transient<IOptionsFactory<TOptions>, DovetailOptionsFactory<TOptions>>(provider => new DovetailOptionsFactory<TOptions>(
@@ -117,7 +125,7 @@ public static class DovetailConfigurationOptionsExtensions
     ///     <para>
     ///         The source asks the provider for the configuration when the monitor is created. The default provider throws for
     ///         every name but the default one, so a registration for another name needs a provider of your own, or resolving the
-    ///         monitor throws. Registering the same options type and name again has no effect.
+    ///         monitor throws. Call it once per name: registering a name twice adds two sources, and the monitor then reports each reload twice.
     ///     </para>
     /// </remarks>
     /// <typeparam name="TOptions">The options type.</typeparam>
@@ -131,25 +139,12 @@ public static class DovetailConfigurationOptionsExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(optionsName);
 
-        AddChangeTokenSource<TOptions>(services, optionsName);
-        return services;
-    }
-
-    private static void AddChangeTokenSource<TOptions>(IServiceCollection services, string optionsName)
-        where TOptions : class
-    {
-        if (services.Any(descriptor => descriptor.ServiceType == typeof(DovetailChangeTokenSourceMarker<TOptions>)
-         && descriptor.ImplementationInstance is DovetailChangeTokenSourceMarker<TOptions> marker
-         && marker.Name == optionsName))
-        {
-            return;
-        }
-
-        services.AddSingleton(new DovetailChangeTokenSourceMarker<TOptions>(optionsName));
+        // Typed as the interface so it never collides with the default-name source above, which TryAddEnumerable de-duplicates.
         services.AddSingleton<IOptionsChangeTokenSource<TOptions>>(provider => new DovetailConfigurationChangeTokenSource<TOptions>(
                 provider.GetRequiredService<IDovetailConfigurationProvider>(),
                 optionsName
             )
         );
+        return services;
     }
 }

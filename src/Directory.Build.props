@@ -9,9 +9,5 @@
          PackageOutputPath (artifacts/nuget, GitVersion-numbered) as a global property, which
          always wins over this plain assignment regardless of the condition below. -->
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(SolutionDir)artifacts/nuget-local</PackageOutputPath>
-    <!-- Libraries default to not generating an Imports class, but several shipped packages (Dovetail.Hosting,
-         Dovetail.Aspire, Dovetail.Testing, ...) only have their root namespace because of it. Keep generating it so
-         consumers' `using Dovetail.Hosting;` and similar keep compiling. -->
-    <ImportDovetailAssembly>true</ImportDovetailAssembly>
   </PropertyGroup>
 </Project>
