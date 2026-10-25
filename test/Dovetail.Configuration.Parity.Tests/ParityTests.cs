@@ -28,26 +28,6 @@ public class ParityTests
     }
 
     [Test]
-    public async Task Stacks_sections_in_order()
-    {
-        var configuration = Build(
-            ("Stack:A:Value", "a"),
-            ("Stack:A:Items:0", "a1"),
-            ("Stack:B:Value", "b"),
-            ("Stack:B:Items:0", "b1"),
-            ("Stack:B:Items:1", "b2")
-        );
-
-        // Order 0 (B) binds first, then Order 1 (A): A's value wins, and both lists are appended in that order.
-        var microsoft = Render.Outcome(() => MicrosoftBinder.Stacked(configuration.GetSection("Stack:B"), configuration.GetSection("Stack:A")));
-        var dovetail = Render.Outcome(() => Binders.Dovetail<StackedOptions>(configuration));
-
-        dovetail.ShouldBe(microsoft);
-        dovetail.ShouldContain("Value=\"a\"");
-        await Task.CompletedTask;
-    }
-
-    [Test]
     public async Task Rebinds_when_configuration_reloads()
     {
         var configuration = Build(("Reload:Name", "first"), ("Reload:Count", "1"));

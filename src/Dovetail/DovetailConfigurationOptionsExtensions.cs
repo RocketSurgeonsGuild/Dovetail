@@ -13,11 +13,12 @@ namespace Dovetail;
 ///     <para>
 ///         The configuration joint that Dovetail's source generator emits for <c>[DovetailConfiguration]</c> types calls the
 ///         reflection-free overloads, passing the binder or factory it generated for the type:
-///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Action{IConfiguration, TOptions}, int)" />
+///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Action{IConfiguration, TOptions})" />
 ///         for types the options pipeline can create, and
-///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Func{IConfiguration, TOptions}, int)" />
-///         for types it can't. Both are trimming and AOT safe, and sections registered through them stack: every section registered
-///         for a type, from any assembly, applies to the type's one default <see cref="IOptions{TOptions}" />.
+///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Func{IConfiguration, TOptions})" />
+///         for types it can't. Both are trimming and AOT safe. A library registers only its own section, and reads it from the
+///         application's complete <see cref="IConfiguration" />, which the service provider supplies when the options are first
+///         created.
 ///     </para>
 ///     <para>
 ///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, IConfiguration, string)" /> binds with the
@@ -49,11 +50,10 @@ public static class DovetailConfigurationOptionsExtensions
     ///         caveats as any other <c>IConfiguration</c> binding call — the attributes below make
     ///         that explicit rather than silently swallowing the warning. Generated code calls the reflection-free overloads
     ///         instead,
-    ///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Action{IConfiguration, TOptions}, int)" />
+    ///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Action{IConfiguration, TOptions})" />
     ///         and
-    ///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Func{IConfiguration, TOptions}, int)" />.
-    ///         Unlike them, this binds the <paramref name="configuration" /> it's given, and each call adds its own binder, applied in
-    ///         registration order without their ordering or de-duplication.
+    ///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Func{IConfiguration, TOptions})" />.
+    ///         Unlike them, this binds the <paramref name="configuration" /> it's given.
     ///     </para>
     /// </remarks>
     /// <typeparam name="TOptions">The generated configuration class type.</typeparam>
@@ -91,22 +91,14 @@ public static class DovetailConfigurationOptionsExtensions
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         This is the registration the generated configuration joint emits for mutable types. Sections stack: every section
-    ///         registered for <typeparamref name="TOptions" /> through the reflection-free overloads, from any assembly, applies to
-    ///         the same instance, ordered by <paramref name="order" />, then by section path compared case-insensitively, then
-    ///         ordinally. A path registered more than once for the type (compared case-insensitively) applies once, since binding it
-    ///         again would append its lists twice: the registration with the lowest <paramref name="order" /> wins, and at equal order
-    ///         the first one.
+    ///         This is the registration the generated configuration joint emits for mutable types. It adds one
+    ///         <see cref="IConfigureOptions{TOptions}" /> that calls <paramref name="bind" /> with the section. Every call adds its
+    ///         own, even for the same type and path, and the standard options pipeline applies them with the type's other
+    ///         <see cref="IConfigureOptions{TOptions}" /> in registration order.
     ///     </para>
     ///     <para>
-    ///         All the sections bind from one <see cref="IConfigureOptions{TOptions}" />, registered where the first section for the
-    ///         type was. Options configured before that call apply before every section, and options configured after it apply after
-    ///         every section.
-    ///     </para>
-    ///     <para>
-    ///         The <see cref="IConfiguration" /> is resolved from the service provider when the options are first created, and
-    ///         <paramref name="bind" /> is passed its section at <paramref name="sectionPath" />. One
-    ///         <see cref="IOptionsChangeTokenSource{TOptions}" /> per type watches it for reloads, so
+    ///         The <see cref="IConfiguration" /> is the application's complete one, resolved from the service provider when the
+    ///         options are first created. One <see cref="IOptionsChangeTokenSource{TOptions}" /> per type watches it for reloads, so
     ///         <see cref="IOptionsMonitor{TOptions}" /> and <see cref="IOptionsSnapshot{TOptions}" /> observe changes. Only the default
     ///         name is bound; named options are left alone.
     ///     </para>
@@ -115,7 +107,6 @@ public static class DovetailConfigurationOptionsExtensions
     /// <param name="services">The service collection to register against.</param>
     /// <param name="sectionPath">The path of the configuration section to bind, such as <c>Greetings</c> or <c>Http:Retry</c>.</param>
     /// <param name="bind">Binds a configuration section onto an existing instance.</param>
-    /// <param name="order">Where this section binds among the sections registered for <typeparamref name="TOptions" />; lower first.</param>
     /// <returns>
     ///     The <see cref="OptionsBuilder{TOptions}" /> for the default name, for further configuration such as <c>Validate</c> and
     ///     <c>ValidateOnStart()</c>.
@@ -125,8 +116,7 @@ public static class DovetailConfigurationOptionsExtensions
     public static OptionsBuilder<TOptions> AddDovetailConfigurationOptions<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(
         this IServiceCollection services,
         string sectionPath,
-        Action<IConfiguration, TOptions> bind,
-        int order = 0
+        Action<IConfiguration, TOptions> bind
     )
         where TOptions : class
     {
@@ -134,7 +124,14 @@ public static class DovetailConfigurationOptionsExtensions
         ArgumentException.ThrowIfNullOrEmpty(sectionPath);
         ArgumentNullException.ThrowIfNull(bind);
 
-        return AddSection(services, new DovetailConfigurationSection<TOptions>(sectionPath, order, bind));
+        var builder = AddOptionsAndChangeTokenSource<TOptions>(services);
+        services.AddSingleton<IConfigureOptions<TOptions>>(provider => new DovetailConfigureOptions<TOptions>(
+                provider.GetRequiredService<IConfiguration>(),
+                sectionPath,
+                bind
+            )
+        );
+        return builder;
     }
 
     /// <summary>
@@ -146,21 +143,19 @@ public static class DovetailConfigurationOptionsExtensions
     ///     <para>
     ///         This is the registration the generated configuration joint emits for immutable types. It registers an
     ///         <see cref="IOptionsFactory{TOptions}" /> that creates the default instance with <paramref name="create" />, unless a
-    ///         factory is already registered for <typeparamref name="TOptions" /> itself. The factory derives from
-    ///         <see cref="OptionsFactory{TOptions}" />, so configure and post-configure actions and validators still run on the
-    ///         instance it creates. Named options are created by the base class, which needs a public parameterless constructor.
+    ///         factory is already registered for <typeparamref name="TOptions" />, whether by the application or by an earlier call
+    ///         to this method. The factory derives from <see cref="OptionsFactory{TOptions}" />, so configure and post-configure
+    ///         actions and validators still run on the instance it creates. Named options are created by the base class, which needs
+    ///         a public parameterless constructor.
     ///     </para>
     ///     <para>
-    ///         Sections stack, ordered and de-duplicated as for
-    ///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Action{IConfiguration, TOptions}, int)" />.
-    ///         With several creating sections, they're merged in order into one configuration, later sections overriding earlier
-    ///         ones key by key, and the first section's <paramref name="create" /> creates the instance from it. Binding sections
-    ///         registered for the type then bind onto that instance, except those whose path is also a creating section.
+    ///         A type is created from one section only. When several calls register a creating section for the same type, the first
+    ///         one wins and the rest are ignored, as with any other service registration.
     ///     </para>
     ///     <para>
-    ///         The <see cref="IConfiguration" /> is resolved from the service provider when the options are first created, and reloads
-    ///         reach <see cref="IOptionsMonitor{TOptions}" /> and <see cref="IOptionsSnapshot{TOptions}" />, as for the binding
-    ///         overload.
+    ///         The <see cref="IConfiguration" /> is the application's complete one, resolved from the service provider when the
+    ///         options are first created, and reloads reach <see cref="IOptionsMonitor{TOptions}" /> and
+    ///         <see cref="IOptionsSnapshot{TOptions}" />, as for the binding overload.
     ///     </para>
     ///     <para>
     ///         On .NET 11, don't give a type registered this way asynchronous validators: the options pipeline only runs them
@@ -172,7 +167,6 @@ public static class DovetailConfigurationOptionsExtensions
     /// <param name="services">The service collection to register against.</param>
     /// <param name="sectionPath">The path of the configuration section to create from, such as <c>Server</c> or <c>Http:Retry</c>.</param>
     /// <param name="create">Creates an instance from a configuration section.</param>
-    /// <param name="order">Where this section applies among the sections registered for <typeparamref name="TOptions" />; lower first.</param>
     /// <returns>
     ///     The <see cref="OptionsBuilder{TOptions}" /> for the default name, for further configuration such as <c>Validate</c> and
     ///     <c>ValidateOnStart()</c>.
@@ -182,8 +176,7 @@ public static class DovetailConfigurationOptionsExtensions
     public static OptionsBuilder<TOptions> AddDovetailConfigurationOptions<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(
         this IServiceCollection services,
         string sectionPath,
-        Func<IConfiguration, TOptions> create,
-        int order = 0
+        Func<IConfiguration, TOptions> create
     )
         where TOptions : class
     {
@@ -191,12 +184,12 @@ public static class DovetailConfigurationOptionsExtensions
         ArgumentException.ThrowIfNullOrEmpty(sectionPath);
         ArgumentNullException.ThrowIfNull(create);
 
-        var builder = AddSection(services, new DovetailConfigurationSection<TOptions>(sectionPath, order, create));
+        var builder = AddOptionsAndChangeTokenSource<TOptions>(services);
         services.TryAdd(
-            ServiceDescriptor.Transient<IOptionsFactory<TOptions>, DovetailOptionsFactory<TOptions>>(
-                static provider => new DovetailOptionsFactory<TOptions>(
+            ServiceDescriptor.Transient<IOptionsFactory<TOptions>, DovetailOptionsFactory<TOptions>>(provider => new DovetailOptionsFactory<TOptions>(
                     provider.GetRequiredService<IConfiguration>(),
-                    provider.GetServices<DovetailConfigurationSection<TOptions>>(),
+                    sectionPath,
+                    create,
                     provider.GetServices<IConfigureOptions<TOptions>>(),
                     provider.GetServices<IPostConfigureOptions<TOptions>>(),
                     provider.GetServices<IValidateOptions<TOptions>>()
@@ -206,19 +199,10 @@ public static class DovetailConfigurationOptionsExtensions
         return builder;
     }
 
-    private static OptionsBuilder<TOptions> AddSection<TOptions>(IServiceCollection services, DovetailConfigurationSection<TOptions> section)
+    private static OptionsBuilder<TOptions> AddOptionsAndChangeTokenSource<TOptions>(IServiceCollection services)
         where TOptions : class
     {
         var builder = services.AddOptions<TOptions>();
-        services.AddSingleton(section);
-        services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IConfigureOptions<TOptions>, DovetailConfigureOptions<TOptions>>(
-                static provider => new DovetailConfigureOptions<TOptions>(
-                    provider.GetRequiredService<IConfiguration>(),
-                    provider.GetServices<DovetailConfigurationSection<TOptions>>()
-                )
-            )
-        );
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, DovetailConfigurationChangeTokenSource<TOptions>>(
                 static provider => new DovetailConfigurationChangeTokenSource<TOptions>(provider.GetRequiredService<IConfiguration>())

@@ -18,9 +18,9 @@ public static partial class Exports
     {
         public void Register(global::Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
-            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.CtorOptions>(services, "Ctor", static configuration => DovetailConfigurationBinder.CreateSample__CtorOptions(configuration), 0);
-            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.InitOptions>(services, "Init", static configuration => DovetailConfigurationBinder.CreateSample__InitOptions(configuration), 0);
-            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.ServerOptions>(services, "Server", static configuration => DovetailConfigurationBinder.CreateSample__ServerOptions(configuration), 0);
+            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.CtorOptions>(services, "Ctor", static configuration => DovetailConfigurationBinder.CreateSample__CtorOptions(configuration));
+            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.InitOptions>(services, "Init", static configuration => DovetailConfigurationBinder.CreateSample__InitOptions(configuration));
+            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.ServerOptions>(services, "Server", static configuration => DovetailConfigurationBinder.CreateSample__ServerOptions(configuration));
         }
     }
 }

@@ -121,6 +121,15 @@ internal static class Diagnostics
         true
     );
 
+    public static readonly DiagnosticDescriptor ConfigurationTypeDeclaredTwice = new(
+        "DT0015",
+        "Configuration type declared more than once",
+        "'{0}' is configured more than once; a type can have only one [DovetailConfiguration]",
+        "Dovetail",
+        DiagnosticSeverity.Error,
+        true
+    );
+
     public static readonly DiagnosticDescriptor ConfigurationSchemaFailed = new(
         "DT0014",
         "Configuration schema generation failed",

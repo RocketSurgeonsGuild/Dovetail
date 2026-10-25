@@ -43,12 +43,14 @@ There are two kinds of entry point:
 - **`Bind…(configuration, instance)`** is for types the options pipeline can create, those with a public parameterless constructor. It's `BindCoreMain`: a section with neither a value nor children leaves the instance alone; otherwise `BindCore(…, defaultValueIfNotFound: false)`, as `services.Configure<T>(section)` does.
 - **`Create…(configuration)`** is for the rest, constructor parameters, init-only or `required` members. It's `GetCore`: `Initialize…`, then `BindCore(…, defaultValueIfNotFound: true)`. The difference is that it still creates an instance for an empty section, where `Get<T>()` returns null: `IOptions<T>.Value` can't be null. A missing required constructor parameter therefore throws when the options are first read.
 
-The joint calls `AddDovetailConfigurationOptions<T>(services, path, bind or create, order)`, and `ValidateOnStart` when asked. Every `[OptionsValidator]` class in the assembly that validates a registered type is added with `TryAddEnumerable`. The runtime API (`src/Dovetail/DovetailConfigurationOptionsExtensions.cs`):
+The joint calls `AddDovetailConfigurationOptions<T>(services, path, bind or create)`, in path then type name order, and `ValidateOnStart` when asked. Every `[OptionsValidator]` class in the assembly that validates a registered type is added with `TryAddEnumerable`. The runtime API (`src/Dovetail/DovetailConfigurationOptionsExtensions.cs`):
 
-- resolves `IConfiguration` from the container when options are first created, like `BindConfiguration`;
-- applies every section registered for a type in one place, by `Order`, then path. A path registered twice is applied once;
-- creates factory types from the sections merged key by key;
-- watches the configuration's reload token.
+- resolves the application's complete `IConfiguration` from the container when options are first created, like `BindConfiguration`, and reads only its own section from it;
+- adds one `IConfigureOptions<T>` per bind registration (not de-duplicated; a type has one section, but two assemblies may register it), which the standard options pipeline applies in registration order;
+- adds one `IOptionsFactory<T>` (`OptionsFactory<T>` subclass) for created types, with `TryAdd`: an existing factory wins, so only the first create registration for a type counts, as with any DI registration;
+- watches the configuration's reload token, with one `IOptionsChangeTokenSource<T>` per type.
+
+There is no `Order` and no stacking, de-duplication or merging: a type has one section (DT0015 rejects a class attribute plus an assembly `DovetailConfiguration<T>` for one type), each library consumes its own section and the pipeline does the rest.
 
 ## Where Dovetail differs from Microsoft's generator, on purpose
 
@@ -69,12 +71,12 @@ These belong in the managed-configuration docs (P5).
 
 ## Verification
 
-- **Analyzer tests** (`ConfigurationOptionsTests`): snapshots of the generated file for a mutable options class and for records, init-only and constructor types, under both binder versions; the generated code compiles; registration order, validators, `ValidateOnStart` and opting out; `[ConfigurationIgnore]` by version; and caching.
+- **Analyzer tests** (`ConfigurationOptionsTests`): snapshots of the generated file for a mutable options class and for records, init-only and constructor types, under both binder versions; the generated code compiles; joint registration order (path, then type name), validators, `ValidateOnStart` and opting out; `[ConfigurationIgnore]` by version; and caching.
 - **Parity tests** (`test/Dovetail.Configuration.Parity.Tests`, 266 per target framework): the same types and data bound three ways:
   - Microsoft's generator (`EnableConfigurationBindingGenerator`, `Configure<T>` → `IOptions<T>` for mutable types, `Get<T>()` for factory types);
   - the reflection binder (through a generic helper the generator can't intercept);
   - Dovetail's joint → `IOptions<T>`.
 
-  They run on net10.0 (Binder 10) and net11.0 (Binder 11), from the S5 case matrix plus stacking, reload, collections of records and init-only types. Microsoft's generator is the oracle except for the differences above, which are asserted against the reflection binder or the documented behaviour.
-- **Runtime tests** (`test/Dovetail.Configuration.Runtime.Tests`): registration, stacking and de-duplication, factories, validators, `ValidateOnStart`, reload, with hand-written delegates.
+  They run on net10.0 (Binder 10) and net11.0 (Binder 11), from the S5 case matrix plus reload, collections of records and init-only types. Microsoft's generator is the oracle except for the differences above, which are asserted against the reflection binder or the documented behaviour.
+- **Runtime tests** (`test/Dovetail.Configuration.Runtime.Tests`): registration (two registrations of one type from different assemblies: bind steps apply in registration order, the first factory wins), factories, validators, `ValidateOnStart`, reload, with hand-written delegates.
 - **AOT** (`test/Dovetail.Configuration.Aot.Tests`): the real generated joint and binder for a class, a record and an init-only type compile with IL2026, IL3050 and IL2091 as errors, and bind.

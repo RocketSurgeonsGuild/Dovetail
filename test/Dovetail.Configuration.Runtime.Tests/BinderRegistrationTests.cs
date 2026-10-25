@@ -28,74 +28,54 @@ public sealed class BinderRegistrationTests
     }
 
     [Test]
-    public async Task Bind_StacksSections_ByOrderThenPath_RegardlessOfRegistrationOrder()
+    public async Task Bind_AppliesEveryRegistration_InRegistrationOrder()
     {
         var services = new ServiceCollection()
                       .AddSingleton<IConfiguration>(
-                           TestConfiguration.Build(
-                               ("Late:Recipients:0", "Late"),
-                               ("C:Recipients:0", "C"),
-                               ("a:Recipients:0", "a"),
-                               ("Early:Recipients:0", "Early"),
-                               ("B:Recipients:0", "B")
-                           )
+                           TestConfiguration.Build(("Late:Recipients:0", "Late"), ("C:Recipients:0", "C"), ("a:Recipients:0", "a"), ("Early:Recipients:0", "Early"))
                        );
-        services.AddDovetailConfigurationOptions<GreetingsOptions>("Late", GreetingsOptions.Bind, order: 1);
+        services.AddDovetailConfigurationOptions<GreetingsOptions>("Late", GreetingsOptions.Bind);
         services.AddDovetailConfigurationOptions<GreetingsOptions>("C", GreetingsOptions.Bind);
         services.AddDovetailConfigurationOptions<GreetingsOptions>("a", GreetingsOptions.Bind);
-        services.AddDovetailConfigurationOptions<GreetingsOptions>("Early", GreetingsOptions.Bind, order: -1);
-        services.AddDovetailConfigurationOptions<GreetingsOptions>("B", GreetingsOptions.Bind);
+        services.AddDovetailConfigurationOptions<GreetingsOptions>("Early", GreetingsOptions.Bind);
 
         await using var provider = services.BuildServiceProvider();
 
-        // Paths compare case-insensitively first, so "a" binds before "B" (ordinally it would come after "C").
-        provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Recipients.ShouldBe(["Early", "a", "B", "C", "Late"]);
+        // The options pipeline applies them as registered: neither the path nor anything else reorders them.
+        provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Recipients.ShouldBe(["Late", "C", "a", "Early"]);
     }
 
     [Test]
-    public async Task Bind_RepeatedPath_BindsOnce_FromTheLowestOrder()
+    public async Task Bind_RepeatedPath_AddsARegistrationEachTime()
     {
         var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build(("Greetings:Recipients:0", "Ada")));
-        services.AddDovetailConfigurationOptions("Greetings", Tagged("order 2"), order: 2);
-        services.AddDovetailConfigurationOptions("greetings", Tagged("first at order 1"), order: 1);
-        services.AddDovetailConfigurationOptions("GREETINGS", Tagged("second at order 1"), order: 1);
+        services.AddDovetailConfigurationOptions("Greetings", Tagged("first"));
+        services.AddDovetailConfigurationOptions("greetings", Tagged("second"));
 
         await using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Recipients.ShouldBe(["Ada", "first at order 1"]);
+        provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Recipients.ShouldBe(["Ada", "first", "Ada", "second"]);
     }
 
     [Test]
-    public async Task Bind_RepeatedPath_AtEqualOrder_BindsOnce_FromTheFirstRegistration()
-    {
-        var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build(("Greetings:Recipients:0", "Ada")));
-        services.AddDovetailConfigurationOptions("greetings", Tagged("first"));
-        services.AddDovetailConfigurationOptions("Greetings", Tagged("second"));
-
-        await using var provider = services.BuildServiceProvider();
-
-        provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Recipients.ShouldBe(["Ada", "first"]);
-    }
-
-    [Test]
-    public async Task Bind_AppliesEverySection_WhereTheFirstSectionWasRegistered()
+    public async Task Bind_AppliesEachRegistration_WhereItWasRegistered()
     {
         var services = new ServiceCollection()
                       .AddSingleton<IConfiguration>(TestConfiguration.Build(("First:Recipients:0", "First"), ("Second:Recipients:0", "Second")));
         services.Configure<GreetingsOptions>(options => options.Recipients.Add("configured before"));
-        services.AddDovetailConfigurationOptions<GreetingsOptions>("Second", GreetingsOptions.Bind, order: 1);
+        services.AddDovetailConfigurationOptions<GreetingsOptions>("Second", GreetingsOptions.Bind);
         services.Configure<GreetingsOptions>(options => options.Recipients.Add("configured between"));
         services.AddDovetailConfigurationOptions<GreetingsOptions>("First", GreetingsOptions.Bind);
         services.Configure<GreetingsOptions>(options => options.Recipients.Add("configured after"));
 
-        services.Count(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<GreetingsOptions>)).ShouldBe(4);
+        services.Count(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<GreetingsOptions>)).ShouldBe(5);
         services.Count(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<GreetingsOptions>)).ShouldBe(1);
 
         await using var provider = services.BuildServiceProvider();
 
         provider
            .GetRequiredService<IOptions<GreetingsOptions>>()
-           .Value.Recipients.ShouldBe(["configured before", "First", "Second", "configured between", "configured after"]);
+           .Value.Recipients.ShouldBe(["configured before", "Second", "configured between", "First", "configured after"]);
     }
 
     [Test]
@@ -117,7 +97,7 @@ public sealed class BinderRegistrationTests
         var configuration = TestConfiguration.Build(("Greetings:Message", "initial"), ("Extra:Recipients:0", "Ada"));
         var services = new ServiceCollection().AddSingleton<IConfiguration>(configuration);
         services.AddDovetailConfigurationOptions<GreetingsOptions>("Greetings", GreetingsOptions.Bind);
-        services.AddDovetailConfigurationOptions<GreetingsOptions>("Extra", GreetingsOptions.Bind, order: 1);
+        services.AddDovetailConfigurationOptions<GreetingsOptions>("Extra", GreetingsOptions.Bind);
 
         await using var provider = services.BuildServiceProvider();
 

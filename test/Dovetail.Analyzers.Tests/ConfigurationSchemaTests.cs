@@ -126,9 +126,11 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                                [DovetailConfiguration("Http:Retry")]
                                public class RetryPolicy { public int Count { get; set; } }
 
-                               [DovetailConfiguration("Shared:A", Order = 1)]
+                               [DovetailConfiguration("Shared:A")]
+                               public class SharedAOptions { public string? Value { get; set; } }
+
                                [DovetailConfiguration("Shared:B")]
-                               public class SharedOptions { public string? Value { get; set; } }
+                               public class SharedBOptions { public string? Value { get; set; } }
                                """
                            )
                           .Build()
@@ -287,7 +289,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         var result = await Builder
                           .AddConfigurationOptionsReferences()
                           .AddCompilationReferences(thirdParty)
-                          .AddSources("[assembly: Dovetail.Attributes.DovetailConfiguration(\"Client\", typeof(ThirdParty.ClientOptions))]")
+                          .AddSources("[assembly: Dovetail.Attributes.DovetailConfiguration<ThirdParty.ClientOptions>(\"Client\")]")
                           .AddAdditionalText(
                                documentationPath,
                                """
@@ -423,8 +425,6 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .AddSources(
                                Usings
                              + """
-                               [assembly: DovetailConfiguration("Untyped")]
-
                                namespace Sample;
 
                                [DovetailConfiguration]
@@ -441,6 +441,35 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await Verify(Describe(result));
+    }
+
+    [Test]
+    public async Task Rejects_a_type_configured_by_both_the_class_and_the_assembly_form()
+    {
+        var result = await WithAnnotations()
+                          .AddSources(
+                               Usings
+                             + """
+                               [assembly: DovetailConfiguration<Sample.TwiceOptions>("Second")]
+                               [assembly: DovetailConfiguration<Sample.AssemblyOnlyOptions>("Elsewhere")]
+
+                               namespace Sample;
+
+                               [DovetailConfiguration("First")]
+                               public class TwiceOptions { public string? Value { get; set; } }
+
+                               public class AssemblyOnlyOptions { public string? Value { get; set; } }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        diagnostics.Select(z => z.Id).ShouldBe(["DT0015"]);
+        diagnostics[0].GetMessage(CultureInfo.InvariantCulture).ShouldBe("'Sample.TwiceOptions' is configured more than once; a type can have only one [DovetailConfiguration]");
+        // The assembly attribute is the one reported, and only the class declaration produces a fragment.
+        diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).ShouldContain("\"Second\"");
+        Fragments(result).Keys.ShouldBe(["First", "Elsewhere"], ignoreOrder: true);
     }
 
     [Test]

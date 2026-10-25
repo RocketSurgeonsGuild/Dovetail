@@ -1,9 +1,7 @@
-using Microsoft.Build.Utilities.ProjectCreation;
-
 namespace Dovetail.Sdk.Tests;
 
 /// <summary>
-/// <c>[assembly: DovetailConfiguration("Section", typeof(T))]</c> describes a type from a package with that package's XML docs. The
+/// <c>[assembly: DovetailConfiguration&lt;T&gt;("Section")]</c> describes a type from a package with that package's XML docs. The
 /// compiler loads no docs for references and analyzers can't read files, so <c>Dovetail.targets</c> passes the doc file next to
 /// each package reference to the generator as an <c>AdditionalFiles</c> item. This checks that wiring in a real build.
 /// </summary>
@@ -30,7 +28,7 @@ public class ConfigurationSchemaFragmentTests(string targetFramework)
            .AddFile(
                 "app/Program.cs",
                 """
-                [assembly: Dovetail.Attributes.DovetailConfiguration("Host", typeof(Microsoft.Extensions.Hosting.HostOptions))]
+                [assembly: Dovetail.Attributes.DovetailConfiguration<Microsoft.Extensions.Hosting.HostOptions>("Host")]
 
                 System.Console.WriteLine("hello");
                 """

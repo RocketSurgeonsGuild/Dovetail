@@ -80,14 +80,4 @@ internal static class MicrosoftBinder
     public static RecordWithInitList? RecordWithInitList(IConfiguration s) => s.Get<RecordWithInitList>();
     public static CasingCtor? CasingCtor(IConfiguration s) => s.Get<CasingCtor>();
     public static KeyNameRecord? KeyNameRecord(IConfiguration s) => s.Get<KeyNameRecord>();
-
-    /// <summary>Two sections in Dovetail's order (Order, then path): what stacking them must match.</summary>
-    public static StackedOptions Stacked(IConfiguration b, IConfiguration a) =>
-        Binders.Options<StackedOptions>(
-            z =>
-            {
-                z.Configure<StackedOptions>(b);
-                z.Configure<StackedOptions>(a);
-            }
-        );
 }

@@ -4,38 +4,21 @@ using Microsoft.Extensions.Options;
 namespace Dovetail.Infrastructure;
 
 /// <summary>
-///     Binds every binding section registered for <typeparamref name="TOptions" /> onto the default (unnamed) options instance,
-///     in the order <see cref="DovetailConfigurationSection{TOptions}.Arrange" /> gives. There is one per options type, at the
-///     position the first section for the type was registered.
+///     Binds one configuration section onto the default (unnamed) <typeparamref name="TOptions" /> instance the options pipeline
+///     created. Every registration adds its own, and the pipeline applies them in registration order.
 /// </summary>
 /// <remarks>
 ///     A plain <see cref="IConfigureOptions{TOptions}" />, which <see cref="OptionsFactory{TOptions}" /> only applies to
 ///     <see cref="Options.DefaultName" />, so named options are left alone.
 /// </remarks>
+/// <param name="configuration">The application's configuration.</param>
+/// <param name="path">The path of the section to bind.</param>
+/// <param name="bind">Binds the section onto the instance.</param>
 /// <typeparam name="TOptions">The options type.</typeparam>
-internal sealed class DovetailConfigureOptions<TOptions> : IConfigureOptions<TOptions>
+internal sealed class DovetailConfigureOptions<TOptions>(IConfiguration configuration, string path, Action<IConfiguration, TOptions> bind)
+    : IConfigureOptions<TOptions>
     where TOptions : class
 {
-    private readonly IConfiguration _configuration;
-    private readonly DovetailConfigurationSection<TOptions>[] _sections;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="DovetailConfigureOptions{TOptions}" /> class.
-    /// </summary>
-    /// <param name="configuration">The configuration to bind from.</param>
-    /// <param name="sections">The sections registered for <typeparamref name="TOptions" />, in registration order.</param>
-    public DovetailConfigureOptions(IConfiguration configuration, IEnumerable<DovetailConfigurationSection<TOptions>> sections)
-    {
-        _configuration = configuration;
-        DovetailConfigurationSection<TOptions>.Arrange(sections, out _, out _sections);
-    }
-
     /// <inheritdoc />
-    public void Configure(TOptions options)
-    {
-        foreach (var section in _sections)
-        {
-            section.Bind!(_configuration.GetSection(section.Path), options);
-        }
-    }
+    public void Configure(TOptions options) => bind(configuration.GetSection(path), options);
 }

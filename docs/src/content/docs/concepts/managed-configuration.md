@@ -52,14 +52,15 @@ project is a working example.
 
 ### Types you don't own
 
-To bind a type from another library, pass it on the assembly. This registers `HostOptions` under `Hosting`:
+To bind a type from another library, use the generic attribute on the assembly. This registers `HostOptions` under
+`Hosting`:
 
 ```c#
-[assembly: DovetailConfiguration("Hosting", typeof(HostOptions))]
+[assembly: DovetailConfiguration<HostOptions>("Hosting")]
 ```
 
-The assembly form always needs the type. Descriptions for third-party types come from the XML documentation file that
-ships with the package, when there is one.
+The assembly form is `DovetailConfiguration<T>` and needs C# 11. Descriptions for third-party types come from the XML
+documentation file that ships with the package, when there is one.
 
 ### Section names
 
@@ -67,33 +68,34 @@ ships with the package, when there is one.
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `[DovetailConfiguration]`                      | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings`. |
 | `[DovetailConfiguration("Http:Retry")]`        | The path you give. `:` nests sections. Keys are case-insensitive.                                                                 |
-| `[assembly: DovetailConfiguration(typeof(T))]` | The same rule as the class form, applied to `T`.                                                                                  |
+| `[assembly: DovetailConfiguration<T>]`         | The same rule as the class form, applied to `T`.                                                                                  |
 
 There is no prefix. A name that would become empty after stripping the suffix (a class called `Options`) is an error
 ([`DT0008`](#diagnostics)); give it a path.
 
-### Declaring a type under several sections
+### One section per type
 
-`AllowMultiple` is on, so one type can describe several sections, from one assembly or from many. All of them bind into
-the type's one default `IOptions<T>`, **stacked**: sections apply in order of the attribute's `Order` property (lower
-first, default `0`), then by section path, so later sections override keys set by earlier ones. A path registered twice
-for the same type applies once. The schema shows the type under every section.
+A type has exactly one section, so it is declared once: `[DovetailConfiguration]` on the class allows one attribute, and
+`DovetailConfiguration<T>` on the assembly allows one per `T` (the compiler rejects the same `T` twice). Declaring a
+type with both the class form and the assembly form is an error ([`DT0015`](#diagnostics)); the class declaration wins
+and the assembly one produces nothing.
 
-```c#
-[DovetailConfiguration("Defaults:Http")]
-[DovetailConfiguration("Services:Billing:Http", Order = 1)]
-public sealed class HttpOptions { /* ... */ }
-```
+At run time a library reads only its own section from the application's complete `IConfiguration` and creates or binds
+its options from it. Dovetail doesn't order, de-duplicate or merge sections. The generated joint registers an assembly's
+types by section path, then type name, and the standard options pipeline does the rest.
 
 Mutable classes go through the standard options pipeline (`IConfigureOptions<T>`), so your own `Configure<T>` and
-`PostConfigure<T>` calls keep working: ones registered before the first Dovetail registration for the type run first,
-ones registered after it run last.
+`PostConfigure<T>` calls keep working: ones registered before a Dovetail registration for the type run before it, and
+ones registered after it run after it.
+
+If two assemblies register the same type through the public `AddDovetailConfigurationOptions` overloads, the
+pipeline's usual rules apply: each bind registration adds its own configure step, in registration order, and for a type
+that is created rather than bound the first registered factory wins.
 
 ### `RegisterOptions` and `ValidateOnStart`
 
 | Property          | Default | Effect                                                                                                  |
 | ----------------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `Order`           | `0`     | Where the section applies when a type is stacked.                                                       |
 | `RegisterOptions` | `true`  | `false` only describes the section in the schema. Nothing is registered, so you bind the type yourself. |
 | `ValidateOnStart` | `false` | Validates the options when the host starts, instead of the first time they are read.                    |
 
@@ -172,8 +174,8 @@ versions.
 ### Records and other immutable types
 
 Types the options pipeline can't create (constructor parameters, `init`-only or `required` members) get a generated
-**options factory** instead of `IConfigureOptions<T>`. It creates the instance from the stacked sections, merged key by
-key, and still runs your validators:
+**options factory** instead of `IConfigureOptions<T>`. It creates the instance from the type's section, and still runs your
+validators.
 
 ```c#
 [DovetailConfiguration]
@@ -198,9 +200,9 @@ public sealed record FarewellOptions(string Message, [property: Range(0, 5)] int
 Microsoft's own quirks are kept. A positional record's extra `init`-only property is set to `default` when its key is
 missing, overriding its initializer, and Binder 10 binds constructor-bound collections twice.
 
-Registration also differs from `services.Configure<T>(section)` in that every section registered for a type, from any
-assembly, applies in one place in `Order`, and the configuration's reload token feeds `IOptionsMonitor<T>`. The
-`IConfiguration` is resolved from the container when the options are first created.
+Registration also differs from `services.Configure<T>(section)` in that the configuration's reload token feeds
+`IOptionsMonitor<T>` through one change token source per type, and the `IConfiguration` is resolved from the container
+when the options are first created, not captured at registration.
 
 ## The schema
 
@@ -299,7 +301,7 @@ MyLibrary/
 | Id       | Severity | Meaning                                                                                                                     |
 | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `DT0006` | Warning  | The project's C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                 |
-| `DT0007` | Error    | The type can't be described as configuration, for example an assembly attribute without a type.                             |
+| `DT0007` | Error    | The type can't be described as configuration, for example an interface, a collection or an open generic type.  |
 | `DT0008` | Error    | The section isn't valid for the type: empty, or a name that is empty once the suffix is removed.                            |
 | `DT0009` | Warning  | A member has a type configuration binding doesn't support. It is left out of the schema and the binder.                     |
 | `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                     |
@@ -307,6 +309,7 @@ MyLibrary/
 | `DT0012` | Warning  | The type graph uses too many distinct types, so the schema stops describing them at the member named.                       |
 | `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                |
 | `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                       |
+| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`.                 |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one
 indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under

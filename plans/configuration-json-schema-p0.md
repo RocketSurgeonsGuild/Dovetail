@@ -78,7 +78,7 @@ Visual Studio's .NET Framework `MSBuild.exe` couldn't run here; its binding redi
 
 - Compile the task against System.Text.Json and System.Reflection.Metadata **9.0.0**, compile-only, shipping no copies. That loads on MSBuild 17.14 and every 18.x. Dovetail already needs more than that: its packages target net10.0 and net11.0 (the .NET 10 SDK), and its analyzer ships only `roslyn5.x` folders (Roslyn 5.0). Use 18.x MSBuild compile references (17.11.31 trips NU1903).
 - Pass only absolute paths into the task: MSBuild 18.12 has `MSBuildMultiThreadableTaskAttribute`/`TaskEnvironment` for running in-proc under `-mt`, where the process working directory isn't the project's.
-- When the same section comes from several assemblies, its casing is currently whichever comes first in `@(ReferencePath)`; define a deterministic rule (e.g. lowest `Order`, then ordinal).
+- When the same section comes from several assemblies, its casing is currently whichever comes first in `@(ReferencePath)`; define a deterministic rule (e.g. ordinal).
 - JSONC: splicing text at `Utf8JsonReader` byte offsets preserved comments, trailing commas, indentation (spaces or tabs) and the BOM. It was idempotent, and invalid files were left byte-identical with a warning and the snippet. No comment-preserving JSON library is needed. `yaml.schemas` and `evenBetterToml.schema.associations` are objects rather than arrays and need an object insert.
 - Still unverified (Windows): running inside Visual Studio, the DLL-lock behaviour `TaskHostFactory` avoids during in-repo development, and design-time builds.
 

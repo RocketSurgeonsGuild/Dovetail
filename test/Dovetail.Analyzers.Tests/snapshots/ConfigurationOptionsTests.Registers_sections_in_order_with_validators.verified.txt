@@ -18,8 +18,8 @@ public static partial class Exports
     {
         public void Register(global::Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
-            global::Microsoft.Extensions.DependencyInjection.OptionsBuilderExtensions.ValidateOnStart(global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.SharedOptions>(services, "Shared:B", static (configuration, instance) => DovetailConfigurationBinder.BindSample__SharedOptions(configuration, instance), 0));
-            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.SharedOptions>(services, "Shared:A", static (configuration, instance) => DovetailConfigurationBinder.BindSample__SharedOptions(configuration, instance), 1);
+            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.FirstOptions>(services, "Shared:A", static (configuration, instance) => DovetailConfigurationBinder.BindSample__FirstOptions(configuration, instance));
+            global::Microsoft.Extensions.DependencyInjection.OptionsBuilderExtensions.ValidateOnStart(global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.SharedOptions>(services, "Shared:B", static (configuration, instance) => DovetailConfigurationBinder.BindSample__SharedOptions(configuration, instance)));
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAddEnumerable(services, global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::Microsoft.Extensions.Options.IValidateOptions<global::Sample.SharedOptions>, global::Sample.SharedOptionsValidator>());
         }
     }
@@ -29,6 +29,17 @@ public static partial class Exports
 [System.CodeDom.Compiler.GeneratedCode("Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 file static class DovetailConfigurationBinder
 {
+    public static void BindSample__FirstOptions(global::Microsoft.Extensions.Configuration.IConfiguration configuration, global::Sample.FirstOptions instance)
+    {
+        if (!HasValueOrChildren(configuration))
+        {
+            return;
+        }
+
+        var temp = instance;
+        BindCore(configuration, ref temp, defaultValueIfNotFound: false);
+    }
+
     public static void BindSample__SharedOptions(global::Microsoft.Extensions.Configuration.IConfiguration configuration, global::Sample.SharedOptions instance)
     {
         if (!HasValueOrChildren(configuration))
@@ -40,11 +51,27 @@ file static class DovetailConfigurationBinder
         BindCore(configuration, ref temp, defaultValueIfNotFound: false);
     }
 
+    public static void BindCore(global::Microsoft.Extensions.Configuration.IConfiguration configuration, ref global::Sample.FirstOptions instance, bool defaultValueIfNotFound)
+    {
+        if (TryGetConfigurationValue(configuration, key: "Value", out string? value2))
+        {
+            instance.Value = value2;
+        }
+        else if (defaultValueIfNotFound)
+        {
+            var currentValue = instance.Value;
+            if (currentValue is not null)
+            {
+                instance.Value = currentValue;
+            }
+        }
+    }
+
     public static void BindCore(global::Microsoft.Extensions.Configuration.IConfiguration configuration, ref global::Sample.SharedOptions instance, bool defaultValueIfNotFound)
     {
-        if (TryGetConfigurationValue(configuration, key: "Value", out string? value1))
+        if (TryGetConfigurationValue(configuration, key: "Value", out string? value3))
         {
-            instance.Value = value1;
+            instance.Value = value3;
         }
         else if (defaultValueIfNotFound)
         {

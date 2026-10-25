@@ -6,7 +6,7 @@ namespace Dovetail.Infrastructure;
 
 /// <summary>
 ///     Tells <see cref="IOptionsMonitor{TOptions}" /> to rebuild the default (unnamed) <typeparamref name="TOptions" /> when the
-///     configuration reloads. A section's reload token is its root's, so one source covers every section registered for the type.
+///     configuration reloads. A section's reload token is its root's, so one source per type covers all its registrations.
 /// </summary>
 /// <remarks>
 ///     Its own type, rather than <see cref="ConfigurationChangeTokenSource{TOptions}" />, so registering it with

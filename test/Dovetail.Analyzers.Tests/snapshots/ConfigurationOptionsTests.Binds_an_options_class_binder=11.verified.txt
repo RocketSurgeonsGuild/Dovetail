@@ -18,7 +18,7 @@ public static partial class Exports
     {
         public void Register(global::Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
         {
-            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.GreetingsOptions>(services, "Greetings", static (configuration, instance) => DovetailConfigurationBinder.BindSample__GreetingsOptions(configuration, instance), 0);
+            global::Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.GreetingsOptions>(services, "Greetings", static (configuration, instance) => DovetailConfigurationBinder.BindSample__GreetingsOptions(configuration, instance));
         }
     }
 }

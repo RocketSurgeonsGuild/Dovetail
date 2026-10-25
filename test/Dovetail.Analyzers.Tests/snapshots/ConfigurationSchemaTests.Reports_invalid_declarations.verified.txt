@@ -1,4 +1,3 @@
 ﻿## Diagnostics
-DT0007 Error line 7: '[assembly: DovetailConfiguration]' can't be described as configuration: on the assembly it needs the options type, as in [assembly: DovetailConfiguration("Section", typeof(T))]
-DT0007 Error line 11: 'Sample.Tags' can't be described as configuration: it's a collection; declare the class that contains it
-DT0007 Error line 16: 'Sample.Outer<T>.InnerOptions' can't be described as configuration: it's an open generic type
+DT0007 Error line 9: 'Sample.Tags' can't be described as configuration: it's a collection; declare the class that contains it
+DT0007 Error line 14: 'Sample.Outer<T>.InnerOptions' can't be described as configuration: it's an open generic type

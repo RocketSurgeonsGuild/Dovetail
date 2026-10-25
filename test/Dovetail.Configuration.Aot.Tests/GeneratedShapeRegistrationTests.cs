@@ -40,7 +40,7 @@ public sealed class GeneratedShapeRegistrationTests
         Should.Throw<OptionsValidationException>(() => provider.GetRequiredService<IOptions<GreetingsOptions>>().Value);
     }
 
-    // The calls the generator emits into IServiceJoint.Register: static calls with a positional order, and ValidateOnStart
+    // The calls the generator emits into IServiceJoint.Register: static calls, and ValidateOnStart
     // wrapping the returned builder. Generated code also writes global:: and every type argument; dotnet format drops them here.
     private static void Register(IServiceCollection services)
     {
@@ -48,15 +48,13 @@ public sealed class GeneratedShapeRegistrationTests
             DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<GreetingsOptions>(
                 services,
                 "Greetings",
-                static (configuration, instance) => Binder.BindGreetings(configuration, instance),
-                0
+                static (configuration, instance) => Binder.BindGreetings(configuration, instance)
             )
         );
         DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions(
             services,
             "Server",
-            static configuration => Binder.CreateServer(configuration),
-            0
+            static configuration => Binder.CreateServer(configuration)
         );
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<GreetingsOptions>, GreetingsValidator>());
     }

@@ -385,15 +385,6 @@ public class UnknownTarget
     public Dictionary<string, string>? Dict { get; set; }
 }
 
-/// <summary>Sections registered twice for one type are applied in order: Order, then path.</summary>
-[DovetailConfiguration("Stack:A", Order = 1)]
-[DovetailConfiguration("Stack:B")]
-public class StackedOptions
-{
-    public string? Value { get; set; }
-    public List<string> Items { get; set; } = [];
-}
-
 [DovetailConfiguration("Reload")]
 public class ReloadOptions
 {

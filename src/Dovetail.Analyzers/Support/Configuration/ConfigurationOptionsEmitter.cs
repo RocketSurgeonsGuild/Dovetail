@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Dovetail.Support.Configuration;
 
 /// <summary>What one <c>[DovetailConfiguration]</c> section registers with the options pipeline, and the types its binder needs.</summary>
-internal sealed record ConfigurationOptions(string Path, int Order, bool ValidateOnStart, TypeRef Type, BinderVersion Version, EquatableArray<TypeSpec> Types);
+internal sealed record ConfigurationOptions(string Path, bool ValidateOnStart, TypeRef Type, BinderVersion Version, EquatableArray<TypeSpec> Types);
 
 /// <summary>An <c>[OptionsValidator]</c> class and the options types it validates.</summary>
 internal sealed record ConfigurationValidator(string TypeName, EquatableArray<string> OptionsTypeNames);
@@ -85,8 +85,7 @@ internal static class ConfigurationOptionsEmitter
         writer.Indentation += 2;
         foreach (var registration in registrations
                                     .Where(z => roots.ContainsKey(z.Type))
-                                    .OrderBy(z => z.Order)
-                                    .ThenBy(z => z.Path, StringComparer.OrdinalIgnoreCase)
+                                    .OrderBy(z => z.Path, StringComparer.OrdinalIgnoreCase)
                                     .ThenBy(z => z.Path, StringComparer.Ordinal)
                                     .ThenBy(z => z.Type.FullyQualifiedName, StringComparer.Ordinal))
         {
@@ -161,8 +160,6 @@ internal static class ConfigurationOptionsEmitter
           + SymbolDisplay.FormatLiteral(registration.Path, quote: true)
           + ", "
           + bind
-          + ", "
-          + registration.Order.ToString(CultureInfo.InvariantCulture)
           + ")";
         return registration.ValidateOnStart ? $"global::Microsoft.Extensions.DependencyInjection.OptionsBuilderExtensions.ValidateOnStart({call})" : call;
     }

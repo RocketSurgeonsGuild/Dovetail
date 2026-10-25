@@ -211,9 +211,19 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                                namespace Sample;
 
                                [DovetailConfiguration("Shared:B", ValidateOnStart = true)]
-                               [DovetailConfiguration("Shared:A", Order = 1)]
-                               [DovetailConfiguration("Shared:C", RegisterOptions = false)]
                                public class SharedOptions
+                               {
+                                   public string? Value { get; set; }
+                               }
+
+                               [DovetailConfiguration("Shared:A")]
+                               public class FirstOptions
+                               {
+                                   public string? Value { get; set; }
+                               }
+
+                               [DovetailConfiguration("Shared:C", RegisterOptions = false)]
+                               public class DescribedOnlyOptions
                                {
                                    public string? Value { get; set; }
                                }

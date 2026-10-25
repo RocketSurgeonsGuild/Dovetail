@@ -25,10 +25,10 @@ Goals:
 | Area | Decision |
 |---|---|
 | Source of truth | Code-first. Dovetail's Roslyn generator derives schema and binder from one type model; no third-party schema library. |
-| Attribute forms | Both, in v1: class-level `[DovetailConfiguration]`, and assembly-level `[assembly: DovetailConfiguration("Section", typeof(T))]` for types you don't own. Both register `IOptions<T>`. |
+| Attribute forms | Both, in v1: class-level `[DovetailConfiguration]` (class-only, one per class), and the generic assembly-level `[assembly: DovetailConfiguration<T>("Section")]` (assembly-only, one per `T`, enforced by the compiler) for types you don't own. Both register `IOptions<T>`. |
 | Section path | Optional. The default is the type name with an `Options`/`Settings`/`Configuration`/`Config` suffix stripped; no prefix. A name that would become empty is an error. |
-| Same T, several sections | Every section binds, **stacked** into one default `IOptions<T>`. Order: an `Order` attribute property (default 0), then ordinal section path. The schema shows T under every section. |
-| Type shapes | Mutable classes use the standard options pipeline (`IConfigureOptions`, so `Configure`/`PostConfigure` keep working). Immutable types (records, `init`, positional constructors) get a **generated `IOptionsFactory<T>`** that builds from the stacked sections and still runs validators. |
+| One section per type | A type has exactly one section, so there is no `Order` and no stacking, de-duplication or merging. Configuring a type with both a class attribute and an assembly `DovetailConfiguration<T>` is DT0015 (the class declaration wins). A library reads only its own section from the application's complete `IConfiguration`; the standard options pipeline does the rest. Across assemblies, the public `AddDovetailConfigurationOptions` overloads follow the pipeline's usual rules: each bind registration adds a configure step in registration order, and the first factory wins. |
+| Type shapes | Mutable classes use the standard options pipeline (`IConfigureOptions`, so `Configure`/`PostConfigure` keep working). Immutable types (records, `init`, positional constructors) get an **`IOptionsFactory<T>`** (a small `OptionsFactory<T>` subclass) that creates the default instance from its section and still runs configure, post-configure and validators. |
 | Binder semantics | Match Microsoft's configuration-binder **source generator** exactly, quirks included (list append, constructor-parameter rules). Pinned per TFM by parity tests. |
 | Validation | Auto-register a user-declared `[OptionsValidator]` partial. `ValidateOnStart` is an opt-in attribute property. Never `ValidateDataAnnotations`. |
 | Schema draft / strictness | Draft-07. Library fragments are permissive (no `required` unless `DovetailConfigurationSchemaRequired=true`). The **merged application schema is strict**: each Dovetail section and its nested objects are closed with a **case-insensitive `propertyNames`** rule (`additionalProperties:false` isn't used, so non-canonical casing still validates). Root, shared parent nodes, dictionaries and overlapping sections stay open. Opt out with `DovetailConfigurationSchemaStrict=false`. |
@@ -82,7 +82,7 @@ Goals:
 
 ### P1: Model + fragments (6–8 d)
 
-- `src/Dovetail/Attributes/DovetailConfigurationAttribute.cs`: section path optional; `Order`, `RegisterOptions`, `ValidateOnStart`; class and assembly targets (assembly form takes `Type`). `[PublicAPI]`, `[Conditional("CodeGeneration")]`.
+- `src/Dovetail/Attributes/DovetailConfigurationAttribute.cs`: section path optional; `RegisterOptions`, `ValidateOnStart`; class-only. `DovetailConfigurationAttribute<T>` is the assembly-only form (`AllowMultiple = false`; the same `T` twice is CS0579). `[PublicAPI]`, `[Conditional("CodeGeneration")]`.
 - New pipeline in `src/Dovetail.Analyzers/DovetailAttributesGenerator.cs`: `ForAttributeWithMetadataName` for both forms → equatable model (no `ISymbol`/`Location`/`ImmutableArray` downstream).
 - New files under `Support/Configuration/`: `ConfigurationModel`, `ModelBuilder`, `JsonSchemaWriter` (hand-written, escaping, invariant, deterministic), `EquatableArray`, `DiagnosticInfo`.
 - Supported types:
@@ -122,9 +122,9 @@ Goals:
 ### P3: Binder, factory, joint (8–11 d)
 
 - `BinderEmitter`: MS source-gen semantics for mutable types.
-- `FactoryEmitter`: generated `IOptionsFactory<T>` for immutable types, stacked sections, validators.
+- `FactoryEmitter`: `IOptionsFactory<T>` for immutable types, creating from one section, validators.
 - `JointEmitter`: one `DovetailConfigurationOptionsJoint : IServiceJoint` per assembly, appended to `Exported_Dovetails`. Change `ExportDovetails.cs:16`'s early return; `ImportDovetails` self-includes it.
-- Stacking in `Order`/path order. `[OptionsValidator]` pickup via `TryAddEnumerable`; `ValidateOnStart`.
+- One registration per type, emitted in path then type name order. `[OptionsValidator]` pickup via `TryAddEnumerable`; `ValidateOnStart`.
 - New reflection-free `AddDovetailConfigurationOptions` overload(s) in `src/Dovetail/DovetailConfigurationOptionsExtensions.cs` (`[DynamicallyAccessedMembers]`, change-token source for reload).
 
 ### P4: VS segments + editors + endpoint (4–6 d)
@@ -150,7 +150,7 @@ Goals:
 ## Verification
 
 - **Analyzers** (`test/Dovetail.Analyzers.Tests`, Verify.SourceGenerators):
-  - fragments for both attribute forms, default section naming, stacking order, records/init, all diagnostics;
+  - fragments for both attribute forms, default section naming, registration order, records/init, all diagnostics;
   - doc comments parsed vs not parsed;
   - an incremental caching test (`trackIncrementalGeneratorSteps`);
   - cross-assembly fixtures via the `GenerationHelpers.CreateDeps` pattern;
@@ -162,7 +162,7 @@ Goals:
   - every output validated against the draft-07 meta-schema.
 - **Runtime parity** (`test/Dovetail.Configuration.Runtime.Tests`, net10 + net11):
   - Dovetail binder/factory vs reflection `ConfigurationBinder` (called via a delegate) vs Microsoft's source-gen binder (`EnableConfigurationBindingGenerator` project);
-  - stacking; reload; validators; `ValidateOnStart`;
+  - DT0015 (class plus assembly form); reload; validators; `ValidateOnStart`;
   - an `IsAotCompatible` project with IL2026/IL3050/IL2091 as errors.
 - **Sdk** (`test/Dovetail.Sdk.Tests`):
   - the library obj schema and nupkg root `ConfigurationSchema.json` (`VerifyProjectsAndPackages`, no NU5118);

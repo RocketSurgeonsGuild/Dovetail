@@ -72,31 +72,22 @@ internal sealed class ModelBuilder
     public static ConfigurationDeclaration Build(AttributeData attribute, INamedTypeSymbol? attributedType, Compilation compilation, CancellationToken cancellationToken)
     {
         string? section = null;
-        ITypeSymbol? type = attributedType;
-        var hasTypeArgument = false;
+        // The class form's options type is the class; the assembly form's is the type argument of DovetailConfiguration<T>.
+        var type = attributedType ?? attribute.AttributeClass?.TypeArguments.FirstOrDefault();
         foreach (var argument in attribute.ConstructorArguments)
         {
             if (argument is { Kind: TypedConstantKind.Primitive, Value: string value })
             {
                 section = value;
             }
-            else if (argument.Kind == TypedConstantKind.Type)
-            {
-                hasTypeArgument = true;
-                type = argument.Value as ITypeSymbol;
-            }
         }
 
-        var order = 0;
         var registerOptions = true;
         var validateOnStart = false;
         foreach (var named in attribute.NamedArguments)
         {
             switch (named.Key)
             {
-                case "Order" when named.Value.Value is int value:
-                    order = value;
-                    break;
                 case "RegisterOptions" when named.Value.Value is bool value:
                     registerOptions = value;
                     break;
@@ -118,36 +109,24 @@ internal sealed class ModelBuilder
         ConfigurationOptions? options = null;
         try
         {
-            if (attributedType is null && !hasTypeArgument)
+            result = builder.BuildSection(type, section, registerOptions, validateOnStart);
+            if (result is { RegisterOptions: true } && type is not null)
             {
-                builder.Report(
-                    Diagnostics.InvalidConfigurationType,
-                    builder._declarationLocation,
-                    "[assembly: DovetailConfiguration]",
-                    "on the assembly it needs the options type, as in [assembly: DovetailConfiguration(\"Section\", typeof(T))]"
-                );
-            }
-            else
-            {
-                result = builder.BuildSection(type, section, order, registerOptions, validateOnStart);
-                if (result is { RegisterOptions: true } && type is not null)
+                // The binder's own rules for creating the type are stricter in places (e.g. ref parameters).
+                var types = new BindingParser(compilation, version).Parse(type, cancellationToken);
+                var index = new BindingTypeIndex(types);
+                if (index.TryGetTypeSpec(TypeRef.From(type), out var spec) && spec is ObjectSpec root && !index.CanInstantiate(root))
                 {
-                    // The binder's own rules for creating the type are stricter in places (e.g. ref parameters).
-                    var types = new BindingParser(compilation, version).Parse(type, cancellationToken);
-                    var index = new BindingTypeIndex(types);
-                    if (index.TryGetTypeSpec(TypeRef.From(type), out var spec) && spec is ObjectSpec root && !index.CanInstantiate(root))
-                    {
-                        builder.Report(
-                            Diagnostics.UnsupportedConfigurationConstructor,
-                            builder._declarationLocation,
-                            type.ToDisplayString(),
-                            root.InitFailureReason ?? "the configuration binder can't create it"
-                        );
-                    }
-                    else
-                    {
-                        options = new(result.Path, result.Order, result.ValidateOnStart, TypeRef.From(type), version, types);
-                    }
+                    builder.Report(
+                        Diagnostics.UnsupportedConfigurationConstructor,
+                        builder._declarationLocation,
+                        type.ToDisplayString(),
+                        root.InitFailureReason ?? "the configuration binder can't create it"
+                    );
+                }
+                else
+                {
+                    options = new(result.Path, result.ValidateOnStart, TypeRef.From(type), version, types);
                 }
             }
         }
@@ -157,7 +136,13 @@ internal sealed class ModelBuilder
             builder.Report(Diagnostics.ConfigurationSchemaFailed, builder._declarationLocation, type?.ToDisplayString() ?? "?", exception.GetType().Name + ": " + exception.Message);
         }
 
-        return new(result, builder._diagnostics.ToEquatableArray(), options);
+        return new(
+            result,
+            builder._diagnostics.ToEquatableArray(),
+            options,
+            type is null or { TypeKind: TypeKind.Error } ? null : type.ToDisplayString(),
+            LocationInfo.From(builder._declarationLocation)
+        );
     }
 
     /// <summary>The default section name: the type name without an Options/Settings/Configuration/Config suffix.</summary>
@@ -174,7 +159,7 @@ internal sealed class ModelBuilder
         return typeName;
     }
 
-    private ConfigurationSection? BuildSection(ITypeSymbol? type, string? section, int order, bool registerOptions, bool validateOnStart)
+    private ConfigurationSection? BuildSection(ITypeSymbol? type, string? section, bool registerOptions, bool validateOnStart)
     {
         if (type is null or { TypeKind: TypeKind.Error })
         {
@@ -207,7 +192,7 @@ internal sealed class ModelBuilder
                          .Where(z => z != rootName || _referenced.Contains(z))
                          .Select(z => new SchemaDefinition(z, _definitions[z]!))
                          .ToEquatableArray();
-        return new(path, order, registerOptions, validateOnStart, type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), _definitions[rootName]!, definitions);
+        return new(path, registerOptions, validateOnStart, type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), _definitions[rootName]!, definitions);
     }
 
     private static string? InvalidTypeReason(ITypeSymbol type) => type switch

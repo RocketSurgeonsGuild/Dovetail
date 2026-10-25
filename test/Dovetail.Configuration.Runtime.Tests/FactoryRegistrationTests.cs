@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 
 namespace Dovetail.Configuration.Runtime.Tests;
 
@@ -29,30 +28,29 @@ public sealed class FactoryRegistrationTests
     }
 
     [Test]
-    public async Task Create_MergesSeveralSections_KeyByKey_InOrder()
+    public async Task Create_IgnoresASecondCreatingRegistration_ForTheSameType()
     {
         var services = new ServiceCollection()
                       .AddSingleton<IConfiguration>(
                            TestConfiguration.Build(
                                ("Defaults:Server:Host", "default-host"),
                                ("Defaults:Server:Port", "80"),
-                               ("Defaults:Server:Tags:0", "a"),
-                               ("Defaults:Server:Tags:1", "b"),
                                ("Server:Port", "8080"),
                                ("Server:Tags:0", "c")
                            )
                        );
-        // Registered in the opposite order to the one they merge in.
-        services.AddDovetailConfigurationOptions("Server", Noted(ServerRecord.Create, "created by Server"), order: 1);
+        services.AddDovetailConfigurationOptions("Server", Noted(ServerRecord.Create, "created by Server"));
         services.AddDovetailConfigurationOptions("Defaults:Server", Noted(ServerRecord.Create, "created by Defaults:Server"));
 
+        services.Count(descriptor => descriptor.ServiceType == typeof(IOptionsFactory<ServerRecord>)).ShouldBe(1);
         await using var provider = services.BuildServiceProvider();
 
+        // The first registration wins, and nothing is merged from the second section.
         var server = provider.GetRequiredService<IOptions<ServerRecord>>().Value;
-        server.Host.ShouldBe("default-host");
+        server.Host.ShouldBe("localhost");
         server.Port.ShouldBe(8080);
-        server.Tags.ShouldBe(["c", "b"]);
-        server.Note.ShouldBe("created by Defaults:Server");
+        server.Tags.ShouldBe(["c"]);
+        server.Note.ShouldBe("created by Server");
     }
 
     [Test]
@@ -78,20 +76,12 @@ public sealed class FactoryRegistrationTests
     }
 
     [Test]
-    public async Task Create_ThenBindsTheBindingSections_ExceptThoseOnACreatingPath()
+    public async Task Create_ThenAppliesBindRegistrations_OntoTheCreatedInstance()
     {
         var services = new ServiceCollection()
-                      .AddSingleton<IConfiguration>(
-                           TestConfiguration.Build(
-                               ("Server:Host", "example.org"),
-                               ("Server:Tags:0", "created"),
-                               ("ExtraServer:Tags:0", "bound")
-                           )
-                       );
-        // Binding "server" again would append "created" twice: the creating section already applied that path.
-        services.AddDovetailConfigurationOptions<ServerRecord>("server", ServerRecord.BindTags);
-        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create, order: 1);
-        services.AddDovetailConfigurationOptions<ServerRecord>("ExtraServer", ServerRecord.BindTags, order: 2);
+                      .AddSingleton<IConfiguration>(TestConfiguration.Build(("Server:Host", "example.org"), ("Server:Tags:0", "created"), ("ExtraServer:Tags:0", "bound")));
+        services.AddDovetailConfigurationOptions<ServerRecord>("ExtraServer", ServerRecord.BindTags);
+        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
 
         await using var provider = services.BuildServiceProvider();
 
@@ -101,10 +91,9 @@ public sealed class FactoryRegistrationTests
     [Test]
     public async Task Create_Reload_ReachesMonitorAndSnapshot_Once()
     {
-        var configuration = TestConfiguration.Build(("Defaults:Server:Host", "example.org"), ("Server:Port", "8080"));
+        var configuration = TestConfiguration.Build(("Server:Host", "example.org"), ("Server:Port", "8080"));
         var services = new ServiceCollection().AddSingleton<IConfiguration>(configuration);
-        services.AddDovetailConfigurationOptions("Defaults:Server", ServerRecord.Create);
-        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create, order: 1);
+        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
 
         await using var provider = services.BuildServiceProvider();
 
@@ -156,27 +145,6 @@ public sealed class FactoryRegistrationTests
     }
 
     [Test]
-    public async Task Create_FromSeveralSections_ReleasesTheMergedConfiguration()
-    {
-        var configuration = new TrackingConfiguration(TestConfiguration.Build(("Defaults:Server:Host", "example.org"), ("Server:Port", "8080")));
-        var services = new ServiceCollection().AddSingleton<IConfiguration>(configuration);
-        services.AddDovetailConfigurationOptions("Defaults:Server", ServerRecord.Create);
-        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create, order: 1);
-
-        await using var provider = services.BuildServiceProvider();
-
-        var factory = provider.GetRequiredService<IOptionsFactory<ServerRecord>>();
-        for (var i = 0; i < 3; i++)
-        {
-            factory.Create(Options.DefaultName).Port.ShouldBe(8080);
-        }
-
-        // The merged configuration watches each section's reload token while it exists.
-        configuration.RegistrationsMade.ShouldBe(6);
-        configuration.ActiveRegistrations.ShouldBe(0);
-    }
-
-    [Test]
     public async Task Create_ValidateOnStart_OnTheReturnedBuilder_FailsHostStart()
     {
         var builder = Host.CreateEmptyApplicationBuilder(new());
@@ -209,74 +177,5 @@ public sealed class FactoryRegistrationTests
     private sealed class FixedFactory(ServerRecord server) : IOptionsFactory<ServerRecord>
     {
         public ServerRecord Create(string name) => server;
-    }
-
-    /// <summary>
-    ///     Wraps a configuration so that it, and every section it hands out, share one reload token that counts its callback
-    ///     registrations.
-    /// </summary>
-    private sealed class TrackingConfiguration(IConfiguration inner) : IConfiguration
-    {
-        private readonly TrackingChangeToken _token = new();
-
-        public int RegistrationsMade => _token.RegistrationsMade;
-
-        public int ActiveRegistrations => _token.ActiveRegistrations;
-
-        public string? this[string key] { get => inner[key]; set => inner[key] = value; }
-
-        public IEnumerable<IConfigurationSection> GetChildren() => inner.GetChildren();
-
-        public IChangeToken GetReloadToken() => _token;
-
-        public IConfigurationSection GetSection(string key) => new TrackingSection(inner.GetSection(key), _token);
-    }
-
-    private sealed class TrackingSection(IConfigurationSection inner, IChangeToken token) : IConfigurationSection
-    {
-        public string? this[string key] { get => inner[key]; set => inner[key] = value; }
-
-        public string Key => inner.Key;
-
-        public string Path => inner.Path;
-
-        public string? Value { get => inner.Value; set => inner.Value = value; }
-
-        public IEnumerable<IConfigurationSection> GetChildren() => inner.GetChildren();
-
-        public IChangeToken GetReloadToken() => token;
-
-        public IConfigurationSection GetSection(string key) => inner.GetSection(key);
-    }
-
-    private sealed class TrackingChangeToken : IChangeToken
-    {
-        private int _made;
-        private int _active;
-
-        public int RegistrationsMade => Volatile.Read(ref _made);
-
-        public int ActiveRegistrations => Volatile.Read(ref _active);
-
-        public bool HasChanged => false;
-
-        public bool ActiveChangeCallbacks => true;
-
-        public IDisposable RegisterChangeCallback(Action<object?> callback, object? state)
-        {
-            Interlocked.Increment(ref _made);
-            Interlocked.Increment(ref _active);
-            return new Registration(this);
-        }
-
-        private sealed class Registration(TrackingChangeToken token) : IDisposable
-        {
-            private int _disposed;
-
-            public void Dispose()
-            {
-                if (Interlocked.Exchange(ref _disposed, 1) == 0) Interlocked.Decrement(ref token._active);
-            }
-        }
     }
 }

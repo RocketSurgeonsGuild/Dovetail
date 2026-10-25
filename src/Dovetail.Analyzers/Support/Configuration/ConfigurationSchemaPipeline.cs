@@ -14,6 +14,7 @@ namespace Dovetail.Support.Configuration;
 internal static class ConfigurationSchemaPipeline
 {
     public const string AttributeMetadataName = "Dovetail.Attributes.DovetailConfigurationAttribute";
+    public const string GenericAttributeMetadataName = "Dovetail.Attributes.DovetailConfigurationAttribute`1";
     public const string MetadataPrefix = "Dovetail.ConfigurationSchema.v1:";
 
     /// <summary>Marks the XML documentation files of package references, which Dovetail's targets pass in as additional files.</summary>
@@ -45,11 +46,11 @@ internal static class ConfigurationSchemaPipeline
                                 )
                                .WithTrackingName("dovetail:configuration_classes");
 
-        // Assembly attributes target the compilation unit: [assembly: DovetailConfiguration("Section", typeof(T))].
+        // Assembly attributes target the compilation unit: [assembly: DovetailConfiguration<T>("Section")].
         var assemblyDeclarations = context
                                   .SyntaxProvider
                                   .ForAttributeWithMetadataName(
-                                       AttributeMetadataName,
+                                       GenericAttributeMetadataName,
                                        static (node, _) => node is CompilationUnitSyntax,
                                        static (syntaxContext, cancellationToken) => syntaxContext
                                                                                   .Attributes
@@ -61,7 +62,7 @@ internal static class ConfigurationSchemaPipeline
         var declarations = classDeclarations
                           .Collect()
                           .Combine(assemblyDeclarations.Collect())
-                          .Select(static (pair, _) => pair.Left.Concat(pair.Right).SelectMany(z => z).ToEquatableArray());
+                          .Select(static (pair, _) => RejectRepeatedTypes(pair.Left.Concat(pair.Right).SelectMany(z => z)).ToEquatableArray());
 
         // Sections carry no source positions, so an edit that only moves code leaves them equal and everything after cached.
         var sections = declarations.Select(static (declarations, _) => declarations.Select(z => z.Section).OfType<ConfigurationSection>().ToEquatableArray());
@@ -133,6 +134,22 @@ internal static class ConfigurationSchemaPipeline
         );
 
         return options.Select(static (options, _) => !options.IsEmpty);
+    }
+
+    /// <summary>
+    ///     A type has one section. The compiler already rejects the same attribute twice for one type; this catches the class form
+    ///     and the assembly form naming the same type. The class declaration is kept, and the assembly one is replaced by a
+    ///     declaration that only reports DT0015, so it produces no section, registration or schema fragment.
+    /// </summary>
+    private static IEnumerable<ConfigurationDeclaration> RejectRepeatedTypes(IEnumerable<ConfigurationDeclaration> declarations)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var declaration in declarations)
+        {
+            yield return  declaration.TypeName is null || seen.Add(declaration.TypeName) 
+                ? declaration
+                :   new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationTypeDeclaredTwice, null, declaration.TypeName) with { Location = declaration.Location } }.ToEquatableArray());
+        }
     }
 
     /// <summary>
@@ -245,7 +262,6 @@ internal static class ConfigurationSchemaPipeline
 
         var ordered = sections
                      .OrderBy(z => z.Path, StringComparer.OrdinalIgnoreCase)
-                     .ThenBy(z => z.Order)
                      .ThenBy(z => z.TypeName, StringComparer.Ordinal);
         var unit = CompilationUnit()
                   .WithAttributeLists(List(ordered.Select(z => Helpers.AddAssemblyAttribute(MetadataPrefix + z.Path, JsonSchemaWriter.Write(z, includeRequired)))))

@@ -106,7 +106,6 @@ internal sealed record SchemaDefinition(string Name, SchemaNode Schema);
 /// <param name="Definitions">The object types the section uses, including its own type when something refers back to it.</param>
 internal sealed record ConfigurationSection(
     string Path,
-    int Order,
     bool RegisterOptions,
     bool ValidateOnStart,
     string TypeName,
@@ -118,4 +117,10 @@ internal sealed record ConfigurationSection(
 ///     What a declaration produced: a section (unless it was invalid), what it registers with the options pipeline (unless it
 ///     opted out) and any diagnostics.
 /// </summary>
-internal sealed record ConfigurationDeclaration(ConfigurationSection? Section, EquatableArray<DiagnosticInfo> Diagnostics, ConfigurationOptions? Options = null);
+internal sealed record ConfigurationDeclaration(
+    ConfigurationSection? Section,
+    EquatableArray<DiagnosticInfo> Diagnostics,
+    ConfigurationOptions? Options = null,
+    string? TypeName = null,
+    LocationInfo? Location = null
+);
