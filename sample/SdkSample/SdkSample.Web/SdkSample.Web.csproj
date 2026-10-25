@@ -13,5 +13,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SdkSample.Greetings\SdkSample.Greetings.csproj" />
+    <ProjectReference Include="..\SdkSample.Notifications\SdkSample.Notifications.csproj" />
+    <ProjectReference Include="..\SdkSample.Storage\SdkSample.Storage.csproj" />
+    <ProjectReference Include="..\SdkSample.Diagnostics\SdkSample.Diagnostics.csproj" />
   </ItemGroup>
 </Project>

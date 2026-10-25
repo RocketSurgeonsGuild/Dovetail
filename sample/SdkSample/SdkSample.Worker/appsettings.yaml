@@ -1,0 +1,10 @@
+# Loaded after every library's own file (Dovetail renames this to SdkSample.Worker.yaml), so it overrides their defaults.
+Greetings:
+  Repeat: 2
+
+Notifications:
+  MinimumLevel: Info
+  Sender: worker@example.com
+
+Host:
+  ShutdownTimeout: 00:00:05

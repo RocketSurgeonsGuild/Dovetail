@@ -1,0 +1,11 @@
+<!--
+    A plain class library, like SdkSample.Greetings. It configures two types it doesn't own, HostOptions and
+    ConsoleLifetimeOptions, through assembly-level [DovetailConfiguration<T>] attributes. Their descriptions in the merged
+    schema come from the XML documentation files that ship in the Microsoft.Extensions.Hosting packages, so the library
+    references that package (the host gets it through its own Dovetail.Hosting reference as well).
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.13" />
+  </ItemGroup>
+</Project>

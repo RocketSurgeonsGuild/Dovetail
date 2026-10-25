@@ -1,0 +1,12 @@
+Storage:
+  Root: ./data
+  MaxFileSizeMb: 64
+  Compress: false
+
+Archive:
+  Name: sdk-sample
+  retention-days: 30
+  AllowedExtensions:
+    - .txt
+    - .json
+    - .csv

@@ -1,7 +1,8 @@
 {
   // Maps each host's merged configuration schema to its appsettings files. Dovetail writes the schema to
   // <host>/obj/appsettings.schema.json on every build, so build once before expecting completion.
-  // SdkSample.Greetings has no merged schema of its own, so its appsettings.yaml uses the worker's, which includes Greetings.
+  // The libraries (Greetings, Notifications, Storage, Diagnostics) have no merged schema of their own, so their appsettings.yaml
+  // files use the worker's, which includes the sections of all four.
   // See docs/src/content/docs/guides/editor-setup.md.
   "json.schemas": [
     {
@@ -14,7 +15,7 @@
     }
   ],
   "yaml.schemas": {
-    "./SdkSample.Worker/obj/appsettings.schema.json": ["SdkSample.Worker/appsettings*.yaml", "SdkSample.Worker/appsettings*.yml", "SdkSample.Greetings/appsettings*.yaml", "SdkSample.Greetings/appsettings*.yml"],
+    "./SdkSample.Worker/obj/appsettings.schema.json": ["SdkSample.Worker/appsettings*.yaml", "SdkSample.Worker/appsettings*.yml", "SdkSample.Greetings/appsettings*.yaml", "SdkSample.Greetings/appsettings*.yml", "SdkSample.Notifications/appsettings*.yaml", "SdkSample.Notifications/appsettings*.yml", "SdkSample.Storage/appsettings*.yaml", "SdkSample.Storage/appsettings*.yml", "SdkSample.Diagnostics/appsettings*.yaml", "SdkSample.Diagnostics/appsettings*.yml"],
     "./SdkSample.Web/obj/appsettings.schema.json": ["SdkSample.Web/appsettings*.yaml", "SdkSample.Web/appsettings*.yml"]
   },
   "evenBetterToml.schema.associations": {

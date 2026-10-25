@@ -1,5 +1,8 @@
 <Solution>
+  <Project Path="SdkSample.Diagnostics/SdkSample.Diagnostics.csproj" />
   <Project Path="SdkSample.Greetings/SdkSample.Greetings.csproj" />
+  <Project Path="SdkSample.Notifications/SdkSample.Notifications.csproj" />
+  <Project Path="SdkSample.Storage/SdkSample.Storage.csproj" />
   <Project Path="SdkSample.Web/SdkSample.Web.csproj" />
   <Project Path="SdkSample.Worker/SdkSample.Worker.csproj" />
 </Solution>
