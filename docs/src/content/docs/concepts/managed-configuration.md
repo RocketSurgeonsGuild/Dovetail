@@ -37,7 +37,7 @@ public sealed class GreetingsOptions
 {
     /// <summary>What the greeting says before the name.</summary>
     [Description("The text that comes before the name, e.g. \"Hello\".")]
-    public string Message { get; set; } = "";
+    public string Message { get; set; } = "Hello";
 
     /// <summary>How many times the greeting is said.</summary>
     [Range(1, 5)]
@@ -75,22 +75,48 @@ There is no prefix. A name that would become empty after stripping the suffix (a
 
 ### One section per type
 
-A type has exactly one section, so it is declared once: `[DovetailConfiguration]` on the class allows one attribute, and
-`DovetailConfiguration<T>` on the assembly allows one per `T` (the compiler rejects the same `T` twice). Declaring a
-type with both the class form and the assembly form is an error ([`DT0015`](#diagnostics)); the class declaration wins
-and the assembly one produces nothing.
+A type has exactly one section, so it is declared once. There are two attribute forms:
 
-At run time a library reads only its own section from the application's complete `IConfiguration` and creates or binds
-its options from it. Dovetail doesn't order, de-duplicate or merge sections. The generated joint registers an assembly's
-types by section path, then type name, and the standard options pipeline does the rest.
+- `[DovetailConfiguration]` (or `[DovetailConfiguration("Section")]`) on the class. It can't be repeated on a type.
+- `[assembly: DovetailConfiguration<T>("Section")]` for a type you don't own. The compiler allows it once per `T`.
+
+Declaring a type with both forms is an error ([`DT0015`](#diagnostics)). The diagnostic is reported on the assembly
+attribute; the class declaration is the one that produces the schema fragment and the registration, and the assembly
+attribute produces nothing.
+
+At run time each library reads only its own section from the application's complete `IConfiguration`, which the service
+provider supplies when the options are first created, and creates or binds its options from it. Dovetail doesn't order,
+de-duplicate or merge sections. The generated joint registers an assembly's types by section path, then type name, and
+the standard options pipeline does the rest.
 
 Mutable classes go through the standard options pipeline (`IConfigureOptions<T>`), so your own `Configure<T>` and
 `PostConfigure<T>` calls keep working: ones registered before a Dovetail registration for the type run before it, and
 ones registered after it run after it.
 
-If two assemblies register the same type through the public `AddDovetailConfigurationOptions` overloads, the
-pipeline's usual rules apply: each bind registration adds its own configure step, in registration order, and for a type
-that is created rather than bound the first registered factory wins.
+### Registering by hand
+
+The generated joint calls the public `AddDovetailConfigurationOptions` extension methods on `IServiceCollection`. You can
+call them yourself, for example for a type declared with `RegisterOptions = false`. All three return the
+`OptionsBuilder<TOptions>`, so `Validate` and `ValidateOnStart()` chain as usual.
+
+| Overload                                                                          | Does                                                                                                                                                                                                                                                          |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AddDovetailConfigurationOptions<T>(configuration, sectionKey)`                   | Binds `T` to `configuration.GetSection(sectionKey)` with `OptionsBuilder<T>.Bind`. It uses the `configuration` you pass, wires reload tokens, and is reflection based: it carries `RequiresUnreferencedCode` and `RequiresDynamicCode`, so it isn't AOT safe. |
+| `AddDovetailConfigurationOptions<T>(sectionPath, Action<IConfiguration, T> bind)` | **Bind.** The options pipeline creates `T` (public parameterless constructor) and `bind` fills it from the section at `sectionPath`. Reflection free.                                                                                                         |
+| `AddDovetailConfigurationOptions<T>(sectionPath, Func<IConfiguration, T> create)` | **Create.** For types the pipeline can't create (constructor parameters, `init` or `required` members). `create` builds the instance from the section at `sectionPath`. Reflection free.                                                                      |
+
+Semantics of the two reflection-free overloads, which are what the generated code calls:
+
+- The `IConfiguration` is the application's complete one, resolved from the service provider when the options are first
+  created. `bind` and `create` receive its section at `sectionPath` (such as `Http:Retry`). An empty path throws.
+- Each adds one change token source per type, so `IOptionsMonitor<T>` and `IOptionsSnapshot<T>` see reloads.
+- **Bind** adds an `IConfigureOptions<T>` on every call, even for the same type and path. They run in registration order,
+  together with your own `Configure<T>` calls. Only the default (unnamed) options are bound.
+- **Create** registers an `IOptionsFactory<T>` with `TryAdd`: the first factory registered for a type wins, whether it
+  was yours or another assembly's, and later calls are ignored. The factory derives from `OptionsFactory<T>`, so
+  configure and post-configure actions and validators still run on the instance it creates. Only the default options
+  come from `create`; named options are created by the base class, which needs a public parameterless constructor. On
+  .NET 11, don't give such a type asynchronous validators: they fail synchronous validation through a derived factory.
 
 ### `RegisterOptions` and `ValidateOnStart`
 
@@ -139,9 +165,10 @@ renames a key, and from binder 11 `[ConfigurationIgnore]` leaves a member out.
 | `[RegularExpression]`                       | `pattern`, when the expression can be anchored            |
 | `[Url]`, `[EmailAddress]`                   | `format`                                                  |
 | `[Obsolete]`                                | `deprecated` and a deprecation message                    |
-| A constant initializer or parameter default | `default`                                                 |
+| A constant initializer or parameter default | `default`, except an empty string                         |
 
-Ranges and defaults are also written into the description, since editors don't show them. The XML summary is read from
+Ranges and defaults are also written into the description, since editors don't show them. A default of `""` is
+skipped, both as `default` and in the description, because "Default: ." tells nobody anything. The XML summary is read from
 the source whether or not `GenerateDocumentationFile` is on. `<inheritdoc />` and `<include>` produce no description.
 Annotations that JSON Schema can't express are dropped with [`DT0013`](#diagnostics).
 
@@ -214,16 +241,26 @@ Draft-07 schema of the section's value, with every object type described once un
 case-insensitive `patternProperties` entry with the same schema, so `retries: 99` is checked even when written as
 `Retries`.
 
-A library project also writes the fragments as `ConfigurationSchema.json` (permissive, rooted at the configuration root
-like Aspire's) and packs it at the NuGet package root, so Visual Studio and other tools that understand Aspire's layout
-can use it. A library with no sections writes nothing.
+Every project that isn't a host (a library) also writes its own fragments as `$(IntermediateOutputPath)ConfigurationSchema.json`
+(permissive, rooted at the configuration root like Aspire's) and packs it at the NuGet package root, so Visual Studio and
+other tools that understand Aspire's layout can use it. A multi-targeted library writes one per target framework and
+packs the first one's. A library with no sections writes nothing.
 
 ### The merged application schema
 
-Applications (detected by Dovetail.Sdk, or `OutputType` of `Exe` or `WinExe`) and test projects merge their own fragments
-and those of every referenced assembly into `obj/appsettings.schema.json`. The file is a stable path editors can point at,
-is copied to the output directory next to `appsettings.json`, and is always published. Hosts that embed their
-configuration (MAUI, Uno) keep it in `obj/` only. A host that targets several frameworks writes it from the first one.
+Hosts are test projects (`IsTestProject`) and applications (detected by Dovetail.Sdk, or `OutputType` of `Exe` or
+`WinExe`). A host merges its own fragments and those of every referenced assembly into
+`$(BaseIntermediateOutputPath)appsettings.schema.json`, normally `obj/appsettings.schema.json`.
+
+- The file is a stable path editors can point at. A host that targets several frameworks writes that file from its first
+  target framework, and `$(IntermediateOutputPath)appsettings.schema.json` (for example `obj/Debug/net10.0/`) from the
+  others.
+- It is copied to `$(OutDir)`, next to `appsettings.json`, and published as `appsettings.schema.json`. A project that
+  references the host (a test project referencing an application) doesn't get a second copy.
+- Hosts that embed their configuration (`DovetailEmbedConfiguration` is `true`, which Dovetail.Sdk sets for MAUI and
+  Uno applications) keep the file in `obj/` only: no copy to the output directory and no publishing.
+- A hand-made `appsettings.schema.json` (Web SDK content, or one from a reference) is removed from the publish items so
+  it doesn't collide with the generated one (NETSDK1152). The generated file is what gets published.
 
 - **It is strict.** Each Dovetail section, and the object types it uses, accepts only its own keys. The check is a
   case-insensitive `propertyNames` pattern rather than `additionalProperties: false`, so `message` is accepted and
@@ -235,13 +272,14 @@ configuration (MAUI, Uno) keep it in `obj/` only. A host that targets several fr
   ordinal-smallest spelling is displayed. A section several assemblies declare is merged into one object. The same
   references always produce a byte-identical file.
 
-| Property                                        | Default  | Effect                                                                         |
-| ----------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
-| `DovetailConfigurationSchema`                   | on       | `false` writes no schema files at all.                                         |
-| `DovetailConfigurationSchemaHost`               | detected | `true` or `false` overrides which projects count as hosts.                     |
-| `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail's sections open (no `propertyNames`) in the host file. |
-| `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore's schema out.                                       |
-| `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`, in the fragments.                 |
+| Property                                        | Default  | Effect                                                                                                                                                          |
+| ----------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DovetailConfigurationSchema`                   | on       | `false` writes no schema files at all, and removes the ones an earlier build wrote.                                                                             |
+| `DovetailConfigurationSchemaHost`               | detected | `true` or `false` overrides which projects count as hosts.                                                                                                      |
+| `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail's sections open (no `propertyNames`) in the host file.                                                                                  |
+| `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore's schema out of the host file.                                                                                                       |
+| `DovetailEmbedConfiguration`                    | detected | `true` for hosts that embed their configuration (Dovetail.Sdk sets it for MAUI and Uno): the schema stays in `obj/`, with no copy to the output and no publish. |
+| `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`. The generator reads this one, so it changes the fragments in every project; the MSBuild targets don't use it.      |
 
 ```xml
 <PropertyGroup>
@@ -254,15 +292,18 @@ configuration (MAUI, Uno) keep it in `obj/` only. A host that targets several fr
 > Editors flag a quoted number such as `"Timeout": "30"` as an incorrect type, although the .NET binder accepts it.
 > Dovetail keeps the schema strict about types so that ranges are always checked.
 
-The build target is `AfterTargets="CoreCompile"` and skips design-time builds. It writes only when its inputs change.
+The build target runs after `CoreCompile` and skips design-time builds. It writes only when its inputs change: the
+references, the project's own assembly and the properties above.
 Merging runs in a compiled MSBuild task (`Dovetail.Build.Tasks`) that reads the fragments with `System.Reflection.Metadata`,
 so no assembly is loaded and nothing is embedded in your application.
 
 ### Serving the schema
 
-With `DovetailConfigurationSchemaEndpoint` set to `true`, Dovetail.Hosting.Web maps
-`GET /.well-known/dovetail/configuration-schema`, which returns the merged schema. It is off by default.
-`DovetailConfigurationSchemaEndpointEnvironments` limits it to a list of environments. See [Editor setup](../guides/editor-setup#the-schema-endpoint).
+Applications built on Dovetail.Hosting.Web can serve the merged schema over HTTP at
+`GET /.well-known/dovetail/configuration-schema`. It is off by default. Setting `DovetailConfigurationSchemaEndpoint` to
+`true` generates a joint that maps it, and the public `MapDovetailConfigurationSchema(fallbackDirectory, environments)`
+extension on `IEndpointRouteBuilder` maps it by hand. The properties, the response and the security trade-off are
+described in [Editor setup](../guides/editor-setup#the-schema-endpoint).
 
 ## Shipping default values
 
@@ -298,18 +339,18 @@ MyLibrary/
 
 ## Diagnostics
 
-| Id       | Severity | Meaning                                                                                                                     |
-| -------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `DT0006` | Warning  | The project's C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                 |
-| `DT0007` | Error    | The type can't be described as configuration, for example an interface, a collection or an open generic type.               |
-| `DT0008` | Error    | The section isn't valid for the type: empty, or a name that is empty once the suffix is removed.                            |
-| `DT0009` | Warning  | A member has a type configuration binding doesn't support. It is left out of the schema and the binder.                     |
-| `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                     |
-| `DT0011` | Error    | The type can't be created from configuration, for example an ambiguous constructor or a parameter that matches no property. |
-| `DT0012` | Warning  | The type graph uses too many distinct types, so the schema stops describing them at the member named.                       |
-| `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                |
-| `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                       |
-| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`.                  |
+| Id       | Severity | Meaning                                                                                                                                                                     |
+| -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DT0006` | Warning  | The project's C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                                                                 |
+| `DT0007` | Error    | The type can't be described as configuration: an interface, a static or abstract class, a struct or enum, an open generic type, or a collection.                            |
+| `DT0008` | Error    | The section isn't valid for the type: empty, an empty segment (`A::B`), or a name that is only a suffix such as `Options`.                                                  |
+| `DT0009` | Warning  | A member has a type configuration binding doesn't support. It is left out of the schema and the binder.                                                                     |
+| `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                                                                     |
+| `DT0011` | Error    | The type can't be created from configuration: no public constructor, several public constructors with parameters and none without, or a parameter that matches no property. |
+| `DT0012` | Warning  | The type graph uses more than 200 distinct types, so the schema stops describing them at the member named.                                                                  |
+| `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                                                                |
+| `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                                                                       |
+| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                        |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one
 indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under

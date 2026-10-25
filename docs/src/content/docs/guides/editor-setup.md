@@ -19,14 +19,22 @@ A build of an application or a test project writes the merged schema to:
 <project>/obj/appsettings.schema.json
 ```
 
-That path is stable, so editor settings can point at it and be checked in. The build also copies the file next to the
-application's `appsettings.json` in the output directory and always publishes it. Build the project once before expecting
+That path is stable, so editor settings can point at it and be checked in. Build the project once before expecting
 completion: the file doesn't exist before then.
 
+- A project that targets several frameworks writes that file from its first target framework. The others write
+  `$(IntermediateOutputPath)appsettings.schema.json`, for example `obj/Debug/net10.0/appsettings.schema.json`.
+- The build also copies the file next to the application's `appsettings.json` in the output directory and publishes it
+  as `appsettings.schema.json`.
+- Applications that embed their configuration (MAUI and Uno, where `DovetailEmbedConfiguration` is `true`) keep the file
+  in `obj/` only. It is not copied to the output directory and not published, so editors still use the `obj/` path.
+- A library (any project that isn't a host) doesn't write `appsettings.schema.json`. It writes
+  `$(IntermediateOutputPath)ConfigurationSchema.json` and packs it at the package root.
+
 If a project that isn't detected as an application should merge a schema, or an application shouldn't, set
-`DovetailConfigurationSchemaHost` to `true` or `false`. The other properties (`DovetailConfigurationSchemaStrict`,
-`DovetailConfigurationSchemaIncludeSchemaStore`, `DovetailConfigurationSchema`) are described under
-[the schema](../concepts/managed-configuration#the-schema).
+`DovetailConfigurationSchemaHost` to `true` or `false`. The other properties (`DovetailConfigurationSchema`,
+`DovetailConfigurationSchemaStrict`, `DovetailConfigurationSchemaIncludeSchemaStore`, `DovetailEmbedConfiguration` and
+`DovetailConfigurationSchemaRequired`) are described under [the schema](../concepts/managed-configuration#the-schema).
 
 ## Visual Studio Code
 
@@ -123,14 +131,41 @@ default:
 </PropertyGroup>
 ```
 
-The build then generates a joint that maps `GET /.well-known/dovetail/configuration-schema`. It serves
-`appsettings.schema.json` from the application's directory, and falls back to the project's `obj/` folder when run from
-source. Point a mapping at the URL, for example `"url": "http://localhost:5000/.well-known/dovetail/configuration-schema"`
-in `json.schemas`.
+| Property                                            | Default             | Effect                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DovetailConfigurationSchemaEndpoint`               | off                 | `true` generates a joint that maps the endpoint. Only projects with `OutputType` `Exe` or `WinExe` get it, and it does nothing in an application that isn't built on Dovetail.Hosting.Web.                                                                     |
+| `DovetailConfigurationSchemaEndpointEnvironments`   | every environment   | A semicolon-separated list of environment names (`Development;Staging`, compared ignoring case). The endpoint is mapped only when the host environment is one of them.                                                                                         |
+| `DovetailConfigurationSchemaEndpointSourceFallback` | `true` except below | Whether the project's `obj/` directory is compiled into the application as a place to look for the schema. By default it is, except in publish builds and `ContinuousIntegrationBuild` builds, so a build machine path isn't shipped. `false` never embeds it. |
+
+The route is `GET /.well-known/dovetail/configuration-schema`:
+
+- It looks for `appsettings.schema.json` in the application's output directory first, then in the embedded `obj/` fallback
+  directory, which is how it works when run from source with no copy beside the assembly. A published application serves
+  the copy published with it.
+- The response is `application/schema+json` with a strong `ETag` and `Cache-Control: no-cache`. A request with a matching
+  `If-None-Match` gets `304 Not Modified`. The file is re-read when it changes on disk.
+- It answers `404` when neither location has the file.
+
+Point a mapping at the URL, for example `"url": "http://localhost:5000/.well-known/dovetail/configuration-schema"` in
+`json.schemas`.
+
+To map it yourself, call the public extension on the `WebApplication` (or any `IEndpointRouteBuilder`) instead of setting
+the property. Both arguments are optional, and the method returns `null` when `environments` excludes the current
+environment:
+
+```c#
+using Dovetail.Hosting.Web;
+
+app.MapDovetailConfigurationSchema(fallbackDirectory: null, environments: "Development")
+   ?.RequireAuthorization();
+```
 
 > [!WARNING]
-> The schema lists every configuration key your application and its libraries accept. With no environment restriction the
-> endpoint is mapped everywhere, including production. Restrict it, or leave it off.
+> The schema lists every configuration key your application and its libraries accept, including the section names of
+> libraries you may not want to advertise. Unless you restrict it, the endpoint is mapped in every environment, production
+> included, and anyone who can reach the application can read it, with no authentication. Set
+> `DovetailConfigurationSchemaEndpointEnvironments` to the environments that need it (usually `Development`), map it
+> yourself and add authorization, or leave it off.
 
 ## Troubleshooting
 
