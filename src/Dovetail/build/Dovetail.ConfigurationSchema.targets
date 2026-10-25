@@ -204,4 +204,6 @@
       <_DovetailConfigurationSchemaPackFile Include="$(_DovetailLibraryConfigurationSchemaFile)" />
     </ItemGroup>
   </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.ConfigurationSchema.VisualStudio.targets" />
 </Project>

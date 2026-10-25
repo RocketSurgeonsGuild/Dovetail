@@ -90,16 +90,24 @@ It is off by default because it edits a file that is probably checked in.
 
 ## Visual Studio
 
-Visual Studio's JSON editor reads schemas from `JsonSchemaSegment` items, with no per-file settings. Dovetail adds:
+Visual Studio's JSON editor reads schemas from `JsonSchemaSegment` items, with no per-file settings. Dovetail adds, with the
+file pattern `appsettings\..*json` (the one Aspire's packages use):
 
-- a segment for the application's merged `obj/appsettings.schema.json`, matched to `appsettings.*json`;
-- a segment for each referenced package that ships a `ConfigurationSchema.json` at its root, skipping any segment the
-  package already declares itself (Aspire's client packages do).
+- a segment for the application's (or test project's) merged `obj/appsettings.schema.json`;
+- a segment for each referenced package that ships a `ConfigurationSchema.json` at its root, which is where libraries built
+  with Dovetail pack theirs. A package that declares its own segment for the file (Aspire's client packages do) is skipped,
+  so completions aren't doubled. Referenced projects need no segment: their sections are in the merged file.
 
-Nothing needs configuring. If completion doesn't appear after the first build, close and reopen the file.
+Nothing needs configuring. Dovetail finds the packages from the build's resolved references, in the builds Visual Studio
+runs when it loads the project too, not only in full builds. `DovetailConfigurationSchemaVisualStudio=false` turns the
+segments off and keeps the schema files; `DovetailConfigurationSchema=false` turns off both. If completion doesn't appear
+after the first build, close and reopen the file.
 
 > [!NOTE]
 > Segments only affect Visual Studio's JSON editor. YAML and TOML files get nothing from them in Visual Studio.
+
+The repository's tests check the items MSBuild produces, including in a design-time build. Whether Visual Studio itself picks
+up items a target adds, and how it merges two segments that describe the same section, has not been verified in Visual Studio.
 
 ## JetBrains Rider
 
