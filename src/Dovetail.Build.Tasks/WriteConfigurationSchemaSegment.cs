@@ -3,7 +3,7 @@ using Microsoft.Build.Framework;
 namespace Dovetail.Build.Tasks;
 
 /// <summary>
-///     Writes a library's own configuration schema fragments as its <c>ConfigurationSchema.json</c>: permissive, rooted at the
+///     Writes a library's own configuration schema fragments as its <c>ConfigurationSchema.json</c>, permissive and rooted at the
 ///     configuration root (the shape Aspire's packages ship at their package root). Deletes the file when the library declares no
 ///     sections, so a stale one is never packed.
 /// </summary>

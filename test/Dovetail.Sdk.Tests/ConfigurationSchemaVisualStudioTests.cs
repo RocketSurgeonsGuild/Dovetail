@@ -47,8 +47,13 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
             StringComparison.OrdinalIgnoreCase
         );
 
+    // MSBuild reports the macOS temp folder through its /private/var symlink target, while the test builds paths from
+    // Path.GetTempPath(), which leaves the symlink unresolved.
+    private static string WithoutPrivateSymlink(string path) =>
+        OperatingSystem.IsMacOS() && path.StartsWith("/private/", StringComparison.Ordinal) ? path["/private".Length..] : path;
+
     private static string[] Identities(IReadOnlyList<IReadOnlyDictionary<string, string>> segments) =>
-        [.. segments.Select(z => Path.GetFullPath(z["Identity"])).OrderBy(z => z, StringComparer.Ordinal)];
+        [.. segments.Select(z => WithoutPrivateSymlink(Path.GetFullPath(z["Identity"]))).OrderBy(z => z, StringComparer.Ordinal)];
 
     private static void ShouldAllMatchTheFilePattern(IReadOnlyList<IReadOnlyDictionary<string, string>> segments)
     {

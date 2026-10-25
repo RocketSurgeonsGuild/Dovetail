@@ -13,5 +13,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="../Dovetail.Analyzers.Tests/*.cs" />
+        <!-- The generator's key naming is internal; the tests compare it with System.Text.Json's naming policies. -->
+        <Compile Include="../../src/Dovetail.Analyzers/Support/Configuration/KeyNaming.cs" Link="KeyNaming.cs" />
     </ItemGroup>
 </Project>

@@ -70,9 +70,12 @@ public sealed class DovetailConfigurationAttribute : Attribute
 
 /// <summary>
 ///     Declares the configuration section of an options type <typeparamref name="T" /> from the assembly, for types you don't
-///     own: <c>[assembly: DovetailConfiguration&lt;HostOptions&gt;("Hosting")]</c>.
+///     own.
 /// </summary>
 /// <remarks>
+///     <para>
+///         For example, <c>[assembly: DovetailConfiguration&lt;HostOptions&gt;("Hosting")]</c>.
+///     </para>
 ///     <para>
 ///         The section path follows the same rules as <see cref="DovetailConfigurationAttribute" />. Apply it once for each type you
 ///         configure. A type has one section: naming it twice, or also declaring it with the class form, is reported as DT0015.

@@ -3,7 +3,7 @@ using Microsoft.Build.Framework;
 namespace Dovetail.Build.Tasks;
 
 /// <summary>
-///     Creates or updates Dovetail's own mappings for a host in a VS Code <c>.vscode/settings.json</c>: <c>json.schemas</c>,
+///     Creates or updates Dovetail's own mappings for a host in a VS Code <c>.vscode/settings.json</c>, namely <c>json.schemas</c>,
 ///     <c>yaml.schemas</c> and <c>evenBetterToml.schema.associations</c>, each pointing at the host's merged
 ///     <c>appsettings.schema.json</c>. Everything else in the file is left as it is (see <see cref="VsCodeSettingsEditor" />).
 /// </summary>
