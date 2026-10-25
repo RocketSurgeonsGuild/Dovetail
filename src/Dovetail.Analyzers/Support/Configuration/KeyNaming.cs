@@ -25,6 +25,7 @@ internal static class KeyNaming
     /// <summary>The key for a declared name, in <paramref name="style" />.</summary>
     public static string Apply(string name, KeyStyle style) => style switch
     {
+        KeyStyle.Undefined => name,
         KeyStyle.Pascal => Pascal(name),
         KeyStyle.Camel => Camel(name),
         KeyStyle.Dash => Dash(name),
