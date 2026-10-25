@@ -4,6 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+// Exports is generated: a formatter that runs without the generator can neither resolve it nor suggest simplifying its name, so the
+// fully qualified reference would flip between IDE0002 and a removed using on every automatic lint run.
+#pragma warning disable IDE0002
+
 namespace Dovetail.Configuration.Aot.Tests;
 
 /// <summary>
