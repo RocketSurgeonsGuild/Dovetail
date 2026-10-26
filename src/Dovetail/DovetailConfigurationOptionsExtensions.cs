@@ -35,25 +35,18 @@ public static class DovetailConfigurationOptionsExtensions
     ///         and <paramref name="create" /> is never called for that type. Registered before this call, the application's factory
     ///         makes this registration a no-op. Registered after it with a plain <c>Add</c>, it is the last registration, which the
     ///         container resolves. The factory derives from <see cref="OptionsFactory{TOptions}" />, so configure and post-configure
-    ///         actions and validators still run on the instance <paramref name="create" /> returns, for named options too.
+    ///         actions and validators still run on the instance <paramref name="create" /> returns.
     ///     </para>
     ///     <para>
     ///         A type is created from one section only. When several calls register a section for the same type, the first one
     ///         wins and the rest are ignored, as with any other <c>TryAdd</c> registration.
     ///     </para>
     ///     <para>
-    ///         The configuration comes from the <see cref="IDovetailConfigurationProvider" /> registered in the service provider,
-    ///         which is resolved when the options are first created. The default provider returns the application's complete
-    ///         <see cref="IConfiguration" /> for the default name, and throws for any other options name, so named options need
-    ///         a provider of your own (for example one that returns a configuration per tenant). <paramref name="create" /> is
-    ///         called for every name with the section at <paramref name="sectionPath" /> of the configuration the provider
-    ///         returned for it. A change token source for the default name watches the configuration the provider returns for it,
-    ///         so <see cref="IOptionsMonitor{TOptions}" /> and <see cref="IOptionsSnapshot{TOptions}" /> observe reloads of the
-    ///         default options, and tell <see cref="IOptionsMonitor{TOptions}.OnChange" /> listeners. For named options, the
-    ///         monitor's cache watches the configuration the provider returned for each name it created, and drops that instance
-    ///         when it reloads, so the next <see cref="IOptionsMonitor{TOptions}.Get(string?)" /> creates it from the reloaded
-    ///         configuration. <see cref="IOptionsMonitor{TOptions}.OnChange" /> listeners aren't told about named options, and
-    ///         <see cref="IOptionsSnapshot{TOptions}" /> reads current values without any of this.
+    ///         The configuration is the application's <see cref="IConfiguration" />, which the service provider supplies when the
+    ///         options are first created. <paramref name="create" /> is called with the section at <paramref name="sectionPath" />.
+    ///         A change token source watches that configuration, so <see cref="IOptionsMonitor{TOptions}" /> and
+    ///         <see cref="IOptionsSnapshot{TOptions}" /> observe reloads. Dovetail only registers the default options: a name other
+    ///         than the default is created from the same section.
     ///     </para>
     ///     <para>
     ///         On .NET 11, don't give a type registered this way asynchronous validators: the options pipeline only runs them
@@ -86,20 +79,15 @@ public static class DovetailConfigurationOptionsExtensions
 
         // TryAddEnumerable keys on the implementation type, so registering the same options type again doesn't add a second source.
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, DovetailConfigurationChangeTokenSource<TOptions>>(provider => new DovetailConfigurationChangeTokenSource<TOptions>(
-                    provider.GetRequiredService<IDovetailConfigurationProvider>(),
-                    Options.DefaultName
+            ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, ConfigurationChangeTokenSource<TOptions>>(provider => new ConfigurationChangeTokenSource<TOptions>(
+                    Options.DefaultName,
+                    provider.GetRequiredService<IConfiguration>()
                 )
             )
         );
-        // The monitor's cache drops a named instance when its configuration reloads. Only the monitor uses this cache: a snapshot creates its own.
-        services.TryAdd(
-            ServiceDescriptor.Singleton<IOptionsMonitorCache<TOptions>>(provider => new DovetailOptionsMonitorCache<TOptions>(provider.GetRequiredService<IDovetailConfigurationProvider>()))
-        );
-        services.TryAddSingleton<IDovetailConfigurationProvider>(static provider => new DefaultDovetailConfigurationProvider(provider.GetRequiredService<IConfiguration>()));
         services.TryAdd(
             ServiceDescriptor.Transient<IOptionsFactory<TOptions>, DovetailOptionsFactory<TOptions>>(provider => new DovetailOptionsFactory<TOptions>(
-                    provider.GetRequiredService<IDovetailConfigurationProvider>(),
+                    provider.GetRequiredService<IConfiguration>(),
                     sectionPath,
                     create,
                     provider.GetServices<IConfigureOptions<TOptions>>(),

@@ -163,54 +163,21 @@ constructor the generator emits `new T()` followed by the bind, and for the rest
 registration path uses reflection. To bind a type with reflection, use Microsoft's `Configure<T>(IConfiguration)` or
 `AddOptions<T>().Bind(...)` yourself.
 
-- The configuration comes from the `IDovetailConfigurationProvider` in the service provider, resolved when the options are
-  first created. For the default options it is the application's complete `IConfiguration`. `create` receives that
-  configuration's section at `sectionPath` (such as `Http:Retry`). An empty path throws.
-- A change token source for the default name, watching the configuration the provider returns for it, makes
-  `IOptionsMonitor<T>` and `IOptionsSnapshot<T>` see reloads of the default options.
+- The configuration is the application's complete `IConfiguration`, resolved from the service provider when the options are
+  first created. `create` receives that configuration's section at `sectionPath` (such as `Http:Retry`). An empty path
+  throws.
+- A change token source watches the configuration, so `IOptionsMonitor<T>` and `IOptionsSnapshot<T>` see reloads of the
+  default options.
 - The call registers an `IOptionsFactory<T>` with `TryAdd`: the first registration for a type wins, and later calls are
   ignored. A factory your application registers itself wins over Dovetail's, so `create` is never called for that type.
 - The factory derives from `OptionsFactory<T>`, so configure and post-configure actions and validators still run on the
-  instance `create` returns, for named options too. On .NET 11, don't give such a type asynchronous validators: they fail
+  instance `create` returns. On .NET 11, don't give such a type asynchronous validators: they fail
   synchronous validation through a derived factory.
 
-### Named options and multi-tenancy
+### Named options
 
-`create` runs for every options name, with the section at `sectionPath` of the configuration that
-`IDovetailConfigurationProvider.GetConfiguration(optionsName)` returns. The name is the one you pass to
-`IOptionsMonitor<T>.Get(name)` or `IOptionsSnapshot<T>.Get(name)`; the default options use `Options.DefaultName`, the
-empty string.
-
-```c#
-public interface IDovetailConfigurationProvider
-{
-    IConfiguration GetConfiguration(string optionsName);
-}
-```
-
-The default provider returns the application's `IConfiguration` for the default name and **throws an
-`InvalidOperationException` for any other name**, naming the options and asking you to register a provider. So named
-options on a type Dovetail registers don't work until you register your own provider. A multi-tenant application can
-return a different configuration root per tenant, and the same section path then yields different options per name:
-
-```c#
-services.AddSingleton<IDovetailConfigurationProvider, TenantConfigurationProvider>();
-
-var tenantA = snapshot.Get("tenant-a");
-var tenantB = snapshot.Get("tenant-b");
-```
-
-A provider you register replaces the default one, whether it comes before or after the options. Configure,
-post-configure and validators for a name (`Configure<T>("tenant-a", ...)`) run on the instance created for that name.
-
-#### Reloads for named options
-
-`IOptionsSnapshot<T>` creates its options for each scope from the current configuration, so it always reads current
-values. An `IOptionsMonitor<T>` follows reloads of the default options through a change token source Dovetail registers,
-and tells `OnChange` listeners. For a named options, the monitor's cache watches the configuration your provider returned
-for that name when it created the options, and drops the instance when it reloads. The next `Get("tenant-a")` creates it
-again from the reloaded configuration, so there is nothing to register per name. `OnChange` listeners aren't told about
-named options, so read the value with `Get(name)` instead of relying on a notification.
+Dovetail registers the default options only. Reading a name other than the default creates the options from the same
+section.
 
 ### `RegisterOptions` and `ValidateOnStart`
 
