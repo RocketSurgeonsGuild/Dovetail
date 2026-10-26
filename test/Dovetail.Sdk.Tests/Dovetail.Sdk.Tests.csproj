@@ -20,6 +20,10 @@
     <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- The instance validator of the schema tests (ConfigurationSchemaSerilogTests); it needs nothing else of that project. -->
+    <Compile Include="..\Dovetail.Build.Tasks.Tests\SchemaInstanceValidator.cs" LinkBase="Linked" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="MSBuild.ProjectCreation" />
     <!-- Load all of MSBuild from the SDK (MSBuildAssemblyResolver): copies from these packages don't match its Microsoft.Build.dll. -->
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />

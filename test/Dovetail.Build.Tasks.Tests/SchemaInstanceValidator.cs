@@ -29,6 +29,26 @@ internal sealed class SchemaInstanceValidator(JsonNode document)
 
     public bool IsValid(string instanceJson) => Validate(instanceJson).Count == 0;
 
+    /// <summary>
+    ///     Resolves a local JSON pointer reference (<c>#/definitions/X</c>) in <paramref name="document" />.
+    /// </summary>
+    public static JsonNode? Resolve(JsonNode document, string reference)
+    {
+        var node = document;
+        foreach (var segment in reference.TrimStart('#').Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var name = segment.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
+            node = node switch
+            {
+                JsonObject value => value[name],
+                JsonArray array when int.TryParse(name, out var index) && index < array.Count => array[index],
+                _ => null,
+            };
+        }
+
+        return node;
+    }
+
     private void Check(JsonNode? schema, JsonNode? instance, string path, List<string> errors)
     {
         switch (schema)
@@ -48,7 +68,7 @@ internal sealed class SchemaInstanceValidator(JsonNode document)
         if (keywords["$ref"] is JsonValue reference)
         {
             // Draft-07: siblings of $ref are ignored.
-            Check(SchemaAssert.Resolve(document, reference.GetValue<string>()), instance, path, errors);
+            Check(Resolve(document, reference.GetValue<string>()), instance, path, errors);
             return;
         }
 

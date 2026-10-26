@@ -397,7 +397,7 @@ public sealed class SdkTestProject : IDisposable
     /// Runs <c>dotnet build</c> (plus <paramref name="arguments"/>) for the project at <paramref name="relativePath"/> and returns
     /// the build's binary log, for behaviour that only shows across builds (incrementality, stale outputs).
     /// </summary>
-    public async Task<Build> BuildProject(string relativePath, string arguments = "")
+    public async Task<Microsoft.Build.Logging.StructuredLogger.Build> BuildProject(string relativePath, string arguments = "")
     {
         var projectDirectory = Path.Combine(Directory, relativePath);
         await RunDotnet($"build -bl {arguments}", projectDirectory);

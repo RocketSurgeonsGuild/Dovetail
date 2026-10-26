@@ -1,4 +1,3 @@
-using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Task = System.Threading.Tasks.Task;
 
@@ -59,5 +58,5 @@ public class ConfigurationSchemaIncrementalTests
         File.Exists(schema).ShouldBeFalse();
     }
 
-    private static bool Merges(Build build) => build.FindChildrenRecursive<Microsoft.Build.Logging.StructuredLogger.Task>(z => z.Name == "MergeConfigurationSchema").Count > 0;
+    private static bool Merges(Microsoft.Build.Logging.StructuredLogger.Build build) => build.FindChildrenRecursive<Microsoft.Build.Logging.StructuredLogger.Task>(z => z.Name == "MergeConfigurationSchema").Count > 0;
 }

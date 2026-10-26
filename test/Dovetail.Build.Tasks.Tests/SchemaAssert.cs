@@ -67,22 +67,7 @@ internal static class SchemaAssert
     /// <summary>
     ///     Resolves a local JSON pointer reference (<c>#/definitions/X</c>) in <paramref name="document" />.
     /// </summary>
-    public static JsonNode? Resolve(JsonNode document, string reference)
-    {
-        var node = document;
-        foreach (var segment in reference.TrimStart('#').Split('/', StringSplitOptions.RemoveEmptyEntries))
-        {
-            var name = segment.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
-            node = node switch
-            {
-                JsonObject value => value[name],
-                JsonArray array when int.TryParse(name, out var index) && index < array.Count => array[index],
-                _ => null,
-            };
-        }
-
-        return node;
-    }
+    public static JsonNode? Resolve(JsonNode document, string reference) => SchemaInstanceValidator.Resolve(document, reference);
 
     /// <summary>
     ///     Every object in <paramref name="node" />, depth first.
