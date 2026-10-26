@@ -33,9 +33,15 @@ internal sealed class DovetailOptionsFactory<[DynamicallyAccessedMembers(Dynamic
     private readonly Func<IConfiguration, TOptions> _create = create;
 
     /// <summary>
-    ///     Creates the instance from the section of the application's configuration, whatever the options name.
+    ///     Creates the instance from the section of the application's configuration.
     /// </summary>
-    /// <param name="name">The name of the options instance to create.</param>
+    /// <param name="name">The name of the options instance to create, which must be the default name.</param>
     /// <returns>The created instance.</returns>
-    protected override TOptions CreateInstance(string name) => _create(_configuration.GetSection(_path));
+    /// <exception cref="InvalidOperationException"><paramref name="name" /> is not <see cref="Options.DefaultName" />.</exception>
+    protected override TOptions CreateInstance(string name) =>
+        name == Options.DefaultName
+            ? _create(_configuration.GetSection(_path))
+            : throw new InvalidOperationException(
+                $"Dovetail creates only the default (unnamed) {typeof(TOptions).Name} options, but options named '{name}' were requested. Named options aren't supported for types Dovetail registers."
+            );
 }

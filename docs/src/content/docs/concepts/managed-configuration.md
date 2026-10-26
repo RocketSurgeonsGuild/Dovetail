@@ -176,8 +176,8 @@ registration path uses reflection. To bind a type with reflection, use Microsoft
 
 ### Named options
 
-Dovetail registers the default options only. Reading a name other than the default creates the options from the same
-section.
+Dovetail registers the default options only. Reading a name other than the default, such as
+`IOptionsMonitor<T>.Get("tenant-a")`, throws an `InvalidOperationException` naming the type and the options name.
 
 ### `RegisterOptions` and `ValidateOnStart`
 

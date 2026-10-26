@@ -45,8 +45,8 @@ public static class DovetailConfigurationOptionsExtensions
     ///         The configuration is the application's <see cref="IConfiguration" />, which the service provider supplies when the
     ///         options are first created. <paramref name="create" /> is called with the section at <paramref name="sectionPath" />.
     ///         A change token source watches that configuration, so <see cref="IOptionsMonitor{TOptions}" /> and
-    ///         <see cref="IOptionsSnapshot{TOptions}" /> observe reloads. Dovetail only registers the default options: a name other
-    ///         than the default is created from the same section.
+    ///         <see cref="IOptionsSnapshot{TOptions}" /> observe reloads. Dovetail only registers the default options: asking for
+    ///         any other options name throws <see cref="InvalidOperationException" />.
     ///     </para>
     ///     <para>
     ///         On .NET 11, don't give a type registered this way asynchronous validators: the options pipeline only runs them

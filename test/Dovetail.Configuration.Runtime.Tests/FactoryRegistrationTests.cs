@@ -76,6 +76,20 @@ public sealed class FactoryRegistrationTests
     }
 
     [Test]
+    public async Task Create_ForANonDefaultName_Throws_NamingTheTypeAndTheName()
+    {
+        var services = new ServiceCollection().AddSingleton<IConfiguration>(TestConfiguration.Build(("Server:Host", "example.org")));
+        services.AddDovetailConfigurationOptions("Server", ServerRecord.Create);
+
+        await using var provider = services.BuildServiceProvider();
+
+        var exception = Should.Throw<InvalidOperationException>(() => provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().Get("tenant-a"));
+        exception.Message.ShouldContain(nameof(ServerRecord));
+        exception.Message.ShouldContain("tenant-a");
+        provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().CurrentValue.Host.ShouldBe("example.org");
+    }
+
+    [Test]
     public async Task Create_Reload_ReachesMonitorAndSnapshot_Once()
     {
         var configuration = TestConfiguration.Build(("Server:Host", "example.org"), ("Server:Port", "8080"));
