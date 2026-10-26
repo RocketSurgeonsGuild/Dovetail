@@ -75,13 +75,15 @@
         restore, so on a clean checkout (no obj/project.assets.json yet) it builds without any package-provided
         references and fails (e.g. CS0518 'System.String' is not defined). The extra global property gives the restore
         call its own evaluation, so Pack evaluates afresh once the restore outputs exist.
+        Not in parallel: a project's restore writes the assets file of every project it references, so restoring projects that
+        share references at the same time races on those files ("The file '.../obj/project.assets.json' already exists").
     -->
     <MSBuild
       Projects="@(_DovetailSrcProject)"
       Targets="Restore"
       Properties="Configuration=$(Configuration);VersionSuffix=local;_DovetailSdkTestsRestore=true"
       RemoveProperties="TargetFramework;RuntimeIdentifier"
-      BuildInParallel="true"
+      BuildInParallel="false"
     />
     <!--
         Packed as a prerelease (1.0.0-local), as any dev build is: the packages depend on prereleases (the .NET 11 RC packages for
