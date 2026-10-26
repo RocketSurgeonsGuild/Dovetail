@@ -386,6 +386,10 @@ public sealed class SdkTestProject : IDisposable
     {
         var psi = CreateHermeticStartInfo("run");
         psi.WorkingDirectory = Path.Combine(Directory, relativePath);
+        // A net10.0 application needs the .NET 10 runtime, which a machine with only the .NET 11 (preview) runtime installed, such as
+        // the CI runner, doesn't have. Let it run on the next major runtime, prerelease included.
+        psi.Environment["DOTNET_ROLL_FORWARD"] = "Major";
+        psi.Environment["DOTNET_ROLL_FORWARD_TO_PRERELEASE"] = "1";
         using var proc = Process.Start(psi)!;
         var stdout = await proc.StandardOutput.ReadToEndAsync();
         var stderr = await proc.StandardError.ReadToEndAsync();
