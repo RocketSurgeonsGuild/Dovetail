@@ -13,6 +13,25 @@
     <DovetailExportClassName Condition="'$(DovetailExportClassName)' == ''">Exports</DovetailExportClassName>
     <DovetailExportMethodName Condition="'$(DovetailExportMethodName)' == ''">Joints</DovetailExportMethodName>
   </PropertyGroup>
+  <!--
+      Whether the generator emits this assembly's Imports class (ImportDovetailAssembly) and advertises its joints to
+      referencing assemblies (ExportDovetailAssembly). Dovetail.Sdk sets both during host detection, which runs before
+      this file; these defaults cover projects that don't use the SDK, including ones that only get Dovetail
+      transitively: test projects import but don't export, applications (Exe, WinExe or an Android app) do both, libraries only export.
+  -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">false</ExportDovetailAssembly>
+  </PropertyGroup>
+  <!-- The .NET for Android SDK rewrites an app's OutputType from Exe to Library, so an Android app is recognised by AndroidApplication. -->
+  <PropertyGroup Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">false</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleProperty Include="RootNamespace"/>
     <CompilerVisibleProperty Include="IsTestProject"/>
@@ -21,6 +40,10 @@
     <CompilerVisibleProperty Include="DovetailCategory"/>
     <CompilerVisibleProperty Include="DovetailHostType"/>
     <CompilerVisibleProperty Include="DovetailAssignExternal"/>
+    <CompilerVisibleProperty Include="ImportDovetailAssembly"/>
+    <CompilerVisibleProperty Include="ExportDovetailAssembly"/>
+    <CompilerVisibleProperty Include="DovetailConfigurationSchemaRequired"/>
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DovetailReferenceDocumentation"/>
 
     <CompilerVisibleProperty Include="DovetailImportNamespace"/>
     <CompilerVisibleProperty Include="DovetailImportClassName"/>
@@ -63,9 +86,29 @@
       <NavigateEntryPoint></NavigateEntryPoint>
     </DovetailHost>
   </ItemDefinitionGroup>
+  <!--
+      Descriptions for configuration types from packages ([assembly: DovetailConfiguration<T>("Section")]) come from the
+      packages' XML documentation files: the compiler loads no docs for references, and analyzers can't read files. Pass the doc
+      file next to each package reference to the generator, which reads only the ones for the types it describes. Targeting
+      packs are left out (framework types aren't configuration types, and their docs run to tens of megabytes).
+      This has to run before GenerateMSBuildEditorConfigFileCore writes the AdditionalFiles metadata into the generated
+      editorconfig (GenerateMSBuildEditorConfigFile itself is empty; its DependsOnTargets run before any BeforeTargets hook).
+      Opt out with DovetailConfigurationReferenceDocumentation=false.
+  -->
+  <Target Name="_DovetailConfigurationReferenceDocumentation"
+          BeforeTargets="GenerateMSBuildEditorConfigFileCore"
+          DependsOnTargets="ResolveAssemblyReferences"
+          Condition="'$(DovetailConfigurationReferenceDocumentation)' != 'false'">
+    <ItemGroup>
+      <_DovetailReferenceDocumentation Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferencePath.NuGetPackageId)' != '' and '%(ReferencePath.FrameworkReferenceName)' == ''" />
+      <AdditionalFiles Include="@(_DovetailReferenceDocumentation)" Condition="Exists('%(_DovetailReferenceDocumentation.Identity)')" DovetailReferenceDocumentation="true" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Joints.targets" Condition="'$(_DovetailJointTargetsImported)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.ContextBuilder.targets" Condition="'$(_DovetailContextBuilderTargetsImported)' != 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Hosts.targets" Condition="'$(_DovetailHostsTargetsImported)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.Metadata.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Dovetail.PackConfiguration.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.ConfigurationSchema.targets" Condition="'$(_DovetailConfigurationSchemaTargetsImported)' != 'true'" />
 </Project>

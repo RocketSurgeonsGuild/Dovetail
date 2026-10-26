@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <!--
+            Runs the trimming and AOT analyzers over registrations shaped like the generated configuration joint's, so a change to
+            DovetailConfigurationOptionsExtensions that makes generated code trim- or AOT-unsafe fails the build. This project's
+            .editorconfig turns IL2026 back on (test/.editorconfig turns it off).
+        -->
+        <IsAotCompatible>true</IsAotCompatible>
+        <WarningsAsErrors>$(WarningsAsErrors);IL2026;IL3050;IL2091</WarningsAsErrors>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+    </ItemGroup>
+</Project>

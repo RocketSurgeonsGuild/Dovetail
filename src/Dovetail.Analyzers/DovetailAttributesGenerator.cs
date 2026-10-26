@@ -1,5 +1,7 @@
 using Dovetail.Support;
+using Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 // ReSharper disable UnusedVariable
@@ -37,7 +39,10 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("DovetailHostType", s => s) ?? "Undefined",
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("DovetailCategory", s => s) ?? "Unknown",
                                        provider.Left.Right,
-                                       provider.Right
+                                       provider.Right,
+                                       // Unset (no Dovetail targets, e.g. a hand-wired analyzer) keeps the historical behavior of doing both.
+                                       provider.Left.Left.GlobalOptions.GetBuildProperty<bool?>("ImportDovetailAssembly", x => bool.TryParse(x, out var v) ? v : null) ?? true,
+                                       provider.Left.Left.GlobalOptions.GetBuildProperty<bool?>("ExportDovetailAssembly", x => bool.TryParse(x, out var v) ? v : null) ?? true
                                    )
                             )
                            .WithTrackingName("dovetail:msbuild");
@@ -53,14 +58,38 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                                  .Select((z, _) => z.Sort(Comparer<INamedTypeSymbol>.Create((x, y) => string.Compare(x.MetadataName, y.MetadataName, StringComparison.Ordinal))))
                                  .WithTrackingName("dovetail_:self_exports");
 
+        // The generated code uses C# 12 syntax (collection expressions). The analyzer reaches projects that only reference
+        // Dovetail transitively, so rather than break a project pinned to an older LangVersion, emit nothing and say why.
+        var languageVersion = context
+                             .ParseOptionsProvider
+                             .Select((options, _) => options is CSharpParseOptions csharp ? csharp.LanguageVersion : LanguageVersion.Latest)
+                             .WithTrackingName("dovetail:language_version");
+        var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
+
+        var hasConfigurationOptions = ConfigurationSchemaPipeline.Register(context, supportedLanguageVersion, msBuildConfig);
+
+        context.RegisterSourceOutput(
+            languageVersion,
+            static (productionContext, version) =>
+            {
+                if (version < LanguageVersion.CSharp12)
+                {
+                    productionContext.ReportDiagnostic(Diagnostic.Create(Diagnostics.UnsupportedLanguageVersion, Location.None, version.ToDisplayString()));
+                }
+            }
+        );
+
         context.RegisterSourceOutput(
             msBuildConfig
                .Combine(context.CompilationProvider)
-               .Combine(exportedDovetails),
-            static (productionContext, tuple) => ExportDovetails.HandleDovetailExports(
-                productionContext,
-                new(tuple.Left.Left, tuple.Right)
-            )
+               .Combine(exportedDovetails)
+               .Combine(hasConfigurationOptions)
+               .Combine(supportedLanguageVersion),
+            static (productionContext, tuple) =>
+            {
+                if (!tuple.Right) return;
+                ExportDovetails.HandleDovetailExports(productionContext, new(tuple.Left.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Right));
+            }
         );
 
 
@@ -68,8 +97,17 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
             context
                .CompilationProvider
                .Combine(exportedDovetails)
-               .Combine(msBuildConfig),
-            static (productionContext, tuple) => ImportDovetails.HandleDovetailImports(productionContext, new(tuple.Left.Left, tuple.Right, tuple.Left.Right))
+               .Combine(msBuildConfig)
+               .Combine(hasConfigurationOptions)
+               .Combine(supportedLanguageVersion),
+            static (productionContext, tuple) =>
+            {
+                if (!tuple.Right) return;
+                ImportDovetails.HandleDovetailImports(
+                    productionContext,
+                    new(tuple.Left.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Left.Left.Right, tuple.Left.Right)
+                );
+            }
         );
     }
 }

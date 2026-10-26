@@ -90,6 +90,7 @@
       DovetailHost.HostApplication.g.cs
     ],
     OutputFiles: [
+      appsettings.schema.json,
       worker.runtimeconfig.dev.json
     ]
   }

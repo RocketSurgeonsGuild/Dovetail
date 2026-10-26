@@ -1,0 +1,63 @@
+## Database
+{
+  "type": "object",
+  "title": "Database",
+  "properties": {
+    "ConnectionString": {
+      "type": "string"
+    },
+    "Port": {
+      "type": "integer"
+    },
+    "Timeout": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "Schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Provider": {
+      "type": "string"
+    },
+    "Pooling": {
+      "type": "boolean"
+    }
+  },
+  "patternProperties": {
+    "^(?:[Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss][Tt][Rr][Ii][Nn][Gg])$": {
+      "type": "string"
+    },
+    "^(?:[Pp][Oo][Rr][Tt])$": {
+      "type": "integer"
+    },
+    "^(?:[Tt][Ii][Mm][Ee][Oo][Uu][Tt])$": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "^(?:[Ss][Cc][Hh][Ee][Mm][Aa])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Pp][Rr][Oo][Vv][Ii][Dd][Ee][Rr])$": {
+      "type": "string"
+    },
+    "^(?:[Pp][Oo][Oo][Ll][Ii][Nn][Gg])$": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "Port",
+    "Schema",
+    "Provider"
+  ]
+}
+## Diagnostics

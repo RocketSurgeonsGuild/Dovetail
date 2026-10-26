@@ -1,0 +1,184 @@
+﻿## Types
+{
+  "type": "object",
+  "title": "Types",
+  "properties": {
+    "Culture": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A culture name such as en-US."
+    },
+    "Ratio": {
+      "type": "number"
+    },
+    "Big": {
+      "type": "integer"
+    },
+    "BigUnsigned": {
+      "type": "integer",
+      "description": "At least 0.",
+      "minimum": 0
+    },
+    "Anything": {},
+    "Raw": {},
+    "Labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Sorted": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "ByNumber": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^-?\\d+$"
+      }
+    },
+    "ByUnsigned": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^\\d+$"
+      }
+    },
+    "Price": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.Money"
+        }
+      ]
+    },
+    "At": {
+      "type": "string",
+      "description": "A date and time such as 2024-01-02T03:04:05Z.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,7})?)?)?(?:Z|[+-]\\d{2}:?\\d{2})?$"
+    },
+    "Day": {
+      "type": "string",
+      "description": "A date such as 2024-01-02.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "Time": {
+      "type": "string",
+      "description": "A time of day such as 08:30.",
+      "pattern": "^\\d{1,2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,7})?)?$"
+    }
+  },
+  "patternProperties": {
+    "^(?:[Cc][Uu][Ll][Tt][Uu][Rr][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A culture name such as en-US."
+    },
+    "^(?:[Rr][Aa][Tt][Ii][Oo])$": {
+      "type": "number"
+    },
+    "^(?:[Bb][Ii][Gg])$": {
+      "type": "integer"
+    },
+    "^(?:[Bb][Ii][Gg][Uu][Nn][Ss][Ii][Gg][Nn][Ee][Dd])$": {
+      "type": "integer",
+      "description": "At least 0.",
+      "minimum": 0
+    },
+    "^(?:[Aa][Nn][Yy][Tt][Hh][Ii][Nn][Gg])$": {},
+    "^(?:[Rr][Aa][Ww])$": {},
+    "^(?:[Ll][Aa][Bb][Ee][Ll][Ss])$": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "^(?:[Ss][Oo][Rr][Tt][Ee][Dd])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "^(?:[Bb][Yy][Nn][Uu][Mm][Bb][Ee][Rr])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^-?\\d+$"
+      }
+    },
+    "^(?:[Bb][Yy][Uu][Nn][Ss][Ii][Gg][Nn][Ee][Dd])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^\\d+$"
+      }
+    },
+    "^(?:[Pp][Rr][Ii][Cc][Ee])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.Money"
+        }
+      ]
+    },
+    "^(?:[Aa][Tt])$": {
+      "type": "string",
+      "description": "A date and time such as 2024-01-02T03:04:05Z.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(?:[T ]\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,7})?)?)?(?:Z|[+-]\\d{2}:?\\d{2})?$"
+    },
+    "^(?:[Dd][Aa][Yy])$": {
+      "type": "string",
+      "description": "A date such as 2024-01-02.",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "^(?:[Tt][Ii][Mm][Ee])$": {
+      "type": "string",
+      "description": "A time of day such as 08:30.",
+      "pattern": "^\\d{1,2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,7})?)?$"
+    }
+  },
+  "definitions": {
+    "Sample.Money": {
+      "properties": {
+        "Amount": {
+          "type": "number"
+        },
+        "Currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Aa][Mm][Oo][Uu][Nn][Tt])$": {
+          "type": "number"
+        },
+        "^(?:[Cc][Uu][Rr][Rr][Ee][Nn][Cc][Yy])$": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
+## Diagnostics
+DT0009 Warning line 31: 'TypesOptions.Address' has type 'System.Net.IPAddress?', which configuration binding doesn't support, so it's left out of the schema
+DT0009 Warning line 32: 'TypesOptions.Pending' has type 'System.Collections.Generic.Queue<int>', which configuration binding doesn't support, so it's left out of the schema

@@ -1,0 +1,362 @@
+﻿## http-client
+{
+  "type": "object",
+  "title": "http-client",
+  "properties": {
+    "base-address": {
+      "type": "string"
+    },
+    "use-ssl": {
+      "type": "boolean"
+    },
+    "http2-limit": {
+      "type": "integer"
+    },
+    "retry-policy": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.RetryPolicy"
+        }
+      ]
+    },
+    "backup-endpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.EndpointSettings"
+          }
+        ]
+      }
+    },
+    "tenant-limits": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "mode-labels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^(?:[Ee][Xx][Pp][Oo][Nn][Ee][Nn][Tt][Ii][Aa][Ll][Bb][Aa][Cc][Kk][Oo][Ff][Ff]|[Ff][Ii][Xx][Ee][Dd][Dd][Ee][Ll][Aa][Yy])$"
+      }
+    },
+    "named-endpoints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.EndpointSettings"
+          }
+        ]
+      }
+    },
+    "Legacy_Name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Bb][Aa][Ss][Ee]-[Aa][Dd][Dd][Rr][Ee][Ss][Ss])$": {
+      "type": "string"
+    },
+    "^(?:[Uu][Ss][Ee]-[Ss][Ss][Ll])$": {
+      "type": "boolean"
+    },
+    "^(?:[Hh][Tt][Tt][Pp]2-[Ll][Ii][Mm][Ii][Tt])$": {
+      "type": "integer"
+    },
+    "^(?:[Rr][Ee][Tt][Rr][Yy]-[Pp][Oo][Ll][Ii][Cc][Yy])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.RetryPolicy"
+        }
+      ]
+    },
+    "^(?:[Bb][Aa][Cc][Kk][Uu][Pp]-[Ee][Nn][Dd][Pp][Oo][Ii][Nn][Tt][Ss])$": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.EndpointSettings"
+          }
+        ]
+      }
+    },
+    "^(?:[Tt][Ee][Nn][Aa][Nn][Tt]-[Ll][Ii][Mm][Ii][Tt][Ss])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "^(?:[Mm][Oo][Dd][Ee]-[Ll][Aa][Bb][Ee][Ll][Ss])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^(?:[Ee][Xx][Pp][Oo][Nn][Ee][Nn][Tt][Ii][Aa][Ll][Bb][Aa][Cc][Kk][Oo][Ff][Ff]|[Ff][Ii][Xx][Ee][Dd][Dd][Ee][Ll][Aa][Yy])$"
+      }
+    },
+    "^(?:[Nn][Aa][Mm][Ee][Dd]-[Ee][Nn][Dd][Pp][Oo][Ii][Nn][Tt][Ss])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.EndpointSettings"
+          }
+        ]
+      }
+    },
+    "^(?:[Ll][Ee][Gg][Aa][Cc][Yy]_[Nn][Aa][Mm][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.RetryPolicy": {
+      "properties": {
+        "max-attempts": {
+          "type": "integer",
+          "description": "Default: 3.",
+          "default": 3
+        },
+        "initial-delay": {
+          "type": "string",
+          "description": "A time span such as 00:00:30 or 1.12:00:00.",
+          "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+        },
+        "backoff-mode": {
+          "type": "string",
+          "anyOf": [
+            {
+              "enum": [
+                "ExponentialBackoff",
+                "FixedDelay"
+              ]
+            },
+            {
+              "pattern": "^\\s*(?:[Ee][Xx][Pp][Oo][Nn][Ee][Nn][Tt][Ii][Aa][Ll][Bb][Aa][Cc][Kk][Oo][Ff][Ff]|[Ff][Ii][Xx][Ee][Dd][Dd][Ee][Ll][Aa][Yy])\\s*$"
+            }
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Mm][Aa][Xx]-[Aa][Tt][Tt][Ee][Mm][Pp][Tt][Ss])$": {
+          "type": "integer",
+          "description": "Default: 3.",
+          "default": 3
+        },
+        "^(?:[Ii][Nn][Ii][Tt][Ii][Aa][Ll]-[Dd][Ee][Ll][Aa][Yy])$": {
+          "type": "string",
+          "description": "A time span such as 00:00:30 or 1.12:00:00.",
+          "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+        },
+        "^(?:[Bb][Aa][Cc][Kk][Oo][Ff][Ff]-[Mm][Oo][Dd][Ee])$": {
+          "type": "string",
+          "anyOf": [
+            {
+              "enum": [
+                "ExponentialBackoff",
+                "FixedDelay"
+              ]
+            },
+            {
+              "pattern": "^\\s*(?:[Ee][Xx][Pp][Oo][Nn][Ee][Nn][Tt][Ii][Aa][Ll][Bb][Aa][Cc][Kk][Oo][Ff][Ff]|[Ff][Ii][Xx][Ee][Dd][Dd][Ee][Ll][Aa][Yy])\\s*$"
+            }
+          ]
+        }
+      }
+    },
+    "Sample.EndpointSettings": {
+      "properties": {
+        "host-name": {
+          "type": "string"
+        },
+        "port-number": {
+          "type": "integer",
+          "description": "Default: 80.",
+          "default": 80
+        }
+      },
+      "patternProperties": {
+        "^(?:[Hh][Oo][Ss][Tt]-[Nn][Aa][Mm][Ee])$": {
+          "type": "string"
+        },
+        "^(?:[Pp][Oo][Rr][Tt]-[Nn][Uu][Mm][Bb][Ee][Rr])$": {
+          "type": "integer",
+          "description": "Default: 80.",
+          "default": 80
+        }
+      }
+    }
+  }
+}
+## init-only
+{
+  "type": "object",
+  "title": "init-only",
+  "properties": {
+    "display-name": {
+      "type": "string"
+    },
+    "retry-limit": {
+      "type": "integer",
+      "description": "Default: 5.",
+      "default": 5
+    },
+    "more-details": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.InitOnlyDetails"
+        }
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Dd][Ii][Ss][Pp][Ll][Aa][Yy]-[Nn][Aa][Mm][Ee])$": {
+      "type": "string"
+    },
+    "^(?:[Rr][Ee][Tt][Rr][Yy]-[Ll][Ii][Mm][Ii][Tt])$": {
+      "type": "integer",
+      "description": "Default: 5.",
+      "default": 5
+    },
+    "^(?:[Mm][Oo][Rr][Ee]-[Dd][Ee][Tt][Aa][Ii][Ll][Ss])$": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.InitOnlyDetails"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.InitOnlyDetails": {
+      "properties": {
+        "contact-email": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Cc][Oo][Nn][Tt][Aa][Cc][Tt]-[Ee][Mm][Aa][Ii][Ll])$": {
+          "type": "string"
+        },
+        "^(?:[Dd][Ee][Ss][Cc][Rr][Ii][Pp][Tt][Ii][Oo][Nn])$": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
+## server
+{
+  "type": "object",
+  "title": "server",
+  "properties": {
+    "host-name": {
+      "type": "string"
+    },
+    "port-number": {
+      "type": "integer",
+      "description": "Default: 80.",
+      "default": 80
+    },
+    "use-tls": {
+      "type": "boolean",
+      "description": "Default: false.",
+      "default": false
+    },
+    "alias-names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "connection-limits": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.ServerLimits"
+        }
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Hh][Oo][Ss][Tt]-[Nn][Aa][Mm][Ee])$": {
+      "type": "string"
+    },
+    "^(?:[Pp][Oo][Rr][Tt]-[Nn][Uu][Mm][Bb][Ee][Rr])$": {
+      "type": "integer",
+      "description": "Default: 80.",
+      "default": 80
+    },
+    "^(?:[Uu][Ss][Ee]-[Tt][Ll][Ss])$": {
+      "type": "boolean",
+      "description": "Default: false.",
+      "default": false
+    },
+    "^(?:[Aa][Ll][Ii][Aa][Ss]-[Nn][Aa][Mm][Ee][Ss])$": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "^(?:[Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn]-[Ll][Ii][Mm][Ii][Tt][Ss])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.ServerLimits"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.ServerLimits": {
+      "properties": {
+        "max-connections": {
+          "type": "integer",
+          "description": "Default: 100.",
+          "default": 100
+        }
+      },
+      "patternProperties": {
+        "^(?:[Mm][Aa][Xx]-[Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss])$": {
+          "type": "integer",
+          "description": "Default: 100.",
+          "default": 100
+        }
+      }
+    }
+  }
+}
+## Diagnostics

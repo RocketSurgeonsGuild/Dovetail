@@ -81,6 +81,10 @@ You can define a joint that only runs for a given <xref:Dovetail.HostType>. The 
 <xref:Dovetail.DovetailContextBuilder> using `Set<DovetailHostType>(DovetailHostType.UnitTest)`. Using the `DovetailHostType` an assembly
 can define different behaviors given the context.
 
+The generated `Imports` class sets the host type only when the build specifies one. The `DovetailHostType` MSBuild property
+(`Live` or `UnitTest`) takes precedence; otherwise test projects (`IsTestProject`) get `UnitTest`. Anywhere else the host type
+is left unset, and the hosting extensions set it to `Live` if nothing else has.
+
 A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [[LiveDovetail]](xref:Dovetail.LiveJointAttribute) that registers
 `IClock` using the expected calendar system, and another [[UnitTestDovetail]](xref:Dovetail.UnitTestJointAttribute) that registers a `FakeClock`
 with a predefined starting date and time.

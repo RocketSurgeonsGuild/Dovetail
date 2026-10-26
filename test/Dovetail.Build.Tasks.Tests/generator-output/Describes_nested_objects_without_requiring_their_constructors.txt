@@ -1,0 +1,68 @@
+## Client
+{
+  "type": "object",
+  "title": "Client",
+  "properties": {
+    "Limits": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.Limits"
+        }
+      ]
+    },
+    "Seeded": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.Seeded"
+        }
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Ll][Ii][Mm][Ii][Tt][Ss])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.Limits"
+        }
+      ]
+    },
+    "^(?:[Ss][Ee][Ee][Dd][Ee][Dd])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.Seeded"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.Limits": {
+      "properties": {
+        "MaxConnections": {
+          "type": "integer"
+        }
+      },
+      "patternProperties": {
+        "^(?:[Mm][Aa][Xx][Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn][Ss])$": {
+          "type": "integer"
+        }
+      }
+    },
+    "Sample.Seeded": {
+      "properties": {
+        "Value": {
+          "type": "integer"
+        }
+      },
+      "patternProperties": {
+        "^(?:[Vv][Aa][Ll][Uu][Ee])$": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
+## Diagnostics

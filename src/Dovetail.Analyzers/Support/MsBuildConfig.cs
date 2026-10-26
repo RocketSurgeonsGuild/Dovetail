@@ -9,7 +9,9 @@ internal record MsBuildConfig
     string HostType,
     string Category,
     DovetailConfigurationData ExportConfiguration,
-    DovetailConfigurationData ImportConfiguration
+    DovetailConfigurationData ImportConfiguration,
+    bool ImportAssembly = true,
+    bool ExportAssembly = true
 )
 {
     public DovetailConfigurationData ImportConfiguration { get; init; } = ImportConfiguration with { Namespace = ImportConfiguration.Namespace is "" ? RootNamespace : ImportConfiguration.Namespace };

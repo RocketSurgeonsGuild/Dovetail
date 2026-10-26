@@ -99,6 +99,7 @@
       DovetailJointAsync.CustomLogging.g.cs
     ],
     OutputFiles: [
+      appsettings.schema.json,
       worker.runtimeconfig.dev.json
     ]
   }

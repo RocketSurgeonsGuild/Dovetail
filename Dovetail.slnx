@@ -89,6 +89,7 @@
     <Project Path="src/Dovetail.Aspire/Dovetail.Aspire.csproj" />
     <Project Path="src/Dovetail.Analyzers/Dovetail.Analyzers.csproj" />
     <Project Path="src/Dovetail.Autofac/Dovetail.Autofac.csproj" />
+    <Project Path="src/Dovetail.Build.Tasks/Dovetail.Build.Tasks.csproj" />
     <Project Path="src/Dovetail.Configuration.Json/Dovetail.Configuration.Json.csproj" />
     <Project Path="src/Dovetail.Configuration.Yaml/Dovetail.Configuration.Yaml.csproj" />
     <Project Path="src/Dovetail.Configuration.Toml/Dovetail.Configuration.Toml.csproj" />
@@ -118,6 +119,9 @@
     <Project Path="test/Dovetail.Analyzers.Tests/Dovetail.Analyzers.Tests.csproj" />
     <Project Path="test/Dovetail.Aspire.Tests/Dovetail.Aspire.Tests.csproj" />
     <Project Path="test/Dovetail.Autofac.Tests/Dovetail.Autofac.Tests.csproj" />
+    <Project Path="test/Dovetail.Configuration.Aot.Tests/Dovetail.Configuration.Aot.Tests.csproj" />
+    <Project Path="test/Dovetail.Configuration.Parity.Tests/Dovetail.Configuration.Parity.Tests.csproj" />
+    <Project Path="test/Dovetail.Build.Tasks.Tests/Dovetail.Build.Tasks.Tests.csproj" />
     <Project Path="test/Dovetail.Configuration.Runtime.Tests/Dovetail.Configuration.Runtime.Tests.csproj" />
     <Project Path="test/Dovetail.Sdk.Tests/Dovetail.Sdk.Tests.csproj" />
     <Project Path="test/Dovetail.Tests/Dovetail.Tests.csproj" />

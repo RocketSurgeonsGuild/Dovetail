@@ -1,0 +1,292 @@
+## Greetings
+{
+  "type": "object",
+  "title": "Greetings",
+  "description": "Settings for the greeting service.",
+  "properties": {
+    "Message": {
+      "type": "string",
+      "description": "Text placed before the name. Default: Hello.",
+      "default": "Hello"
+    },
+    "Count": {
+      "type": "integer",
+      "description": "How many times to greet. Range: 1 to 10. Default: 1.",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 10
+    },
+    "Enabled": {
+      "type": "boolean",
+      "description": "Turns greetings off. Default: true.",
+      "default": true
+    },
+    "Mode": {
+      "type": "string",
+      "description": "Default: Polite.",
+      "default": "Polite",
+      "anyOf": [
+        {
+          "enum": [
+            "Polite",
+            "Casual",
+            "Shouty"
+          ]
+        },
+        {
+          "pattern": "^\\s*(?:[Pp][Oo][Ll][Ii][Tt][Ee]|[Cc][Aa][Ss][Uu][Aa][Ll]|[Ss][Hh][Oo][Uu][Tt][Yy])\\s*$"
+        }
+      ]
+    },
+    "Channels": {
+      "type": "string",
+      "description": "One or more of None, Console, Email, separated by commas.",
+      "pattern": "^\\s*(?:[Nn][Oo][Nn][Ee]|[Cc][Oo][Nn][Ss][Oo][Ll][Ee]|[Ee][Mm][Aa][Ii][Ll])(?:\\s*,\\s*(?:[Nn][Oo][Nn][Ee]|[Cc][Oo][Nn][Ss][Oo][Ll][Ee]|[Ee][Mm][Aa][Ii][Ll]))*\\s*$"
+    },
+    "Timeout": {
+      "type": "string",
+      "description": "A time span such as 00:00:30 or 1.12:00:00.",
+      "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+    },
+    "Endpoint": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri-reference"
+    },
+    "ReplyTo": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "email"
+    },
+    "Culture": {
+      "type": "string",
+      "description": "Default: en-US.",
+      "default": "en-US",
+      "pattern": "^(?:[a-z]{2}-[A-Z]{2})$"
+    },
+    "OldGreeting": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "deprecated": true,
+      "deprecationMessage": "Use Message."
+    },
+    "custom_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Level": {
+      "type": "integer",
+      "description": "Range: 0 to 255.",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "Ratio": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "Names": {
+      "type": "array",
+      "description": "Who to greet. At most 5 items.",
+      "maxItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "Weights": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "Templates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^(?:[Pp][Oo][Ll][Ii][Tt][Ee]|[Cc][Aa][Ss][Uu][Aa][Ll]|[Ss][Hh][Oo][Uu][Tt][Yy])$"
+      }
+    },
+    "Retry": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.RetryOptions"
+        }
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Mm][Ee][Ss][Ss][Aa][Gg][Ee])$": {
+      "type": "string",
+      "description": "Text placed before the name. Default: Hello.",
+      "default": "Hello"
+    },
+    "^(?:[Cc][Oo][Uu][Nn][Tt])$": {
+      "type": "integer",
+      "description": "How many times to greet. Range: 1 to 10. Default: 1.",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 10
+    },
+    "^(?:[Ee][Nn][Aa][Bb][Ll][Ee][Dd])$": {
+      "type": "boolean",
+      "description": "Turns greetings off. Default: true.",
+      "default": true
+    },
+    "^(?:[Mm][Oo][Dd][Ee])$": {
+      "type": "string",
+      "description": "Default: Polite.",
+      "default": "Polite",
+      "anyOf": [
+        {
+          "enum": [
+            "Polite",
+            "Casual",
+            "Shouty"
+          ]
+        },
+        {
+          "pattern": "^\\s*(?:[Pp][Oo][Ll][Ii][Tt][Ee]|[Cc][Aa][Ss][Uu][Aa][Ll]|[Ss][Hh][Oo][Uu][Tt][Yy])\\s*$"
+        }
+      ]
+    },
+    "^(?:[Cc][Hh][Aa][Nn][Nn][Ee][Ll][Ss])$": {
+      "type": "string",
+      "description": "One or more of None, Console, Email, separated by commas.",
+      "pattern": "^\\s*(?:[Nn][Oo][Nn][Ee]|[Cc][Oo][Nn][Ss][Oo][Ll][Ee]|[Ee][Mm][Aa][Ii][Ll])(?:\\s*,\\s*(?:[Nn][Oo][Nn][Ee]|[Cc][Oo][Nn][Ss][Oo][Ll][Ee]|[Ee][Mm][Aa][Ii][Ll]))*\\s*$"
+    },
+    "^(?:[Tt][Ii][Mm][Ee][Oo][Uu][Tt])$": {
+      "type": "string",
+      "description": "A time span such as 00:00:30 or 1.12:00:00.",
+      "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+    },
+    "^(?:[Ee][Nn][Dd][Pp][Oo][Ii][Nn][Tt])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri-reference"
+    },
+    "^(?:[Rr][Ee][Pp][Ll][Yy][Tt][Oo])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "email"
+    },
+    "^(?:[Cc][Uu][Ll][Tt][Uu][Rr][Ee])$": {
+      "type": "string",
+      "description": "Default: en-US.",
+      "default": "en-US",
+      "pattern": "^(?:[a-z]{2}-[A-Z]{2})$"
+    },
+    "^(?:[Oo][Ll][Dd][Gg][Rr][Ee][Ee][Tt][Ii][Nn][Gg])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "deprecated": true,
+      "deprecationMessage": "Use Message."
+    },
+    "^(?:[Cc][Uu][Ss][Tt][Oo][Mm]_[Kk][Ee][Yy])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Ll][Ee][Vv][Ee][Ll])$": {
+      "type": "integer",
+      "description": "Range: 0 to 255.",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "^(?:[Rr][Aa][Tt][Ii][Oo])$": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "^(?:[Nn][Aa][Mm][Ee][Ss])$": {
+      "type": "array",
+      "description": "Who to greet. At most 5 items.",
+      "maxItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "^(?:[Ww][Ee][Ii][Gg][Hh][Tt][Ss])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "^(?:[Tt][Ee][Mm][Pp][Ll][Aa][Tt][Ee][Ss])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^(?:[Pp][Oo][Ll][Ii][Tt][Ee]|[Cc][Aa][Ss][Uu][Aa][Ll]|[Ss][Hh][Oo][Uu][Tt][Yy])$"
+      }
+    },
+    "^(?:[Rr][Ee][Tt][Rr][Yy])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.RetryOptions"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.RetryOptions": {
+      "description": "How to retry.",
+      "properties": {
+        "Attempts": {
+          "type": "integer",
+          "description": "Attempts before giving up. Range: 0 to 5. Default: 3.",
+          "default": 3,
+          "minimum": 0,
+          "maximum": 5
+        },
+        "Delays": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "A time span such as 00:00:30 or 1.12:00:00.",
+            "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+          }
+        }
+      },
+      "patternProperties": {
+        "^(?:[Aa][Tt][Tt][Ee][Mm][Pp][Tt][Ss])$": {
+          "type": "integer",
+          "description": "Attempts before giving up. Range: 0 to 5. Default: 3.",
+          "default": 3,
+          "minimum": 0,
+          "maximum": 5
+        },
+        "^(?:[Dd][Ee][Ll][Aa][Yy][Ss])$": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "A time span such as 00:00:30 or 1.12:00:00.",
+            "pattern": "^-?(?:\\d+|(?:\\d+[.:])?\\d{1,2}:\\d{1,2}(?::\\d{1,2}(?:\\.\\d{1,7})?)?)$"
+          }
+        }
+      }
+    }
+  }
+}
+## Diagnostics

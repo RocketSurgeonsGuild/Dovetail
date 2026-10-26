@@ -24,7 +24,7 @@ namespace SampleDependencyTwo
         /// <summary>
         /// Creates the context builder populated with the Dovetail parts imported into this assembly
         /// </summary>
-        private static DovetailContextBuilder CreateDovetailContextBuilder(IDictionary<object, object>? properties = null, IEnumerable<DovetailCategory>? categories = null) => DovetailContextBuilder.Create(LoadDovetailJointsMethod(), properties ?? new Dictionary<object, object>(), DovetailHostType.UnitTest, categories ?? []);
+        private static DovetailContextBuilder CreateDovetailContextBuilder(IDictionary<object, object>? properties = null, IEnumerable<DovetailCategory>? categories = null) => DovetailContextBuilder.Create(LoadDovetailJointsMethod(), properties ?? new Dictionary<object, object>(), categories ?? []);
         /// <summary>
         /// The Dovetail parts imported into this assembly
         /// </summary>

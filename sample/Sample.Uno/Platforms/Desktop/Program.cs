@@ -2,7 +2,7 @@ using Uno.UI.Hosting;
 
 namespace Sample.Uno;
 
-internal class Program
+internal static class Program
 {
     [STAThread]
     public static void Main(string[] args)

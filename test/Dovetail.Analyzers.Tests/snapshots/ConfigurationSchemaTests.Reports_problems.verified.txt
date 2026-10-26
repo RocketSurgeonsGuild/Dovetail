@@ -1,0 +1,225 @@
+﻿## Annotation
+{
+  "type": "object",
+  "title": "Annotation",
+  "properties": {
+    "Text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Pattern": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Consonants": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Number": {
+      "type": "integer"
+    }
+  },
+  "patternProperties": {
+    "^(?:[Tt][Ee][Xx][Tt])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Pp][Aa][Tt][Tt][Ee][Rr][Nn])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Cc][Oo][Nn][Ss][Oo][Nn][Aa][Nn][Tt][Ss])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Nn][Uu][Mm][Bb][Ee][Rr])$": {
+      "type": "integer"
+    }
+  }
+}
+## Colliding
+{
+  "type": "object",
+  "title": "Colliding",
+  "properties": {
+    "Name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Nn][Aa][Mm][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## Tree
+{
+  "type": "object",
+  "title": "Tree",
+  "properties": {
+    "Name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Child": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.TreeOptions"
+        }
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Nn][Aa][Mm][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Cc][Hh][Ii][Ll][Dd])$": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.TreeOptions"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.TreeOptions": {
+      "properties": {
+        "Name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Child": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Sample.TreeOptions"
+            }
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Nn][Aa][Mm][Ee])$": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "^(?:[Cc][Hh][Ii][Ll][Dd])$": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Sample.TreeOptions"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+## Unsupported
+{
+  "type": "object",
+  "title": "Unsupported",
+  "properties": {
+    "Anything": {},
+    "Culture": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A culture name such as en-US."
+    },
+    "ByNumber": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^-?\\d+$"
+      }
+    },
+    "Kept": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Aa][Nn][Yy][Tt][Hh][Ii][Nn][Gg])$": {},
+    "^(?:[Cc][Uu][Ll][Tt][Uu][Rr][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A culture name such as en-US."
+    },
+    "^(?:[Bb][Yy][Nn][Uu][Mm][Bb][Ee][Rr])$": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "pattern": "^-?\\d+$"
+      }
+    },
+    "^(?:[Kk][Ee][Pp][Tt])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## Diagnostics
+DT0007 Error line 9: 'Sample.AbstractOptions' can't be described as configuration: it's abstract
+DT0007 Error line 12: 'Sample.GenericOptions<T>' can't be described as configuration: it's an open generic type
+DT0008 Error line 15: '' isn't a valid configuration section for 'Sample.Options': the type name is only a suffix, so pass a section path
+DT0008 Error line 18: 'A::B' isn't a valid configuration section for 'Sample.BadPathOptions': section paths can't have empty segments
+DT0009 Warning line 26: 'UnsupportedOptions.Callback' has type 'System.Action?', which configuration binding doesn't support, so it's left out of the schema
+DT0010 Warning line 37: 'CollidingOptions.Name' and 'CollidingOptions.Other' both bind the key 'name' (configuration keys are case-insensitive), so only 'CollidingOptions.Name' is described
+DT0011 Error line 40: 'Sample.AmbiguousOptions' can't be created from configuration because it has several public constructors with parameters and no parameterless one
+DT0011 Error line 49: 'Sample.OrphanParameterOptions' can't be created from configuration because constructor parameter 'unmatched' has no matching property
+DT0013 Warning line 65: '[Range]' on 'AnnotationOptions.Text' is left out of the schema because ranges only apply to numbers
+DT0013 Warning line 68: '[RegularExpression]' on 'AnnotationOptions.Pattern' is left out of the schema because it uses regular expression syntax that JSON Schema (ECMA-262) doesn't support
+DT0013 Warning line 71: '[RegularExpression]' on 'AnnotationOptions.Consonants' is left out of the schema because it uses regular expression syntax that JSON Schema (ECMA-262) doesn't support
+DT0013 Warning line 74: '[MaxLength]' on 'AnnotationOptions.Number' is left out of the schema because lengths only apply to strings and collections

@@ -1,0 +1,257 @@
+﻿## Declared
+{
+  "type": "object",
+  "title": "Declared",
+  "properties": {
+    "myKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "retryCount": {
+      "type": "integer"
+    },
+    "NormalName": {
+      "type": "string"
+    },
+    "inner": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.DeclaredInner"
+        }
+      ]
+    },
+    "itemList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.DeclaredItem"
+          }
+        ]
+      }
+    }
+  },
+  "patternProperties": {
+    "^(?:[Mm][Yy][Kk][Ee][Yy])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Rr][Ee][Tt][Rr][Yy][Cc][Oo][Uu][Nn][Tt])$": {
+      "type": "integer"
+    },
+    "^(?:[Nn][Oo][Rr][Mm][Aa][Ll][Nn][Aa][Mm][Ee])$": {
+      "type": "string"
+    },
+    "^(?:[Ii][Nn][Nn][Ee][Rr])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.DeclaredInner"
+        }
+      ]
+    },
+    "^(?:[Ii][Tt][Ee][Mm][Ll][Ii][Ss][Tt])$": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.DeclaredItem"
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Sample.DeclaredInner": {
+      "properties": {
+        "waitTime": {
+          "type": "integer"
+        }
+      },
+      "patternProperties": {
+        "^(?:[Ww][Aa][Ii][Tt][Tt][Ii][Mm][Ee])$": {
+          "type": "integer"
+        }
+      }
+    },
+    "Sample.DeclaredItem": {
+      "properties": {
+        "itemName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Ii][Tt][Ee][Mm][Nn][Aa][Mm][Ee])$": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
+## DeclaredRecord
+{
+  "type": "object",
+  "title": "DeclaredRecord",
+  "properties": {
+    "hostName": {
+      "type": "string"
+    },
+    "portNumber": {
+      "type": "integer",
+      "description": "Default: 80.",
+      "default": 80
+    }
+  },
+  "patternProperties": {
+    "^(?:[Hh][Oo][Ss][Tt][Nn][Aa][Mm][Ee])$": {
+      "type": "string"
+    },
+    "^(?:[Pp][Oo][Rr][Tt][Nn][Uu][Mm][Bb][Ee][Rr])$": {
+      "type": "integer",
+      "description": "Default: 80.",
+      "default": 80
+    }
+  }
+}
+## Pascal
+{
+  "type": "object",
+  "title": "Pascal",
+  "properties": {
+    "MyKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "RetryCount": {
+      "type": "integer"
+    },
+    "NormalName": {
+      "type": "string"
+    },
+    "Inner": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.PascalInner"
+        }
+      ]
+    },
+    "ItemList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.PascalItem"
+          }
+        ]
+      }
+    }
+  },
+  "patternProperties": {
+    "^(?:[Mm][Yy][Kk][Ee][Yy])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Rr][Ee][Tt][Rr][Yy][Cc][Oo][Uu][Nn][Tt])$": {
+      "type": "integer"
+    },
+    "^(?:[Nn][Oo][Rr][Mm][Aa][Ll][Nn][Aa][Mm][Ee])$": {
+      "type": "string"
+    },
+    "^(?:[Ii][Nn][Nn][Ee][Rr])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.PascalInner"
+        }
+      ]
+    },
+    "^(?:[Ii][Tt][Ee][Mm][Ll][Ii][Ss][Tt])$": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Sample.PascalItem"
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Sample.PascalInner": {
+      "properties": {
+        "WaitTime": {
+          "type": "integer"
+        }
+      },
+      "patternProperties": {
+        "^(?:[Ww][Aa][Ii][Tt][Tt][Ii][Mm][Ee])$": {
+          "type": "integer"
+        }
+      }
+    },
+    "Sample.PascalItem": {
+      "properties": {
+        "ItemName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Ii][Tt][Ee][Mm][Nn][Aa][Mm][Ee])$": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
+## PascalRecord
+{
+  "type": "object",
+  "title": "PascalRecord",
+  "properties": {
+    "HostName": {
+      "type": "string"
+    },
+    "PortNumber": {
+      "type": "integer",
+      "description": "Default: 80.",
+      "default": 80
+    }
+  },
+  "patternProperties": {
+    "^(?:[Hh][Oo][Ss][Tt][Nn][Aa][Mm][Ee])$": {
+      "type": "string"
+    },
+    "^(?:[Pp][Oo][Rr][Tt][Nn][Uu][Mm][Bb][Ee][Rr])$": {
+      "type": "integer",
+      "description": "Default: 80.",
+      "default": 80
+    }
+  }
+}
+## Diagnostics

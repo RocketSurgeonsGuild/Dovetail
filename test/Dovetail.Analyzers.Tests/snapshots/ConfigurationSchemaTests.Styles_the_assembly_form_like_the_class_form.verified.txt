@@ -1,0 +1,61 @@
+﻿## third-party
+{
+  "type": "object",
+  "title": "third-party",
+  "properties": {
+    "connection-string": {
+      "type": "string"
+    },
+    "pool-settings": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.ThirdPartyPool"
+        }
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn]-[Ss][Tt][Rr][Ii][Nn][Gg])$": {
+      "type": "string"
+    },
+    "^(?:[Pp][Oo][Oo][Ll]-[Ss][Ee][Tt][Tt][Ii][Nn][Gg][Ss])$": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Sample.ThirdPartyPool"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Sample.ThirdPartyPool": {
+      "properties": {
+        "max-size": {
+          "type": "integer"
+        }
+      },
+      "patternProperties": {
+        "^(?:[Mm][Aa][Xx]-[Ss][Ii][Zz][Ee])$": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
+## Third:Camel
+{
+  "type": "object",
+  "title": "Third:Camel",
+  "properties": {
+    "retryCount": {
+      "type": "integer"
+    }
+  },
+  "patternProperties": {
+    "^(?:[Rr][Ee][Tt][Rr][Yy][Cc][Oo][Uu][Nn][Tt])$": {
+      "type": "integer"
+    }
+  }
+}
+## Diagnostics

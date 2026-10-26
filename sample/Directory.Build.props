@@ -7,4 +7,20 @@
         <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);CA1050</NoWarn>
     </PropertyGroup>
+    <!--
+        The repo-wide JetBrains.Annotations.sources package compiles the annotation attributes into every project, and the Android
+        runtime (Xamarin.Jetbrains.Annotations) ships the same types: CS0436 for every use.
+    -->
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+        <NoWarn>$(NoWarn);CS0436</NoWarn>
+    </PropertyGroup>
+    <!--
+        `dotnet workload restore` (the dotnet tool's postinstall in .config/mise.toml) evaluates the samples with
+        SkipResolvePackageAssets, so a restored sample would import its packages' targets without their resolved assets, and
+        Uno's ReplaceUnoRuntime fails on the Skia mobile heads (MSB4018, "Sequence contains no matching element"). The
+        workloads come from the target frameworks, so evaluate it as a fresh clone does: without the restored package targets.
+    -->
+    <PropertyGroup Condition="'$(SkipResolvePackageAssets)' == 'true'">
+        <ImportProjectExtensionTargets>false</ImportProjectExtensionTargets>
+    </PropertyGroup>
 </Project>

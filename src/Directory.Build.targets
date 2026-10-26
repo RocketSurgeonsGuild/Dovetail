@@ -1,6 +1,14 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+  <!--
+      Build infrastructure rather than Dovetail consumers: no configuration schema files, which for Dovetail.Build.Tasks would
+      also need the very tasks it builds.
+  -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Dovetail.Build.Tasks' or '$(MSBuildProjectName)' == 'Dovetail.Sdk' or $(MSBuildProjectName.StartsWith('Dovetail.Analyzers'))">
+    <DovetailConfigurationSchema>false</DovetailConfigurationSchema>
+  </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)Dovetail/build/Dovetail.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Dovetail.Build.Tasks/Dovetail.Build.Tasks.InRepo.targets" />
   <!--
     Analyzer release tracking (RS2000-RS2008) for every analyzer/generator project:
     https://github.com/dotnet/roslyn/blob/main/src/RoslynAnalyzers/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
@@ -29,7 +37,14 @@
       PrivateAssets="contentfiles;build;buildMultitargeting;buildTransitive"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
-      Condition="'$(MSBuildProjectName)' != 'Dovetail' and '$(MSBuildProjectName)' != 'Dovetail.Sdk' and !$(MSBuildProjectName.StartsWith('Dovetail.Analyzers'))"
+      Condition="'$(MSBuildProjectName)' != 'Dovetail' and '$(MSBuildProjectName)' != 'Dovetail.Sdk' and '$(MSBuildProjectName)' != 'Dovetail.Build.Tasks' and !$(MSBuildProjectName.StartsWith('Dovetail.Analyzers'))"
     />
+    <!--
+      NuGet's default PrivateAssets (contentfiles;analyzers;build) would pack every integration package's dependency on
+      Dovetail as exclude="Build,Analyzers", and include flags intersect down the dependency chain - so a project that only
+      references, say, Dovetail.Hosting never ran Dovetail's generator. Let analyzers flow; build stays private as before
+      (Dovetail's buildTransitive assets already reach those projects).
+    -->
+    <ProjectReference Update="$(MSBuildThisFileDirectory)Dovetail\Dovetail.csproj" PrivateAssets="contentfiles;build" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,50 @@
+## Derived
+{
+  "type": "object",
+  "title": "Derived",
+  "properties": {
+    "base_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "Folder": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(?:C:\\\\Apps\\\\.*)$"
+    },
+    "Parenthesized": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(?:\\(?id\\)?)$"
+    }
+  },
+  "patternProperties": {
+    "^(?:[Bb][Aa][Ss][Ee]_[Kk][Ee][Yy])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "^(?:[Ff][Oo][Ll][Dd][Ee][Rr])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(?:C:\\\\Apps\\\\.*)$"
+    },
+    "^(?:[Pp][Aa][Rr][Ee][Nn][Tt][Hh][Ee][Ss][Ii][Zz][Ee][Dd])$": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^(?:\\(?id\\)?)$"
+    }
+  }
+}
+## Diagnostics

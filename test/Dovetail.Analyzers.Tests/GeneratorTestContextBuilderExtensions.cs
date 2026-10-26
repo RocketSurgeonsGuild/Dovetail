@@ -10,6 +10,21 @@ namespace Dovetail.Analyzers.Tests;
 
 internal static class GeneratorTestContextBuilderExtensions
 {
+    /// <summary>
+    ///     The assemblies the code generated for <c>[DovetailConfiguration]</c> types uses: the binder and the options joint. Real
+    ///     projects reference them through the framework and Dovetail's dependencies.
+    /// </summary>
+    public static GeneratorTestContextBuilder AddConfigurationOptionsReferences(this GeneratorTestContextBuilder builder) => builder
+       .AddReferences(
+            typeof(ConfigurationSection),
+            typeof(Microsoft.Extensions.Options.OptionsBuilder<>),
+            typeof(ServiceDescriptor),
+            typeof(Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions),
+            typeof(Enumerable)
+        )
+       // System.Linq's ToDictionary returns Dictionary<,>, which it references through the System.Collections facade.
+       .AddReferences(System.Reflection.Assembly.Load(new System.Reflection.AssemblyName("System.Collections")));
+
     public static GeneratorTestContextBuilder AddSharedDeps(this GeneratorTestContextBuilder builder, CancellationToken cancellationToken) => builder.AddCompilationReferences(GenerationHelpers.CreateDeps(builder, cancellationToken).GetAwaiter().GetResult());
 
     public static GeneratorTestContextBuilder AddSharedGenericDeps(this GeneratorTestContextBuilder builder, CancellationToken cancellationToken) => builder.AddCompilationReferences(GenerationHelpers.CreateGenericDeps(builder, cancellationToken).GetAwaiter().GetResult());

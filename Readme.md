@@ -26,6 +26,14 @@
 
 <!-- nuget packages -->
 
+# Configuration
+
+Declare a library's configuration with `[DovetailConfiguration]` on an options class. Dovetail generates a reflection-free
+binder for `IOptions<T>` and a JSON Schema for it, and merges the schemas of every referenced library into the
+application's `obj/appsettings.schema.json` for editor completion and validation. See
+[Managed Configuration](docs/src/content/docs/concepts/managed-configuration.md) and
+[Editor Setup](docs/src/content/docs/guides/editor-setup.md).
+
 # Contributing
 
 Run `mise install` before building: it installs the .NET SDK and the extra .NET 10 runtime that the net10.0 tests run on (`.config/mise.toml`). `global.json` pins the same SDK, so a `dotnet` outside mise fails fast unless that SDK is installed.

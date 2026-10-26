@@ -1,0 +1,5 @@
+﻿{
+  Warnings: [
+    Dovetail's source generator needs C# 12 or later, but this project uses C# 11.0, so no Dovetail code was generated; set LangVersion to 12 or later to enable it
+  ]
+}

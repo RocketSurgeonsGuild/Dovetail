@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,10 +13,35 @@ internal static class ExportDovetails
 {
     public static void HandleDovetailExports(SourceProductionContext context, Request request)
     {
-        (var msBuildConfig, var conventions) = request;
-        if (!conventions.Any()) return;
+        (var msBuildConfig, var conventions, var hasConfigurationOptions) = request;
+        if (!conventions.Any() && !hasConfigurationOptions) return;
 
         var helperClassBody = Block();
+        if (hasConfigurationOptions)
+        {
+            // First, so options are bound from configuration before other joints configure them in code.
+            helperClassBody = helperClassBody.AddStatements(
+                YieldStatement(
+                    SyntaxKind.YieldReturnStatement,
+                    ObjectCreationExpression(IdentifierName("DovetailJointMetadata"))
+                       .WithArgumentList(
+                            ArgumentList(
+                                SeparatedList(
+                                    new[]
+                                    {
+                                        Argument(ObjectCreationExpression(IdentifierName(ConfigurationOptionsEmitter.JointClassName)).WithArgumentList(ArgumentList())),
+                                        Argument(_hostTypeUndefined),
+                                        Argument(
+                                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailCategory"), IdentifierName("Application"))
+                                        ),
+                                    }
+                                )
+                            )
+                        )
+                )
+            );
+        }
+
         var dependencyGraph = ImmutableArray.CreateBuilder<(INamedTypeSymbol Joint, ImmutableArray<DovetailDependencyParser.DependencyEdge> Edges)>();
 
         foreach (var convention in conventions)
@@ -146,7 +172,9 @@ internal static class ExportDovetails
                      )
                  )
                 .AddSharedTrivia()
-                .WithAttributeLists(msBuildConfig.ExportConfiguration.ToAttributes());
+                // Without the Dovetail.Export.* metadata, referencing assemblies don't import these joints; the class is still
+                // emitted so this assembly's own Imports keeps picking them up.
+                .WithAttributeLists(msBuildConfig.ExportAssembly ? msBuildConfig.ExportConfiguration.ToAttributes() : default);
 
         cu = cu.AddMembers(
             msBuildConfig.ExportConfiguration is { Namespace.Length: > 0 } data
@@ -228,5 +256,6 @@ internal static class ExportDovetails
 
     public record Request(
         MsBuildConfig BuildConfig,
-        ImmutableArray<INamedTypeSymbol> ExportedDovetails);
+        ImmutableArray<INamedTypeSymbol> ExportedDovetails,
+        bool HasConfigurationOptions);
 }

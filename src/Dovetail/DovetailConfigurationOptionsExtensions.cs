@@ -1,76 +1,101 @@
+using Dovetail.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Dovetail;
 
 /// <summary>
-///     Registration hooks used by generated managed-configuration wiring (see the
-///     <c>dovetail-managed-configuration</c> feature's <c>IConfigurationJoint</c> emission) to bind a
-///     strongly-typed generated configuration class to the standard
-///     <see cref="Microsoft.Extensions.Options" /> pipeline.
+///     Registers strongly-typed configuration classes with the standard <see cref="Microsoft.Extensions.Options" /> pipeline.
 /// </summary>
 /// <remarks>
-///     Generated per-config-file registration code should call
-///     <see cref="AddDovetailConfigurationOptions{TOptions}" /> rather than hand-rolling
-///     <c>AddOptions{TOptions}()</c> binding, so reload wiring stays centralized and consistent
-///     across every generated part, and so this is the single integration surface the generator
-///     needs to target once the codegen (tasks 3-4 of the feature) lands.
+///     <para>
+///         The configuration joint that Dovetail's source generator emits for <c>[DovetailConfiguration]</c> types calls
+///         <see cref="AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Func{IConfiguration, TOptions})" />
+///         for every type, passing the <c>Create…</c> method it generated for it. That code creates the instance and binds the
+///         section onto it without reflection, so the registration is trimming and AOT safe, and nothing here uses reflection.
+///         A library registers only its own section, and reads it from the application's complete <see cref="IConfiguration" />,
+///         which the service provider supplies when the options are first created.
+///     </para>
 /// </remarks>
 [PublicAPI]
 public static class DovetailConfigurationOptionsExtensions
 {
     /// <summary>
-    ///     Binds <typeparamref name="TOptions" /> to the configuration section at
-    ///     <paramref name="sectionKey" /> via the standard <see cref="IOptions{TOptions}" /> pipeline.
+    ///     Creates <typeparamref name="TOptions" /> from the configuration section at <paramref name="sectionPath" /> with
+    ///     <paramref name="create" />, without reflection.
     /// </summary>
     /// <remarks>
-    ///     <see cref="OptionsBuilder{TOptions}" />.Bind(<see cref="IConfiguration" />) — from
-    ///     <c>Microsoft.Extensions.Options.ConfigurationExtensions</c> — registers both the
-    ///     <see cref="IConfigureOptions{TOptions}" /> binder <b>and</b> the
-    ///     <see cref="IOptionsChangeTokenSource{TOptions}" /> that watches
-    ///     <see cref="IConfiguration.GetReloadToken" />. That single call is what makes
-    ///     <see cref="IOptionsMonitor{TOptions}" />/<see cref="IOptionsSnapshot{TOptions}" /> observe
-    ///     changes (e.g. a file-system change on a source registered with <c>reloadOnChange: true</c>)
-    ///     without any additional wiring — there is intentionally no separate, hand-rolled
-    ///     <see cref="IOptionsChangeTokenSource{TOptions}" /> registration here.
-    /// </remarks>
-    /// <typeparam name="TOptions">The generated configuration class type.</typeparam>
-    /// <param name="services">The service collection to register against.</param>
-    /// <param name="configuration">The root configuration to bind from.</param>
-    /// <param name="sectionKey">The configuration section key that maps to <typeparamref name="TOptions" />.</param>
-    /// <returns>
-    ///     The <see cref="OptionsBuilder{TOptions}" /> for further configuration, such as
-    ///     <c>Validate&lt;TValidateOptions&gt;()</c> and <c>ValidateOnStart()</c>. On .NET 11 its asynchronous
-    ///     <c>Validate</c> overloads run during host startup through <c>IAsyncStartupValidator</c>.
-    /// </returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services" />, <paramref name="configuration" />, or <paramref name="sectionKey" /> is <see langword="null" />.</exception>
-    /// <remarks>
     ///     <para>
-    ///         This calls into <c>Microsoft.Extensions.Options.ConfigurationExtensions</c>'
-    ///         reflection-based <c>ConfigurationBinder</c>, so it carries the same trimming/AOT
-    ///         caveats as any other <c>IConfiguration</c> binding call — the attributes below make
-    ///         that explicit rather than silently swallowing the warning. Fully trim-safe binding
-    ///         (e.g. via <c>Microsoft.Extensions.Configuration.Binder.SourceGeneration</c> emitted
-    ///         directly by the generator) is tracked as a follow-up once the codegen stage lands;
-    ///         it does not change this method's public signature.
+    ///         This is the one registration the generated configuration joint emits, for every <c>[DovetailConfiguration]</c> type.
+    ///         It registers an <see cref="IOptionsFactory{TOptions}" /> that creates each instance with
+    ///         <paramref name="create" />, unless a factory is already registered for <typeparamref name="TOptions" />. That is a
+    ///         <c>TryAdd</c>, so an <see cref="IOptionsFactory{TOptions}" /> the application registered itself wins over this one,
+    ///         and <paramref name="create" /> is never called for that type. Registered before this call, the application's factory
+    ///         makes this registration a no-op. Registered after it with a plain <c>Add</c>, it is the last registration, which the
+    ///         container resolves. The factory derives from <see cref="OptionsFactory{TOptions}" />, so configure and post-configure
+    ///         actions and validators still run on the instance <paramref name="create" /> returns.
+    ///     </para>
+    ///     <para>
+    ///         A type is created from one section only. When several calls register a section for the same type, the first one
+    ///         wins and the rest are ignored, as with any other <c>TryAdd</c> registration.
+    ///     </para>
+    ///     <para>
+    ///         The configuration is the application's <see cref="IConfiguration" />, which the service provider supplies when the
+    ///         options are first created. <paramref name="create" /> is called with the section at <paramref name="sectionPath" />.
+    ///         A change token source watches that configuration, so <see cref="IOptionsMonitor{TOptions}" /> and
+    ///         <see cref="IOptionsSnapshot{TOptions}" /> observe reloads. Dovetail only registers the default options: asking for
+    ///         any other options name throws <see cref="InvalidOperationException" />.
+    ///     </para>
+    ///     <para>
+    ///         On .NET 11, don't give a type registered this way asynchronous validators: the options pipeline only runs them
+    ///         through the built-in <see cref="OptionsFactory{TOptions}" /> itself, and through a derived factory they fail
+    ///         synchronous validation.
     ///     </para>
     /// </remarks>
-    [RequiresUnreferencedCode("Binds TOptions via reflection-based ConfigurationBinder; TOptions's members must be preserved.")]
-    [RequiresDynamicCode("Binds TOptions via reflection-based ConfigurationBinder, which may require runtime code generation.")]
-    public static OptionsBuilder<TOptions> AddDovetailConfigurationOptions<TOptions>(
+    /// <typeparam name="TOptions">The options type.</typeparam>
+    /// <param name="services">The service collection to register against.</param>
+    /// <param name="sectionPath">The path of the configuration section to create from, such as <c>Server</c> or <c>Http:Retry</c>.</param>
+    /// <param name="create">Creates an instance from a configuration section.</param>
+    /// <returns>
+    ///     The <see cref="OptionsBuilder{TOptions}" /> for the default name, for further configuration such as <c>Validate</c> and
+    ///     <c>ValidateOnStart()</c>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="services" />, <paramref name="sectionPath" />, or <paramref name="create" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentException"><paramref name="sectionPath" /> is empty.</exception>
+    public static OptionsBuilder<TOptions> AddDovetailConfigurationOptions<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(
         this IServiceCollection services,
-        IConfiguration configuration,
-        string sectionKey
+        string sectionPath,
+        Func<IConfiguration, TOptions> create
     )
         where TOptions : class
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
-        ArgumentNullException.ThrowIfNull(sectionKey);
+        ArgumentException.ThrowIfNullOrEmpty(sectionPath);
+        ArgumentNullException.ThrowIfNull(create);
 
-        return services
-              .AddOptions<TOptions>()
-              .Bind(configuration.GetSection(sectionKey));
+        var builder = services.AddOptions<TOptions>();
+
+        // TryAddEnumerable keys on the implementation type, so registering the same options type again doesn't add a second source.
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IOptionsChangeTokenSource<TOptions>, ConfigurationChangeTokenSource<TOptions>>(provider => new ConfigurationChangeTokenSource<TOptions>(
+                    Options.DefaultName,
+                    provider.GetRequiredService<IConfiguration>()
+                )
+            )
+        );
+        services.TryAdd(
+            ServiceDescriptor.Transient<IOptionsFactory<TOptions>, DovetailOptionsFactory<TOptions>>(provider => new DovetailOptionsFactory<TOptions>(
+                    provider.GetRequiredService<IConfiguration>(),
+                    sectionPath,
+                    create,
+                    provider.GetServices<IConfigureOptions<TOptions>>(),
+                    provider.GetServices<IPostConfigureOptions<TOptions>>(),
+                    provider.GetServices<IValidateOptions<TOptions>>()
+                )
+            )
+        );
+        return builder;
     }
 }

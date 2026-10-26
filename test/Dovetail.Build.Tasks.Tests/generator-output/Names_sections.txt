@@ -1,0 +1,79 @@
+## Hosting
+{
+  "type": "object",
+  "title": "Hosting",
+  "properties": {
+    "Name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Nn][Aa][Mm][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## Http:Retry
+{
+  "type": "object",
+  "title": "Http:Retry",
+  "properties": {
+    "Count": {
+      "type": "integer"
+    }
+  },
+  "patternProperties": {
+    "^(?:[Cc][Oo][Uu][Nn][Tt])$": {
+      "type": "integer"
+    }
+  }
+}
+## Shared:A
+{
+  "type": "object",
+  "title": "Shared:A",
+  "properties": {
+    "Value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Vv][Aa][Ll][Uu][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## Shared:B
+{
+  "type": "object",
+  "title": "Shared:B",
+  "properties": {
+    "Value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "patternProperties": {
+    "^(?:[Vv][Aa][Ll][Uu][Ee])$": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
+## Diagnostics

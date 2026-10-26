@@ -40,6 +40,12 @@
     <None Include="build/*.*" Pack="true" PackagePath="build" />
     <None Include="buildMultiTargeting/*.*" Pack="true" PackagePath="buildMultiTargeting" />
     <None Include="buildTransitive/*.*" Pack="true" PackagePath="buildTransitive" />
+    <!--
+        The MSBuild tasks build/Dovetail.ConfigurationSchema.targets runs, and the notice for what they embed. The in-repo wiring
+        (Dovetail.Build.Tasks.InRepo.targets) builds Dovetail.Build.Tasks before this project.
+    -->
+    <None Include="../Dovetail.Build.Tasks/bin/$(Configuration)/netstandard2.0/Dovetail.Build.Tasks.dll" Pack="true" PackagePath="build/tasks/netstandard2.0" Visible="false" />
+    <None Include="../Dovetail.Build.Tasks/THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/" Visible="false" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Dovetail.Mermaid" />

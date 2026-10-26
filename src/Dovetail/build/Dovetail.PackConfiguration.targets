@@ -58,7 +58,12 @@
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')">
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.json"
+    <!--
+      appsettings.schema.json (an editor schema, see Dovetail.ConfigurationSchema.targets) is not configuration: it is never
+      renamed, packed or embedded. Update can't take an Exclude, hence the intermediate item.
+    -->
+    <_DovetailJsonAppSettings Include="$(MSBuildProjectDirectory)\appsettings*.json" Exclude="$(MSBuildProjectDirectory)\appsettings.schema.json" />
+    <None Update="@(_DovetailJsonAppSettings)"
       Pack="true"
       PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
       PackageCopyToOutput="true"
@@ -67,8 +72,22 @@
       TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.json" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
-    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.json"
+    <None Update="@(_DovetailJsonAppSettings)" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <!--
+      The Web SDK globs *.json as Content rather than None, so without these the file is copied (and published) under its
+      original name while the generated joint loads $(MSBuildProjectName).json - a FileNotFoundException at startup.
+    -->
+    <Content Update="@(_DovetailJsonAppSettings)"
+      Pack="true"
+      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      PackageCopyToOutput="true"
+      CopyToOutputDirectory="PreserveNewest"
+      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      Visible="false" />
+    <Content Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
+    <Content Update="@(_DovetailJsonAppSettings)" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="@(_DovetailJsonAppSettings)"
       Exclude="@(EmbeddedResource)"
       LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
       DovetailConfiguration="true"
