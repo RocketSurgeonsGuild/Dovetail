@@ -1,9 +1,9 @@
 # Loaded after every library's own file (Dovetail renames this to SdkSample.Web.yaml), so it overrides their defaults.
 Farewell:
-  Exclamations: 3
+    Exclamations: 3
 
 storage:
-  max-file-size-mb: 128
+    max-file-size-mb: 128
 
 Console:
-  SuppressStatusMessages: true
+    SuppressStatusMessages: true
