@@ -6,7 +6,6 @@
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
         <PackageReference Include="NodaTime" />
         <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
-        <PackageReference Include="Specular" />
         <ProjectReference Include="..\..\src\Dovetail.Aspire.Testing\Dovetail.Aspire.Testing.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Aspire\Dovetail.Aspire.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Serilog\Dovetail.Serilog.csproj" />
