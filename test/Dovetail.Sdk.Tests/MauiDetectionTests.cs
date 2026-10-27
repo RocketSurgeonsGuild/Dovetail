@@ -58,7 +58,7 @@ public class MauiDetectionTests(string targetFramework)
            .AddProject(
                 "Directory.Build.props",
                 ProjectCreator
-                   .Create("Directory.Build.props")
+                   .Create()
                    .Sdk("Dovetail.Sdk")
             )
            .AddProject("app/app.csproj", app);

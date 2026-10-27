@@ -41,7 +41,7 @@ public class ConfigurationSchemaTests(string targetFramework)
     {
         using var project = new SdkTestProject();
         project
-           .AddProject("Directory.Build.props", ProjectCreator.Create("Directory.Build.props").Sdk("Dovetail.Sdk"))
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"))
            .AddProject("lib/lib.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework))
            .AddFile("lib/Fragments.cs", GreetingsFragment + "\n" + SharedFragments);
 
@@ -59,7 +59,7 @@ public class ConfigurationSchemaTests(string targetFramework)
     {
         var project = new SdkTestProject();
         project
-           .AddProject("Directory.Build.props", ProjectCreator.Create("Directory.Build.props").Sdk("Dovetail.Sdk"))
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"))
            .AddProject("lib/lib.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework))
            .AddFile("lib/appsettings.json", "{}")
            .AddFile("lib/appsettings.schema.json", "{}");
@@ -85,7 +85,7 @@ public class ConfigurationSchemaTests(string targetFramework)
     private SdkTestProject CreateHostReferencingLibraries()
     {
         var project = new SdkTestProject();
-        project.AddProject("Directory.Build.props", ProjectCreator.Create("Directory.Build.props").Sdk("Dovetail.Sdk"));
+        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"));
 
         // track: false - built only through the host's ProjectReference (see HostConfigurationPropagationTests).
         var lib1 = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework);
@@ -124,7 +124,7 @@ public class ConfigurationSchemaTests(string targetFramework)
     private async Task<SdkTestProject> CreateHostReferencingPackages()
     {
         var project = new SdkTestProject();
-        project.AddProject("Directory.Build.props", ProjectCreator.Create("Directory.Build.props").Sdk("Dovetail.Sdk"));
+        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"));
 
         // Distinctive package IDs, so restore can't pick up an unrelated nuget.org package (see HostConfigurationPropagationTests).
         project
@@ -176,7 +176,7 @@ public class ConfigurationSchemaTests(string targetFramework)
     public async Task TestProject_MergesTheSectionsOfWhatItTests()
     {
         using var project = new SdkTestProject();
-        project.AddProject("Directory.Build.props", ProjectCreator.Create("Directory.Build.props").Sdk("Dovetail.Sdk"));
+        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"));
         var lib = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework);
         project.AddProject("lib/lib.csproj", lib, track: false).AddFile("lib/Fragments.cs", GreetingsFragment);
         project.AddProject("tests/tests.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework).Property("IsTestProject", "true").ItemProjectReference(lib));

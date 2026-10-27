@@ -5,12 +5,21 @@ using DiffEngine;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Build.Utilities.ProjectCreation;
 
-// MSBuild.ProjectCreation shares a global ProjectRootElementCache; concurrent tests that create
-// projects with the same relative file name (e.g. "Directory.Build.props") race on that cache and
-// throw KeyNotFoundException. Serialize the whole assembly.
-[assembly: NotInParallel]
+// The tests run in parallel: each one scaffolds its own temp folder and builds it out of process. The
+// projects they create in-proc share MSBuild.ProjectCreation's global ProjectRootElementCache, so a
+// project must be created without a path (ProjectCreator.Create()) and get its real path from
+// SdkTestProject.AddProject: two tests creating the same relative path (e.g. "Directory.Build.props")
+// share a cache entry, and renaming it on save throws KeyNotFoundException in the other test.
+// Every test runs one `dotnet` build at a time, which uses several cores itself; one test per core
+// keeps a CI runner from being swamped.
+[assembly: ParallelLimiter<Dovetail.Sdk.Tests.OneTestPerProcessor>]
 
 namespace Dovetail.Sdk.Tests;
+
+public sealed class OneTestPerProcessor : TUnit.Core.Interfaces.IParallelLimit
+{
+    public int Limit => Environment.ProcessorCount;
+}
 
 /// <summary>
 /// Pairs a build's <see cref="ProjectEvaluation"/> (evaluation-time snapshot: properties, static

@@ -21,7 +21,7 @@ public class HostConfigurationPropagationTests(string targetFramework)
         project.AddProject(
             "Directory.Build.props",
             ProjectCreator
-               .Create("Directory.Build.props")
+               .Create()
                .Sdk("Dovetail.Sdk")
         );
 
@@ -75,7 +75,7 @@ public class HostConfigurationPropagationTests(string targetFramework)
         project.AddProject(
             "Directory.Build.props",
             ProjectCreator
-               .Create("Directory.Build.props")
+               .Create()
                .Sdk("Dovetail.Sdk")
         );
 
