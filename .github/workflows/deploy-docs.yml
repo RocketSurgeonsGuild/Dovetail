@@ -31,6 +31,10 @@ jobs:
                   fetch-depth: '0'
             - name: 🛠️ Setup mise
               uses: jdx/mise-action@v5
+              env:
+                  # One install at a time: mise downloads dotnet-install.sh to one shared path for every dotnet version, so the
+                  # SDK and runtime installs overwrite it under each other ("failed to execute command") when they run in parallel.
+                  MISE_JOBS: '1'
               with:
                   install: true
                   cache: true
