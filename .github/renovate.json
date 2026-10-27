@@ -5,9 +5,9 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "The .NET SDK pinned in mise (Renovate's mise manager does not update dotnet)",
+      "description": "The .NET SDK pinned in mise (Renovate's mise manager does not update dotnet); comment lines may sit above it",
       "managerFilePatterns": ["/^\\.config/mise\\.toml$/"],
-      "matchStrings": ["dotnet = \\[\\s*\\{ version = \"(?<currentValue>[^\"]+)\""],
+      "matchStrings": ["dotnet = \\[(?:\\s*#[^\\n]*)*\\s*\\{ version = \"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "dotnet-sdk",
       "datasourceTemplate": "dotnet-version",
       "versioningTemplate": "semver"
@@ -29,18 +29,13 @@
       "enabled": false
     },
     {
-      "description": "Keep the global.json and mise.toml .NET SDK pins in lockstep",
-      "matchDepNames": ["dotnet-sdk"],
-      "groupName": "dotnet sdk"
-    },
-    {
       "description": "The extra runtime is the net10.0 test runtime; the SDK carries the newest one",
       "matchDepNames": ["dotnet-runtime"],
       "allowedVersions": "<11"
     },
     {
-      "description": "Ship the extra runtime in the same PR as the 10.0.x NuGet packages: the org preset's dotnet/runtime rule would split it into its own patch PR",
-      "matchDepNames": ["dotnet-runtime"],
+      "description": "Ship the .NET SDK (global.json and mise.toml) and the extra runtime in the same PR as the NuGet packages: the 11.0 prerelease packages need the runtime that SDK carries, and the org preset's dotnet/runtime rule would split the runtime into its own patch PR",
+      "matchDepNames": ["dotnet-sdk", "dotnet-runtime"],
       "groupName": "dotnet monorepo",
       "separateMinorPatch": false,
       "separateMultipleMinor": false
