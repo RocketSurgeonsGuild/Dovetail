@@ -17,7 +17,7 @@ public class JsonContentConfigurationTests(string targetFramework)
            .AddProject(
                 "Directory.Build.props",
                 ProjectCreator
-                   .Create("Directory.Build.props")
+                   .Create()
                    .Sdk("Dovetail.Sdk")
             )
            .AddProject(

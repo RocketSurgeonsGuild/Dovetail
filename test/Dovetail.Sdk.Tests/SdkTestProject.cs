@@ -102,6 +102,8 @@ public sealed class SdkTestProject : IDisposable
     /// date" by the time the referencing project's own build runs, which skips regenerating its
     /// reference assembly (<c>obj/.../ref/{name}.dll</c>) and fails the referencing project's
     /// compile with CS0006.
+    /// Create <paramref name="project"/> without a path (<c>ProjectCreator.Create()</c>): this sets it, and a path given at
+    /// creation is shared with every other test that uses it (see Config.cs).
     /// </summary>
     public SdkTestProject AddProject(string path, ProjectCreator project, bool track = true)
     {

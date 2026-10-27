@@ -18,7 +18,7 @@ public class PackingTests(string targetFramework)
            .AddProject(
                 "Directory.Build.props",
                 ProjectCreator
-                   .Create("Directory.Build.props")
+                   .Create()
                    .Sdk("Dovetail.Sdk")
             )
            .AddProject(
@@ -39,7 +39,7 @@ public class PackingTests(string targetFramework)
            .AddProject(
                 "Directory.Build.props",
                 ProjectCreator
-                   .Create("Directory.Build.props")
+                   .Create()
                    .Sdk("Dovetail.Sdk")
             )
            .AddProject(
@@ -66,7 +66,7 @@ public class PackingTests(string targetFramework)
            .AddProject(
                 "Directory.Build.props",
                 ProjectCreator
-                   .Create("Directory.Build.props")
+                   .Create()
                    .Sdk("Dovetail.Sdk")
             )
            .AddProject(

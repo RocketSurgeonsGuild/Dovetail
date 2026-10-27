@@ -25,7 +25,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
     private static SdkTestProject CreateProject()
     {
         var project = new SdkTestProject();
-        project.AddProject("Directory.Build.props", ProjectCreator.Create("Directory.Build.props").Sdk("Dovetail.Sdk"));
+        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"));
         return project;
     }
 
