@@ -54,6 +54,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Dovetail.Hosting.Uno\Dovetail.Hosting.Uno.csproj" />
     <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+    <!-- Uno.Sdk adds this one implicitly at its own version; referencing it takes the Directory.Packages.props pin, in step with Microsoft.Extensions.Hosting (otherwise NU1605). -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
 
     <DovetailHost
       Include="Uno"

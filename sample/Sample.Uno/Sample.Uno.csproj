@@ -27,8 +27,6 @@
     </UnoFeatures>
     <!-- NU1507: multiple package sources with CPM; NETSDK1201: RID without self-contained; PRI257: default language not in resources. -->
     <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257</NoWarn>
-    <!-- Uno.Sdk's implicit Microsoft.Extensions.Logging packages, aligned with the repo's Microsoft.Extensions pins (Directory.Packages.props). -->
-    <MicrosoftLoggingVersion>10.0.13</MicrosoftLoggingVersion>
 
     <!-- What the Dovetail SDK's Uno detection sets (see src/Dovetail.Sdk/Sdk/Dovetail.HostDetection.targets); samples reference src directly. -->
     <DovetailEmbedConfiguration>true</DovetailEmbedConfiguration>
@@ -49,6 +47,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Dovetail.Hosting.Uno\Dovetail.Hosting.Uno.csproj" />
     <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+    <!-- Uno.Sdk adds this one implicitly at its own version; referencing it takes the Directory.Packages.props pin, in step with Microsoft.Extensions.Hosting (otherwise NU1605). -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <!-- Uno brings in 10.0.12 of both transitively, which have known vulnerabilities (NU1902/NU1903); 10.0.13 fixes them. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
