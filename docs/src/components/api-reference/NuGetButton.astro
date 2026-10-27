@@ -30,18 +30,16 @@ const { href } = Astro.props;
     color: var(--sl-color-gray-2);
     transition: border-color 0.15s, color 0.15s;
   }
+  /* The site's primary button (Starlight's LinkButton "primary"). */
+  .nuget-btn {
+    background: var(--sl-color-text-accent);
+    border-color: var(--sl-color-text-accent);
+    color: var(--sl-color-black);
+  }
   .nuget-btn:hover {
-    border-color: var(--sl-color-gray-3);
-    color: var(--sl-color-white);
-  }
-  :global([data-theme='dark']) .nuget-btn {
-    background: #004880;
-    border-color: #004880;
-    color: #fff;
-  }
-  :global([data-theme='dark']) .nuget-btn:hover {
-    border-color: #0066b8;
-    background: #0066b8;
+    border-color: color-mix(in srgb, var(--sl-color-text-accent) 85%, var(--sl-color-white));
+    background: color-mix(in srgb, var(--sl-color-text-accent) 85%, var(--sl-color-white));
+    color: var(--sl-color-black);
   }
   .nuget-btn-icon {
     display: block;
@@ -49,7 +47,11 @@ const { href } = Astro.props;
     width: 14px;
     height: 14px;
   }
-  :global([data-theme='dark']) .nuget-btn-icon {
+  /* Monochrome, in the button's text color. */
+  .nuget-btn-icon {
+    filter: brightness(0);
+  }
+  :global([data-theme='light']) .nuget-btn-icon {
     filter: brightness(0) invert(1);
   }
   .nuget-btn-ext {

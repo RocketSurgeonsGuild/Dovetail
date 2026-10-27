@@ -43,9 +43,16 @@ jobs:
                   install: true
                   # Only dotnet (the SDK and the runtime) here; the other tools install in parallel in the next step.
                   install_args: dotnet
-                  # No cache: its key changes with every tool bump, so builds almost never hit it, and saving the multi-GB
-                  # archive cost up to a minute per build. A fresh install is about as fast as restoring it.
-                  cache: false
+                  # One cache for every tool: restored here, before anything installs, and saved in the post step
+                  # (cache_save_post), after the next step's tools and the pruning at the end of the job. The key is fixed
+                  # rather than hashed from the tool versions, so a bump doesn't start a new multi-GB cache; it rolls over
+                  # every cache_max_age_days to pick up bumps. Only main saves it (pull requests and the merge queue each
+                  # have their own cache scope, so saving there would make one per ref); every ref can restore main's.
+                  cache: true
+                  cache_key: mise-{{platform}}-{{cache_period}}
+                  cache_max_age_days: 7
+                  cache_save: true # TRIAL: let this PR save once to measure a hit; back to main-only after
+                  cache_save_post: true
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
             # Everything but dotnet, in parallel (mise's default jobs). Naming the tools keeps `mise install` from running
@@ -111,6 +118,11 @@ jobs:
                   name: docs
                   path: artifacts/docs/
                   include-hidden-files: true
+            # Before the post step saves the mise cache: drop tool versions nothing selects anymore, so it holds only the
+            # current ones.
+            - name: 🧹 Prune tools
+              if: always() # TRIAL
+              run: mise prune --tools
 
     # Deploys the docs the build made to the gh-pages branch: main to the root, each release to v<version>/ (listed in
     # versions.json for the version switcher), and each pull request from this repository to pr-preview/pr-<n>/ (removed
