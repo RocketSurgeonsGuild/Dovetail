@@ -143,11 +143,10 @@ jobs:
             cancel-in-progress: false
             queue: max
         steps:
-            # The deploy action runs git in the workspace, so it needs a checkout (only the workflows, to stay quick).
+            # The deploy action runs git in the workspace, so it needs a checkout. A full one: a sparse checkout is a
+            # partial (blob-less) clone, and fetching gh-pages into it fails with "missing blob object".
             - name: Checkout
               uses: actions/checkout@v7
-              with:
-                  sparse-checkout: .github
             - name: 📥 Download docs
               uses: actions/download-artifact@v8
               with:
