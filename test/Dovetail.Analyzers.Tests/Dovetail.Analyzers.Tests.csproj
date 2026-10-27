@@ -15,7 +15,6 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
         <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
-        <PackageReference Include="Specular" />
         <ProjectReference Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Aspire.Testing\Dovetail.Aspire.Testing.csproj" />
         <ProjectReference Include="..\..\src\Dovetail.Aspire\Dovetail.Aspire.csproj" />

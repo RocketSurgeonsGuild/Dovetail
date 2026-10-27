@@ -1,6 +1,4 @@
 using FluentValidation;
-
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -60,7 +58,7 @@ internal static class GeneratorTestContextBuilderExtensions
 
     public static GeneratorTestContextBuilder AddCommonGenerators(this GeneratorTestContextBuilder builder)
     {
-        foreach (var generator in GetAllGenerators(SpecularProvider.Instance))
+        foreach (var generator in GetAllGenerators())
         {
             builder = builder.WithGenerator(generator);
         }
@@ -68,8 +66,5 @@ internal static class GeneratorTestContextBuilderExtensions
         return builder;
     }
 
-    private static IEnumerable<Type> GetAllGenerators(ISpecularProvider provider) => provider.GetTypes(s => s
-                                                                                              .FromAssemblyOf<DovetailAttributesGenerator>()
-                                                                                              .GetTypes(f => f.WithAttribute<GeneratorAttribute>().AssignableTo<IIncrementalGenerator>())
-        );
+    private static IEnumerable<Type> GetAllGenerators() => [typeof(DovetailAttributesGenerator)];
 }

@@ -1,7 +1,6 @@
 using Dovetail.Configuration.Yaml;
 using Dovetail.Infrastructure;
 using Dovetail.Joints;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -35,7 +34,7 @@ internal static class ConfigGeneratorTestContextBuilderExtensions
 
     public static GeneratorTestContextBuilder AddConfigCommonGenerators(this GeneratorTestContextBuilder builder)
     {
-        foreach (var generator in GetAllGenerators(SpecularProvider.Instance))
+        foreach (var generator in GetAllGenerators())
         {
             builder = builder.WithGenerator(generator);
         }
@@ -43,8 +42,5 @@ internal static class ConfigGeneratorTestContextBuilderExtensions
         return builder;
     }
 
-    private static IEnumerable<Type> GetAllGenerators(ISpecularProvider provider) => provider.GetTypes(s => s
-                                                                                              .FromAssemblyOf<DovetailAttributesGenerator>()
-                                                                                              .GetTypes(f => f.WithAttribute<GeneratorAttribute>().AssignableTo<IIncrementalGenerator>())
-        );
+    private static IEnumerable<Type> GetAllGenerators() => [typeof(DovetailAttributesGenerator)];
 }
