@@ -51,7 +51,7 @@ jobs:
                   cache: true
                   cache_key: mise-{{platform}}-{{cache_period}}
                   cache_max_age_days: 7
-                  cache_save: ${{ github.ref == 'refs/heads/main' }}
+                  cache_save: true # TRIAL: let this PR save once to measure a hit; back to main-only after
                   cache_save_post: true
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -109,5 +109,5 @@ jobs:
             # Before the post step saves the mise cache: drop tool versions nothing selects anymore, so it holds only the
             # current ones.
             - name: 🧹 Prune tools
-              if: always() && github.ref == 'refs/heads/main'
+              if: always() # TRIAL
               run: mise prune --tools
