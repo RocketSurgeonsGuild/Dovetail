@@ -31,7 +31,7 @@ oxfmt = "0.75.0"
 build = { run = "dotnet run build/Build.cs" }
 # The API reference tool is only needed by this task, so it is installed for it rather than with every tool (CI jobs
 # such as lint and samples never run it).
-"docs:api" = { run = "api-reference --solution Dovetail.slnx --output docs/src/data/api", tools = { "dotnet:Rocket.Surgery.ApiReference" = "0.1.13" }, description = "Generate the C# API reference JSON (docs/src/data/api) from the Release build output: build first (mise run build, or dotnet build Dovetail.slnx -c Release)" }
+"docs:api" = { run = "api-reference --solution Dovetail.slnx --output docs/src/data/api", tools = { "dotnet:Rocket.Surgery.ApiReference" = "0.1.14" }, description = "Generate the C# API reference JSON (docs/src/data/api) from the Release build output: build first (mise run build, or dotnet build Dovetail.slnx -c Release)" }
 docs = { run = [
   "dotnet build Dovetail.slnx -c Release",
   "mise run docs:api",
