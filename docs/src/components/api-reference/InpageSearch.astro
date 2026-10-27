@@ -263,96 +263,96 @@ const showKindFilters = kinds.length > 1;
     border-radius: 0.25rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #fff;
+    color: var(--api-kind-class-text, #fff);
     background: var(--api-kind-class, var(--sl-color-accent));
     flex-shrink: 0;
     line-height: 1.4;
     vertical-align: middle;
   }
 
-  .inpage-search .api-kind-micro.kind-interface    { background: var(--api-kind-interface); }
-  .inpage-search .api-kind-micro.kind-enum         { background: var(--api-kind-enum); }
-  .inpage-search .api-kind-micro.kind-struct       { background: var(--api-kind-struct); }
-  .inpage-search .api-kind-micro.kind-record       { background: var(--api-kind-record); }
-  .inpage-search .api-kind-micro.kind-delegate     { background: var(--api-kind-delegate); }
-  .inpage-search .api-kind-micro.kind-record-struct { background: var(--api-kind-record-struct); }
-  .inpage-search .api-kind-micro.kind-method       { background: #2563a8; }
-  .inpage-search .api-kind-micro.kind-property     { background: #0a7d56; }
-  .inpage-search .api-kind-micro.kind-constructor  { background: #6d3dc8; }
-  .inpage-search .api-kind-micro.kind-field        { background: #9a6400; }
-  .inpage-search .api-kind-micro.kind-event        { background: #c42b2b; }
-  .inpage-search .api-kind-micro.kind-indexer      { background: #047e94; }
-  .inpage-search .api-kind-micro.kind-enum-member  { background: #d97706; }
+  .inpage-search .api-kind-micro.kind-interface    { background: var(--api-kind-interface); color: #fff; }
+  .inpage-search .api-kind-micro.kind-enum         { background: var(--api-kind-enum); color: #fff; }
+  .inpage-search .api-kind-micro.kind-struct       { background: var(--api-kind-struct); color: #fff; }
+  .inpage-search .api-kind-micro.kind-record       { background: var(--api-kind-record); color: #fff; }
+  .inpage-search .api-kind-micro.kind-delegate     { background: var(--api-kind-delegate); color: #fff; }
+  .inpage-search .api-kind-micro.kind-record-struct { background: var(--api-kind-record-struct); color: #fff; }
+  .inpage-search .api-kind-micro.kind-method       { background: #2563a8; color: #fff; }
+  .inpage-search .api-kind-micro.kind-property     { background: #0a7d56; color: #fff; }
+  .inpage-search .api-kind-micro.kind-constructor  { background: #6d3dc8; color: #fff; }
+  .inpage-search .api-kind-micro.kind-field        { background: #9a6400; color: #fff; }
+  .inpage-search .api-kind-micro.kind-event        { background: #c42b2b; color: #fff; }
+  .inpage-search .api-kind-micro.kind-indexer      { background: #047e94; color: #fff; }
+  .inpage-search .api-kind-micro.kind-enum-member  { background: #d97706; color: #fff; }
 
   /* Light theme: ghost-style micro badges */
   [data-theme='light'] .inpage-search .api-kind-micro {
     color: var(--api-kind-class);
-    background: color-mix(in srgb, var(--api-kind-class) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-class) 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, var(--api-kind-class) 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-interface {
     color: var(--api-kind-interface);
-    background: color-mix(in srgb, var(--api-kind-interface) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-interface) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-interface) 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-enum {
     color: var(--api-kind-enum);
-    background: color-mix(in srgb, var(--api-kind-enum) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-enum) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-enum) 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-struct {
     color: var(--api-kind-struct);
-    background: color-mix(in srgb, var(--api-kind-struct) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-struct) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-struct) 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-record {
     color: var(--api-kind-record);
-    background: color-mix(in srgb, var(--api-kind-record) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-record) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-record) 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-delegate {
     color: var(--api-kind-delegate);
-    background: color-mix(in srgb, var(--api-kind-delegate) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-delegate) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-delegate) 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-record-struct {
     color: var(--api-kind-record-struct);
-    background: color-mix(in srgb, var(--api-kind-record-struct) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-record-struct) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-record-struct) 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-method {
     color: #2563a8;
-    background: color-mix(in srgb, #2563a8 10%, #f5f5f5);
+    background: color-mix(in srgb, #2563a8 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, #2563a8 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-property {
     color: #0a7d56;
-    background: color-mix(in srgb, #0a7d56 10%, #f5f5f5);
+    background: color-mix(in srgb, #0a7d56 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, #0a7d56 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-constructor {
     color: #6d3dc8;
-    background: color-mix(in srgb, #6d3dc8 10%, #f5f5f5);
+    background: color-mix(in srgb, #6d3dc8 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, #6d3dc8 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-field {
     color: #9a6400;
-    background: color-mix(in srgb, #9a6400 10%, #f5f5f5);
+    background: color-mix(in srgb, #9a6400 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, #9a6400 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-event {
     color: #c42b2b;
-    background: color-mix(in srgb, #c42b2b 10%, #f5f5f5);
+    background: color-mix(in srgb, #c42b2b 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, #c42b2b 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-indexer {
     color: #047e94;
-    background: color-mix(in srgb, #047e94 10%, #f5f5f5);
+    background: color-mix(in srgb, #047e94 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, #047e94 25%, transparent);
   }
   [data-theme='light'] .inpage-search .api-kind-micro.kind-enum-member {
     color: #d97706;
-    background: color-mix(in srgb, #d97706 10%, #f5f5f5);
+    background: color-mix(in srgb, #d97706 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, #d97706 25%, transparent);
   }
 
@@ -385,9 +385,9 @@ const showKindFilters = kinds.length > 1;
   }
 
   .inpage-search .api-load-more:hover {
-    background: var(--sl-color-accent);
-    color: #fff;
-    border-color: var(--sl-color-accent);
+    background: var(--sl-color-text-accent);
+    color: var(--sl-color-black);
+    border-color: var(--sl-color-text-accent);
   }
 
   :root[data-theme='light'] .inpage-search .api-load-more {
@@ -396,7 +396,7 @@ const showKindFilters = kinds.length > 1;
     border-color: var(--sl-color-accent);
   }
   :root[data-theme='light'] .inpage-search .api-load-more:hover {
-    color: #fff;
-    background: var(--sl-color-accent);
+    color: var(--sl-color-black);
+    background: var(--sl-color-text-accent);
   }
 </style>
