@@ -14,12 +14,20 @@ import starlightScrollToTop from "starlight-scroll-to-top";
 import starlightSidebarTopics from "starlight-sidebar-topics";
 import starlightTags from "starlight-tags";
 
-// In GitHub Actions, the site is served under /Dovetail; locally we run at the root.
-const base = process.env.GITHUB_ACTIONS ? "/Dovetail" : "";
+// In GitHub Actions, the site is served under /Dovetail; locally we run at the root. The gh-pages branch holds latest main at
+// that root, each release under /Dovetail/v<version> and pull request previews under /Dovetail/pr-preview/pr-<n>, so CI sets
+// DOCS_BASE to the folder a build deploys to. The version switcher reads versions.json from the root.
+const root = process.env.DOCS_ROOT || (process.env.GITHUB_ACTIONS ? "/Dovetail" : "");
+const base = process.env.DOCS_BASE || root;
 
 export default defineConfig({
     site: "https://rocketsurgeonsguild.github.io",
     base,
+    vite: {
+        define: {
+            __DOCS_ROOT__: JSON.stringify(root),
+        },
+    },
     markdown: {
         processor: unified(),
     },
@@ -40,6 +48,10 @@ export default defineConfig({
                     href: "https://github.com/RocketSurgeonsGuild/Dovetail",
                 },
             ],
+            components: {
+                // Adds the docs version switcher (src/components/VersionSelect.astro) next to the theme picker.
+                ThemeSelect: "./src/components/overrides/ThemeSelect.astro",
+            },
             customCss: ["./src/styles/theme.css", "./src/styles/api-reference-site.css", "./src/styles/api-reference.css"],
             plugins: [
                 starlightAutoDrafts(),
