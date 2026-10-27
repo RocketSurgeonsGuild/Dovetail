@@ -39,6 +39,13 @@
       "allowedVersions": "<11"
     },
     {
+      "description": "Ship the extra runtime in the same PR as the 10.0.x NuGet packages: the org preset's dotnet/runtime rule would split it into its own patch PR",
+      "matchDepNames": ["dotnet-runtime"],
+      "groupName": "dotnet monorepo",
+      "separateMinorPatch": false,
+      "separateMultipleMinor": false
+    },
+    {
       "description": "net10.0 assets stay on the 10.0.x release train; the net11.0 group moves along 11.0.x",
       "matchPackageNames": ["Microsoft.AspNetCore.*", "Microsoft.Extensions.*"],
       "matchCurrentVersion": "/^10\\./",
