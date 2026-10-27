@@ -24,13 +24,14 @@ biome = "2.5.2"
 "dotnet:verify.tool" = "0.7.0"
 "dotnet:gitreleasemanager.tool" = "0.20.0"
 "dotnet:NuGet.Mcp.Server" = "1.4.3"
-"dotnet:Rocket.Surgery.ApiReference" = "0.1.13"
 tombi = "1.9.6"
 oxfmt = "0.75.0"
 
 [tasks]
 build = { run = "dotnet run build/Build.cs" }
-"docs:api" = { run = "api-reference --solution Dovetail.slnx --output docs/src/data/api", description = "Generate the C# API reference JSON (docs/src/data/api) from the Release build output: build first (mise run build, or dotnet build Dovetail.slnx -c Release)" }
+# The API reference tool is only needed by this task, so it is installed for it rather than with every tool (CI jobs
+# such as lint and samples never run it).
+"docs:api" = { run = "api-reference --solution Dovetail.slnx --output docs/src/data/api", tools = { "dotnet:Rocket.Surgery.ApiReference" = "0.1.13" }, description = "Generate the C# API reference JSON (docs/src/data/api) from the Release build output: build first (mise run build, or dotnet build Dovetail.slnx -c Release)" }
 docs = { run = [
   "dotnet build Dovetail.slnx -c Release",
   "mise run docs:api",
