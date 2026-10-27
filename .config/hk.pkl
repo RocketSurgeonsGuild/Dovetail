@@ -1,6 +1,7 @@
 amends "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Config.pkl"
 
 import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/builtins/test/helpers.pkl"
 
 // Solution the .NET formatters operate against.
 local solution = "Dovetail.slnx"
@@ -48,6 +49,10 @@ local excludes = new Listing<String> {
   "**/*.verified.*"
   "**/*.received.*"
 }
+
+local yamlTest = new helpers.TestMaker { filename = "foo.yml" }
+local badYaml = "key:   value\nlist:\n    -   item\n"
+local goodYaml = "key: value\nlist:\n  - item\n"
 
 local excludedDiagnosticsString = excludeDiagnostics.join(" ")
 
@@ -108,6 +113,13 @@ steps {
         "**/*.html",
         "**/*.htm",
       )
+    // The builtin's tests format a .ts file, which this glob leaves to biome; test the same way with YAML.
+    tests = new {
+      ["check bad file"] = yamlTest.checkFail(badYaml, 1)
+      ["check good file"] = yamlTest.checkPass(goodYaml)
+      ["fix bad file"] = yamlTest.fixPass(badYaml, goodYaml)
+      ["diff bad file"] = yamlTest.diffPass(badYaml, goodYaml)
+    }
   }
   // ["jb-cleanupcode"] = jbCleanupCode
 }
