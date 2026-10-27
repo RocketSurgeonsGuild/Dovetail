@@ -631,29 +631,6 @@ const packageSourceHref = pkg.package.sourceRepository && pkg.package.sourceComm
     gap: 1rem;
     position: relative;
   }
-  .pkg-official-badge {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.75rem 0.35rem 0.55rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: #fff;
-    background: var(--aspire-color-purple, #512bd4);
-    border-radius: 2rem;
-    z-index: 1;
-    line-height: 1;
-  }
-  .pkg-official-badge svg {
-    width: 1.15rem;
-    height: 1.15rem;
-    stroke: #fff;
-    flex-shrink: 0;
-  }
   .pkg-hero-top {
     display: flex;
     align-items: center;
@@ -735,10 +712,6 @@ const packageSourceHref = pkg.package.sourceRepository && pkg.package.sourceComm
 
   /* ΓöÇΓöÇ Responsive ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
   @media (max-width: 768px) {
-    .pkg-official-badge {
-      top: 1rem;
-      right: 1rem;
-    }
     .pkg-name {
       width: 100%;
     }
@@ -755,10 +728,6 @@ const packageSourceHref = pkg.package.sourceRepository && pkg.package.sourceComm
     }
   }
   @media (max-width: 480px) {
-    .pkg-official-badge {
-      top: 0.75rem;
-      right: 0.75rem;
-    }
     .pkg-stat-value {
       font-size: 1.25rem;
     }

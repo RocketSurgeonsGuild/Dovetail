@@ -142,7 +142,6 @@
 .search-empty[hidden] {
     display: none;
 }
-/* Decorative artwork stays out of compact sidebar filters and the accessibility tree. */
 :root main .search-empty {
     box-sizing: border-box;
     width: 100%;
@@ -151,29 +150,16 @@
     padding: 1rem;
 }
 :root main .search-empty-content {
-    --search-empty-art-width: 13.5rem;
     box-sizing: border-box;
     width: 100%;
     max-width: none;
     min-height: 0;
     margin-inline: auto;
-    padding-bottom: 11rem;
     align-content: center;
-    background-image: url('../assets/search-no-results.webp');
-    background-position: center calc(100% - 0.5rem);
-    background-repeat: no-repeat;
-    background-size: var(--search-empty-art-width) auto;
 }
 @media (min-width: 64em) {
     :root main .search-empty {
         padding: 1.5rem;
-    }
-    :root main .search-empty-content {
-        --search-empty-art-width: 25rem;
-        min-height: 17rem;
-        padding-bottom: 0;
-        padding-right: calc(var(--search-empty-art-width) + 2rem);
-        background-position: right center;
     }
 }
 :root .search-results-summary {
