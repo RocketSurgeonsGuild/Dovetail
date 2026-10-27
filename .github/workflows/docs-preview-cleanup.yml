@@ -22,6 +22,11 @@ jobs:
         if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         steps:
+            # The deploy action runs git in the workspace, so it needs a checkout (only the workflows, to stay quick).
+            - name: Checkout
+              uses: actions/checkout@v7
+              with:
+                  sparse-checkout: .github
             - name: 🧹 Remove pull request preview
               uses: rossjrw/pr-preview-action@v1
               with:

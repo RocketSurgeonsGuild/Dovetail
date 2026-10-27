@@ -143,6 +143,11 @@ jobs:
             cancel-in-progress: false
             queue: max
         steps:
+            # The deploy action runs git in the workspace, so it needs a checkout (only the workflows, to stay quick).
+            - name: Checkout
+              uses: actions/checkout@v7
+              with:
+                  sparse-checkout: .github
             - name: 📥 Download docs
               uses: actions/download-artifact@v8
               with:
