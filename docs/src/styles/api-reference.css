@@ -20,14 +20,13 @@
     --api-text-md: 1.05rem; /* member names, key text */
     --api-text-lg: 1.125rem; /* summaries */
 
-    /* WCAG AA contrast-safe accent for text on dark surfaces.
-     --sl-color-accent (#7455dd) only reaches 2.28:1 on gray-5 (#35383e).
-     --sl-color-accent-high (#c6c2f2) is the Starlight "high contrast" variant
-     which comfortably passes 4.5:1 on all API reference backgrounds. */
+    /* WCAG AA contrast-safe accent for text on dark surfaces: Starlight's "high contrast" accent variant. */
     --api-accent-text: var(--sl-color-accent-high);
 
-    /* Kind colors — darkened to meet WCAG AA 4.5:1 with white text */
-    --api-kind-class: #7455dd;
+    /* Kind colors. Class carries the site's accent the way Starlight's primary buttons do (text-accent fill, black
+       text), so it follows each site's theme; the others are darkened to meet WCAG AA 4.5:1 with white text. */
+    --api-kind-class: var(--sl-color-text-accent);
+    --api-kind-class-text: var(--sl-color-black);
     --api-kind-interface: #6d3dc8;
     --api-kind-enum: #9a6400;
     --api-kind-struct: #0a7d56;
@@ -140,28 +139,34 @@
     border-radius: var(--api-radius-sm);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #fff;
+    color: var(--api-kind-class-text);
     background: var(--api-kind-class);
 }
 .api-kind-pill.kind-handle {
     background: var(--api-kind-class);
 }
 .api-kind-pill.kind-interface {
+    color: #fff;
     background: var(--api-kind-interface);
 }
 .api-kind-pill.kind-enum {
+    color: #fff;
     background: var(--api-kind-enum);
 }
 .api-kind-pill.kind-struct {
+    color: #fff;
     background: var(--api-kind-struct);
 }
 .api-kind-pill.kind-record {
+    color: #fff;
     background: var(--api-kind-record);
 }
 .api-kind-pill.kind-delegate {
+    color: #fff;
     background: var(--api-kind-delegate);
 }
 .api-kind-pill.kind-record-struct {
+    color: #fff;
     background: var(--api-kind-record-struct);
 }
 
@@ -816,7 +821,7 @@ a.api-chip:hover {
     --api-accent-text: var(--sl-color-accent-high);
 
     /* Kind pill colors — darkened for WCAG AA 4.5:1 on white/light bg */
-    --api-kind-class: #5a3bb8;
+    --api-kind-class: var(--sl-color-accent-high);
     --api-kind-interface: #5a30b0;
     --api-kind-enum: #7d5200;
     --api-kind-struct: #065c3f;
@@ -824,8 +829,8 @@ a.api-chip:hover {
     --api-kind-delegate: #9a2d55;
     --api-kind-record-struct: #065c3f;
 
-    /* Section labels (Parameters, Remarks…) — #736e81 gives 4.91:1 on white */
-    --api-section-label-color: #736e81;
+    /* Section labels (Parameters, Remarks…) use the site's muted text color */
+    --api-section-label-color: var(--sl-color-gray-3);
 
     /* Parameter type colors — darkened for light backgrounds */
     --api-param-type-0: hsl(300, 50%, 40%);
@@ -837,52 +842,52 @@ a.api-chip:hover {
 /* Light theme kind pills — ghost style: colored text on tinted bg */
 :root[data-theme='light'] .api-kind-pill {
     color: var(--api-kind-class);
-    background: color-mix(in srgb, var(--api-kind-class) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-class) 10%, var(--sl-color-black));
     border: 1px solid color-mix(in srgb, var(--api-kind-class) 25%, transparent);
 }
 :root[data-theme='light'] .api-kind-pill.kind-handle {
     color: var(--api-kind-class);
-    background: color-mix(in srgb, var(--api-kind-class) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-class) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-class) 25%, transparent);
 }
 :root[data-theme='light'] .api-kind-pill.kind-interface {
     color: var(--api-kind-interface);
-    background: color-mix(in srgb, var(--api-kind-interface) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-interface) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-interface) 25%, transparent);
 }
 :root[data-theme='light'] .api-kind-pill.kind-enum {
     color: var(--api-kind-enum);
-    background: color-mix(in srgb, var(--api-kind-enum) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-enum) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-enum) 25%, transparent);
 }
 :root[data-theme='light'] .api-kind-pill.kind-struct {
     color: var(--api-kind-struct);
-    background: color-mix(in srgb, var(--api-kind-struct) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-struct) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-struct) 25%, transparent);
 }
 :root[data-theme='light'] .api-kind-pill.kind-record {
     color: var(--api-kind-record);
-    background: color-mix(in srgb, var(--api-kind-record) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-record) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-record) 25%, transparent);
 }
 :root[data-theme='light'] .api-kind-pill.kind-delegate {
     color: var(--api-kind-delegate);
-    background: color-mix(in srgb, var(--api-kind-delegate) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-delegate) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-delegate) 25%, transparent);
 }
 :root[data-theme='light'] .api-kind-pill.kind-record-struct {
     color: var(--api-kind-record-struct);
-    background: color-mix(in srgb, var(--api-kind-record-struct) 10%, #f5f5f5);
+    background: color-mix(in srgb, var(--api-kind-record-struct) 10%, var(--sl-color-black));
     border-color: color-mix(in srgb, var(--api-kind-record-struct) 25%, transparent);
 }
 
-/* Source link — light theme: dark bg + white text for contrast */
+/* Source link — light theme: the site's text color as a fill, for contrast */
 :root[data-theme='light'] .api-source-link {
-    color: #fff;
-    background: #24292f;
+    color: var(--sl-color-black);
+    background: var(--sl-color-white);
     border-color: transparent;
 }
 :root[data-theme='light'] .api-source-link:hover {
-    color: #fff;
-    background: #32383f;
+    color: var(--sl-color-black);
+    background: color-mix(in srgb, var(--sl-color-white) 85%, var(--sl-color-black));
 }
