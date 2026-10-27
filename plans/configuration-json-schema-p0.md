@@ -45,13 +45,13 @@ Checklist for a Visual Studio 2026 (18.x) machine, using a console app with:
 
 Generator compiled against Roslyn 5.0.0; consumer built with `GenerateDocumentationFile` false and true.
 
-| | `GenerateDocumentationFile=false` (the default) | `=true` |
-|---|---|---|
-| `DocumentationMode` | `None` | `Diagnose` |
-| `GetDocumentationCommentXml()`, source type | empty | full XML |
-| `///` and `/** */` as trivia | ordinary comment trivia | structured doc trivia |
-| Parsing the comment text from trivia | every summary recovered | identical result |
-| `GetDocumentationCommentXml()`, type from a package | empty | empty |
+|                                                     | `GenerateDocumentationFile=false` (the default) | `=true`               |
+| --------------------------------------------------- | ----------------------------------------------- | --------------------- |
+| `DocumentationMode`                                 | `None`                                          | `Diagnose`            |
+| `GetDocumentationCommentXml()`, source type         | empty                                           | full XML              |
+| `///` and `/** */` as trivia                        | ordinary comment trivia                         | structured doc trivia |
+| Parsing the comment text from trivia                | every summary recovered                         | identical result      |
+| `GetDocumentationCommentXml()`, type from a package | empty                                           | empty                 |
 
 - Parse the comment text from the declaration's leading trivia **as the only path** for source types, not as a fallback: it works in both modes and gives identical results (`<see cref>`, `<paramref>`, entities, `/** */`), so descriptions don't depend on a library opting into `GenerateDocumentationFile` (and its CS1591 noise). `<inheritdoc/>` and `<include>` yield no description.
 - The command-line compiler attaches no documentation to references, so the assembly-level form gets no descriptions for third-party types from Roslyn. Packages do ship the XML (`lib/net10.0/Microsoft.Extensions.Hosting.xml` covers `HostOptions`). Either ship v1 without descriptions for those types, or have the targets pass package references' `.xml` files as `AdditionalFiles` and read only the one matching the type's assembly (analyzers can't read files themselves, RS1035).
@@ -60,21 +60,21 @@ Generator compiled against Roslyn 5.0.0; consumer built with `GenerateDocumentat
 
 A netstandard2.0 task reads `Dovetail.ConfigurationSchema.v1:<Section>` metadata from `@(ReferencePath)` with System.Reflection.Metadata (no assembly loading), merges a case-insensitive section tree with System.Text.Json, and writes `obj/appsettings.schema.json`; a second task edits `.vscode/settings.json` in place.
 
-| Mode | Where it ran | STJ / SRM bound to | Task time, 170 references |
-|---|---|---|---|
-| `dotnet build` | in-proc (`MSBuildLoadContext`) | 11.0.0.0 shared framework | 16–29 ms |
-| `-m:2` | in-proc node | 11.0.0.0 | 29 ms |
-| `-mt` | out-of-proc sidecar (task not marked multithreadable) | 11.0.0.0 | 29 ms |
-| `TaskHostFactory` | out-of-proc task host | 11.0.0.0 | 16 ms |
+| Mode              | Where it ran                                          | STJ / SRM bound to        | Task time, 170 references |
+| ----------------- | ----------------------------------------------------- | ------------------------- | ------------------------- |
+| `dotnet build`    | in-proc (`MSBuildLoadContext`)                        | 11.0.0.0 shared framework | 16–29 ms                  |
+| `-m:2`            | in-proc node                                          | 11.0.0.0                  | 29 ms                     |
+| `-mt`             | out-of-proc sidecar (task not marked multithreadable) | 11.0.0.0                  | 29 ms                     |
+| `TaskHostFactory` | out-of-proc task host                                 | 11.0.0.0                  | 16 ms                     |
 
 Visual Studio's .NET Framework `MSBuild.exe` couldn't run here; its binding redirects (`MSBuild.exe.config` in Microsoft.Build.Runtime) cap what a task may compile against:
 
-| MSBuild | System.Text.Json | System.Reflection.Metadata |
-|---|---|---|
-| 17.8 | 7.0.0.3 | 7.0.0.0 |
-| 17.11 | 8.0.0.5 | 8.0.0.0 |
-| 17.14, 18.0 | 9.0.0.0 | 9.0.0.0 |
-| 18.11 | 10.0.0.10 | 10.0.0.10 |
+| MSBuild     | System.Text.Json | System.Reflection.Metadata |
+| ----------- | ---------------- | -------------------------- |
+| 17.8        | 7.0.0.3          | 7.0.0.0                    |
+| 17.11       | 8.0.0.5          | 8.0.0.0                    |
+| 17.14, 18.0 | 9.0.0.0          | 9.0.0.0                    |
+| 18.11       | 10.0.0.10        | 10.0.0.10                  |
 
 - Compile the task against System.Text.Json and System.Reflection.Metadata **9.0.0**, compile-only, shipping no copies. That loads on MSBuild 17.14 and every 18.x. Dovetail already needs more than that: its packages target net10.0 and net11.0 (the .NET 10 SDK), and its analyzer ships only `roslyn5.x` folders (Roslyn 5.0). Use 18.x MSBuild compile references (17.11.31 trips NU1903).
 - Pass only absolute paths into the task: MSBuild 18.12 has `MSBuildMultiThreadableTaskAttribute`/`TaskEnvironment` for running in-proc under `-mt`, where the process working directory isn't the project's.
@@ -86,15 +86,15 @@ Visual Studio's .NET Framework `MSBuild.exe` couldn't run here; its binding redi
 
 These ran headlessly through the real engines: VS Code's JSON service (vscode-json-languageservice 6.0.0-next.4, the version VS Code 1.143.1 ships), yaml-language-server 2.0.0 (Red Hat YAML 2.0.0), and Taplo (@taplo/lsp 0.8.0, as bundled by Even Better TOML). Visual Studio and Rider are manual checks.
 
-| | JSON | YAML | TOML (Taplo) |
-|---|---|---|---|
-| unknown key (`Mesage`) flagged | yes | yes | yes, but on the table header (the CLI reports 21 diagnostics for one typo) |
-| differently-cased key (`message`) accepted | yes; its value isn't checked | same | same |
-| canonical names completed | yes | yes, plus a junk item unless `doNotSuggest` is set | yes |
-| hover shows `description` | yes | yes | Dovetail keys only |
-| SchemaStore `$ref` while offline | all validation skipped | nothing works | nothing works, silently |
-| `allOf` of two strict branches | rejects every key | same | same |
-| `deprecated` / `deprecationMessage` | warns / warns and hides | ignored / warns and hides | both ignored |
+|                                            | JSON                         | YAML                                               | TOML (Taplo)                                                               |
+| ------------------------------------------ | ---------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------- |
+| unknown key (`Mesage`) flagged             | yes                          | yes                                                | yes, but on the table header (the CLI reports 21 diagnostics for one typo) |
+| differently-cased key (`message`) accepted | yes; its value isn't checked | same                                               | same                                                                       |
+| canonical names completed                  | yes                          | yes, plus a junk item unless `doNotSuggest` is set | yes                                                                        |
+| hover shows `description`                  | yes                          | yes                                                | Dovetail keys only                                                         |
+| SchemaStore `$ref` while offline           | all validation skipped       | nothing works                                      | nothing works, silently                                                    |
+| `allOf` of two strict branches             | rejects every key            | same                                               | same                                                                       |
+| `deprecated` / `deprecationMessage`        | warns / warns and hides      | ignored / warns and hides                          | both ignored                                                               |
 
 Design changes:
 
@@ -121,12 +121,12 @@ What source-gen does in both versions, and a mimicking generator must reproduce:
 
 Where SG10 and SG11 differ:
 
-| | SG10 | SG11 |
-|---|---|---|
-| `Nullable<T>` set to `""` | value kept | null |
-| value-type ctor parameter set to `""` | default | throws |
-| missing string or nullable ctor parameter | throws | null |
-| settable properties re-bound after the ctor | yes | no |
+|                                             | SG10       | SG11   |
+| ------------------------------------------- | ---------- | ------ |
+| `Nullable<T>` set to `""`                   | value kept | null   |
+| value-type ctor parameter set to `""`       | default    | throws |
+| missing string or nullable ctor parameter   | throws     | null   |
+| settable properties re-bound after the ctor | yes        | no     |
 
 Where source-gen gives nothing to copy:
 
