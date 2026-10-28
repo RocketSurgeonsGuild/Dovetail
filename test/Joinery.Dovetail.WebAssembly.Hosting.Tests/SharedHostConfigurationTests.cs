@@ -1,6 +1,6 @@
+using FakeItEasy;
 using Joinery.Dovetail.Infrastructure;
 using Joinery.Dovetail.Joints;
-using FakeItEasy;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;

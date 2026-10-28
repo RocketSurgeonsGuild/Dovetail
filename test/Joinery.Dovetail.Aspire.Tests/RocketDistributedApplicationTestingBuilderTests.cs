@@ -1,8 +1,8 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
+using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Joinery.Dovetail.Testing.Joints;
-using FakeItEasy;
 using Microsoft.Extensions.Hosting;
 using Rocket.Surgery.Extensions.Testing;
 

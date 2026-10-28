@@ -1,8 +1,8 @@
+using FakeItEasy;
 using Joinery.Dovetail.Configuration.Json;
 using Joinery.Dovetail.Configuration.Yaml;
 using Joinery.Dovetail.Hosting.AspNetCore.Tests.Startups;
 using Joinery.Dovetail.Joints;
-using FakeItEasy;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;

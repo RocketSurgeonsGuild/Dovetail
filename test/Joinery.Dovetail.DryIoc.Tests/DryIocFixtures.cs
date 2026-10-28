@@ -1,7 +1,7 @@
-using Joinery.Dovetail.Attributes;
-using Joinery.Dovetail.Joints;
 using DryIoc;
 using FakeItEasy;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Joinery.Dovetail.DryIoc.Tests;

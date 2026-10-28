@@ -6,11 +6,11 @@ Status: design agreed (2026-10-22). Nothing is implemented yet.
 
 Three new packages, plus shared pieces, delivered in **one PR**:
 
-| Package                 | Kind         | Modeled on                                                                   |
-| ----------------------- | ------------ | ---------------------------------------------------------------------------- |
-| `Joinery.Dovetail.Stashbox`     | DI container | `Joinery.Dovetail.DryIoc`                                                            |
-| `Joinery.Dovetail.Hosting.Maui` | Host         | `Joinery.Dovetail.Hosting` (`MauiAppBuilder` is an `IHostApplicationBuilder`)        |
-| `Joinery.Dovetail.Hosting.Uno`  | Host         | New `IHostBuilder` bridge (Uno.Extensions only exposes the old generic host) |
+| Package                         | Kind         | Modeled on                                                                    |
+| ------------------------------- | ------------ | ----------------------------------------------------------------------------- |
+| `Joinery.Dovetail.Stashbox`     | DI container | `Joinery.Dovetail.DryIoc`                                                     |
+| `Joinery.Dovetail.Hosting.Maui` | Host         | `Joinery.Dovetail.Hosting` (`MauiAppBuilder` is an `IHostApplicationBuilder`) |
+| `Joinery.Dovetail.Hosting.Uno`  | Host         | New `IHostBuilder` bridge (Uno.Extensions only exposes the old generic host)  |
 
 ### Commit order inside the PR
 

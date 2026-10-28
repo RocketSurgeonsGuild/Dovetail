@@ -1,5 +1,5 @@
-using Joinery.Dovetail.Infrastructure;
 using FakeItEasy;
+using Joinery.Dovetail.Infrastructure;
 
 #pragma warning disable CA1034, CA1040
 

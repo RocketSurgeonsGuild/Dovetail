@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Autofac;
-using Joinery.Dovetail.Joints;
 using FakeItEasy;
+using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rocket.Surgery.Extensions.Testing;

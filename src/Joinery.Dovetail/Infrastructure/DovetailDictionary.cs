@@ -12,7 +12,7 @@ internal class DovetailDictionary : IDovetailDictionary, IReadOnlyDovetailDictio
     ///     Initializes a new instance of the <see cref="DovetailDictionary" /> class.
     /// </summary>
     /// <param name="values">The values.</param>
-    public DovetailDictionary(PropertiesType? values) => _values = values?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new ();
+    public DovetailDictionary(PropertiesType? values) => _values = values?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? [];
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="DovetailDictionary" /> class.
@@ -96,7 +96,7 @@ internal class DovetailDictionary : IDovetailDictionary, IReadOnlyDovetailDictio
     /// </summary>
     /// <param name="array">The array.</param>
     /// <param name="arrayIndex">Index of the array.</param>
-    public void CopyTo(KeyValuePair<object, object>[] array, int arrayIndex) => ((IDictionary<object, object>)_values).CopyTo(array, arrayIndex);
+    public void CopyTo(KeyValuePair<object, object>[] array, int arrayIndex) => _values.CopyTo(array, arrayIndex);
 
     /// <summary>
     ///     Gets the enumerator.

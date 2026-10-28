@@ -1,7 +1,7 @@
-using Joinery.Dovetail.Attributes;
-using Joinery.Dovetail.Joints;
 using DryIoc;
 using DryIoc.Microsoft.DependencyInjection;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable once CheckNamespace

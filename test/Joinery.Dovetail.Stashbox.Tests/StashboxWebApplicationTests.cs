@@ -1,5 +1,5 @@
-using Joinery.Dovetail.Joints;
 using FakeItEasy;
+using Joinery.Dovetail.Joints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Rocket.Surgery.Extensions.Testing;

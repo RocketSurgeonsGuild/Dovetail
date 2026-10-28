@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
 using System.Text;
-using Joinery.Dovetail.Diagnostics;
-using Joinery.Dovetail.Infrastructure;
 using FoggyBalrog.MermaidDotNet;
 using FoggyBalrog.MermaidDotNet.Flowchart;
 using FoggyBalrog.MermaidDotNet.Flowchart.Model;
+using Joinery.Dovetail.Diagnostics;
+using Joinery.Dovetail.Infrastructure;
 
 namespace Joinery.Dovetail;
 

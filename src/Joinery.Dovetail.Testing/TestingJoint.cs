@@ -1,11 +1,11 @@
 using Joinery.Dovetail.Attributes;
-using Joinery.Dovetail.Testing.Joints;
 using Joinery.Dovetail.Joints;
+using Joinery.Dovetail.Testing.Joints;
 
 // ReSharper disable once CheckNamespace
 namespace Joinery.Dovetail;
 
- /// <summary>
+/// <summary>
 /// This joint allows you to use this PackageReference as a way to share test libraries
 /// and configurations between your teams, without a specific dependency on any testing
 /// framework.  These are however limted to only when the host type is the unit test host.

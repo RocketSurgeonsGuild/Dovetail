@@ -33,7 +33,7 @@ public class RocketHostTests
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(z => z.ExceptJoint(typeof(YamlJoint)));
 
-                var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
+        var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
         configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(12);
@@ -51,7 +51,7 @@ public class RocketHostTests
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(z => z.ExceptJoint(typeof(JsonJoint)));
 
-                var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
+        var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
         configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(2);

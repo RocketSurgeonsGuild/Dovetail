@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Autofac;
-using Joinery.Dovetail.Joints;
 using FakeItEasy;
+using Joinery.Dovetail.Joints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

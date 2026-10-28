@@ -333,14 +333,14 @@ Hosts are test projects (`IsTestProject`) and applications (detected by Joinery.
   ordinal-smallest spelling is displayed. A section several assemblies declare is merged into one object. The same
   references always produce a byte-identical file.
 
-| Property                                        | Default  | Effect                                                                                                                                                          |
-| ----------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DovetailConfigurationSchema`                   | on       | `false` writes no schema files at all, and removes the ones an earlier build wrote.                                                                             |
-| `DovetailConfigurationSchemaHost`               | detected | `true` or `false` overrides which projects count as hosts.                                                                                                      |
-| `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail's sections open (no `propertyNames`) in the host file.                                                                                  |
-| `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore's schema out of the host file.                                                                                                       |
+| Property                                        | Default  | Effect                                                                                                                                                                  |
+| ----------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DovetailConfigurationSchema`                   | on       | `false` writes no schema files at all, and removes the ones an earlier build wrote.                                                                                     |
+| `DovetailConfigurationSchemaHost`               | detected | `true` or `false` overrides which projects count as hosts.                                                                                                              |
+| `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail's sections open (no `propertyNames`) in the host file.                                                                                          |
+| `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore's schema out of the host file.                                                                                                               |
 | `DovetailEmbedConfiguration`                    | detected | `true` for hosts that embed their configuration (Joinery.Dovetail.Sdk sets it for MAUI and Uno): the schema stays in `obj/`, with no copy to the output and no publish. |
-| `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`. The generator reads this one, so it changes the fragments in every project; the MSBuild targets don't use it.      |
+| `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`. The generator reads this one, so it changes the fragments in every project; the MSBuild targets don't use it.              |
 
 ```xml
 <PropertyGroup>

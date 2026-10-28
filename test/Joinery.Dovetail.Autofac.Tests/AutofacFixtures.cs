@@ -1,7 +1,7 @@
 using Autofac;
+using FakeItEasy;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
-using FakeItEasy;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Joinery.Dovetail.Autofac.Tests;

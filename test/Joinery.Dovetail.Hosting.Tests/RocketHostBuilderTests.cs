@@ -1,6 +1,5 @@
-using Joinery.Dovetail.Joints;
 using FakeItEasy;
-
+using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

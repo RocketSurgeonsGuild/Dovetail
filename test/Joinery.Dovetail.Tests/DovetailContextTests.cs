@@ -1,12 +1,9 @@
+using FakeItEasy;
 using Joinery.Dovetail.Infrastructure;
 using Joinery.Dovetail.Joints;
-using FakeItEasy;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Rocket.Surgery.Extensions.Testing;
-
 using Serilog.Events;
 
 

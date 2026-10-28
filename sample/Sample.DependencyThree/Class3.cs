@@ -1,6 +1,6 @@
+using FluentValidation;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Infrastructure;
-using FluentValidation;
 using Sample.DependencyOne;
 
 namespace Sample.DependencyThree;

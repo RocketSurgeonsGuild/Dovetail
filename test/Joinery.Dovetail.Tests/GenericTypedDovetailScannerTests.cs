@@ -1,6 +1,5 @@
-using Joinery.Dovetail.Joints;
 using FakeItEasy;
-
+using Joinery.Dovetail.Joints;
 using Rocket.Surgery.Extensions.Testing;
 
 
