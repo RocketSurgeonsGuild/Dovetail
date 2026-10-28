@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `4`
 
-Adds support for rendering an `IDovetailContext` 's resolved joints as a Mermaid diagram.
+Adds support for rendering an `Dovetail.IDovetailContext` 's resolved joints as a Mermaid diagram.
 
 <a id="tomermaidjointflowdiagram"></a>
 <a id="tomermaidjointflowdiagram-idovetailcontext-ienumerable-dovetailcategory"></a>

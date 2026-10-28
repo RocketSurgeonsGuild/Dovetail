@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Shared helpers used to wire an Uno.Extensions `Hosting.IApplicationBuilder` up to a Dovetail `IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
+Shared helpers used to wire an Uno.Extensions `Hosting.IApplicationBuilder` up to a Dovetail `Dovetail.IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
 
 <a id="configure"></a>
 <a id="configure-iapplicationbuilder-func-iapplicationbuilder-ihost-assembly-dovetailcontextbuilder-cancellationtoken"></a>
@@ -42,7 +42,7 @@ public static class DovetailUnoHelpers
 - `applicationAssembly` (`Assembly`)
   The application's assembly, which its embedded configuration files are loaded from.
 - `contextBuilder` (`DovetailContextBuilder`)
-  The context builder used to create the `IDovetailContext`.
+  The context builder used to create the `Dovetail.IDovetailContext`.
 - `cancellationToken` (`CancellationToken`)
   The cancellation token used while applying configuration and building the host.
 
@@ -86,7 +86,7 @@ public static class DovetailUnoHelpers
 - `applicationAssembly` (`Assembly`)
   The application's assembly, which its embedded configuration files are loaded from.
 - `contextBuilder` (`DovetailContextBuilder`)
-  The context builder used to create the `IDovetailContext`.
+  The context builder used to create the `Dovetail.IDovetailContext`.
 - `cancellationToken` (`CancellationToken`)
   The cancellation token used while applying configuration and building the host.
 

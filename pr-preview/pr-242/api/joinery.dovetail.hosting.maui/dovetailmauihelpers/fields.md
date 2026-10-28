@@ -5,7 +5,7 @@
 - Kind: `Fields`
 - Members: `1`
 
-Shared helpers used to wire a `Hosting.MauiAppBuilder` up to a Dovetail `IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
+Shared helpers used to wire a `Hosting.MauiAppBuilder` up to a Dovetail `Dovetail.IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
 
 <a id="environmentnamemetadatakey"></a>
 

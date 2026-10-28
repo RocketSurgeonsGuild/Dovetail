@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `1`
 
-Shared helpers used to wire an `Testing.IDistributedApplicationTestingBuilder` up to a Dovetail `IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
+Shared helpers used to wire an `Testing.IDistributedApplicationTestingBuilder` up to a Dovetail `Dovetail.IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
 
 <a id="configure"></a>
 <a id="configure-idistributedapplicationtestingbuilder-dovetailcontextbuilder-cancellationtoken"></a>
@@ -36,7 +36,7 @@ public static class DovetailDistributedApplicationTestingHelpers
 - `builder` (`IDistributedApplicationTestingBuilder`)
   The distributed application testing builder to configure.
 - `contextBuilder` (`DovetailContextBuilder`)
-  The context builder used to create the `IDovetailContext`.
+  The context builder used to create the `Dovetail.IDovetailContext`.
 - `cancellationToken` (`CancellationToken`)
   The cancellation token used while applying configuration and building the host.
 

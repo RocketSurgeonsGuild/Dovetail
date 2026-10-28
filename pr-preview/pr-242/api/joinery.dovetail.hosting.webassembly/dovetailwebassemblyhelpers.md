@@ -2,16 +2,16 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Hosting.WebAssembly](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.hosting.webassembly.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
-Shared helpers used to wire a `Hosting.WebAssemblyHostBuilder` up to a Dovetail `IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
+Shared helpers used to wire a `Hosting.WebAssemblyHostBuilder` up to a Dovetail `Dovetail.IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
 
 ## Definition
 
 ```csharp
-namespace Dovetail;
+namespace Joinery.Dovetail;
 
 public static class DovetailWebAssemblyHelpers
 {

@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying DryIoc parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying DryIoc parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configuredryioc"></a>
 <a id="configuredryioc-dovetailcontextbuilder-dryiocjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

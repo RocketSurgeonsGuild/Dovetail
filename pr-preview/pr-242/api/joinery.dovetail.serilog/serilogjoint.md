@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.serilog.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Serilog`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Serilog`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
 
@@ -12,11 +12,11 @@ A joint that registers logging services into the context. This joint is automati
 ## Definition
 
 ```csharp
-namespace Dovetail.Serilog;
+namespace Joinery.Dovetail.Serilog;
 
 public sealed class SerilogJoint
-    : Dovetail.Infrastructure.IDovetailJoint,
-      Dovetail.Joints.IServiceAsyncJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint,
+      Joinery.Dovetail.Joints.IServiceAsyncJoint
 {
     // ...
 }

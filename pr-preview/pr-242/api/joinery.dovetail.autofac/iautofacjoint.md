@@ -2,8 +2,8 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Autofac](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.autofac.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
 
@@ -12,10 +12,10 @@ Joint interface for Autofac. Implements the `Infrastructure.IDovetailJoint`
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public interface IAutofacJoint
-    : Dovetail.Infrastructure.IDovetailJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint
 {
     // ...
 }

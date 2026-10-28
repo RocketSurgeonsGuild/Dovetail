@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Infrastructure`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Implements: [IDovetailJoint](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/idovetailjoint.md), [IServiceAsyncJoint](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/iserviceasyncjoint.md)
 
@@ -12,11 +12,11 @@ A joint that registers logging services into the context. This joint is automati
 ## Definition
 
 ```csharp
-namespace Dovetail.Infrastructure;
+namespace Joinery.Dovetail.Infrastructure;
 
 public sealed class LoggingConnector
-    : Dovetail.Infrastructure.IDovetailJoint,
-      Dovetail.Joints.IServiceAsyncJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint,
+      Joinery.Dovetail.Joints.IServiceAsyncJoint
 {
     // ...
 }

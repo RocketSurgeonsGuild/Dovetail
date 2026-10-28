@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Diagnostics`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Diagnostics`
 - Target framework: `net10.0`
 
 Extension methods for [IDovetailJointMetadata](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/idovetailjointmetadata.md) to provide additional diagnostic information.
@@ -11,7 +11,7 @@ Extension methods for [IDovetailJointMetadata](/Dovetail/pr-preview/pr-242/api/j
 ## Definition
 
 ```csharp
-namespace Dovetail.Diagnostics;
+namespace Joinery.Dovetail.Diagnostics;
 
 public static class DovetailMetadataDiagnosticExtensions
 {

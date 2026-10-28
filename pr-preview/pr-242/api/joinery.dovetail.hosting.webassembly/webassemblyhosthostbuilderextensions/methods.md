@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying WebAssemblyHost parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying WebAssemblyHost parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configurewebassemblyhost"></a>
 <a id="configurewebassemblyhost-dovetailcontextbuilder-webassemblyhostjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

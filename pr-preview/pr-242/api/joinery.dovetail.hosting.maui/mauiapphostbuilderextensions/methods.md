@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying MauiApp parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying MauiApp parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configuremauiapp"></a>
 <a id="configuremauiapp-dovetailcontextbuilder-mauiappjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

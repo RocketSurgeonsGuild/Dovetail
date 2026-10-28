@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying UnoApplicationBuilder parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying UnoApplicationBuilder parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configureunoapplicationbuilder"></a>
 <a id="configureunoapplicationbuilder-dovetailcontextbuilder-unoapplicationbuilderjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

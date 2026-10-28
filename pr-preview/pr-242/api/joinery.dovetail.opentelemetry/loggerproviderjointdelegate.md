@@ -2,8 +2,8 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.OpenTelemetry](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.opentelemetry.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.OpenTelemetry.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.OpenTelemetry.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
 
@@ -12,10 +12,10 @@ Delegate for the `Logs.LoggerProviderBuilder` part.
 ## Definition
 
 ```csharp
-namespace Dovetail.OpenTelemetry.Joints;
+namespace Joinery.Dovetail.OpenTelemetry.Joints;
 
 public sealed delegate void LoggerProviderJointDelegate(
-    Dovetail.IDovetailContext context,
+    Joinery.Dovetail.IDovetailContext context,
     OpenTelemetry.Logs.LoggerProviderBuilder builder)
 ```
 

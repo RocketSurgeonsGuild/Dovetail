@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Hosting.Web](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.hosting.web.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Hosting.Web`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Hosting.Web`
 - Target framework: `net10.0`
 
 Serves the application's merged configuration JSON Schema ( `appsettings.schema.json`) over HTTP.
@@ -11,7 +11,7 @@ Serves the application's merged configuration JSON Schema ( `appsettings.schema.
 ## Definition
 
 ```csharp
-namespace Dovetail.Hosting.Web;
+namespace Joinery.Dovetail.Hosting.Web;
 
 public static class DovetailConfigurationSchemaEndpointExtensions
 {

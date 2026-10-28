@@ -2,8 +2,8 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: [IDovetailJoint](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/idovetailjoint.md)
 
@@ -12,10 +12,10 @@ Joint interface for Setup. Implements the [IDovetailJoint](/Dovetail/pr-preview/
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public interface ISetupJoint
-    : Dovetail.Infrastructure.IDovetailJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint
 {
     // ...
 }

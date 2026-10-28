@@ -2,8 +2,8 @@
 
 - Kind: `enum`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
 The underlying host type (currently only checked for test host) This is so that conventions can avoid adding behaviors that might cause issues with unit testing such as writing to the console or debug pipes, or ensuring that something is configured in a correct way for testing. Careful consideration is needed to make sure that your system doesn't behave extremely differently in a live scenario vs a testing scenario
@@ -11,7 +11,7 @@ The underlying host type (currently only checked for test host) This is so that 
 ## Definition
 
 ```csharp
-namespace Dovetail;
+namespace Joinery.Dovetail;
 
 public enum DovetailHostType
 ```

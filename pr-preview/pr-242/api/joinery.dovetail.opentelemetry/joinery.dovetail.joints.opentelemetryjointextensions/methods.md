@@ -1,7 +1,7 @@
 # OpenTelemetryJointExtensions Methods
 
 - Package: [Joinery.Dovetail.OpenTelemetry](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.opentelemetry.md)
-- Type: [OpenTelemetryJointExtensions](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.opentelemetry/dovetail.joints.opentelemetryjointextensions.md)
+- Type: [OpenTelemetryJointExtensions](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.opentelemetry/joinery.dovetail.joints.opentelemetryjointextensions.md)
 - Kind: `Methods`
 - Members: `1`
 

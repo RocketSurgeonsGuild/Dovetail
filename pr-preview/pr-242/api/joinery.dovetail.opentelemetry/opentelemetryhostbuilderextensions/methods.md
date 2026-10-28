@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying OpenTelemetry parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying OpenTelemetry parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configureopentelemetry"></a>
 <a id="configureopentelemetry-dovetailcontextbuilder-opentelemetryjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

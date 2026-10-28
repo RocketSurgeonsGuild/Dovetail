@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `1`
 
-Shared helpers used to wire a `Hosting.MauiAppBuilder` up to a Dovetail `IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
+Shared helpers used to wire a `Hosting.MauiAppBuilder` up to a Dovetail `Dovetail.IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
 
 <a id="configure"></a>
 <a id="configure-mauiappbuilder-func-mauiappbuilder-mauiapp-assembly-dovetailcontextbuilder-cancellationtoken"></a>
@@ -42,7 +42,7 @@ public static class DovetailMauiHelpers
 - `applicationAssembly` (`Assembly`)
   The application's assembly. Its embedded configuration files are loaded, and its name and build-time environment name are used, since `Assembly.GetEntryAssembly` isn't reliable on every MAUI platform.
 - `contextBuilder` (`DovetailContextBuilder`)
-  The context builder used to create the `IDovetailContext`.
+  The context builder used to create the `Dovetail.IDovetailContext`.
 - `cancellationToken` (`CancellationToken`)
   The cancellation token used while applying configuration and building the app.
 

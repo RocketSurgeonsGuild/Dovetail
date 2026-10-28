@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying Autofac parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying Autofac parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configureautofac"></a>
 <a id="configureautofac-dovetailcontextbuilder-autofacjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

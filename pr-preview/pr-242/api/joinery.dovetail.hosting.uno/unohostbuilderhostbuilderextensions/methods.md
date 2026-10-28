@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying UnoHostBuilder parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying UnoHostBuilder parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configureunohostbuilder"></a>
 <a id="configureunohostbuilder-dovetailcontextbuilder-unohostbuilderjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

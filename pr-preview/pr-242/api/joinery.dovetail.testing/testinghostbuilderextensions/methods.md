@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying Testing parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying Testing parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configuretesting"></a>
 <a id="configuretesting-dovetailcontextbuilder-testingjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

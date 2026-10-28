@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Hosting.Uno](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.hosting.uno.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Hosting.Uno`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Hosting.Uno`
 - Target framework: `net10.0`
 
 Contains all the static resources defined for the application
@@ -11,7 +11,7 @@ Contains all the static resources defined for the application
 ## Definition
 
 ```csharp
-namespace Dovetail.Hosting.Uno;
+namespace Joinery.Dovetail.Hosting.Uno;
 
 public sealed class GlobalStaticResources
 {

@@ -2,8 +2,8 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
 
@@ -12,7 +12,7 @@ A policy delegate that can be used to determine if a given exception should be i
 ## Definition
 
 ```csharp
-namespace Dovetail;
+namespace Joinery.Dovetail;
 
 public sealed delegate bool DovetailExceptionPolicyDelegate(
     System.Exception exception)

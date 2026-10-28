@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.serilog.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 
 Extension methods for applying Serilog parts.
@@ -11,7 +11,7 @@ Extension methods for applying Serilog parts.
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public static class SerilogJointExtensions
 {

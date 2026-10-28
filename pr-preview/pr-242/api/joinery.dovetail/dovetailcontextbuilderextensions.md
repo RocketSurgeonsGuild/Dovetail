@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Infrastructure`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 
 Dovetail Context build extensions.
@@ -11,7 +11,7 @@ Dovetail Context build extensions.
 ## Definition
 
 ```csharp
-namespace Dovetail.Infrastructure;
+namespace Joinery.Dovetail.Infrastructure;
 
 public static class DovetailContextBuilderExtensions
 {

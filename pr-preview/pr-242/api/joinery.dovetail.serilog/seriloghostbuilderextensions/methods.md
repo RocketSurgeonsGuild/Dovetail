@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying Serilog parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying Serilog parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configureserilog"></a>
 <a id="configureserilog-dovetailcontextbuilder-serilogjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

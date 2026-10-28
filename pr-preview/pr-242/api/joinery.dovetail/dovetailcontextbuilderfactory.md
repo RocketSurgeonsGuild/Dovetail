@@ -2,8 +2,8 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Infrastructure`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
 
@@ -12,11 +12,11 @@ A delegate that can be used to create a [DovetailContextBuilder](/Dovetail/pr-pr
 ## Definition
 
 ```csharp
-namespace Dovetail.Infrastructure;
+namespace Joinery.Dovetail.Infrastructure;
 
-public sealed delegate Dovetail.DovetailContextBuilder DovetailContextBuilderFactory(
+public sealed delegate Joinery.Dovetail.DovetailContextBuilder DovetailContextBuilderFactory(
     System.Collections.Generic.IDictionary<object, object>? properties,
-    System.Collections.Generic.IEnumerable<Dovetail.DovetailCategory>? categories)
+    System.Collections.Generic.IEnumerable<Joinery.Dovetail.DovetailCategory>? categories)
 ```
 
 ## Delegate Parameters

@@ -1,13 +1,13 @@
 # Joinery.Dovetail
 
 - Package: `Joinery.Dovetail`
-- Version: `0.2.3-pr.3`
+- Version: `0.2.3-pr.7`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail](https://www.nuget.org/packages/Joinery.Dovetail)
 
 ## Namespaces
 
-### Dovetail
+### Joinery.Dovetail
 
 - [DovetailCategory](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetailcategory.md) -- `class` `sealed` -- The category of a given convention
 - [DovetailConfigurationContextExtensions](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetailconfigurationcontextextensions.md) -- `class` `static` -- Extension members for IDovetailContext configuration access.
@@ -23,7 +23,7 @@
 - [IDovetailContext](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/idovetailcontext.md) -- `interface` -- The base context marker interface to define this as a context
 - [ImportHelpers](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/importhelpers.md) -- `class` `static` -- This class is used by the source generator to allow the conventions provided to be overridden by the caller.
 
-### Dovetail.Attributes
+### Joinery.Dovetail.Attributes
 
 - [AfterJointAttribute](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/afterjointattribute.md) -- `class` `sealed` -- An attribute that ensures the convention runs after the given [IDovetailJoint](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/idovetailjoint.md)
 - [AfterJointAttribute<T>](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/afterjointattribute-1.md) -- `class` `sealed` -- An attribute that ensures the convention runs after the given [IDovetailJoint](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/idovetailjoint.md)
@@ -42,14 +42,14 @@
 - [LiveJointAttribute](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/livejointattribute.md) -- `class` `sealed` -- Defines this convention as one that only runs during live usage to avoid unit tests
 - [UnitTestJointAttribute](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/unittestjointattribute.md) -- `class` `sealed` -- Defines this convention as one that only runs during a unit test run
 
-### Dovetail.Diagnostics
+### Joinery.Dovetail.Diagnostics
 
 - [DiagnosticExtensions](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/diagnosticextensions.md) -- `class` `static` -- Provides extension methods for retrieving metadata from Dovetail context builders and contexts.
 - [DovetailDiagnosticMetadataJoint](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetaildiagnosticmetadatajoint.md) -- `record` -- Represents a metadata item for a Dovetail joint, including its name, host type, category, and dependencies.
 - [DovetailDiagnosticMetadataJointDependency](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetaildiagnosticmetadatajointdependency.md) -- `record` `sealed` -- Represents a metadata dependency for a Dovetail joint, including its name, host type, category, dependencies, and direction.
 - [DovetailMetadataDiagnosticExtensions](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetailmetadatadiagnosticextensions.md) -- `class` `static` -- Extension methods for [IDovetailJointMetadata](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/idovetailjointmetadata.md) to provide additional diagnostic information.
 
-### Dovetail.Infrastructure
+### Joinery.Dovetail.Infrastructure
 
 - [ConnectsJointAttribute<T>](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/connectsjointattribute-1.md) -- `class` `sealed` -- A marker interface to indicate a type is a convention and has a name
 - [DependencyDirection](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dependencydirection.md) -- `enum` -- Defines the dependency direction of the given type
@@ -66,7 +66,7 @@
 - [ServiceProviderDictionaryExtensions](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/serviceproviderdictionaryextensions.md) -- `class` `static` -- Base convention extensions
 - [ServiceProviderFactoryAdapter](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/serviceproviderfactoryadapter.md) -- `delegate` -- A factory that provides a service provider factory from the convention context
 
-### Dovetail.Joints
+### Joinery.Dovetail.Joints
 
 - [ConfigurationAsyncJointDelegate](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/configurationasyncjointdelegate.md) -- `delegate` -- Async delegate for the Configuration part.
 - [ConfigurationHostBuilderExtensions](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/configurationhostbuilderextensions.md) -- `class` `static` -- Builder-method extensions for applying Configuration parts to a [DovetailContextBuilder](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetailcontextbuilder.md).

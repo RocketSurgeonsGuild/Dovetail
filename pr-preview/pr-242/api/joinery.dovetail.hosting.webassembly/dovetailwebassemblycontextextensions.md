@@ -2,16 +2,16 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Hosting.WebAssembly](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.hosting.webassembly.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
-Extension members for `IDovetailContext` WebAssembly host environment access.
+Extension members for `Dovetail.IDovetailContext` WebAssembly host environment access.
 
 ## Definition
 
 ```csharp
-namespace Dovetail;
+namespace Joinery.Dovetail;
 
 public static class DovetailWebAssemblyContextExtensions
 {

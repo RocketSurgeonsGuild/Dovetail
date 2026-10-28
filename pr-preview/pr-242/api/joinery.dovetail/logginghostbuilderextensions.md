@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 
 Builder-method extensions for applying Logging parts to a [DovetailContextBuilder](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetailcontextbuilder.md).
@@ -11,7 +11,7 @@ Builder-method extensions for applying Logging parts to a [DovetailContextBuilde
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public static class LoggingHostBuilderExtensions
 {

@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `1`
 
-Extension members for `IDovetailContext` host environment access.
+Extension members for `Dovetail.IDovetailContext` host environment access.
 
 <a id="get-environment"></a>
 <a id="get-environment-idovetailcontext"></a>

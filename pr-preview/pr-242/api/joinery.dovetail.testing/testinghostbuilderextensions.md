@@ -2,16 +2,16 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Testing](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.testing.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Testing.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Testing.Joints`
 - Target framework: `net10.0`
 
-Builder-method extensions for applying Testing parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying Testing parts to a `Dovetail.DovetailContextBuilder`.
 
 ## Definition
 
 ```csharp
-namespace Dovetail.Testing.Joints;
+namespace Joinery.Dovetail.Testing.Joints;
 
 public static class TestingHostBuilderExtensions
 {

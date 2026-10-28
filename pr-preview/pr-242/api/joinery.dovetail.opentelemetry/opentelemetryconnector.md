@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.OpenTelemetry](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.opentelemetry.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.OpenTelemetry`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.OpenTelemetry`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
 
@@ -12,11 +12,11 @@ A joint that registers OpenTelemetry services into the context. This joint is au
 ## Definition
 
 ```csharp
-namespace Dovetail.OpenTelemetry;
+namespace Joinery.Dovetail.OpenTelemetry;
 
 public class OpenTelemetryConnector
-    : Dovetail.Infrastructure.IDovetailJoint,
-      Dovetail.Joints.IServiceAsyncJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint,
+      Joinery.Dovetail.Joints.IServiceAsyncJoint
 {
     // ...
 }

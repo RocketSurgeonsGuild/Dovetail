@@ -2,8 +2,8 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Aspire](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.aspire.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
 
@@ -12,10 +12,10 @@ Delegate for the DistributedApplication part.
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public sealed delegate void DistributedApplicationJointDelegate(
-    Dovetail.IDovetailContext context,
+    Joinery.Dovetail.IDovetailContext context,
     Aspire.Hosting.DistributedApplication host)
 ```
 

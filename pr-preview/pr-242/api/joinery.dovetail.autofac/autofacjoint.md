@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Autofac](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.autofac.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Autofac`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Autofac`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
 
@@ -12,11 +12,11 @@ A joint that registers Autofac services into the context. This joint is automati
 ## Definition
 
 ```csharp
-namespace Dovetail.Autofac;
+namespace Joinery.Dovetail.Autofac;
 
 public class AutofacJoint
-    : Dovetail.Infrastructure.IDovetailJoint,
-      Dovetail.Joints.IServiceAsyncJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint,
+      Joinery.Dovetail.Joints.IServiceAsyncJoint
 {
     // ...
 }

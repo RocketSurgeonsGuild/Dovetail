@@ -2,8 +2,8 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
 The base context marker interface to define this as a context
@@ -11,7 +11,7 @@ The base context marker interface to define this as a context
 ## Definition
 
 ```csharp
-namespace Dovetail;
+namespace Joinery.Dovetail;
 
 public interface IDovetailContext
 {

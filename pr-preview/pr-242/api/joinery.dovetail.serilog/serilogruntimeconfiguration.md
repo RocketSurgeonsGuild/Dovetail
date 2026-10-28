@@ -2,8 +2,8 @@
 
 - Kind: `record`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.serilog.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Serilog`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Serilog`
 - Target framework: `net10.0`
 - Implements: `IEquatable<SerilogRuntimeConfiguration>`
 
@@ -12,10 +12,10 @@ Hand-authored stand-in for the generator-emitted configuration class that `opens
 ## Definition
 
 ```csharp
-namespace Dovetail.Serilog;
+namespace Joinery.Dovetail.Serilog;
 
 public sealed record SerilogRuntimeConfiguration
-    : System.IEquatable<Dovetail.Serilog.SerilogRuntimeConfiguration>
+    : System.IEquatable<Joinery.Dovetail.Serilog.SerilogRuntimeConfiguration>
 {
     // ...
 }

@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying DistributedApplication parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying DistributedApplication parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configuredistributedapplication"></a>
 <a id="configuredistributedapplication-dovetailcontextbuilder-distributedapplicationjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

@@ -2,20 +2,20 @@
 
 # OpenTelemetry
 
-`Dovetail.OpenTelemetry` exposes OpenTelemetry's configuration surface — the resource builder, the
+`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry's configuration surface — the resource builder, the
 tracer/meter/logger providers, and the top-level `IOpenTelemetryBuilder` — as ordinary Dovetail
 [parts](./defining-joints). Any library can contribute an activity source, a meter,
 a log processor, or a resource attribute without taking a direct dependency on how (or whether) the
 host wires up OpenTelemetry.
 
 > [!NOTE]
-> This integration is entirely opt-in. Referencing `Dovetail.OpenTelemetry` does **not** enable
+> This integration is entirely opt-in. Referencing `Joinery.Dovetail.OpenTelemetry` does **not** enable
 > OpenTelemetry on its own — a host application must call `UseOpenTelemetry()` explicitly. Nothing
 > auto-enables telemetry as a side effect of adding the package.
 
 ## The five part kinds
 
-`Dovetail.OpenTelemetry` declares five `<DovetailJoint>` items, one per OpenTelemetry builder. Each
+`Joinery.Dovetail.OpenTelemetry` declares five `<DovetailJoint>` items, one per OpenTelemetry builder. Each
 follows the same generated shape as every other Dovetail part: a sync interface, an async interface
 (`I{Kind}AsyncJoint`), matching delegate types, a `DovetailContextBuilder.Configure{Kind}(...)`
 builder method, and an `Apply{Kind}` runtime extension.
@@ -51,7 +51,7 @@ place before providers are configured), then tracing, metrics, and logging in th
 Call `UseOpenTelemetry()` on the `DovetailContextBuilder` during host setup:
 
 ```c#
-using Dovetail;
+using Joinery.Dovetail;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -69,7 +69,7 @@ A library adds a `System.Diagnostics.ActivitySource` to tracing by implementing
 auto-discovered Dovetail part:
 
 ```c#
-using Dovetail;
+using Joinery.Dovetail;
 using OpenTelemetry.Trace;
 
 namespace MyLibrary;
@@ -103,7 +103,7 @@ public class MyLibraryAsyncTracing : ITracerProviderAsyncJoint
 
 ## What this package does _not_ do
 
-`Dovetail.OpenTelemetry` only opens the extension points — it does not ship any exporters or
+`Joinery.Dovetail.OpenTelemetry` only opens the extension points — it does not ship any exporters or
 instrumentation. In particular, it does **not** include:
 
 - The console exporter, the OTLP exporter, or any other exporter package.
@@ -114,6 +114,6 @@ Consumers add exporters and instrumentation the same way they add anything else 
 by writing their own `ITracerProviderJoint`/`IMeterProviderJoint`/`ILoggerProviderJoint`
 implementation (or a plain `Configure{Kind}(...)` delegate) that calls the relevant
 `AddConsoleExporter()`, `AddOtlpExporter()`, `AddAspNetCoreInstrumentation()`, etc. This keeps
-`Dovetail.OpenTelemetry` itself free of exporter dependencies, which also keeps it friendly to
+`Joinery.Dovetail.OpenTelemetry` itself free of exporter dependencies, which also keeps it friendly to
 trimming/AOT — see [Non-Goals in the OpenTelemetry design doc](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/openspec/changes/add-dovetail-opentelemetry/design.md#goals--non-goals)
 for the full rationale.

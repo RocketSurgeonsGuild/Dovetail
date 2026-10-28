@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Configuration.Yaml](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.configuration.yaml.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Configuration.Yaml`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Configuration.Yaml`
 - Target framework: `net10.0`
 - Inherits: `FileConfigurationSource`
 
@@ -12,7 +12,7 @@ A YAML file based `Configuration.FileConfigurationSource`.
 ## Definition
 
 ```csharp
-namespace Dovetail.Configuration.Yaml;
+namespace Joinery.Dovetail.Configuration.Yaml;
 
 public class YamlConfigurationSource
     : Microsoft.Extensions.Configuration.FileConfigurationSource

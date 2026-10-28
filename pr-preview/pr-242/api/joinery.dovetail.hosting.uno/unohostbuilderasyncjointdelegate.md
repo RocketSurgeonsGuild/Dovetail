@@ -2,8 +2,8 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Hosting.Uno](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.hosting.uno.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
 
@@ -12,10 +12,10 @@ Async delegate for the UnoHostBuilder part.
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public sealed delegate System.Threading.Tasks.ValueTask UnoHostBuilderAsyncJointDelegate(
-    Dovetail.IDovetailContext context,
+    Joinery.Dovetail.IDovetailContext context,
     Microsoft.Extensions.Hosting.IHostBuilder builder,
     System.Threading.CancellationToken cancellationToken)
 ```

@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Attributes`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Attributes`
 - Target framework: `net10.0`
 - Inherits: `Attribute`
 
@@ -12,7 +12,7 @@ Declares the configuration section of an options type `T` from the assembly, for
 ## Definition
 
 ```csharp
-namespace Dovetail.Attributes;
+namespace Joinery.Dovetail.Attributes;
 
 public sealed class DovetailConfigurationAttribute<T>
     : System.Attribute

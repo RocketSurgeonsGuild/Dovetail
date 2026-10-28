@@ -2,8 +2,8 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Infrastructure`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
 
@@ -12,10 +12,10 @@ A factory that provides a service provider factory from the convention context
 ## Definition
 
 ```csharp
-namespace Dovetail.Infrastructure;
+namespace Joinery.Dovetail.Infrastructure;
 
 public sealed delegate System.Threading.Tasks.ValueTask<Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<object>> ServiceProviderFactoryAdapter(
-    Dovetail.IDovetailContext context,
+    Joinery.Dovetail.IDovetailContext context,
     Microsoft.Extensions.DependencyInjection.IServiceCollection services,
     System.Threading.CancellationToken cancellationToken)
 ```

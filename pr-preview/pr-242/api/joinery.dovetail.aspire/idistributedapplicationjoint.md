@@ -2,8 +2,8 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Aspire](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.aspire.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
 
@@ -12,10 +12,10 @@ Joint interface for DistributedApplication. Implements the `Infrastructure.IDove
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public interface IDistributedApplicationJoint
-    : Dovetail.Infrastructure.IDovetailJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint
 {
     // ...
 }

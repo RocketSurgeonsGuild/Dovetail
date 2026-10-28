@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `1`
 
-Shared helpers used by host-specific integration packages (e.g. web, WebAssembly) to wire an `Hosting.IHostApplicationBuilder` up to a Dovetail `IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
+Shared helpers used by host-specific integration packages (e.g. web, WebAssembly) to wire an `Hosting.IHostApplicationBuilder` up to a Dovetail `Dovetail.IDovetailContext`. Not intended to be called directly by consumers; hidden from IntelliSense via `EditorBrowsableState.Never`.
 
 <a id="configure"></a>
 <a id="configure-t-func-t-thost-dovetailcontextbuilder-cancellationtoken"></a>
@@ -39,7 +39,7 @@ public static class DovetailHostApplicationHelpers
 - `buildHost` (`Func<T, THost>`)
   A callback that builds the host from the configured builder.
 - `contextBuilder` (`DovetailContextBuilder`)
-  The context builder used to create the `IDovetailContext`.
+  The context builder used to create the `Dovetail.IDovetailContext`.
 - `cancellationToken` (`CancellationToken`)
   The cancellation token used while applying configuration and building the host.
 

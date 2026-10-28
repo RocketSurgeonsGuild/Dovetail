@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying Stashbox parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying Stashbox parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configurestashbox"></a>
 <a id="configurestashbox-dovetailcontextbuilder-stashboxjointdelegate-int-dovetailcategory-dovetailhosttype-string"></a>

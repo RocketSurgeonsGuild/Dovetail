@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.DryIoc](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.dryioc.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.DryIoc`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.DryIoc`
 - Target framework: `net10.0`
 
 Options for building the DryIoc Container
@@ -11,7 +11,7 @@ Options for building the DryIoc Container
 ## Definition
 
 ```csharp
-namespace Dovetail.DryIoc;
+namespace Joinery.Dovetail.DryIoc;
 
 public class DryIocOptions
 {

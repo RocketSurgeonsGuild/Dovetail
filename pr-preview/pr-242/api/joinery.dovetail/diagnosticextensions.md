@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Diagnostics`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Diagnostics`
 - Target framework: `net10.0`
 
 Provides extension methods for retrieving metadata from Dovetail context builders and contexts.
@@ -11,7 +11,7 @@ Provides extension methods for retrieving metadata from Dovetail context builder
 ## Definition
 
 ```csharp
-namespace Dovetail.Diagnostics;
+namespace Joinery.Dovetail.Diagnostics;
 
 public static class DiagnosticExtensions
 {

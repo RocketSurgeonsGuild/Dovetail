@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `2`
 
-Builder-method extensions for applying HostApplication parts to a `DovetailContextBuilder`.
+Builder-method extensions for applying HostApplication parts to a `Dovetail.DovetailContextBuilder`.
 
 <a id="configurehostapplication"></a>
 <a id="configurehostapplication-dovetailcontextbuilder-hostapplicationjointdelegate-tbuilder-int-dovetailcategory-dovetailhosttype-string"></a>

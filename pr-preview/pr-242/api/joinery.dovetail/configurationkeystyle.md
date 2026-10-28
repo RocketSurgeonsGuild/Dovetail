@@ -2,8 +2,8 @@
 
 - Kind: `enum`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Attributes`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Attributes`
 - Target framework: `net10.0`
 
 How [DovetailConfigurationAttribute](/Dovetail/pr-preview/pr-242/api/joinery.dovetail/dovetailconfigurationattribute.md) spells the configuration keys of an options type and of every object type nested in it.
@@ -11,7 +11,7 @@ How [DovetailConfigurationAttribute](/Dovetail/pr-preview/pr-242/api/joinery.dov
 ## Definition
 
 ```csharp
-namespace Dovetail.Attributes;
+namespace Joinery.Dovetail.Attributes;
 
 public enum ConfigurationKeyStyle
 ```

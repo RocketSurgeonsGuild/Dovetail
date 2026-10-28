@@ -2,16 +2,16 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Mermaid](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.mermaid.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
-Adds support for rendering an `IDovetailContext` 's resolved joints as a Mermaid diagram.
+Adds support for rendering an `Dovetail.IDovetailContext` 's resolved joints as a Mermaid diagram.
 
 ## Definition
 
 ```csharp
-namespace Dovetail;
+namespace Joinery.Dovetail;
 
 public static class DovetailContextDiagram
 {

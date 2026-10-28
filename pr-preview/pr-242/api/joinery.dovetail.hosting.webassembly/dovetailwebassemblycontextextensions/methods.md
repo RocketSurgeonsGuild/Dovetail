@@ -5,7 +5,7 @@
 - Kind: `Methods`
 - Members: `1`
 
-Extension members for `IDovetailContext` WebAssembly host environment access.
+Extension members for `Dovetail.IDovetailContext` WebAssembly host environment access.
 
 <a id="get-webassemblyhostenvironment"></a>
 <a id="get-webassemblyhostenvironment-idovetailcontext"></a>

@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.stashbox.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Stashbox`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Stashbox`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
 
@@ -12,11 +12,11 @@ A joint that registers Stashbox services into the context. This joint is automat
 ## Definition
 
 ```csharp
-namespace Dovetail.Stashbox;
+namespace Joinery.Dovetail.Stashbox;
 
 public class StashboxJoint
-    : Dovetail.Infrastructure.IDovetailJoint,
-      Dovetail.Joints.IServiceAsyncJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint,
+      Joinery.Dovetail.Joints.IServiceAsyncJoint
 {
     // ...
 }

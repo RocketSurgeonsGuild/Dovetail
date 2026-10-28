@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.DryIoc](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.dryioc.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 
 Extension methods for applying DryIoc parts.
@@ -11,7 +11,7 @@ Extension methods for applying DryIoc parts.
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public static class DryIocJointExtensions
 {

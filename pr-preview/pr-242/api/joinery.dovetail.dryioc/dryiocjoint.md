@@ -2,8 +2,8 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.DryIoc](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.dryioc.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.DryIoc`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.DryIoc`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
 
@@ -12,11 +12,11 @@ A joint that registers DryIoc services into the context. This joint is automatic
 ## Definition
 
 ```csharp
-namespace Dovetail.DryIoc;
+namespace Joinery.Dovetail.DryIoc;
 
 public class DryIocJoint
-    : Dovetail.Infrastructure.IDovetailJoint,
-      Dovetail.Joints.IServiceAsyncJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint,
+      Joinery.Dovetail.Joints.IServiceAsyncJoint
 {
     // ...
 }

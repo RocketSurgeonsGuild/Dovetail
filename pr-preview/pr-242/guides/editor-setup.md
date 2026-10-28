@@ -146,7 +146,7 @@ Any editor with a language server for the format can use the schema file:
 
 ## The schema endpoint
 
-An application can also serve its schema, for tools that read it over HTTP. This needs Dovetail.Hosting.Web and is off by
+An application can also serve its schema, for tools that read it over HTTP. This needs Joinery.Dovetail.Hosting.Web and is off by
 default:
 
 ```xml
@@ -159,7 +159,7 @@ default:
 
 | Property                                            | Default             | Effect                                                                                                                                                                                                                                                         |
 | --------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DovetailConfigurationSchemaEndpoint`               | off                 | `true` generates a joint that maps the endpoint. Only projects with `OutputType` `Exe` or `WinExe` get it, and it does nothing in an application that isn't built on Dovetail.Hosting.Web.                                                                     |
+| `DovetailConfigurationSchemaEndpoint`               | off                 | `true` generates a joint that maps the endpoint. Only projects with `OutputType` `Exe` or `WinExe` get it, and it does nothing in an application that isn't built on Joinery.Dovetail.Hosting.Web.                                                             |
 | `DovetailConfigurationSchemaEndpointEnvironments`   | every environment   | A semicolon-separated list of environment names (`Development;Staging`, compared ignoring case). The endpoint is mapped only when the host environment is one of them.                                                                                         |
 | `DovetailConfigurationSchemaEndpointSourceFallback` | `true` except below | Whether the project's `obj/` directory is compiled into the application as a place to look for the schema. By default it is, except in publish builds and `ContinuousIntegrationBuild` builds, so a build machine path isn't shipped. `false` never embeds it. |
 
@@ -180,7 +180,7 @@ the property. Both arguments are optional, and the method returns `null` when `e
 environment:
 
 ```c#
-using Dovetail.Hosting.Web;
+using Joinery.Dovetail.Hosting.Web;
 
 app.MapDovetailConfigurationSchema(fallbackDirectory: null, environments: "Development")
    ?.RequireAuthorization();

@@ -2,8 +2,8 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.stashbox.md)
-- Version: `0.2.3-pr.3`
-- Namespace: `Dovetail.Joints`
+- Version: `0.2.3-pr.7`
+- Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
 
@@ -12,10 +12,10 @@ Async part interface for Stashbox. Implements the `Infrastructure.IDovetailJoint
 ## Definition
 
 ```csharp
-namespace Dovetail.Joints;
+namespace Joinery.Dovetail.Joints;
 
 public interface IStashboxAsyncJoint
-    : Dovetail.Infrastructure.IDovetailJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint
 {
     // ...
 }
