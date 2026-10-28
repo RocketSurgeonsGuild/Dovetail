@@ -77,4 +77,14 @@
       <GlobalPropertiesToRemove>%(GlobalPropertiesToRemove);RuntimeIdentifier;SelfContained</GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemDefinitionGroup>
+  <!--
+    Uno.Sdk adds the Uno.Extensions packages for UnoFeatures implicitly at its own UnoExtensionsVersion, ignoring
+    Directory.Packages.props. The 8.0 prereleases move ahead of the prerelease SDK, so take the version Dovetail.Hosting.Uno is
+    pinned to (otherwise NU1605 against its references).
+  -->
+  <Target Name="_SampleUnoExtensionsVersion" BeforeTargets="UnoImplicitPackages">
+    <PropertyGroup>
+      <UnoExtensionsVersion>@(PackageVersion->WithMetadataValue('Identity', 'Uno.Extensions.Hosting.WinUI')->'%(Version)')</UnoExtensionsVersion>
+    </PropertyGroup>
+  </Target>
 </Project>
