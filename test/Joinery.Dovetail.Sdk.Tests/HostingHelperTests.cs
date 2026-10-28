@@ -15,12 +15,18 @@ public class HostingHelperTests(string targetFramework)
 {
     private const string GenericHost = "DovetailHostApplicationHelpers";
 
+    /// <summary>
+    ///     <c>context.Environment</c>, which comes with the hosts that put an <c>IHostEnvironment</c> in the context: the generic host,
+    ///     .NET MAUI and Uno Platform.
+    /// </summary>
+    private const string HostingContext = "DovetailHostingContextExtensions";
+
     [Test]
-    public async Task GenericHost_EmitsOnlyTheGenericHostHelper()
+    public async Task GenericHost_EmitsTheGenericHostHelper_AndContextEnvironment()
     {
         using var project = CreateApplication(app => WithGenericHost(app));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext]);
     }
 
     /// <summary>
@@ -45,7 +51,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemInclude("FrameworkReference", "Microsoft.AspNetCore.App"));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailConfigurationSchemaEndpointExtensions", GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailConfigurationSchemaEndpointExtensions", GenericHost, HostingContext]);
     }
 
     [Test]
@@ -53,7 +59,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailMauiHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([HostingContext, "DovetailMauiHelpers"]);
     }
 
     [Test]
@@ -98,7 +104,9 @@ public class HostingHelperTests(string targetFramework)
 
         var helpers = await BuildAndReadHelpers(project);
 
-        helpers.ShouldBe(navigation ? [GenericHost, "DovetailUnoHelpers", "DovetailUnoNavigationHelpers"] : [GenericHost, "DovetailUnoHelpers"]);
+        helpers.ShouldBe(
+            navigation ? [GenericHost, HostingContext, "DovetailUnoHelpers", "DovetailUnoNavigationHelpers"] : [GenericHost, HostingContext, "DovetailUnoHelpers"]
+        );
         GeneratedFiles(project, "DovetailHost.Uno.Navigate.g.cs").ShouldBe(navigation ? ["DovetailHost.Uno.Navigate.g.cs"] : []);
     }
 
@@ -129,7 +137,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithOpenTelemetryHosting(WithDovetailOpenTelemetry(WithGenericHost(app))));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailOpenTelemetryJoint"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext, "DovetailOpenTelemetryJoint"]);
     }
 
     [Test]
@@ -154,7 +162,7 @@ public class HostingHelperTests(string targetFramework)
             app => WithDovetailOpenTelemetry(app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)))
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([HostingContext, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]);
     }
 
     /// <summary>
@@ -172,7 +180,7 @@ public class HostingHelperTests(string targetFramework)
         );
 
         ( await BuildAndReadHelpers(project) ).ShouldBe(
-            [GenericHost, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]
+            [GenericHost, HostingContext, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]
         );
     }
 
@@ -213,7 +221,7 @@ public class HostingHelperTests(string targetFramework)
         using var project = CreateApplication(app => WithDovetailOpenTelemetry(Uno(app)));
 
         ( await BuildAndReadHelpers(project) ).ShouldBe(
-            [GenericHost, "DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryUnoStartJoint", "DovetailUnoHelpers"]
+            [GenericHost, HostingContext, "DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryUnoStartJoint", "DovetailUnoHelpers"]
         );
     }
 
@@ -231,7 +239,7 @@ public class HostingHelperTests(string targetFramework)
         using var project = new SdkTestProject();
         project.AddProject("app/app.csproj", library);
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext]);
     }
 
     /// <summary>
@@ -243,7 +251,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateSdkApplication(app => WithOpenTelemetryHosting(WithGenericHost(app)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailOpenTelemetryJoint"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext, "DovetailOpenTelemetryJoint"]);
     }
 
     [Test]
@@ -255,7 +263,7 @@ public class HostingHelperTests(string targetFramework)
                   .ItemPackageReference("OpenTelemetry", Config.CentralPackageVersion("OpenTelemetry", targetFramework))
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext]);
     }
 
     private ProjectCreator WithGenericHost(ProjectCreator app) =>

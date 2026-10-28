@@ -5,8 +5,8 @@
     *.cs.template files next to this file, the same way the entry points themselves are emitted. A helper is only emitted when
     every assembly it compiles against is among the project's resolved references, so this package depends on none of
     Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of
-    them is what turns its helper on. The joint that turns OpenTelemetry on for the application's host is emitted the same way (see
-    _DovetailResolveHostingHelpers).
+    them is what turns its helper on. context.Environment and the joints that turn OpenTelemetry on for the application's host are
+    emitted the same way (see _DovetailResolveHostingHelpers), so the package depends on nothing but Joinery.Dovetail.
 
     Templates must not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to forward slashes
     on Linux and macOS.
@@ -60,7 +60,20 @@
     <PropertyGroup>
       <_DovetailHostingUnoNavigation>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoNavigationHelpers'))</_DovetailHostingUnoNavigation>
       <_DovetailHostingAspNetCore>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailConfigurationSchemaEndpointExtensions'))</_DovetailHostingAspNetCore>
+      <_DovetailHostingGenericHostHelper>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailHostApplicationHelpers'))</_DovetailHostingGenericHostHelper>
+      <_DovetailHostingMaui>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailMauiHelpers'))</_DovetailHostingMaui>
+      <_DovetailHostingWebAssembly>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailWebAssemblyHelpers'))</_DovetailHostingWebAssembly>
+      <_DovetailHostingUno>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoHelpers'))</_DovetailHostingUno>
     </PropertyGroup>
+
+    <!--
+        context.Environment reads the IHostEnvironment that the generic host, MAUI and Uno helpers put in the context (Blazor WebAssembly
+        has context.WebAssemblyHostEnvironment instead), so it comes with those helpers. That leaves the package itself depending on
+        nothing from Microsoft.Extensions.Hosting, which a Blazor WebAssembly app on .NET 10 wouldn't otherwise reference.
+    -->
+    <ItemGroup Condition="'$(_DovetailHostingExtensionMembers)' == 'true' and ('$(_DovetailHostingGenericHostHelper)' == 'true' or '$(_DovetailHostingMaui)' == 'true' or '$(_DovetailHostingUno)' == 'true')">
+      <_DovetailHostingEmittedHelper Include="DovetailHostingContextExtensions" />
+    </ItemGroup>
 
     <!--
         OpenTelemetry, for applications that reference Joinery.Dovetail.OpenTelemetry (the Dovetail SDK adds it when OpenTelemetry is
@@ -83,9 +96,6 @@
       <_DovetailHostingOpenTelemetry Condition="'$(_DovetailHostingReferenced)' == 'true' and '$(ImportDovetailAssembly)' == 'true' and '$(DovetailEnableOpenTelemetry)' != 'false'">@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'Joinery.Dovetail.OpenTelemetry'))</_DovetailHostingOpenTelemetry>
       <_DovetailHostingGenericHost>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting'))</_DovetailHostingGenericHost>
       <_DovetailHostingOpenTelemetryHosting>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting'))</_DovetailHostingOpenTelemetryHosting>
-      <_DovetailHostingMaui>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailMauiHelpers'))</_DovetailHostingMaui>
-      <_DovetailHostingWebAssembly>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailWebAssemblyHelpers'))</_DovetailHostingWebAssembly>
-      <_DovetailHostingUno>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoHelpers'))</_DovetailHostingUno>
       <_DovetailHostingOtherHost>false</_DovetailHostingOtherHost>
       <_DovetailHostingOtherHost Condition="'$(_DovetailHostingMaui)' == 'true' or '$(_DovetailHostingWebAssembly)' == 'true' or '$(_DovetailHostingUno)' == 'true'">true</_DovetailHostingOtherHost>
     </PropertyGroup>

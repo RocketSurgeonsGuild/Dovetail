@@ -85,7 +85,8 @@
     GeneratedFiles: [
       DovetailContextBuilder.g.cs,
       DovetailHost.HostApplication.g.cs,
-      DovetailHosting.DovetailHostApplicationHelpers.g.cs
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostingContextExtensions.g.cs
     ],
     OutputFiles: [
       appsettings.schema.json,

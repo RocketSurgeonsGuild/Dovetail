@@ -25,14 +25,6 @@
             ParameterType="TBuilder"
             ParameterName="builder"
         />
-        <DovetailJoint
-            Include="Host"
-            Namespace="Joinery.Dovetail.Joints"
-            GenericParameter="THost"
-            GenericConstraint="global::Microsoft.Extensions.Hosting.IHost"
-            ParameterType="THost"
-            ParameterName="host"
-        />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
@@ -40,11 +32,6 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.AspNetCore.Tests" />
         <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.Tests" />
-        <!--
-            Only the abstractions (IHostEnvironment, IHost): the helpers this package emits compile against the application's own
-            references, so the generic-host helper appears once the application references Microsoft.Extensions.Hosting itself.
-        -->
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     </ItemGroup>
     <ItemGroup>
         <None Include="build/*.*" Pack="true" PackagePath="build" />

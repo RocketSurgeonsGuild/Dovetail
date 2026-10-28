@@ -93,6 +93,7 @@
       DovetailContextBuilder.g.cs,
       DovetailHost.HostApplication.g.cs,
       DovetailHosting.DovetailHostApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostingContextExtensions.g.cs,
       DovetailJoint.CustomLogging.g.cs,
       DovetailJointAsync.CustomLogging.g.cs
     ],
