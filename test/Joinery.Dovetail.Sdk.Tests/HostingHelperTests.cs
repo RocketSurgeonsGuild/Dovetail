@@ -172,6 +172,23 @@ public class HostingHelperTests(string targetFramework)
         ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailMauiHelpers", "DovetailOpenTelemetryServicesJoint"]);
     }
 
+    /// <summary>
+    ///     The <c>#error</c> is only for an application none of whose hosts can turn OpenTelemetry on: a MAUI app that also gets
+    ///     Microsoft.Extensions.Hosting (often through another package) still adds OpenTelemetry to its services without
+    ///     OpenTelemetry.Extensions.Hosting.
+    /// </summary>
+    [Test]
+    public async Task Maui_WithTheGenericHost_WithoutOpenTelemetryHosting_EmitsTheServicesJoint()
+    {
+        using var project = CreateApplication(
+            app => WithDovetailOpenTelemetry(
+                WithGenericHost(app).ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework))
+            )
+        );
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailMauiHelpers", "DovetailOpenTelemetryServicesJoint"]);
+    }
+
     [Test]
     public async Task WebAssembly_WithOpenTelemetry_EmitsTheServicesJoint()
     {

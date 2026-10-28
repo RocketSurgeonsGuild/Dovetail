@@ -67,8 +67,12 @@
         referenced) unless DovetailEnableOpenTelemetry is false. Only applications and test projects, the assemblies that import
         joints, get the joint: a library's copy would be exported to every application that references it.
           - The generic host (Microsoft.Extensions.Hosting) turns it on with OpenTelemetry.Extensions.Hosting's AddOpenTelemetry(), which
-            starts the providers with the host, so the project must reference that too; without it the project gets a #error instead.
-          - .NET MAUI and Blazor WebAssembly don't use the generic host, so their joint adds OpenTelemetry to the services directly.
+            starts the providers with the host.
+          - .NET MAUI and Blazor WebAssembly don't use the generic host, so their joint adds OpenTelemetry to the services directly. It
+            is also what an app of theirs gets when Microsoft.Extensions.Hosting comes along (often transitively) without
+            OpenTelemetry.Extensions.Hosting.
+          - Only when no host can turn it on, the generic host without OpenTelemetry.Extensions.Hosting and no other host, does the
+            project get a #error asking for OpenTelemetry.Extensions.Hosting.
     -->
     <PropertyGroup>
       <_DovetailHostingOpenTelemetry>false</_DovetailHostingOpenTelemetry>
@@ -77,11 +81,13 @@
       <_DovetailHostingOpenTelemetryHosting>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting'))</_DovetailHostingOpenTelemetryHosting>
       <_DovetailHostingOtherHost>false</_DovetailHostingOtherHost>
       <_DovetailHostingOtherHost Condition="@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailMauiHelpers')) == 'true' or @(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailWebAssemblyHelpers')) == 'true'">true</_DovetailHostingOtherHost>
+      <_DovetailHostingGenericHostOpenTelemetry>false</_DovetailHostingGenericHostOpenTelemetry>
+      <_DovetailHostingGenericHostOpenTelemetry Condition="'$(_DovetailHostingGenericHost)' == 'true' and '$(_DovetailHostingOpenTelemetryHosting)' == 'true'">true</_DovetailHostingGenericHostOpenTelemetry>
     </PropertyGroup>
     <ItemGroup Condition="'$(_DovetailHostingOpenTelemetry)' == 'true'">
-      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryJoint" Condition="'$(_DovetailHostingGenericHost)' == 'true' and '$(_DovetailHostingOpenTelemetryHosting)' == 'true'" />
-      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryHostingMissing" Condition="'$(_DovetailHostingGenericHost)' == 'true' and '$(_DovetailHostingOpenTelemetryHosting)' != 'true'" />
-      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryServicesJoint" Condition="'$(_DovetailHostingGenericHost)' != 'true' and '$(_DovetailHostingOtherHost)' == 'true'" />
+      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryJoint" Condition="'$(_DovetailHostingGenericHostOpenTelemetry)' == 'true'" />
+      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryServicesJoint" Condition="'$(_DovetailHostingGenericHostOpenTelemetry)' != 'true' and '$(_DovetailHostingOtherHost)' == 'true'" />
+      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryHostingMissing" Condition="'$(_DovetailHostingGenericHost)' == 'true' and '$(_DovetailHostingOpenTelemetryHosting)' != 'true' and '$(_DovetailHostingOtherHost)' != 'true'" />
     </ItemGroup>
   </Target>
 
