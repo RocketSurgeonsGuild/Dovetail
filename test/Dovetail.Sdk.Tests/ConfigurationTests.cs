@@ -15,9 +15,9 @@ public class ConfigurationTests(string targetFramework)
 {
     [Test]
     [Arguments("json", "Microsoft.Extensions.Configuration.Json", "10.0.9", "Dovetail.JsonConfiguration.g.cs")]
-    [Arguments("yaml", "Dovetail.Configuration.Yaml", null, "Dovetail.YamlConfiguration.g.cs")]
-    [Arguments("yml", "Dovetail.Configuration.Yaml", null, "Dovetail.YmlConfiguration.g.cs")]
-    [Arguments("toml", "Dovetail.Configuration.Toml", null, "Dovetail.TomlConfiguration.g.cs")]
+    [Arguments("yaml", "Joinery.Dovetail.Configuration.Yaml", null, "Dovetail.YamlConfiguration.g.cs")]
+    [Arguments("yml", "Joinery.Dovetail.Configuration.Yaml", null, "Dovetail.YmlConfiguration.g.cs")]
+    [Arguments("toml", "Joinery.Dovetail.Configuration.Toml", null, "Dovetail.TomlConfiguration.g.cs")]
     public async Task AppSettingsFile_WithProviderReferenced_EmitsConfigurationJoint(
         string extension,
         string providerPackageId,
@@ -33,7 +33,7 @@ public class ConfigurationTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -60,15 +60,15 @@ public class ConfigurationTests(string targetFramework)
     /// </summary>
     [Test]
     public Task TwoAppSettingsFiles_JsonAndYaml_EmitBothConfigurationJoints() =>
-        VerifyTwoProviders("json", "Microsoft.Extensions.Configuration.Json", "10.0.9", "yaml", "Dovetail.Configuration.Yaml", null);
+        VerifyTwoProviders("json", "Microsoft.Extensions.Configuration.Json", "10.0.9", "yaml", "Joinery.Dovetail.Configuration.Yaml", null);
 
     [Test]
     public Task TwoAppSettingsFiles_JsonAndToml_EmitBothConfigurationJoints() =>
-        VerifyTwoProviders("json", "Microsoft.Extensions.Configuration.Json", "10.0.9", "toml", "Dovetail.Configuration.Toml", null);
+        VerifyTwoProviders("json", "Microsoft.Extensions.Configuration.Json", "10.0.9", "toml", "Joinery.Dovetail.Configuration.Toml", null);
 
     [Test]
     public Task TwoAppSettingsFiles_YamlAndToml_EmitBothConfigurationJoints() =>
-        VerifyTwoProviders("yaml", "Dovetail.Configuration.Yaml", null, "toml", "Dovetail.Configuration.Toml", null);
+        VerifyTwoProviders("yaml", "Joinery.Dovetail.Configuration.Yaml", null, "toml", "Joinery.Dovetail.Configuration.Toml", null);
 
     private async Task VerifyTwoProviders(
         string extensionA,
@@ -88,7 +88,7 @@ public class ConfigurationTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -124,7 +124,7 @@ public class ConfigurationTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",

@@ -20,7 +20,7 @@ public class ImplicitUsingTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -41,7 +41,7 @@ public class ImplicitUsingTests(string targetFramework)
             ProjectCreator
                .Templates.SdkCsproj(targetFramework: targetFramework)
                .Property("ImplicitUsings", "enable")
-               .ItemInclude("PackageReference", include: "Dovetail", metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Dovetail") })
+               .ItemInclude("PackageReference", include: "Joinery.Dovetail", metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail") })
         );
 
         ( await project.EvaluateItemIdentities("lib", "Using") ).ShouldContain("Dovetail");
@@ -58,8 +58,8 @@ public class ImplicitUsingTests(string targetFramework)
                .Property("ImplicitUsings", "enable")
                .ItemInclude(
                     "PackageReference",
-                    include: "Dovetail.Hosting",
-                    metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Dovetail.Hosting") }
+                    include: "Joinery.Dovetail.Hosting",
+                    metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail.Hosting") }
                 )
         );
 

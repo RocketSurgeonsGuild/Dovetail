@@ -15,13 +15,14 @@
         GenerateDocumentationFile: false,
         IsPackable: true,
         NoWarn: 1701;1702,
+        PackageId: lib,
         PackageOutputPath: bin\Release/,
         RootNamespace: lib,
         TargetFramework: {TargetFramework}
       },
       AdditionalFiles: [],
       PackageReference: {
-        Dovetail: {}
+        Joinery.Dovetail: {}
       },
       DovetailJoint: {},
       DovetailHost: {},

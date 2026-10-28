@@ -3,7 +3,7 @@
     global.json's msbuild-sdks) is enough for every project below to pick up the right Dovetail
     packages and generated bootstrapping for its host type. No project references Dovetail directly.
 -->
-<Project Sdk="Dovetail.Sdk">
+<Project Sdk="Joinery.Dovetail.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>

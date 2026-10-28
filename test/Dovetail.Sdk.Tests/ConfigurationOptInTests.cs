@@ -14,7 +14,7 @@ public class ConfigurationOptInTests(string targetFramework)
     private static readonly string[] Items = ["PackageReference"];
 
     private static bool ConfigurationProvidersOnly(string itemType, string identity) =>
-        identity.StartsWith("Dovetail.Configuration.", StringComparison.Ordinal);
+        identity.StartsWith("Joinery.Dovetail.Configuration.", StringComparison.Ordinal);
 
     [Test]
     [Arguments("DovetailEnableConfiguration")]
@@ -73,7 +73,7 @@ public class ConfigurationOptInTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject("lib/lib.csproj", library);
         return project;

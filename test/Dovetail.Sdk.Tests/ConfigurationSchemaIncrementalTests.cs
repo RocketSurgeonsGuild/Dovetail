@@ -16,7 +16,7 @@ public class ConfigurationSchemaIncrementalTests
     {
         using var project = new SdkTestProject();
         project
-           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"))
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
            .AddProject("host/host.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: TargetFramework, outputType: "Exe"))
            .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
            .AddFile("host/Fragments.cs", ConfigurationSchemaTests.AppFragment);
@@ -44,7 +44,7 @@ public class ConfigurationSchemaIncrementalTests
     {
         using var project = new SdkTestProject();
         project
-           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"))
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
            .AddProject("lib/lib.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: TargetFramework))
            .AddFile("lib/Fragments.cs", ConfigurationSchemaTests.GreetingsFragment);
         var schema = Path.Combine(project.Directory, $"lib/obj/Debug/{TargetFramework}/ConfigurationSchema.json");

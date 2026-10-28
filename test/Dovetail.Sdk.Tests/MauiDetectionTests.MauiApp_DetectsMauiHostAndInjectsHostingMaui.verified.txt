@@ -22,11 +22,11 @@
       }
     },
     PackageReference: {
-      Dovetail: {
+      Joinery.Dovetail: {
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       },
-      Dovetail.Hosting.Maui: {
+      Joinery.Dovetail.Hosting.Maui: {
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       }

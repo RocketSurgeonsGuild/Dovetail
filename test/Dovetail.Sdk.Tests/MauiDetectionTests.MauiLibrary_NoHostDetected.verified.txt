@@ -7,7 +7,7 @@
   },
   Items: {
     PackageReference: {
-      Dovetail: {
+      Joinery.Dovetail: {
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       }

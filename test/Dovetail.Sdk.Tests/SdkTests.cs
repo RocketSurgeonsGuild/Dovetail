@@ -14,7 +14,7 @@ public class SdkTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",

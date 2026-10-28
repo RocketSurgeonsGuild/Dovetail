@@ -19,7 +19,7 @@ public class PackingTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -40,7 +40,7 @@ public class PackingTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -49,8 +49,8 @@ public class PackingTests(string targetFramework)
                    .Property("DovetailPackConfiguration", "false")
                    .ItemInclude(
                         "PackageReference",
-                        include: "Dovetail.Configuration.Yaml",
-                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Dovetail.Configuration.Yaml") }
+                        include: "Joinery.Dovetail.Configuration.Yaml",
+                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail.Configuration.Yaml") }
                     )
             )
            .AddFile("lib/appsettings.yaml", "{}");
@@ -67,7 +67,7 @@ public class PackingTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "web/web.csproj",
@@ -76,8 +76,8 @@ public class PackingTests(string targetFramework)
                    .Property("DovetailPackConfiguration", "true")
                    .ItemInclude(
                         "PackageReference",
-                        include: "Dovetail.Configuration.Yaml",
-                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Dovetail.Configuration.Yaml") }
+                        include: "Joinery.Dovetail.Configuration.Yaml",
+                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail.Configuration.Yaml") }
                     )
             )
            .AddFile("web/Program.cs", "System.Console.WriteLine(\"hello\");")

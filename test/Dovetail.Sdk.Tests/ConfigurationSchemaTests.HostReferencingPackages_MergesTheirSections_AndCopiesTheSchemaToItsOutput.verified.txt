@@ -9,7 +9,7 @@
       AssemblyName: DovetailSchemaTestLib1,
       BaseIntermediateOutputPath: obj/,
       BaseOutputPath: bin/,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -45,13 +45,14 @@
       ImportDovetailAssembly: false,
       IsPackable: true,
       NoWarn: 1701;1702,
+      PackageId: DovetailSchemaTestLib1,
       PackageOutputPath: bin/Debug/,
       RootNamespace: DovetailSchemaTestLib1,
       TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
-      Dovetail: {
+      Joinery.Dovetail: {
         IsImplicitlyDefined: true
       }
     },
@@ -60,13 +61,13 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/lib1/DovetailSchemaTestLib1.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],
     NoImports: [
       {
-        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
         Imports: [
           {
             Path: $(MSBuildThisFileDirectory)Dovetail.Configuration.targets,
@@ -88,7 +89,7 @@
       AssemblyName: DovetailSchemaTestLib2,
       BaseIntermediateOutputPath: obj/,
       BaseOutputPath: bin/,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -124,13 +125,14 @@
       ImportDovetailAssembly: false,
       IsPackable: true,
       NoWarn: 1701;1702,
+      PackageId: DovetailSchemaTestLib2,
       PackageOutputPath: bin/Debug/,
       RootNamespace: DovetailSchemaTestLib2,
       TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
-      Dovetail: {
+      Joinery.Dovetail: {
         IsImplicitlyDefined: true
       }
     },
@@ -139,13 +141,13 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/lib2/DovetailSchemaTestLib2.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],
     NoImports: [
       {
-        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
         Imports: [
           {
             Path: $(MSBuildThisFileDirectory)Dovetail.Configuration.targets,
@@ -167,7 +169,7 @@
       AssemblyName: host,
       BaseIntermediateOutputPath: obj\,
       BaseOutputPath: bin\,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -203,20 +205,21 @@
       ImportDovetailAssembly: true,
       IsPackable: true,
       NoWarn: 1701;1702,
+      PackageId: host,
       PackageOutputPath: bin\Debug/,
       RootNamespace: host,
       TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
-      Dovetail: {
-        IsImplicitlyDefined: true
-      },
-      Dovetail.Hosting: {
-        IsImplicitlyDefined: true
-      },
       DovetailSchemaTestLib1: {},
-      DovetailSchemaTestLib2: {}
+      DovetailSchemaTestLib2: {},
+      Joinery.Dovetail: {
+        IsImplicitlyDefined: true
+      },
+      Joinery.Dovetail.Hosting: {
+        IsImplicitlyDefined: true
+      }
     },
     DovetailJoint: {},
     DovetailHost: {
@@ -230,13 +233,13 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/host/host.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],
     NoImports: [
       {
-        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
         Imports: [
           {
             Path: $(MSBuildThisFileDirectory)Dovetail.Configuration.targets,

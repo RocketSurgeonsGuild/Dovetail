@@ -22,7 +22,7 @@ public class HostConfigurationPropagationTests(string targetFramework)
             "Directory.Build.props",
             ProjectCreator
                .Create()
-               .Sdk("Dovetail.Sdk")
+               .Sdk("Joinery.Dovetail.Sdk")
         );
 
         // track: false - these are meant to be built only transitively, through the host's own
@@ -76,7 +76,7 @@ public class HostConfigurationPropagationTests(string targetFramework)
             "Directory.Build.props",
             ProjectCreator
                .Create()
-               .Sdk("Dovetail.Sdk")
+               .Sdk("Joinery.Dovetail.Sdk")
         );
 
         // Package IDs deliberately distinctive (not "lib1"/"lib2"): NuGet restore consults every

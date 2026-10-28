@@ -23,7 +23,7 @@ public class DovetailJointHostContextBuilderTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "worker/worker.csproj",

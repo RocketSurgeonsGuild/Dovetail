@@ -64,7 +64,7 @@ public class EmbeddedConfigurationTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject("lib/lib.csproj", library)
            .AddFile("lib/appsettings.json", "{}")

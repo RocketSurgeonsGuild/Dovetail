@@ -20,8 +20,8 @@ public class TransitiveAnalyzerTests(string targetFramework)
                      .Property("EmitCompilerGeneratedFiles", "true")
                      .ItemInclude(
                           "PackageReference",
-                          include: "Dovetail.Hosting",
-                          metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Dovetail.Hosting") }
+                          include: "Joinery.Dovetail.Hosting",
+                          metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail.Hosting") }
                       );
         if (langVersion is not null)
         {
@@ -70,13 +70,13 @@ public class TransitiveAnalyzerTests(string targetFramework)
     public void PackedDependenciesOnDovetail_DoNotExcludeAnalyzers()
     {
         var excludes = new SortedDictionary<string, string>(StringComparer.Ordinal);
-        foreach (var nupkg in Directory.EnumerateFiles(Config.NugetArtifactsDirectory, "Dovetail.*.nupkg"))
+        foreach (var nupkg in Directory.EnumerateFiles(Config.NugetArtifactsDirectory, "Joinery.Dovetail.*.nupkg"))
         {
             using var reader = new PackageArchiveReader(nupkg);
             var packageId = reader.GetIdentity().Id;
             foreach (var group in reader.NuspecReader.GetDependencyGroups())
             {
-                foreach (var dependency in group.Packages.Where(z => z.Id == "Dovetail"))
+                foreach (var dependency in group.Packages.Where(z => z.Id == "Joinery.Dovetail"))
                 {
                     excludes[$"{packageId} ({group.TargetFramework.GetShortFolderName()})"] = string.Join(",", dependency.Exclude);
                 }

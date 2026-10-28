@@ -59,7 +59,7 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         // Packed from the repo's sources and restored from the scaffold's feed (see SdkTestProject / Config.NugetArtifactsDirectory).
         // Dovetail.Serilog brings Dovetail, and with it the build assets that merge the schema; the control host gets the same
         // through Dovetail.Hosting, so only the Serilog library differs between them.
-        var package = referenceSerilog ? "Dovetail.Serilog" : "Dovetail.Hosting";
+        var package = referenceSerilog ? "Joinery.Dovetail.Serilog" : "Joinery.Dovetail.Hosting";
         var host = ProjectCreator
                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
                   .ItemInclude("PackageReference", include: package, metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion(package) });

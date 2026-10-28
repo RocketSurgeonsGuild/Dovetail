@@ -4,6 +4,9 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
+    <!-- Another nuget.org owner holds the Dovetail ID and prefix, so the packages publish as Joinery.<project>; the
+         assemblies and namespaces keep their Dovetail names. -->
+    <PackageId>Joinery.$(MSBuildProjectName)</PackageId>
     <RootNamespace>$(MSBuildProjectName.Replace('.Abstractions', '').Replace('.Attributes', '').Replace('.Analyzers', '').Replace('.Generators', ''))</RootNamespace>
     <!-- Default local/dev/test packs to the local feed; CI's build pipeline passes its own
          PackageOutputPath (artifacts/nuget, GitVersion-numbered) as a global property, which

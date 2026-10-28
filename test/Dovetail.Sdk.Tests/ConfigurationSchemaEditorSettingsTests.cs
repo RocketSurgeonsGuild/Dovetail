@@ -16,7 +16,7 @@ public class ConfigurationSchemaEditorSettingsTests
     {
         var project = new SdkTestProject();
         project
-           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"))
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
            .AddProject("host/host.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: TargetFramework, outputType: "Exe"))
            .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
            .AddFile("host/Fragments.cs", ConfigurationSchemaTests.AppFragment);

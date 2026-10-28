@@ -80,7 +80,7 @@ public sealed class SdkTestProject : IDisposable
         var version = Config.DotnetSdkVersion;
 
         var globalJson = GlobalJsonCreator.Create(new DirectoryInfo(Directory));
-        foreach (var sdkName in _repository.Packages.Where(z => z.Id.StartsWith("Dovetail.Sdk", StringComparison.OrdinalIgnoreCase)))
+        foreach (var sdkName in _repository.Packages.Where(z => z.Id.StartsWith("Joinery.Dovetail.Sdk", StringComparison.OrdinalIgnoreCase)))
         {
             globalJson.MSBuildSdk(sdkName.Id, sdkName.Version);
             _settings.ScrubLinesWithReplace(z => z.Replace(sdkName.Version, "{sdk-version}"));

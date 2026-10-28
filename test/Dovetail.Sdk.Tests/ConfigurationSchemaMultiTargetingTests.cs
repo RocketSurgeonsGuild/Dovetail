@@ -25,7 +25,7 @@ public class ConfigurationSchemaMultiTargetingTests
     {
         using var project = new SdkTestProject();
         project
-           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"))
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
            .AddProject("lib/DovetailSchemaTestMultiTargeted.csproj", ProjectCreator.Templates.SdkCsproj(targetFrameworks: ["net10.0", "net11.0"]))
            .AddFile("lib/Fragments.cs", PerFrameworkFragment);
 
@@ -43,7 +43,7 @@ public class ConfigurationSchemaMultiTargetingTests
     {
         using var project = new SdkTestProject();
         project
-           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Dovetail.Sdk"))
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
            .AddProject("host/host.csproj", ProjectCreator.Templates.SdkCsproj(targetFrameworks: ["net10.0", "net11.0"], outputType: "Exe"))
            .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
            .AddFile("host/Fragments.cs", PerFrameworkFragment);

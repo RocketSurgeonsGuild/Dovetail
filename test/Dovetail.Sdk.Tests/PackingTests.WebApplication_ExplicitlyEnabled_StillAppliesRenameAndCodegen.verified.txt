@@ -9,7 +9,7 @@
       AssemblyName: web,
       BaseIntermediateOutputPath: {TempPath}sdk-tests/{id}/web/obj/,
       BaseOutputPath: bin\,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets;,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -46,17 +46,18 @@
       ImportDovetailAssembly: true,
       IsPackable: false,
       NoWarn: 1701;1702,
+      PackageId: web,
       PackageOutputPath: bin\Debug/,
       RootNamespace: web,
       TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
-      Dovetail: {
+      Joinery.Dovetail: {
         IsImplicitlyDefined: true
       },
-      Dovetail.Configuration.Yaml: {},
-      Dovetail.Hosting.Web: {
+      Joinery.Dovetail.Configuration.Yaml: {},
+      Joinery.Dovetail.Hosting.Web: {
         IsImplicitlyDefined: true
       }
     },
@@ -72,13 +73,13 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/web/web.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
-      {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],
     NoImports: [
       {
-        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Dovetail.HostDetection.targets,
         Imports: [
           {
             Path: $(MSBuildThisFileDirectory)Dovetail.Configuration.targets,

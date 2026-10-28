@@ -14,6 +14,19 @@
     https://github.com/dotnet/roslyn/blob/main/src/RoslynAnalyzers/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
     On release, move the entries from AnalyzerReleases.Unshipped.md into a new "## Release x.y.z" section of AnalyzerReleases.Shipped.md.
   -->
+  <!--
+    NuGet only imports a package's build, buildTransitive and buildMultiTargeting props and targets named after the package
+    ID, so each project's <project>.props/.targets entry files are packed under its PackageId. The buildTransitive and
+    buildMultiTargeting ones import ../build/$(MSBuildThisFile), which follows the rename.
+  -->
+  <ItemGroup>
+    <None Update="build/$(MSBuildProjectName).props" PackagePath="build/$(PackageId).props" />
+    <None Update="build/$(MSBuildProjectName).targets" PackagePath="build/$(PackageId).targets" />
+    <None Update="buildTransitive/$(MSBuildProjectName).props" PackagePath="buildTransitive/$(PackageId).props" />
+    <None Update="buildTransitive/$(MSBuildProjectName).targets" PackagePath="buildTransitive/$(PackageId).targets" />
+    <None Update="buildMultiTargeting/$(MSBuildProjectName).props" PackagePath="buildMultiTargeting/$(PackageId).props" />
+    <None Update="buildMultiTargeting/$(MSBuildProjectName).targets" PackagePath="buildMultiTargeting/$(PackageId).targets" />
+  </ItemGroup>
   <ItemGroup Condition="'$(EnforceExtendedAnalyzerRules)' == 'true'">
     <AdditionalFiles Include="AnalyzerReleases.Shipped.md;AnalyzerReleases.Unshipped.md" />
   </ItemGroup>

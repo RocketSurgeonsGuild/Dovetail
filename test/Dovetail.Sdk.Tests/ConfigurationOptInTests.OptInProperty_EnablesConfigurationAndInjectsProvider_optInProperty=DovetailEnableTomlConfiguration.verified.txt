@@ -4,7 +4,7 @@
   },
   Items: {
     PackageReference: {
-      Dovetail.Configuration.Toml: {
+      Joinery.Dovetail.Configuration.Toml: {
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       }

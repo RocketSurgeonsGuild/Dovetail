@@ -27,7 +27,7 @@ public class HostTypeRuntimeTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject("app/app.csproj", app)
            .AddFile(

@@ -14,13 +14,14 @@
       GenerateDocumentationFile: false,
       IsPackable: true,
       NoWarn: 1701;1702,
+      PackageId: host,
       PackageOutputPath: bin\Debug/,
       RootNamespace: host,
       TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
-      Dovetail.Hosting: {}
+      Joinery.Dovetail.Hosting: {}
     },
     DovetailJoint: {},
     DovetailHost: {},

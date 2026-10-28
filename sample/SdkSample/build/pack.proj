@@ -1,6 +1,6 @@
 <!--
     Packs every src/*.csproj into artifacts/nuget-sample at the fixed version global.json pins
-    for Dovetail.Sdk, so this sample consumes Dovetail exactly as published packages - never via
+    for Joinery.Dovetail.Sdk, so this sample consumes Dovetail exactly as published packages - never via
     ProjectReference or direct props/targets imports.
 
         dotnet msbuild build/pack.proj
@@ -22,12 +22,12 @@
 
   <Target Name="Pack">
     <Error
-      Text="global.json must pin Dovetail.Sdk to '$(DovetailSampleVersion)' (the version this file packs)."
+      Text="global.json must pin Joinery.Dovetail.Sdk to '$(DovetailSampleVersion)' (the version this file packs)."
       Condition="!$(_DovetailSampleGlobalJson.Contains('&quot;$(DovetailSampleVersion)&quot;'))" />
 
     <ItemGroup>
       <_DovetailStalePackage Include="$(DovetailSampleFeed)*.nupkg;$(DovetailSampleFeed)*.snupkg" />
-      <_DovetailStaleCacheDirectory Include="$([System.IO.Directory]::GetDirectories('$(DovetailSamplePackagesFolder)', 'dovetail*'))"
+      <_DovetailStaleCacheDirectory Include="$([System.IO.Directory]::GetDirectories('$(DovetailSamplePackagesFolder)', 'joinery.dovetail*'))"
                                     Condition="Exists('$(DovetailSamplePackagesFolder)')" />
     </ItemGroup>
     <Delete Files="@(_DovetailStalePackage)" />

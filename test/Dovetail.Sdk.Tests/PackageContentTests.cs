@@ -21,7 +21,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -42,7 +42,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -63,7 +63,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -84,7 +84,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -105,7 +105,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -127,7 +127,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -149,7 +149,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -171,7 +171,7 @@ public class PackageContentTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject(
                 "lib/lib.csproj",
@@ -203,8 +203,8 @@ public class PackageContentTests(string targetFramework)
                    .Templates.SdkCsproj(targetFramework: targetFramework)
                    .ItemInclude(
                         "PackageReference",
-                        include: "Dovetail",
-                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Dovetail") }
+                        include: "Joinery.Dovetail",
+                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail") }
                     )
             )
            .AddFile("lib/appsettings.yaml", "{}");
@@ -223,8 +223,8 @@ public class PackageContentTests(string targetFramework)
                    .Templates.SdkCsproj(targetFramework: targetFramework)
                    .ItemInclude(
                         "PackageReference",
-                        include: "Dovetail",
-                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Dovetail") }
+                        include: "Joinery.Dovetail",
+                        metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail") }
                     )
             )
            .AddFile("lib/appsettings.yaml", "{}")

@@ -17,7 +17,7 @@ public class MauiDetectionTests(string targetFramework)
     // With the MAUI workload installed, the MAUI SDK adds its own implicit package references (at the workload's version), so
     // keep only Dovetail's.
     private static bool DovetailPackagesOnly(string itemType, string identity) =>
-        itemType != "PackageReference" || identity.StartsWith("Dovetail", StringComparison.Ordinal);
+        itemType != "PackageReference" || identity.StartsWith("Joinery.Dovetail", StringComparison.Ordinal);
 
     [Test]
     public async Task MauiApp_DetectsMauiHostAndInjectsHostingMaui()
@@ -59,7 +59,7 @@ public class MauiDetectionTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject("app/app.csproj", app);
         return project;

@@ -13,9 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(DovetailEnableConfiguration)' == 'true'">
-    <DovetailSdkImplicitPackageReference Include="Dovetail.Configuration.Json" Version="$(DovetailConfigurationJsonVersion)" Condition="'$(DovetailEnableJsonConfiguration)' == 'true'"/>
-    <DovetailSdkImplicitPackageReference Include="Dovetail.Configuration.Yaml" Version="$(DovetailConfigurationYamlVersion)" Condition="'$(DovetailEnableYamlConfiguration)' == 'true'"/>
-    <DovetailSdkImplicitPackageReference Include="Dovetail.Configuration.Toml" Version="$(DovetailConfigurationTomlVersion)" Condition="'$(DovetailEnableTomlConfiguration)' == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Configuration.Json" Version="$(DovetailConfigurationJsonVersion)" Condition="'$(DovetailEnableJsonConfiguration)' == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Configuration.Yaml" Version="$(DovetailConfigurationYamlVersion)" Condition="'$(DovetailEnableYamlConfiguration)' == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Configuration.Toml" Version="$(DovetailConfigurationTomlVersion)" Condition="'$(DovetailEnableTomlConfiguration)' == 'true'"/>
   </ItemGroup>
 
   <!--

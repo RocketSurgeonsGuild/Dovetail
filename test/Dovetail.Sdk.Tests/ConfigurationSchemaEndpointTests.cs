@@ -131,7 +131,7 @@ public class ConfigurationSchemaEndpointTests(string targetFramework)
                 "Directory.Build.props",
                 ProjectCreator
                    .Create()
-                   .Sdk("Dovetail.Sdk")
+                   .Sdk("Joinery.Dovetail.Sdk")
             )
            .AddProject("web/web.csproj", web)
            .AddFile("web/Program.cs", Program);

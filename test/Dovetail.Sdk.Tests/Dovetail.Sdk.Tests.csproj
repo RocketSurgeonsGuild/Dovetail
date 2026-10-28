@@ -71,7 +71,7 @@
         first so only this run's fresh packages are ever visible to the tests.
     -->
     <ItemGroup>
-      <_StaleDovetailPackage Include="$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Dovetail*.nupkg;$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Dovetail*.snupkg" />
+      <_StaleDovetailPackage Include="$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Joinery.Dovetail*.nupkg;$(MSBuildThisFileDirectory)..\..\artifacts\nuget-local\Joinery.Dovetail*.snupkg" />
     </ItemGroup>
     <Delete Files="@(_StaleDovetailPackage)" />
     <!--
