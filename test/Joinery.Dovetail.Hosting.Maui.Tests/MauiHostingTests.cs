@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using OpenTelemetry.Trace;
 using Stashbox;
 using static Joinery.Dovetail.Hosting.Maui.Tests.MauiFixtures;
 
@@ -99,6 +101,21 @@ public class MauiHostingTests
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
         app.Services.GetService<IStashboxContainer>().ShouldNotBeNull();
+    }
+
+    /// <summary>
+    ///     MAUI doesn't use the generic host, so Joinery.Dovetail.Hosting turns OpenTelemetry on by adding it to the services and applying
+    ///     the OpenTelemetry joints (<see cref="TracingJoint" />) itself. Nothing starts the tracer provider, so the test resolves it.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_IsAddedToTheServices_WithTheOpenTelemetryJoints()
+    {
+        await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
+
+        app.Services.GetService<TracerProvider>().ShouldNotBeNull();
+        using var source = new ActivitySource(ActivitySourceName);
+        using var activity = source.StartActivity("Traced");
+        activity.ShouldNotBeNull();
     }
 
     private sealed class Marker;

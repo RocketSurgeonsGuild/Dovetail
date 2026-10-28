@@ -1,79 +1,74 @@
 ---
 title: OpenTelemetry
-description: Opt-in OpenTelemetry integration that exposes tracing, metrics, logging, and resource builders as Dovetail parts.
+description: OpenTelemetry integration that exposes the OpenTelemetry builder, resource, and tracer, meter and logger providers as Dovetail joints, turned on for the application's host.
 tags: [opentelemetry, observability, tracing, metrics, logging]
 ---
 
 # OpenTelemetry
 
-`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry's configuration surface — the resource builder, the
-tracer/meter/logger providers, and the top-level `IOpenTelemetryBuilder` — as ordinary Dovetail
-[parts](./defining-joints). Any library can contribute an activity source, a meter,
-a log processor, or a resource attribute without taking a direct dependency on how (or whether) the
-host wires up OpenTelemetry.
+`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry's configuration surface — the top-level `IOpenTelemetryBuilder`, the
+resource builder, and the tracer, meter and logger provider builders — as ordinary Dovetail [joints](./defining-joints). Any
+library can contribute an activity source, a meter, a log processor, or a resource attribute without taking a direct dependency on
+how the host wires up OpenTelemetry.
 
-> [!NOTE]
-> This integration is entirely opt-in. Referencing `Joinery.Dovetail.OpenTelemetry` does **not** enable
-> OpenTelemetry on its own — a host application must call `UseOpenTelemetry()` explicitly. Nothing
-> auto-enables telemetry as a side effect of adding the package.
+## Turning it on
 
-## The five part kinds
+An application turns OpenTelemetry on by referencing `Joinery.Dovetail.OpenTelemetry` along with `Joinery.Dovetail.Hosting`.
+Joinery.Dovetail.Sdk adds `Joinery.Dovetail.OpenTelemetry` to every project that references `OpenTelemetry` or
+`OpenTelemetry.Extensions.Hosting`; set `DovetailEnableOpenTelemetry` to `false` to leave OpenTelemetry to the application.
 
-`Joinery.Dovetail.OpenTelemetry` declares five `<DovetailJoint>` items, one per OpenTelemetry builder. Each
-follows the same generated shape as every other Dovetail part: a sync interface, an async interface
-(`I{Kind}AsyncJoint`), matching delegate types, a `DovetailContextBuilder.Configure{Kind}(...)`
-builder method, and an `Apply{Kind}` runtime extension.
+`Joinery.Dovetail.Hosting` then emits a joint into the application that turns OpenTelemetry on for its host and applies every
+OpenTelemetry joint. Which one depends on the host:
 
-| Joint interface         | Async variant                | Builder type                                 |
-| ----------------------- | ---------------------------- | -------------------------------------------- |
-| `IOpenTelemetryJoint`   | `IOpenTelemetryAsyncJoint`   | `OpenTelemetry.IOpenTelemetryBuilder`        |
-| `IResourceBuilderJoint` | `IResourceBuilderAsyncJoint` | `OpenTelemetry.Resources.ResourceBuilder`    |
-| `ITracerProviderJoint`  | `ITracerProviderAsyncJoint`  | `OpenTelemetry.Trace.TracerProviderBuilder`  |
-| `IMeterProviderJoint`   | `IMeterProviderAsyncJoint`   | `OpenTelemetry.Metrics.MeterProviderBuilder` |
-| `ILoggerProviderJoint`  | `ILoggerProviderAsyncJoint`  | `OpenTelemetry.Logs.LoggerProviderBuilder`   |
+| Host                                                                                   | The application also references    | Emitted joint                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The generic host (`Microsoft.Extensions.Hosting`): workers, ASP.NET Core, Uno Platform | `OpenTelemetry.Extensions.Hosting` | `DovetailOpenTelemetryJoint` calls `services.AddOpenTelemetry()`, which starts the providers with the host. On .NET 11 it also traces ASP.NET Core's `Microsoft.AspNetCore` activity source.                                                     |
+| .NET MAUI, Blazor WebAssembly                                                          | nothing else                       | `DovetailOpenTelemetryServicesJoint` adds OpenTelemetry to the services. Nothing starts the tracer and meter providers there, so they start once something resolves `TracerProvider` or `MeterProvider`; logging starts with the logger factory. |
 
-Splitting the builders into distinct part kinds means a library that only wants to register an
-activity source can implement `ITracerProviderJoint` without knowing anything about
-`WithMetrics`/`WithLogging`/resource plumbing — the same "narrow, composable extension point"
-philosophy the rest of Dovetail follows.
+A generic-host application that references `Joinery.Dovetail.OpenTelemetry` without `OpenTelemetry.Extensions.Hosting` fails to
+compile, with an `#error` (CS1029) that says to add it.
 
-## Apply order
+Only applications and test projects get the joint, as an internal class: a library's copy would be exported to every application
+that references it. A test project that imports its application's joints gets the application's copy as well as its own, and only
+the first one to run applies OpenTelemetry.
 
-When `UseOpenTelemetry()` runs, the five kinds are applied in a fixed order, with each kind's own
-parts running in the executor's usual priority order:
-
-```
-OpenTelemetry → ResourceBuilder → TracerProvider → MeterProvider → LoggerProvider
-```
-
-The top-level `IOpenTelemetryJoint` runs first (it's the natural place for cross-cutting setup that
-doesn't belong to a single provider), then the resource builder (so resource attributes are in
-place before providers are configured), then tracing, metrics, and logging in that order.
-
-## Enabling it
-
-Call `UseOpenTelemetry()` on the `DovetailContextBuilder` during host setup:
+Every `[DovetailExport]` joint, and anything registered with a `DovetailContextBuilder` method such as
+`ConfigureTracerProvider(...)`, is then applied with nothing else to call:
 
 ```c#
-using Joinery.Dovetail;
-
-var builder = Host.CreateApplicationBuilder(args);
-
-builder.UseDovetail(context => context.UseOpenTelemetry());
+var host = await Host
+                .CreateApplicationBuilder(args)
+                .ConfigureDovetail(dovetail => dovetail.ConfigureTracerProvider((_, tracing) => tracing.AddConsoleExporter()));
 ```
 
-Every `[DovetailExport]`-annotated part (and anything registered explicitly via
-`Configure{Kind}(...)`) is discovered and applied automatically — no separate registration step is
-needed beyond the one `UseOpenTelemetry()` call.
+## The joints
+
+`Joinery.Dovetail.OpenTelemetry` declares one `<DovetailJoint>`, `OpenTelemetry`, for `OpenTelemetry.IOpenTelemetryBuilder`:
+`IOpenTelemetryJoint`, its `OpenTelemetryJointDelegate`, the `ConfigureOpenTelemetry(...)` builder method and the
+`ApplyOpenTelemetry` extension that the emitted joint calls. Narrower interfaces derive from `IOpenTelemetryJoint`, each for one
+of OpenTelemetry's builders:
+
+| Joint interface               | Builder                                      | `DovetailContextBuilder` method |
+| ----------------------------- | -------------------------------------------- | ------------------------------- |
+| `IOpenTelemetryJoint`         | `OpenTelemetry.IOpenTelemetryBuilder`        | `ConfigureOpenTelemetry`        |
+| `IResourceBuilderJoint`       | `OpenTelemetry.Resources.ResourceBuilder`    | `ConfigureResourceBuilder`      |
+| `ITracerProviderJoint`        | `OpenTelemetry.Trace.TracerProviderBuilder`  | `ConfigureTracerProvider`       |
+| `IMeterProviderBuilderJoint`  | `OpenTelemetry.Metrics.MeterProviderBuilder` | `ConfigureMeterProvider`        |
+| `ILoggerProviderBuilderJoint` | `OpenTelemetry.Logs.LoggerProviderBuilder`   | `ConfigureLoggerProvider`       |
+
+Since they're all OpenTelemetry joints, they run together in the executor's usual priority order. A library that only wants to
+register an activity source implements `ITracerProviderJoint` without knowing anything about `WithMetrics`, `WithLogging` or the
+resource — the same narrow, composable extension point the rest of Dovetail follows.
 
 ## Example: contributing an activity source
 
-A library adds a `System.Diagnostics.ActivitySource` to tracing by implementing
-`ITracerProviderJoint` and marking the class `[DovetailExport]`, the same pattern used for any other
-auto-discovered Dovetail part:
+A library adds a `System.Diagnostics.ActivitySource` to tracing by implementing `ITracerProviderJoint` and marking the class
+`[DovetailExport]`, the same pattern used for any other discovered Dovetail joint:
 
 ```c#
 using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.OpenTelemetry.Joints;
 using OpenTelemetry.Trace;
 
 namespace MyLibrary;
@@ -88,36 +83,19 @@ public class MyLibraryTracing : ITracerProviderJoint
 }
 ```
 
-For work that needs to run asynchronously (for example, resolving exporter configuration from a
-remote source before registering it), implement `ITracerProviderAsyncJoint` instead — Dovetail runs
-the async apply phase before the OpenTelemetry provider is built, so there's no
-`.GetAwaiter().GetResult()` anywhere in the pipeline.
-
-```c#
-[DovetailExport]
-public class MyLibraryAsyncTracing : ITracerProviderAsyncJoint
-{
-    public async ValueTask Register(IDovetailContext context, TracerProviderBuilder builder, CancellationToken cancellationToken)
-    {
-        var samplingRate = await LoadSamplingRateAsync(cancellationToken);
-        builder.SetSampler(new TraceIdRatioBasedSampler(samplingRate));
-    }
-}
-```
-
 ## What this package does _not_ do
 
-`Joinery.Dovetail.OpenTelemetry` only opens the extension points — it does not ship any exporters or
-instrumentation. In particular, it does **not** include:
+`Joinery.Dovetail.OpenTelemetry` only opens the extension points — it does not ship any exporters or instrumentation. In
+particular, it does **not** include:
 
 - The console exporter, the OTLP exporter, or any other exporter package.
 - ASP.NET Core, HttpClient, or other instrumentation packages.
 - Any default sampler, resource attribute, or processor configuration.
 
-Consumers add exporters and instrumentation the same way they add anything else to a provider:
-by writing their own `ITracerProviderJoint`/`IMeterProviderJoint`/`ILoggerProviderJoint`
-implementation (or a plain `Configure{Kind}(...)` delegate) that calls the relevant
-`AddConsoleExporter()`, `AddOtlpExporter()`, `AddAspNetCoreInstrumentation()`, etc. This keeps
-`Joinery.Dovetail.OpenTelemetry` itself free of exporter dependencies, which also keeps it friendly to
-trimming/AOT — see [Non-Goals in the OpenTelemetry design doc](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/openspec/changes/add-dovetail-opentelemetry/design.md#goals--non-goals)
+Consumers add exporters and instrumentation the same way they add anything else to a provider: by writing their own
+`ITracerProviderJoint`/`IMeterProviderBuilderJoint`/`ILoggerProviderBuilderJoint` implementation (or a plain
+`Configure{Kind}(...)` delegate) that calls the relevant `AddConsoleExporter()`, `AddOtlpExporter()`,
+`AddAspNetCoreInstrumentation()`, etc. This keeps `Joinery.Dovetail.OpenTelemetry` itself free of exporter dependencies, which also
+keeps it friendly to trimming/AOT — see
+[Non-Goals in the OpenTelemetry design doc](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/openspec/changes/add-dovetail-opentelemetry/design.md#goals--non-goals)
 for the full rationale.

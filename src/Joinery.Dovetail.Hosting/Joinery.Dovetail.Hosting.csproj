@@ -35,9 +35,7 @@
         />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
         <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
-
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.AspNetCore.Tests" />

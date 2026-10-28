@@ -109,7 +109,8 @@
     <DovetailEnableDryIoc Condition="'$(DovetailEnableDryIoc)' == ''">false</DovetailEnableDryIoc>
     <DovetailEnableStashbox Condition="'$(DovetailEnableStashbox)' == ''">false</DovetailEnableStashbox>
     <DovetailEnableSerilog Condition="'$(DovetailEnableSerilog)' == ''">false</DovetailEnableSerilog>
-    <DovetailEnableOpenTelemetry Condition="'$(DovetailEnableOpenTelemetry)' == ''">false</DovetailEnableOpenTelemetry>
+    <!-- On by default: a project that references OpenTelemetry gets Joinery.Dovetail.OpenTelemetry (false opts out). -->
+    <DovetailEnableOpenTelemetry Condition="'$(DovetailEnableOpenTelemetry)' == ''">true</DovetailEnableOpenTelemetry>
     <DovetailEnableHosting Condition="'$(DovetailEnableHosting)' == ''">false</DovetailEnableHosting>
     <DovetailEnableHostingWeb Condition="'$(DovetailEnableHostingWeb)' == ''">false</DovetailEnableHostingWeb>
     <DovetailEnableAspire Condition="'$(DovetailEnableAspireHosting)' == ''">false</DovetailEnableAspire>
@@ -155,7 +156,11 @@
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.DryIoc" Version="$(DovetailDryIocVersion)" Condition="'$(DovetailEnableDryIoc)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc.Microsoft.DependencyInjection')) == 'true')"/>
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Stashbox" Version="$(DovetailStashboxVersion)" Condition="'$(DovetailEnableStashbox)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.DependencyInjection')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.Hosting')) == 'true')"/>
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Serilog" Version="$(DovetailSerilogVersion)" Condition="'$(DovetailEnableSerilog)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Serilog')) == 'true'"/>
-    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailOpenTelemetryVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true'"/>
+    <!--
+        OpenTelemetry.Extensions.Hosting brings OpenTelemetry along, and is what a generic-host application references, so it counts too.
+        Joinery.Dovetail.Hosting then emits the joint that turns OpenTelemetry on for the application's host.
+    -->
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailOpenTelemetryVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')) == 'true')"/>
   </ItemGroup>
   <!-- Imported last: expands every RsgSdkImplicitPackageReference declared above (and in this
          file's own SBOM ItemGroup) into a real PackageReference. -->

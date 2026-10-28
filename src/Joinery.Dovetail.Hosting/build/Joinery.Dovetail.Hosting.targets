@@ -5,7 +5,8 @@
     *.cs.template files next to this file, the same way the entry points themselves are emitted. A helper is only emitted when
     every assembly it compiles against is among the project's resolved references, so this package depends on none of
     Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of
-    them is what turns its helper on.
+    them is what turns its helper on. The joint that turns OpenTelemetry on for the application's host is emitted the same way (see
+    _DovetailResolveHostingHelpers).
 
     Templates must not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to forward slashes
     on Linux and macOS.
@@ -60,6 +61,28 @@
       <_DovetailHostingUnoNavigation>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoNavigationHelpers'))</_DovetailHostingUnoNavigation>
       <_DovetailHostingAspNetCore>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailConfigurationSchemaEndpointExtensions'))</_DovetailHostingAspNetCore>
     </PropertyGroup>
+
+    <!--
+        OpenTelemetry, for applications that reference Joinery.Dovetail.OpenTelemetry (the Dovetail SDK adds it when OpenTelemetry is
+        referenced) unless DovetailEnableOpenTelemetry is false. Only applications and test projects, the assemblies that import
+        joints, get the joint: a library's copy would be exported to every application that references it.
+          - The generic host (Microsoft.Extensions.Hosting) turns it on with OpenTelemetry.Extensions.Hosting's AddOpenTelemetry(), which
+            starts the providers with the host, so the project must reference that too; without it the project gets a #error instead.
+          - .NET MAUI and Blazor WebAssembly don't use the generic host, so their joint adds OpenTelemetry to the services directly.
+    -->
+    <PropertyGroup>
+      <_DovetailHostingOpenTelemetry>false</_DovetailHostingOpenTelemetry>
+      <_DovetailHostingOpenTelemetry Condition="'$(_DovetailHostingReferenced)' == 'true' and '$(ImportDovetailAssembly)' == 'true' and '$(DovetailEnableOpenTelemetry)' != 'false'">@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'Joinery.Dovetail.OpenTelemetry'))</_DovetailHostingOpenTelemetry>
+      <_DovetailHostingGenericHost>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting'))</_DovetailHostingGenericHost>
+      <_DovetailHostingOpenTelemetryHosting>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting'))</_DovetailHostingOpenTelemetryHosting>
+      <_DovetailHostingOtherHost>false</_DovetailHostingOtherHost>
+      <_DovetailHostingOtherHost Condition="@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailMauiHelpers')) == 'true' or @(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailWebAssemblyHelpers')) == 'true'">true</_DovetailHostingOtherHost>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DovetailHostingOpenTelemetry)' == 'true'">
+      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryJoint" Condition="'$(_DovetailHostingGenericHost)' == 'true' and '$(_DovetailHostingOpenTelemetryHosting)' == 'true'" />
+      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryHostingMissing" Condition="'$(_DovetailHostingGenericHost)' == 'true' and '$(_DovetailHostingOpenTelemetryHosting)' != 'true'" />
+      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryServicesJoint" Condition="'$(_DovetailHostingGenericHost)' != 'true' and '$(_DovetailHostingOtherHost)' == 'true'" />
+    </ItemGroup>
   </Target>
 
   <!--

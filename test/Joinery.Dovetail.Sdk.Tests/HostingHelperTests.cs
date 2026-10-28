@@ -1,4 +1,5 @@
 using Microsoft.Build.Utilities.ProjectCreation;
+using TUnit.Core.Exceptions;
 
 namespace Joinery.Dovetail.Sdk.Tests;
 
@@ -17,7 +18,7 @@ public class HostingHelperTests(string targetFramework)
     [Test]
     public async Task GenericHost_EmitsOnlyTheGenericHostHelper()
     {
-        using var project = CreateApplication(app => app.ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework)));
+        using var project = CreateApplication(app => WithGenericHost(app));
 
         ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
     }
@@ -135,6 +136,102 @@ public class HostingHelperTests(string targetFramework)
         GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
     }
 
+    /// <summary>
+    ///     A generic-host application that references Joinery.Dovetail.OpenTelemetry turns OpenTelemetry on with
+    ///     OpenTelemetry.Extensions.Hosting's <c>AddOpenTelemetry()</c>, which starts the providers with the host.
+    /// </summary>
+    [Test]
+    public async Task GenericHost_WithOpenTelemetry_EmitsTheOpenTelemetryJoint()
+    {
+        using var project = CreateApplication(app => WithOpenTelemetryHosting(WithDovetailOpenTelemetry(WithGenericHost(app))));
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailOpenTelemetryJoint"]);
+    }
+
+    [Test]
+    public async Task GenericHost_WithOpenTelemetry_WithoutOpenTelemetryHosting_FailsToCompile()
+    {
+        using var project = CreateApplication(app => WithDovetailOpenTelemetry(WithGenericHost(app)));
+
+        var exception = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("app"));
+
+        exception.Message.ShouldContain("error CS1029");
+        exception.Message.ShouldContain("Add a PackageReference to OpenTelemetry.Extensions.Hosting");
+    }
+
+    /// <summary>
+    ///     .NET MAUI and Blazor WebAssembly don't use the generic host, so their applications add OpenTelemetry to the services directly.
+    /// </summary>
+    [Test]
+    public async Task Maui_WithOpenTelemetry_EmitsTheServicesJoint()
+    {
+        using var project = CreateApplication(
+            app => WithDovetailOpenTelemetry(app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)))
+        );
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailMauiHelpers", "DovetailOpenTelemetryServicesJoint"]);
+    }
+
+    [Test]
+    public async Task WebAssembly_WithOpenTelemetry_EmitsTheServicesJoint()
+    {
+        using var project = CreateApplication(app => WithDovetailOpenTelemetry(WebAssembly(app)));
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe(
+            ["DovetailOpenTelemetryServicesJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
+        );
+    }
+
+    /// <summary>
+    ///     A library's joint would be exported to every application that references it, so only applications (and test projects) get the
+    ///     OpenTelemetry joint, and a library isn't asked for OpenTelemetry.Extensions.Hosting.
+    /// </summary>
+    [Test]
+    public async Task Library_WithOpenTelemetry_GetsNoOpenTelemetryJoint()
+    {
+        var library = ProjectCreator
+                     .Templates.SdkCsproj(targetFramework: targetFramework)
+                     .ItemPackageReference("Joinery.Dovetail.Hosting", Config.DovetailPackageVersion("Joinery.Dovetail.Hosting"));
+        WithDovetailOpenTelemetry(WithGenericHost(library));
+        using var project = new SdkTestProject();
+        project.AddProject("app/app.csproj", library);
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
+    }
+
+    /// <summary>
+    ///     The Dovetail SDK adds Joinery.Dovetail.OpenTelemetry to a project that references OpenTelemetry (or
+    ///     OpenTelemetry.Extensions.Hosting), so the application gets the OpenTelemetry joint without referencing it.
+    /// </summary>
+    [Test]
+    public async Task Sdk_AddsDovetailOpenTelemetry_WhenOpenTelemetryIsReferenced()
+    {
+        using var project = CreateSdkApplication(app => WithOpenTelemetryHosting(WithGenericHost(app)));
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailOpenTelemetryJoint"]);
+    }
+
+    [Test]
+    public async Task Sdk_DovetailEnableOpenTelemetryFalse_LeavesOpenTelemetryToTheApplication()
+    {
+        using var project = CreateSdkApplication(
+            app => WithGenericHost(app)
+                  .Property("DovetailEnableOpenTelemetry", "false")
+                  .ItemPackageReference("OpenTelemetry", Config.CentralPackageVersion("OpenTelemetry", targetFramework))
+        );
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
+    }
+
+    private ProjectCreator WithGenericHost(ProjectCreator app) =>
+        app.ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework));
+
+    private static ProjectCreator WithDovetailOpenTelemetry(ProjectCreator app) =>
+        app.ItemPackageReference("Joinery.Dovetail.OpenTelemetry", Config.DovetailPackageVersion("Joinery.Dovetail.OpenTelemetry"));
+
+    private ProjectCreator WithOpenTelemetryHosting(ProjectCreator app) =>
+        app.ItemPackageReference("OpenTelemetry.Extensions.Hosting", Config.CentralPackageVersion("OpenTelemetry.Extensions.Hosting", targetFramework));
+
     private ProjectCreator WebAssembly(ProjectCreator app) =>
         app.ItemPackageReference(
             "Microsoft.AspNetCore.Components.WebAssembly",
@@ -150,6 +247,19 @@ public class HostingHelperTests(string targetFramework)
 
         var project = new SdkTestProject();
         project
+           .AddProject("app/app.csproj", app)
+           .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
+        return project;
+    }
+
+    private SdkTestProject CreateSdkApplication(Action<ProjectCreator> configure)
+    {
+        var app = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe");
+        configure(app);
+
+        var project = new SdkTestProject();
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
            .AddProject("app/app.csproj", app)
            .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
         return project;

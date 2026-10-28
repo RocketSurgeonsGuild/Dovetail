@@ -1,13 +1,20 @@
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
+using Joinery.Dovetail.OpenTelemetry.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using OpenTelemetry.Trace;
 
 namespace Joinery.Dovetail.Hosting.Maui.Tests;
 
 public static class MauiFixtures
 {
+    /// <summary>
+    ///     The activity source <see cref="TracingJoint" /> subscribes the tracer provider to.
+    /// </summary>
+    public const string ActivitySourceName = "Joinery.Dovetail.Hosting.Maui.Tests";
+
     public interface IFromHostApplicationJoint;
 
     public interface IFromMauiAppBuilderJoint;
@@ -53,5 +60,11 @@ public static class MauiFixtures
     public class MauiAppJoint : IHostCreatedJoint<MauiApp>
     {
         public void Register(IDovetailContext context, MauiApp app) => Observed.App = app;
+    }
+
+    [DovetailExport]
+    public class TracingJoint : ITracerProviderJoint
+    {
+        public void Register(IDovetailContext context, TracerProviderBuilder builder) => builder.AddSource(ActivitySourceName);
     }
 }
