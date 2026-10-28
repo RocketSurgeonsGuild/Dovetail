@@ -1,7 +1,7 @@
 # Joinery.Dovetail.OpenTelemetry
 
 - Package: `Joinery.Dovetail.OpenTelemetry`
-- Version: `0.2.4-pr.10`
+- Version: `0.2.4-pr.11`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.OpenTelemetry](https://www.nuget.org/packages/Joinery.Dovetail.OpenTelemetry)
 
