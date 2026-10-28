@@ -167,6 +167,11 @@ jobs:
               with:
                   source-dir: site
                   action: deploy
+            # Without .nojekyll at the root, Pages runs Jekyll, which drops _astro/. Only the root gets one: the deploy action
+            # never deletes .nojekyll, so a copy in each preview would outlive the preview.
+            - name: Add .nojekyll
+              if: github.ref == 'refs/heads/main'
+              run: touch site/.nojekyll
             - name: 🚀 Deploy main
               if: github.ref == 'refs/heads/main'
               uses: JamesIves/github-pages-deploy-action@v4
