@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Hosting](/Dovetail/pr-preview/pr-246/api/joinery.dovetail.hosting.md)
-- Version: `0.2.4-pr.6`
+- Version: `0.2.4-pr.10`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`

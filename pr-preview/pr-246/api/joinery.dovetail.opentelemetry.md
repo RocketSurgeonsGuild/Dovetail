@@ -1,7 +1,7 @@
 # Joinery.Dovetail.OpenTelemetry
 
 - Package: `Joinery.Dovetail.OpenTelemetry`
-- Version: `0.2.4-pr.6`
+- Version: `0.2.4-pr.10`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.OpenTelemetry](https://www.nuget.org/packages/Joinery.Dovetail.OpenTelemetry)
 
@@ -15,10 +15,6 @@
 - [OpenTelemetryHostBuilderExtensions](/Dovetail/pr-preview/pr-246/api/joinery.dovetail.opentelemetry/opentelemetryhostbuilderextensions.md) -- `class` `static` -- Builder-method extensions for applying OpenTelemetry parts to a `Dovetail.DovetailContextBuilder`.
 - [OpenTelemetryJointDelegate](/Dovetail/pr-preview/pr-246/api/joinery.dovetail.opentelemetry/opentelemetryjointdelegate.md) -- `delegate` -- Delegate for the OpenTelemetry part.
 - [OpenTelemetryJointExtensions](/Dovetail/pr-preview/pr-246/api/joinery.dovetail.opentelemetry/joinery.dovetail.joints.opentelemetryjointextensions.md) -- `class` `static` -- Extension methods for applying OpenTelemetry parts.
-
-### Joinery.Dovetail.OpenTelemetry
-
-- [OpenTelemetryConnector](/Dovetail/pr-preview/pr-246/api/joinery.dovetail.opentelemetry/opentelemetryconnector.md) -- `class` -- A joint that registers OpenTelemetry services into the context. This joint is automatically registered by the Dovetail generator, so it is not necessary to register this joint manually.
 
 ### Joinery.Dovetail.OpenTelemetry.Joints
 
