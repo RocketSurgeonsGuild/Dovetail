@@ -3,7 +3,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// <c>DovetailConfigurationSchemaEndpoint=true</c> makes <c>Joinery.Dovetail.Hosting.Web.targets</c> emit a host joint that maps
+/// <c>DovetailConfigurationSchemaEndpoint=true</c> makes <c>Joinery.Dovetail.Hosting.targets</c> emit a host joint that maps
 /// <c>GET /.well-known/dovetail/configuration-schema</c>; with the property off nothing is generated. These build and run a real web
 /// application, so the generated joint is compiled, discovered by the source generator and applied by <c>ConfigureDovetail</c>.
 /// </summary>

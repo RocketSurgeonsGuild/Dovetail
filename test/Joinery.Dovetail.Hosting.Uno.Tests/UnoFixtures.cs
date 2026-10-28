@@ -27,14 +27,14 @@ public static class UnoFixtures
     }
 
     [DovetailExport]
-    public class ApplicationBuilderJoint : IUnoApplicationBuilderJoint
+    public class ApplicationBuilderJoint : IHostApplicationJoint<IApplicationBuilder>
     {
         public void Register(IDovetailContext context, IApplicationBuilder builder) =>
             builder.Configure(host => host.ConfigureServices(services => services.AddSingleton<FromApplicationBuilderJoint>()));
     }
 
     [DovetailExport]
-    public class HostBuilderJoint : IUnoHostBuilderJoint
+    public class HostBuilderJoint : IHostApplicationJoint<IHostBuilder>
     {
         public void Register(IDovetailContext context, IHostBuilder builder) =>
             builder.ConfigureServices(services => services.AddSingleton<FromHostBuilderJoint>());

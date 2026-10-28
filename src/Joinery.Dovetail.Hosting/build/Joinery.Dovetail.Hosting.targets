@@ -1,2 +1,153 @@
-<Project>    
+<Project>
+  <!--
+    Joinery.Dovetail.Hosting.targets
+    Emits the helpers that the generated ConfigureDovetail entry points (Joinery.Dovetail.Hosts.targets) call into, from the
+    *.cs.template files next to this file, the same way the entry points themselves are emitted. A helper is only emitted when
+    every assembly it compiles against is among the project's resolved references, so this package depends on none of .NET MAUI,
+    Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of them is what turns its helper on.
+
+    Templates must not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to forward slashes
+    on Linux and macOS.
+
+    _DovetailHostingHelper item metadata:
+      References        - semicolon-separated assembly names (file names without extension) that must all be referenced.
+      ExtensionMembers  - 'true' when the template uses C# 14 extension members; it is not emitted below C# 14.
+
+    The emitted types are internal and [Embedded], so an assembly never sees the copy a referenced assembly emitted for itself (an
+    application's tests, say, that it grants InternalsVisibleTo). The Dovetail source generator defines that attribute, so a project
+    that doesn't run it gets no helpers; it has no generated entry points to call them either.
+  -->
+  <ItemGroup>
+    <_DovetailHostingHelper Include="DovetailHostApplicationHelpers" References="Microsoft.Extensions.Hosting" />
+    <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Extensions.Hosting;Microsoft.Maui" />
+    <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
+    <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
+    <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
+    <_DovetailHostingHelper Include="DovetailWebAssemblyContextExtensions" References="Microsoft.AspNetCore.Components.WebAssembly" ExtensionMembers="true" />
+    <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
+  </ItemGroup>
+
+  <!--
+      Also before XamlPreCompile: WinUI's XAML compiler (MAUI and Uno Windows heads) compiles the project's C# in a first pass, and the
+      generated entry points call these helpers.
+  -->
+  <Target Name="_DovetailResolveHostingHelpers" BeforeTargets="CoreCompile;XamlPreCompile" DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_DovetailHostingReference Include="@(ReferencePath->'%(Filename)')" />
+    </ItemGroup>
+    <!--
+        In this repository the targets are imported into every project, so only projects that reference Joinery.Dovetail.Hosting (and run
+        the Dovetail generator) get helpers.
+    -->
+    <PropertyGroup>
+      <_DovetailHostingReferenced>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'Joinery.Dovetail.Hosting'))</_DovetailHostingReferenced>
+      <_DovetailHostingReferenced Condition="@(Analyzer->AnyHaveMetadataValue('Filename', 'Joinery.Dovetail.Analyzers')) != 'true'">false</_DovetailHostingReferenced>
+      <_DovetailHostingExtensionMembers>true</_DovetailHostingExtensionMembers>
+      <_DovetailHostingLangVersion Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(LangVersion.Trim())', '^\d+(\.\d+)?$'))">$(LangVersion.Trim())</_DovetailHostingLangVersion>
+      <_DovetailHostingExtensionMembers Condition="'$(_DovetailHostingLangVersion)' != '' and $([MSBuild]::VersionLessThan('$(_DovetailHostingLangVersion)', '14.0'))">false</_DovetailHostingExtensionMembers>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DovetailHostingReferenced)' == 'true'">
+      <_DovetailHostingRequirement Include="%(_DovetailHostingHelper.References)" Helper="%(_DovetailHostingHelper.Identity)" />
+      <_DovetailHostingMissingRequirement Include="@(_DovetailHostingRequirement)" Exclude="@(_DovetailHostingReference)" />
+      <_DovetailHostingSkippedHelper Include="@(_DovetailHostingMissingRequirement->'%(Helper)')" />
+      <_DovetailHostingSkippedHelper Include="@(_DovetailHostingHelper)" Condition="'%(_DovetailHostingHelper.ExtensionMembers)' == 'true' and '$(_DovetailHostingExtensionMembers)' != 'true'" />
+      <_DovetailHostingEmittedHelper Include="@(_DovetailHostingHelper)" Exclude="@(_DovetailHostingSkippedHelper)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_DovetailHostingUnoNavigation>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoNavigationHelpers'))</_DovetailHostingUnoNavigation>
+      <_DovetailHostingAspNetCore>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailConfigurationSchemaEndpointExtensions'))</_DovetailHostingAspNetCore>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+      Batched once per emitted helper via Outputs. Hooked after the resolution rather than depending on it: a target's condition is
+      evaluated before its DependsOnTargets run, and the condition needs the resolved helpers.
+  -->
+  <Target Name="_DovetailGenerateHostingHelpers"
+          AfterTargets="_DovetailResolveHostingHelpers"
+          Condition="'@(_DovetailHostingEmittedHelper)' != ''"
+          Outputs="%(_DovetailHostingEmittedHelper.Identity)">
+    <PropertyGroup>
+      <_DovetailHostingHelperContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)%(_DovetailHostingEmittedHelper.Identity).cs.template'))</_DovetailHostingHelperContent>
+      <_DovetailHostingHelperOutputFile>$(IntermediateOutputPath)DovetailHosting.%(_DovetailHostingEmittedHelper.Identity).g.cs</_DovetailHostingHelperOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailHostingHelperOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailHostingHelperContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_DovetailHostingHelperOutputFile)" />
+      <FileWrites Include="$(_DovetailHostingHelperOutputFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+      The Uno host's ConfigureDovetail<TShell> entry points (NavigateEntryPoint) call DovetailUnoHelpers.Navigate, which needs
+      Uno.Extensions.Navigation: without it there is nothing to navigate with, so the entry points are not emitted.
+  -->
+  <Target Name="_DovetailHostingNavigateEntryPoints"
+          BeforeTargets="_DovetailGenerateHostSources"
+          DependsOnTargets="_DovetailResolveHostingHelpers"
+          Condition="'@(DovetailHost)' != ''">
+    <ItemGroup Condition="'$(_DovetailHostingReferenced)' == 'true' and '$(_DovetailHostingUnoNavigation)' != 'true'">
+      <DovetailHost Condition="'%(DovetailHost.NavigateEntryPoint)' == 'true'">
+        <NavigateEntryPoint>false</NavigateEntryPoint>
+      </DovetailHost>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Optional endpoint that serves the application's merged configuration JSON Schema:
+
+      GET /.well-known/dovetail/configuration-schema
+
+    Off by default; nothing is generated unless the project opts in, and only for ASP.NET Core applications.
+
+    Properties:
+      DovetailConfigurationSchemaEndpoint              - 'true' maps the endpoint through a generated host joint (default: off).
+      DovetailConfigurationSchemaEndpointEnvironments  - optional semicolon-separated environment names; the endpoint is only mapped
+                                                         when the host environment is one of them (default: every environment).
+      DovetailConfigurationSchemaEndpointSourceFallback - 'false' keeps the project's obj/ path out of the compiled application. By
+                                                         default it is embedded so the endpoint can find appsettings.schema.json when
+                                                         the output directory has no copy, except in publishing and
+                                                         ContinuousIntegrationBuild builds, which must not carry a build machine path.
+
+    The joint is emitted from DovetailConfigurationSchemaEndpoint.cs.template, the same way Joinery.Dovetail.Joints.targets emits joints.
+    It is a [DovetailExport] class, so the Dovetail source generator adds it to this assembly's Imports.
+
+    Only applications get the joint: a library that set the property would export it to every host that references it, and a host
+    that also set the property would then map the route twice.
+  -->
+  <PropertyGroup>
+    <_DovetailConfigurationSchemaEndpointTemplateFile>$(MSBuildThisFileDirectory)DovetailConfigurationSchemaEndpoint.cs.template</_DovetailConfigurationSchemaEndpointTemplateFile>
+  </PropertyGroup>
+
+  <Target Name="_DovetailGenerateConfigurationSchemaEndpointJoint"
+          AfterTargets="_DovetailResolveHostingHelpers"
+          Condition="'$(DovetailConfigurationSchemaEndpoint)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(_DovetailHostingAspNetCore)' == 'true'">
+    <PropertyGroup>
+      <_DovetailSchemaEndpointFallback Condition="'$(DovetailConfigurationSchemaEndpointSourceFallback)' == '' and '$(_IsPublishing)' != 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</_DovetailSchemaEndpointFallback>
+      <_DovetailSchemaEndpointFallback Condition="'$(DovetailConfigurationSchemaEndpointSourceFallback)' != ''">$(DovetailConfigurationSchemaEndpointSourceFallback)</_DovetailSchemaEndpointFallback>
+      <!-- The merged schema lives in the project's intermediate directory (a stable path editors can point at). -->
+      <_DovetailSchemaEndpointObjectDirectory Condition="'$(_DovetailSchemaEndpointFallback)' == 'true'">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(BaseIntermediateOutputPath)'))</_DovetailSchemaEndpointObjectDirectory>
+      <_DovetailSchemaEndpointFallbackLiteral>null</_DovetailSchemaEndpointFallbackLiteral>
+      <_DovetailSchemaEndpointFallbackLiteral Condition="'$(_DovetailSchemaEndpointObjectDirectory)' != ''">"$(_DovetailSchemaEndpointObjectDirectory.Replace('\', '\\').Replace('"', '\"'))"</_DovetailSchemaEndpointFallbackLiteral>
+      <_DovetailSchemaEndpointEnvironmentsLiteral>null</_DovetailSchemaEndpointEnvironmentsLiteral>
+      <_DovetailSchemaEndpointEnvironmentsLiteral Condition="'$(DovetailConfigurationSchemaEndpointEnvironments)' != ''">"$(DovetailConfigurationSchemaEndpointEnvironments.Replace('\', '\\').Replace('"', '\"'))"</_DovetailSchemaEndpointEnvironmentsLiteral>
+      <_DovetailSchemaEndpointContent>$([System.IO.File]::ReadAllText('$(_DovetailConfigurationSchemaEndpointTemplateFile)'))</_DovetailSchemaEndpointContent>
+      <_DovetailSchemaEndpointContent>$(_DovetailSchemaEndpointContent.Replace('{FallbackDirectory}', '$(_DovetailSchemaEndpointFallbackLiteral)'))</_DovetailSchemaEndpointContent>
+      <_DovetailSchemaEndpointContent>$(_DovetailSchemaEndpointContent.Replace('{Environments}', '$(_DovetailSchemaEndpointEnvironmentsLiteral)'))</_DovetailSchemaEndpointContent>
+      <_DovetailSchemaEndpointOutputFile>$(IntermediateOutputPath)DovetailConfigurationSchemaEndpoint.g.cs</_DovetailSchemaEndpointOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailSchemaEndpointOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailSchemaEndpointContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_DovetailSchemaEndpointOutputFile)" />
+      <FileWrites Include="$(_DovetailSchemaEndpointOutputFile)" />
+    </ItemGroup>
+  </Target>
 </Project>

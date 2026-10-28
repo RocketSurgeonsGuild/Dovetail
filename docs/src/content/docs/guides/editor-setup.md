@@ -150,8 +150,8 @@ Any editor with a language server for the format can use the schema file:
 
 ## The schema endpoint
 
-An application can also serve its schema, for tools that read it over HTTP. This needs Joinery.Dovetail.Hosting.Web and is off by
-default:
+An application can also serve its schema, for tools that read it over HTTP. This needs an ASP.NET Core application that references
+Joinery.Dovetail.Hosting, and is off by default:
 
 ```xml
 <PropertyGroup>
@@ -163,7 +163,7 @@ default:
 
 | Property                                            | Default             | Effect                                                                                                                                                                                                                                                         |
 | --------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DovetailConfigurationSchemaEndpoint`               | off                 | `true` generates a joint that maps the endpoint. Only projects with `OutputType` `Exe` or `WinExe` get it, and it does nothing in an application that isn't built on Joinery.Dovetail.Hosting.Web.                                                             |
+| `DovetailConfigurationSchemaEndpoint`               | off                 | `true` generates a joint that maps the endpoint. Only projects with `OutputType` `Exe` or `WinExe` that reference ASP.NET Core and Joinery.Dovetail.Hosting get it.                                                                                            |
 | `DovetailConfigurationSchemaEndpointEnvironments`   | every environment   | A semicolon-separated list of environment names (`Development;Staging`, compared ignoring case). The endpoint is mapped only when the host environment is one of them.                                                                                         |
 | `DovetailConfigurationSchemaEndpointSourceFallback` | `true` except below | Whether the project's `obj/` directory is compiled into the application as a place to look for the schema. By default it is, except in publish builds and `ContinuousIntegrationBuild` builds, so a build machine path isn't shipped. `false` never embeds it. |
 
@@ -179,12 +179,12 @@ The route is `GET /.well-known/dovetail/configuration-schema`:
 Point a mapping at the URL, for example `"url": "http://localhost:5000/.well-known/dovetail/configuration-schema"` in
 `json.schemas`.
 
-To map it yourself, call the public extension on the `WebApplication` (or any `IEndpointRouteBuilder`) instead of setting
-the property. Both arguments are optional, and the method returns `null` when `environments` excludes the current
+To map it yourself, call the extension on the `WebApplication` (or any `IEndpointRouteBuilder`) instead of setting the
+property. Joinery.Dovetail.Hosting emits it into every ASP.NET Core project that references it, as an internal type. Both arguments are optional, and the method returns `null` when `environments` excludes the current
 environment:
 
 ```c#
-using Joinery.Dovetail.Hosting.Web;
+using Joinery.Dovetail.Hosting;
 
 app.MapDovetailConfigurationSchema(fallbackDirectory: null, environments: "Development")
    ?.RequireAuthorization();

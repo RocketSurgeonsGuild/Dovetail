@@ -1,6 +1,6 @@
 <!--
     Microsoft.NET.Sdk.Web makes Joinery.Dovetail.Sdk detect a WebApplicationBuilder host: it injects
-    Joinery.Dovetail.Hosting.Web and generates the ConfigureDovetail() extension used in Program.cs.
+    Joinery.Dovetail.Hosting and generates the ConfigureDovetail() extension used in Program.cs.
 -->
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>

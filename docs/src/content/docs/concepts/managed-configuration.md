@@ -399,10 +399,10 @@ What differs from SchemaStore's schema, and why it is harmless:
 
 ### Serving the schema
 
-Applications built on Joinery.Dovetail.Hosting.Web can serve the merged schema over HTTP at
+ASP.NET Core applications that reference Joinery.Dovetail.Hosting can serve the merged schema over HTTP at
 `GET /.well-known/dovetail/configuration-schema`. It is off by default. Setting `DovetailConfigurationSchemaEndpoint` to
-`true` generates a joint that maps it, and the public `MapDovetailConfigurationSchema(fallbackDirectory, environments)`
-extension on `IEndpointRouteBuilder` maps it by hand. The properties, the response and the security trade-off are
+`true` generates a joint that maps it, and the `MapDovetailConfigurationSchema(fallbackDirectory, environments)` extension
+on `IEndpointRouteBuilder`, which Joinery.Dovetail.Hosting emits into ASP.NET Core projects, maps it by hand. The properties, the response and the security trade-off are
 described in [Editor setup](../guides/editor-setup#the-schema-endpoint).
 
 ## Shipping default values

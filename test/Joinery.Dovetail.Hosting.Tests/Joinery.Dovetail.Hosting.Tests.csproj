@@ -5,7 +5,6 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Web\Joinery.Dovetail.Hosting.Web.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
         <DovetailHost

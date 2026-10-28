@@ -243,9 +243,9 @@ using Joinery.Dovetail.Infrastructure;
     {
         yield return [ImmutableArray.CreateRange([typeof(DovetailDistributedApplicationHelpers), typeof(IDistributedApplicationBuilder)])];
         yield return [ImmutableArray.CreateRange([typeof(DovetailDistributedApplicationTestingHelpers), typeof(IDistributedApplicationTestingBuilder)])];
-        yield return [ImmutableArray.CreateRange([typeof(DovetailWebAssemblyHelpers), typeof(WebAssemblyHostBuilder)])];
-        yield return [ImmutableArray.CreateRange([typeof(DovetailHostApplicationHelpers), typeof(HostApplicationBuilder)])];
-        yield return [ImmutableArray.CreateRange([typeof(DovetailHostApplicationHelpers), typeof(WebApplicationBuilder)])];
+        yield return [ImmutableArray.CreateRange([typeof(DovetailHostingContextExtensions), typeof(WebAssemblyHostBuilder)])];
+        yield return [ImmutableArray.CreateRange([typeof(DovetailHostingContextExtensions), typeof(HostApplicationBuilder)])];
+        yield return [ImmutableArray.CreateRange([typeof(DovetailHostingContextExtensions), typeof(WebApplicationBuilder)])];
         yield return
         [
             ImmutableArray.CreateRange(
@@ -270,7 +270,7 @@ using Joinery.Dovetail.Infrastructure;
         [
             ImmutableArray.CreateRange(
                 [
-                    typeof(DovetailWebAssemblyHelpers), typeof(WebAssemblyHostBuilder),
+                    typeof(DovetailHostingContextExtensions), typeof(WebAssemblyHostBuilder),
                     typeof(ILogger),
                     typeof(DovetailContext),
                 ]
@@ -280,7 +280,7 @@ using Joinery.Dovetail.Infrastructure;
         [
             ImmutableArray.CreateRange(
                 [
-                    typeof(DovetailHostApplicationHelpers), typeof(HostApplicationBuilder),
+                    typeof(DovetailHostingContextExtensions), typeof(HostApplicationBuilder),
                     typeof(ILogger),
                     typeof(DovetailContext),
                 ]
@@ -290,7 +290,7 @@ using Joinery.Dovetail.Infrastructure;
         [
             ImmutableArray.CreateRange(
                 [
-                    typeof(DovetailHostApplicationHelpers), typeof(WebApplicationBuilder),
+                    typeof(DovetailHostingContextExtensions), typeof(WebApplicationBuilder),
                     typeof(ILogger),
                     typeof(DovetailContext),
                 ]

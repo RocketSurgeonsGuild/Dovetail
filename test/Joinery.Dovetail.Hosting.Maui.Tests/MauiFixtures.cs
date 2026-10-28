@@ -1,6 +1,7 @@
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 
 namespace Joinery.Dovetail.Hosting.Maui.Tests;
@@ -26,15 +27,18 @@ public static class MauiFixtures
         public static string? Platform { get; set; }
     }
 
+    /// <summary>
+    ///     A joint for any <see cref="IHostApplicationBuilder" />, which runs for MAUI too since <see cref="MauiAppBuilder" /> is one.
+    /// </summary>
     [DovetailExport]
-    public class HostApplicationJoint : IHostApplicationJoint<MauiAppBuilder>
+    public class HostApplicationJoint : IHostApplicationJoint<IHostApplicationBuilder>
     {
-        public void Register(IDovetailContext context, MauiAppBuilder builder) =>
+        public void Register(IDovetailContext context, IHostApplicationBuilder builder) =>
             builder.Services.AddSingleton<IFromHostApplicationJoint, FromHostApplicationJoint>();
     }
 
     [DovetailExport]
-    public class MauiAppBuilderJoint : IMauiAppBuilderJoint
+    public class MauiAppBuilderJoint : IHostApplicationJoint<MauiAppBuilder>
     {
         public void Register(IDovetailContext context, MauiAppBuilder builder)
         {
@@ -46,7 +50,7 @@ public static class MauiFixtures
     }
 
     [DovetailExport]
-    public class MauiAppJoint : IMauiAppJoint
+    public class MauiAppJoint : IHostCreatedJoint<MauiApp>
     {
         public void Register(IDovetailContext context, MauiApp app) => Observed.App = app;
     }

@@ -9,7 +9,9 @@
         <NoWarn>$(NoWarn);UNOB0025</NoWarn>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Uno\Joinery.Dovetail.Hosting.Uno.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <PackageReference Include="Uno.Extensions.Hosting.WinUI" />
+        <PackageReference Include="Uno.Extensions.Navigation.WinUI" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Stashbox\Joinery.Dovetail.Stashbox.csproj" />
 

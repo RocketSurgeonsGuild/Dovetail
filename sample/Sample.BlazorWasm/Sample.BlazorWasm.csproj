@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.WebAssembly\Joinery.Dovetail.Hosting.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyMetadata Include="ContentRootPath" Value="$([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))" />

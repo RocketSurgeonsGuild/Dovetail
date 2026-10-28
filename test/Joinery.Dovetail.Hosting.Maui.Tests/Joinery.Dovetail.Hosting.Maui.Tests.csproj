@@ -4,7 +4,8 @@
         <OutputType>Exe</OutputType>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Maui\Joinery.Dovetail.Hosting.Maui.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <PackageReference Include="Microsoft.Maui.Core" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Stashbox\Joinery.Dovetail.Stashbox.csproj" />
 
