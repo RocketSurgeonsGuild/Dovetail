@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Dovetail.Aspire](/Dovetail/pr-preview/pr-235/api/dovetail.aspire.md)
-- Version: `0.2.2-pr.2`
+- Version: `0.2.2-pr.4`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`

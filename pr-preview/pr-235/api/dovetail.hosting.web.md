@@ -1,7 +1,7 @@
 # Dovetail.Hosting.Web
 
 - Package: `Dovetail.Hosting.Web`
-- Version: `0.2.2-pr.2`
+- Version: `0.2.2-pr.4`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Hosting.Web](https://www.nuget.org/packages/Dovetail.Hosting.Web)
 

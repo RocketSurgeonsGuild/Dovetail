@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Dovetail.Hosting](/Dovetail/pr-preview/pr-235/api/dovetail.hosting.md)
-- Version: `0.2.2-pr.2`
+- Version: `0.2.2-pr.4`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
