@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Hosting.Uno](/Dovetail/api/joinery.dovetail.hosting.uno.md)
-- Version: `0.2.4-beta.2`
+- Version: `0.2.4-beta.3`
 - Namespace: `Joinery.Dovetail.Hosting.Uno`
 - Target framework: `net10.0`
 
