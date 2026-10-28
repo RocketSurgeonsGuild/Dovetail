@@ -29,9 +29,8 @@
       "enabled": false
     },
     {
-      "description": "The MSBuild task references in Directory.Packages.props stay at what .NET Framework MSBuild binds; .NET MSBuild supplies its shared framework's newer copies (these are the only PackageVersion items for these packages)",
-      "matchFileNames": ["Directory.Packages.props"],
-      "matchPackageNames": ["System.Reflection.Metadata", "System.Text.Json"],
+      "description": "The MSBuild task references stay at what .NET Framework MSBuild binds; .NET MSBuild supplies its shared framework's newer copies",
+      "matchFileNames": ["Directory.Packages.MSBuildTasks.props"],
       "enabled": false
     },
     {
