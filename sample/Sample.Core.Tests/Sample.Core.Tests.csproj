@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
         <ProjectReference Include="..\Sample.Core\Sample.Core.csproj" />
     </ItemGroup>
 </Project>

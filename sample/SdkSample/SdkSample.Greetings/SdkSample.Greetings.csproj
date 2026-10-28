@@ -1,5 +1,5 @@
 <!--
-    A plain class library: no OutputType and no host SDK, so Dovetail.Sdk treats it as a library -
+    A plain class library: no OutputType and no host SDK, so Joinery.Dovetail.Sdk treats it as a library -
     it injects the Dovetail package and exports this assembly's [DovetailExport] joints for hosts
     to import. appsettings.yaml is renamed to SdkSample.Greetings.yaml and loaded by a generated
     configuration joint.

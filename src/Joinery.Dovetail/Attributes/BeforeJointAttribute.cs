@@ -1,0 +1,44 @@
+using Joinery.Dovetail.Infrastructure;
+
+namespace Joinery.Dovetail.Attributes;
+/// <summary>
+///     An attribute that ensures the convention runs before the given <see cref="IDovetailJoint" />
+/// </summary>
+/// <seealso cref="Attribute" />
+/// <remarks>
+///     The type to be used with the convention type
+/// </remarks>
+/// <param name="type">The type.</param>
+/// <exception cref="NotSupportedException">Type must inherit from <see cref="IDovetailJoint" /></exception>
+[PublicAPI]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public sealed class BeforeJointAttribute(
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.Interfaces)]
+    Type type
+) : Attribute, IDovetailDependency
+{
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+    private readonly Type _type = ThrowHelper.EnsureTypeIsDovetail(type);
+
+    DependencyDirection IDovetailDependency.Direction => DependencyDirection.DependentOf;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+    Type IDovetailDependency.Type => _type;
+}
+
+/// <summary>
+///     An attribute that ensures the convention runs before the given <see cref="IDovetailJoint" />
+/// </summary>
+/// <seealso cref="Attribute" />
+/// <typeparam name="T">The <see cref="IDovetailJoint" /> that this convention must run before.</typeparam>
+[PublicAPI]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public sealed class BeforeJointAttribute<
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.Interfaces)]
+T> : Attribute,
+    IDovetailDependency
+    where T : IDovetailJoint
+{
+    DependencyDirection IDovetailDependency.Direction => DependencyDirection.DependentOf;
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+    Type IDovetailDependency.Type => typeof(T);
+}

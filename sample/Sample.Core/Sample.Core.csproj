@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Dovetail\Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
         <ProjectReference
-            Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+            Include="..\..\src\Joinery.Dovetail.Analyzers\Joinery.Dovetail.Analyzers.csproj"
             IncludeAssets="all"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
         />
-        <DovetailJoint Include="DatabaseConfigurator" Namespace="Dovetail.Joints" ParameterType="Sample.Core.Databases.IDatabaseConfigurator" ParameterName="builder" />
+        <DovetailJoint Include="DatabaseConfigurator" Namespace="Joinery.Dovetail.Joints" ParameterType="Sample.Core.Databases.IDatabaseConfigurator" ParameterName="builder" />
     </ItemGroup>
 
     <PropertyGroup>

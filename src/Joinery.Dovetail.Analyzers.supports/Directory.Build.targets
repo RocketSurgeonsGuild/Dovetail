@@ -1,0 +1,12 @@
+<Project>
+    <ItemGroup>
+        <PackageReference Include="Polyfill" PrivateAssets="all" />
+        <Compile Include="$(MSBuildThisFileDirectory)..\Joinery.Dovetail.Analyzers\**\*.cs" Exclude="$(MSBuildThisFileDirectory)..\Joinery.Dovetail.Analyzers\obj\**\*.cs" />
+    </ItemGroup>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+    <!-- These builds compile Joinery.Dovetail.Analyzers' sources, so they track its rules too. -->
+    <ItemGroup>
+        <AdditionalFiles Remove="AnalyzerReleases.Shipped.md;AnalyzerReleases.Unshipped.md" />
+        <AdditionalFiles Include="$(MSBuildThisFileDirectory)..\Joinery.Dovetail.Analyzers\AnalyzerReleases.Shipped.md;$(MSBuildThisFileDirectory)..\Joinery.Dovetail.Analyzers\AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
+</Project>

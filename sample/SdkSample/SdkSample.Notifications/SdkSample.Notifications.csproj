@@ -1,5 +1,5 @@
 <!--
-    A plain class library, like SdkSample.Greetings: Dovetail.Sdk injects the Dovetail package, exports this assembly's
+    A plain class library, like SdkSample.Greetings: Joinery.Dovetail.Sdk injects the Dovetail package, exports this assembly's
     [DovetailExport] joints and renames appsettings.yaml to SdkSample.Notifications.yaml.
 -->
 <Project Sdk="Microsoft.NET.Sdk" />

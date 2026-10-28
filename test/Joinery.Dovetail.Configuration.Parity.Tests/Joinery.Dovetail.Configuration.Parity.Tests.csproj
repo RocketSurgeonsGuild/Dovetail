@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <!--
+            The oracle: Microsoft's configuration binding generator intercepts the statically typed binder calls in this project
+            (version 10 of it on net10.0, version 11 on net11.0), while Dovetail's generator emits its own binder for the
+            [DovetailConfiguration] types with the rules of the same version.
+        -->
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+        <!--
+            SYSLIB1104: Binders.Reflection<T> is meant to fall back to the reflection binder. CS1717: version 10 of Microsoft's
+            generator assigns some members to themselves.
+        -->
+        <NoWarn>$(NoWarn);SYSLIB1100;SYSLIB1101;SYSLIB1103;SYSLIB1104;CS1717</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <!-- Referenced directly: the generator ships in this package and doesn't flow from transitive references. -->
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    </ItemGroup>
+</Project>

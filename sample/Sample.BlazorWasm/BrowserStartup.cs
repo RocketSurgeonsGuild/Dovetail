@@ -1,5 +1,5 @@
-using Dovetail.Attributes;
-using Dovetail.Joints;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
 #if NET11_0_OR_GREATER
 using Microsoft.Extensions.Hosting;
 #endif

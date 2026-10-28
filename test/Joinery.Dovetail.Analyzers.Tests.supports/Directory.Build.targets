@@ -1,0 +1,28 @@
+<Project>
+    <ItemGroup>
+        <PackageReference Include="FluentValidation" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+        <PackageReference Include="NodaTime" />
+        <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Aspire.Testing\Joinery.Dovetail.Aspire.Testing.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Aspire\Joinery.Dovetail.Aspire.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Serilog\Joinery.Dovetail.Serilog.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.WebAssembly\Joinery.Dovetail.Hosting.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Toml\Joinery.Dovetail.Configuration.Toml.csproj" />
+        <PackageReference Include="Verify.SourceGenerators" />
+
+      <PackageReference Include="Microsoft.CodeAnalysis.Common" VersionOverride="5.9.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="5.9.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="5.9.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Features" VersionOverride="5.9.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" VersionOverride="5.9.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" VersionOverride="5.9.0" PrivateAssets="all" />
+    </ItemGroup>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

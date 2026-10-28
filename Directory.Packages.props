@@ -26,13 +26,13 @@
   <ItemGroup>
     <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.20.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="20.0.0" />
-    <!-- The MSBuild packages Dovetail.Sdk.Tests compiles against (MSBuild.ProjectCreation brings Microsoft.Build); keep all three on one version. -->
+    <!-- The MSBuild packages Joinery.Dovetail.Sdk.Tests compiles against (MSBuild.ProjectCreation brings Microsoft.Build); keep all three on one version. -->
     <PackageVersion Include="Microsoft.Build" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.11.0" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.11.0" />
     <PackageVersion Include="MSBuild.StructuredLogger.Utils" Version="2.3.269" />
     <PackageVersion Include="NuGet.Packaging" Version="7.9.0" />
-    <!-- NuGet.Packaging pulls the vulnerable 8.0.1 (GHSA-2fmv-rv2c-59x7, GHSA-846f-f764-76mx) into Dovetail.Sdk.Tests. -->
+    <!-- NuGet.Packaging pulls the vulnerable 8.0.1 (GHSA-2fmv-rv2c-59x7, GHSA-846f-f764-76mx) into Joinery.Dovetail.Sdk.Tests. -->
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <!-- Sample.Uno pulls 10.0.12 of Pkcs and Xml through Uno (GHSA-7hqp-7c5m-4vq6 and others, fixed in 10.0.13). -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.14" />
@@ -81,7 +81,7 @@
     <PackageVersion Include="Verify.AngleSharp" Version="5.1.2" />
     <PackageVersion Include="Verify.Playwright" Version="3.1.2" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
-    <!-- Validates Dovetail.Build.Tasks' schemas against the draft-07 meta-schema in its tests (Apache-2.0). -->
+    <!-- Validates Joinery.Dovetail.Build.Tasks' schemas against the draft-07 meta-schema in its tests (Apache-2.0). -->
     <PackageVersion Include="Corvus.Json.JsonSchema.Draft7" Version="5.7.9" />
   </ItemGroup>
   <!--

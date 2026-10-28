@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
+        <PackageDescription>
+            Adds helpers to easily bootstrap an application using conventions by
+            just using the correct extension method. This adds command line operations, additional
+            configuration, logging and service injections by convention.
+        </PackageDescription>
+        <PackageTags>$(PackageTags);hosting;generic host</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+        <DovetailJoint
+            Include="HostApplication"
+            Namespace="Joinery.Dovetail.Joints"
+            GenericParameter="TBuilder"
+            GenericConstraint="global::Microsoft.Extensions.Hosting.IHostApplicationBuilder"
+            ParameterType="TBuilder"
+            ParameterName="builder"
+        />
+        <DovetailJoint
+            Include="Host"
+            Namespace="Joinery.Dovetail.Joints"
+            GenericParameter="THost"
+            GenericConstraint="global::Microsoft.Extensions.Hosting.IHost"
+            ParameterType="THost"
+            ParameterName="host"
+        />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
+        <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+
+    </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.AspNetCore.Tests" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.Tests" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.Maui" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.Uno" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="build/*.*" Pack="true" PackagePath="build" />
+        <None Include="buildMultiTargeting/*.*" Pack="true" PackagePath="buildMultiTargeting" />
+        <None Include="buildTransitive/*.*" Pack="true" PackagePath="buildTransitive" />
+    </ItemGroup>
+</Project>

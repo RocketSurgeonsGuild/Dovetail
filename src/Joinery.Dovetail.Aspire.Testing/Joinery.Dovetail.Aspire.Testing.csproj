@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
+        <PackageDescription>
+            Adds helpers to easily bootstrap an application using conventions by
+            just using the correct extension method. This adds command line operations, additional
+            configuration, logging and service injections by convention.
+        </PackageDescription>
+        <PackageTags>$(PackageTags);hosting;generic host</PackageTags>
+        <RootNamespace>Joinery.Dovetail.Testing</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../src/Joinery.Dovetail/Joinery.Dovetail.csproj" />
+        <ProjectReference Include="../../src/Joinery.Dovetail.Aspire/Joinery.Dovetail.Aspire.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Aspire.Hosting.Tests" />
+        <PackageReference Include="Aspire.Hosting.Testing" />
+    </ItemGroup>
+    <ItemGroup>
+        <DovetailJoint
+            Include="DistributedApplicationTesting"
+            NMAmespace="Joinery.Dovetail.Testing.Joints"
+            ParameterType="global::Aspire.Hosting.Testing.IDistributedApplicationTestingBuilder"
+            ParameterName="builder"
+        />
+    </ItemGroup>
+</Project>

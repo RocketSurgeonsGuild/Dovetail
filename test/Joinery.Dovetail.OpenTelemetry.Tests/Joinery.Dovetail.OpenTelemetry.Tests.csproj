@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+
+        <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+
+        <DovetailHost
+            Include="HostApplication"
+            HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Extensions.Hosting.IHost"
+            HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"
+        />
+    </ItemGroup>
+</Project>

@@ -1,6 +1,6 @@
 <Project Sdk="Uno.Sdk/7.0.0-dev.89">
   <!--
-      Sample.Uno on the next release lines: the Uno 7 prerelease SDK and the net11.0 heads, with Dovetail.Hosting.Uno's net11.0
+      Sample.Uno on the next release lines: the Uno 7 prerelease SDK and the net11.0 heads, with Joinery.Dovetail.Hosting.Uno's net11.0
       build (Uno.Extensions 8.0 prereleases, which have no desktop or browserwasm assets yet). The app code is linked from
       Sample.Uno; only the per-platform head files live here. Needs the Uno Platform workloads, so Dovetail.slnx doesn't build it
       by default; the workload-samples workflow builds it per platform.
@@ -30,7 +30,7 @@
     <!-- NU1507: multiple package sources with CPM; NETSDK1201: RID without self-contained; PRI257: default language not in resources. -->
     <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257</NoWarn>
 
-    <!-- What the Dovetail SDK's Uno detection sets (see src/Dovetail.Sdk/Sdk/Dovetail.HostDetection.targets); samples reference src directly. -->
+    <!-- What the Dovetail SDK's Uno detection sets (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets); samples reference src directly. -->
     <DovetailEmbedConfiguration>true</DovetailEmbedConfiguration>
     <!--
         The repo's Rocket.Surgery.MSBuild.SourceLink turns these on; with the Skia renderer, Uno swaps in its own runtime
@@ -52,8 +52,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Dovetail.Hosting.Uno\Dovetail.Hosting.Uno.csproj" />
-    <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+    <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Uno\Joinery.Dovetail.Hosting.Uno.csproj" />
+    <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
     <!-- Uno.Sdk adds this one implicitly at its own version; referencing it takes the Directory.Packages.props pin, in step with Microsoft.Extensions.Hosting (otherwise NU1605). -->
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
 
@@ -62,7 +62,7 @@
       HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder"
       HostBuilderName="builder"
       HostType="global::Microsoft.Extensions.Hosting.IHost"
-      HelperName="global::Dovetail.DovetailUnoHelpers"
+      HelperName="global::Joinery.Dovetail.DovetailUnoHelpers"
       BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly"
       NavigateEntryPoint="true"
     />
@@ -79,7 +79,7 @@
   </ItemDefinitionGroup>
   <!--
     Uno.Sdk adds the Uno.Extensions packages for UnoFeatures implicitly at its own UnoExtensionsVersion, ignoring
-    Directory.Packages.props. The 8.0 prereleases move ahead of the prerelease SDK, so take the version Dovetail.Hosting.Uno is
+    Directory.Packages.props. The 8.0 prereleases move ahead of the prerelease SDK, so take the version Joinery.Dovetail.Hosting.Uno is
     pinned to (otherwise NU1605 against its references).
   -->
   <Target Name="_SampleUnoExtensionsVersion" BeforeTargets="UnoImplicitPackages">

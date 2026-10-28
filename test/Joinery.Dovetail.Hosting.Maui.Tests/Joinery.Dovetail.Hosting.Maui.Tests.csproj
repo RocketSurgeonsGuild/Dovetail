@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Maui\Joinery.Dovetail.Hosting.Maui.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Stashbox\Joinery.Dovetail.Stashbox.csproj" />
+
+        <!-- Mirrors what the Dovetail SDK's MAUI detection adds (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets). -->
+        <DovetailHost
+            Include="Maui"
+            HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Maui.Hosting.MauiApp"
+            HelperName="global::Joinery.Dovetail.DovetailMauiHelpers"
+            BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly"
+            SyncEntryPoint="true"
+        />
+        <AssemblyMetadata Include="DovetailEnvironmentName" Value="Testing" />
+    </ItemGroup>
+</Project>

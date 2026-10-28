@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Build.Tasks\Joinery.Dovetail.Build.Tasks.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Serilog\Joinery.Dovetail.Serilog.csproj" />
+        <PackageReference Include="Corvus.Json.JsonSchema.Draft7" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- Copies of the generator's snapshots in Joinery.Dovetail.Analyzers.Tests (see GeneratorOutputTests). -->
+        <None Include="generator-output/*.txt" CopyToOutputDirectory="PreserveNewest" LinkBase="generator-output" />
+    </ItemGroup>
+</Project>

@@ -6,11 +6,11 @@ Status: design agreed (2026-10-22). Nothing is implemented yet.
 
 Three new packages, plus shared pieces, delivered in **one PR**:
 
-| Package                 | Kind         | Modeled on                                                                   |
-| ----------------------- | ------------ | ---------------------------------------------------------------------------- |
-| `Dovetail.Stashbox`     | DI container | `Dovetail.DryIoc`                                                            |
-| `Dovetail.Hosting.Maui` | Host         | `Dovetail.Hosting` (`MauiAppBuilder` is an `IHostApplicationBuilder`)        |
-| `Dovetail.Hosting.Uno`  | Host         | New `IHostBuilder` bridge (Uno.Extensions only exposes the old generic host) |
+| Package                         | Kind         | Modeled on                                                                    |
+| ------------------------------- | ------------ | ----------------------------------------------------------------------------- |
+| `Joinery.Dovetail.Stashbox`     | DI container | `Joinery.Dovetail.DryIoc`                                                     |
+| `Joinery.Dovetail.Hosting.Maui` | Host         | `Joinery.Dovetail.Hosting` (`MauiAppBuilder` is an `IHostApplicationBuilder`) |
+| `Joinery.Dovetail.Hosting.Uno`  | Host         | New `IHostBuilder` bridge (Uno.Extensions only exposes the old generic host)  |
 
 ### Commit order inside the PR
 
@@ -28,27 +28,27 @@ Three new packages, plus shared pieces, delivered in **one PR**:
 
 - **Joints**: a `<DovetailJoint Include="X" ParameterType="..." />` item in the package csproj
   generates `IXJoint` / `IXAsyncJoint`, the `ApplyX(context, ct)` extension, and the
-  `ConfigureX(...)` context-builder extension (`src/Dovetail/build/Dovetail.Joints.targets`).
-- **Host entry points**: a `<DovetailHost>` item expands `src/Dovetail/build/DovetailHost.cs.template`
+  `ConfigureX(...)` context-builder extension (`src/Joinery.Dovetail/build/Joinery.Dovetail.Joints.targets`).
+- **Host entry points**: a `<DovetailHost>` item expands `src/Joinery.Dovetail/build/DovetailHost.cs.template`
   into the `ConfigureDovetail(this TBuilder ...)` overloads, which call
   `{HelperName}.Configure(builder, b => b.Build(), contextBuilder, ct)`. The parameterless
   `DovetailContextBuilder.Create()` is generated **inside the app** (it wires that app's imports),
   so any entry point that calls it must be generated in the app too.
-- **Helpers**: `DovetailHostApplicationHelpers.Configure<T, THost>` (`src/Dovetail.Hosting/RocketHostApplicationExtensions.cs`)
-  and `DovetailWebAssemblyHelpers.Configure` (`src/Dovetail.Hosting.WebAssembly/RocketWebAssemblyExtensions.cs`):
+- **Helpers**: `DovetailHostApplicationHelpers.Configure<T, THost>` (`src/Joinery.Dovetail.Hosting/RocketHostApplicationExtensions.cs`)
+  and `DovetailWebAssemblyHelpers.Configure` (`src/Joinery.Dovetail.Hosting.WebAssembly/RocketWebAssemblyExtensions.cs`):
   populate context builder → `DovetailContext.FromAsync` → shared configuration → `ApplyService` →
   `ServiceProviderFactoryAdapter` → host-builder joint → `Build()` → `ApplyHostCreated`.
-- **SDK detection**: `src/Dovetail.Sdk/Sdk/Dovetail.HostDetection.targets` (it runs via
+- **SDK detection**: `src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets` (it runs via
   `CustomAfterMicrosoftCommonTargets`) picks one `<When>` per project, then adds the `DovetailHost`
   item and an implicit package reference. The MAUI and Uno stubs there are wrong and get replaced (see below).
   Version properties (`DovetailHostingMauiVersion`, `DovetailHostingUnoVersion`, `DovetailStashboxVersion`)
-  come for free: `Dovetail.Sdk.csproj` generates one per `src/` folder.
-- **DI containers**: `Dovetail.DryIoc` = a joint (`IDryIocJoint`) + `ConfigureDryIoc : ISetupJoint`
+  come for free: `Joinery.Dovetail.Sdk.csproj` generates one per `src/` folder.
+- **DI containers**: `Joinery.Dovetail.DryIoc` = a joint (`IDryIocJoint`) + `ConfigureDryIoc : ISetupJoint`
   calling `context.UseServiceProviderFactory<IContainer>(...)` + an options type on the context.
 
 ---
 
-## 1. `Dovetail.Stashbox`
+## 1. `Joinery.Dovetail.Stashbox`
 
 ### Facts
 
@@ -61,14 +61,14 @@ Three new packages, plus shared pieces, delivered in **one PR**:
 - `IServiceCollection.UseStashbox(IStashboxContainer)` returns an `IServiceProvider`.
   `AddStashbox(...)` replaces the factory registration.
 - AOT/trimming: Stashbox compiles expression trees at runtime and sets neither `IsAotCompatible`
-  nor `IsTrimmable`. `Dovetail.DryIoc` and `Dovetail.Autofac` set no AOT/trim properties either.
+  nor `IsTrimmable`. `Joinery.Dovetail.DryIoc` and `Joinery.Dovetail.Autofac` set no AOT/trim properties either.
 
-### Package `src/Dovetail.Stashbox/`
+### Package `src/Joinery.Dovetail.Stashbox/`
 
-- `Dovetail.Stashbox.csproj`: `net10.0;net11.0`, `RuntimeAsyncBrowserWasmAsset`, `ProjectReference`
+- `Joinery.Dovetail.Stashbox.csproj`: `net10.0;net11.0`, `RuntimeAsyncBrowserWasmAsset`, `ProjectReference`
   to `Dovetail`, `PackageReference Include="Stashbox.Extensions.DependencyInjection"`. Like DryIoc,
   it sets **no** AOT/trim properties.
-    - `<DovetailJoint Include="Stashbox" Namespace="Dovetail.Joints" ParameterType="global::Stashbox.IStashboxContainer" ParameterName="container" />`
+    - `<DovetailJoint Include="Stashbox" Namespace="Joinery.Dovetail.Joints" ParameterType="global::Stashbox.IStashboxContainer" ParameterName="container" />`
 - `StashboxJoint.cs`: `[DovetailExport, ConnectsJoint<IStashboxJoint>]`, same shape as `DryIocJoint`.
 - `ConfigureStashbox.cs`: `[DovetailExport] internal class ConfigureStashbox : ISetupJoint`
     - `context.UseServiceProviderFactory<IStashboxContainer>(async (ctx, services, ct) => …)`
@@ -87,8 +87,8 @@ Three new packages, plus shared pieces, delivered in **one PR**:
 
 ### SDK
 
-- `Dovetail.HostDetection.targets`: add `DovetailEnableStashbox` and
-  `<DovetailSdkImplicitPackageReference Include="Dovetail.Stashbox" …>`, conditioned on a
+- `Joinery.Dovetail.HostDetection.targets`: add `DovetailEnableStashbox` and
+  `<DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Stashbox" …>`, conditioned on a
   `PackageReference` to `Stashbox`, `Stashbox.Extensions.DependencyInjection` **or** `Stashbox.Extensions.Hosting`.
 - **Fix the existing gap in the same commit**: DryIoc also matches `DryIoc.Microsoft.DependencyInjection`,
   and Autofac also matches `Autofac.Extensions.DependencyInjection`.
@@ -96,10 +96,10 @@ Three new packages, plus shared pieces, delivered in **one PR**:
 
 ### Tests
 
-- `test/Dovetail.Stashbox.Tests/`: port the DryIoc suite one-to-one (`DryIocBuilderTests`,
+- `test/Joinery.Dovetail.Stashbox.Tests/`: port the DryIoc suite one-to-one (`DryIocBuilderTests`,
   `DryIocWebApplicationTests`, `DryIocCommandLineTests`, fixtures). Add tests for `ConfigureContainer`,
   `ValidateOnBuild`, and lifetime validation on in Development / off in Production / opted out.
-- `test/Dovetail.Sdk.Tests/`: detection for each Stashbox package id, plus the new DryIoc/Autofac
+- `test/Joinery.Dovetail.Sdk.Tests/`: detection for each Stashbox package id, plus the new DryIoc/Autofac
   adapter-package ids (+ verified snapshots).
 
 ---
@@ -111,7 +111,7 @@ Three new packages, plus shared pieces, delivered in **one PR**:
 On a device there are no `appsettings.*` files on disk (`HostConfigurationPropagationTests` copies
 them to the output, which only helps desktop).
 
-- `Dovetail.Configuration.{Json,Yaml,Toml}`: add an `*EmbeddedJoint : IConfigurationJoint` to each
+- `Joinery.Dovetail.Configuration.{Json,Yaml,Toml}`: add an `*EmbeddedJoint : IConfigurationJoint` to each
   existing package (no new package). It only activates when the context has an
   `"EmbeddedConfigurationAssembly"` key (set by the MAUI/Uno helpers to the app assembly), and it
   loads the same sequence as `JsonBrowserJoint`: `appsettings`, `{app}`, `.{env}`, `.local`.
@@ -145,12 +145,12 @@ them to the output, which only helps desktop).
 ### Hosting helper access
 
 - `DovetailHostApplicationHelpers.SharedHostConfigurationAsync` stays `internal`.
-  `Dovetail.Hosting` gains `InternalsVisibleTo` for `Dovetail.Hosting.Maui` and `Dovetail.Hosting.Uno`.
+  `Joinery.Dovetail.Hosting` gains `InternalsVisibleTo` for `Joinery.Dovetail.Hosting.Maui` and `Joinery.Dovetail.Hosting.Uno`.
   Trade-off accepted: these packages must be released in lockstep (they already share a version).
 
 ---
 
-## 3. `Dovetail.Hosting.Maui`
+## 3. `Joinery.Dovetail.Hosting.Maui`
 
 ### Facts
 
@@ -160,10 +160,10 @@ them to the output, which only helps desktop).
 - `MauiProgram.CreateMauiApp()` is synchronous.
 - MAUI's `IHostApplicationBuilder.Environment` is a fixed default.
 
-### Package `src/Dovetail.Hosting.Maui/`
+### Package `src/Joinery.Dovetail.Hosting.Maui/`
 
 - csproj: `net10.0;net11.0` (plain TFMs), `PackageReference Include="Microsoft.Maui.Core"`,
-  `ProjectReference` to `Dovetail.Hosting` and `Dovetail.OpenTelemetry`.
+  `ProjectReference` to `Joinery.Dovetail.Hosting` and `Joinery.Dovetail.OpenTelemetry`.
     - `<DovetailJoint Include="MauiAppBuilder" ParameterType="global::Microsoft.Maui.Hosting.MauiAppBuilder" ParameterName="builder" />`
     - `<DovetailJoint Include="MauiApp" ParameterType="global::Microsoft.Maui.Hosting.MauiApp" ParameterName="app" />`
 - `DovetailMauiHelpers.Configure(MauiAppBuilder, Func<MauiAppBuilder, MauiApp>, DovetailContextBuilder, ct)`:
@@ -193,12 +193,12 @@ them to the output, which only helps desktop).
 
 - Replace the MAUI stub with a `<When>` on `'$(UseMaui)' == 'true' and '$(OutputType)' != 'Library'`,
   placed **before** the `OutputType == Exe` branch (MAUI apps are `Exe`). It uses
-  `DovetailSdkImplicitPackageReference`, `HelperName="global::Dovetail.DovetailMauiHelpers"`,
+  `DovetailSdkImplicitPackageReference`, `HelperName="global::Joinery.Dovetail.DovetailMauiHelpers"`,
   `HostType="global::Microsoft.Maui.Hosting.MauiApp"`, and `SyncEntryPoint="true"`.
 
 ### Tests
 
-- `test/Dovetail.Hosting.Maui.Tests/` on plain `net10.0;net11.0` with `MauiApp.CreateBuilder(useDefaults: false)`.
+- `test/Joinery.Dovetail.Hosting.Maui.Tests/` on plain `net10.0;net11.0` with `MauiApp.CreateBuilder(useDefaults: false)`.
   Covers:
     - services, config and logging flow through
     - `IHostApplicationJoint` and `IMauiAppBuilderJoint` both fire, and `IMauiAppJoint` sees the built app
@@ -206,12 +206,12 @@ them to the output, which only helps desktop).
     - environment-name precedence
     - embedded config loading
     - `UseDovetail` returns a built app
-- `test/Dovetail.Sdk.Tests/HostTypeTests`: `Maui_DetectsHostAndInjectsHostingMaui`,
+- `test/Joinery.Dovetail.Sdk.Tests/HostTypeTests`: `Maui_DetectsHostAndInjectsHostingMaui`,
   `MauiLibrary_NoHostDetected`, sync overloads emitted only for MAUI, appsettings embedded rather than copied.
 
 ---
 
-## 4. `Dovetail.Hosting.Uno`
+## 4. `Joinery.Dovetail.Hosting.Uno`
 
 ### Facts
 
@@ -240,9 +240,9 @@ them to the output, which only helps desktop).
       `net10.0-windows10.0.19041`, but no browserwasm/desktop yet, and it needs Uno.WinUI 7 prereleases.
     - Uno.WinUI and Uno.Foundation.\* are stable at 6.7.135, with net9.0 and net10.0 assets.
 
-### Package `src/Dovetail.Hosting.Uno/`
+### Package `src/Joinery.Dovetail.Hosting.Uno/`
 
-- csproj: `net10.0;net11.0`, `ProjectReference` to `Dovetail.Hosting`. References
+- csproj: `net10.0;net11.0`, `ProjectReference` to `Joinery.Dovetail.Hosting`. References
   `Uno.Extensions.Hosting.WinUI` and `Uno.Extensions.Navigation.WinUI`, **multi-versioned per TFM**:
     - `net10.0` → **7.3.6** (stable; its net9.0 asset is consumed from net10.0)
     - `net11.0` → **8.0.0-dev.\*** (preview until Uno.Extensions 8.0 is stable)
@@ -252,7 +252,7 @@ them to the output, which only helps desktop).
 - Joints:
     - `<DovetailJoint Include="UnoApplicationBuilder" ParameterType="global::Uno.Extensions.Hosting.IApplicationBuilder" ParameterName="builder" />`
     - `<DovetailJoint Include="UnoHostBuilder" ParameterType="global::Microsoft.Extensions.Hosting.IHostBuilder" ParameterName="builder" />`
-- **`IHostBuilder` bridge, internal to this package** (`Dovetail.Hosting` does not advertise
+- **`IHostBuilder` bridge, internal to this package** (`Joinery.Dovetail.Hosting` does not advertise
   `IHostBuilder` support). All async work runs **before** `Build()`:
     1. `await DovetailContext.FromAsync(...)`.
     2. `await cb.ApplyConfiguration(...)` into a standalone `ConfigurationBuilder`. From
@@ -286,7 +286,7 @@ them to the output, which only helps desktop).
     - `<When>` on `'$(UsingUnoSdk)' == 'true'` **and** the normalized `UnoFeatures` containing
       `;hosting;`, placed **before** both the WebAssembly branch and the `Exe` branch.
     - `HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder"`,
-      `HostType="global::Microsoft.Extensions.Hosting.IHost"`, `HelperName="global::Dovetail.DovetailUnoHelpers"`.
+      `HostType="global::Microsoft.Extensions.Hosting.IHost"`, `HelperName="global::Joinery.Dovetail.DovetailUnoHelpers"`.
     - The template also needs to emit the `<TShell>` overloads for this host (internal metadata,
       the same mechanism as `SyncEntryPoint`).
 - Uno.Sdk detected **without** `Hosting`: emit a build warning ("Dovetail needs UnoFeatures=Hosting")
@@ -294,7 +294,7 @@ them to the output, which only helps desktop).
 
 ### Tests
 
-- `test/Dovetail.Hosting.Uno.Tests/` on `net10.0;net11.0`: bridge tests against plain
+- `test/Joinery.Dovetail.Hosting.Uno.Tests/` on `net10.0;net11.0`: bridge tests against plain
   `Host.CreateDefaultBuilder()`. Covers:
     - config layering order
     - staged services land after the host defaults
@@ -303,7 +303,7 @@ them to the output, which only helps desktop).
     - environment passthrough
       Plus an `IApplicationBuilder` fake for joint ordering and context keys. Anything that touches the
       real WinUI runtime is covered by the samples, not unit tests.
-- `test/Dovetail.Sdk.Tests/HostTypeTests`:
+- `test/Joinery.Dovetail.Sdk.Tests/HostTypeTests`:
     - Uno + Hosting
     - Uno without Hosting (warning, no host)
     - `UnoFeatures` with whitespace/newlines/mixed case
@@ -324,7 +324,7 @@ them to the output, which only helps desktop).
   `Uno.Extensions.Hosting.HostBuilder` behind a fake `IApplicationBuilder` (the real one needs a running app).
 - `ConfigureDovetail<TShell>` comes from `DovetailHostNavigate.cs.template`, behind the internal `NavigateEntryPoint` metadata.
 - An Uno app **without** Hosting gets no host (and the warning) instead of falling through to the generic `Exe` branch.
-- Dedupe: `_DovetailRemoveDuplicateConfigurationResources` (in `Dovetail.PackConfiguration.targets`) drops Dovetail's
+- Dedupe: `_DovetailRemoveDuplicateConfigurationResources` (in `Joinery.Dovetail.PackConfiguration.targets`) drops Dovetail's
   embedded copy of any `appsettings*` file another tool already embeds (`MatchOnMetadata="FullPath"`), since Uno.Sdk's
   `EmbeddedResource` items are evaluated after Dovetail's; the joints find Uno's `{RootNamespace}.appsettings*.json` by suffix.
 - Not covered by tests: the warning text (the SDK harness doesn't capture build output), `NavigateAsync<TShell>` at

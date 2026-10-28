@@ -1,0 +1,29 @@
+﻿{
+  Properties: {
+    DovetailEmbedConfiguration: true,
+    ImportDovetailAssembly: true,
+    _DovetailApplicationDetected: true
+  },
+  Items: {
+    DovetailHost: {
+      Uno: {
+        BuildExpression: , static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly,
+        HelperName: global::Joinery.Dovetail.DovetailUnoHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Uno.Extensions.Hosting.IApplicationBuilder,
+        HostType: global::Microsoft.Extensions.Hosting.IHost,
+        NavigateEntryPoint: true
+      }
+    },
+    PackageReference: {
+      Joinery.Dovetail: {
+        IsImplicitlyDefined: true,
+        Version: {sdk-version}
+      },
+      Joinery.Dovetail.Hosting.Uno: {
+        IsImplicitlyDefined: true,
+        Version: {sdk-version}
+      }
+    }
+  }
+}

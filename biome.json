@@ -8,7 +8,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!!**/*.verified.*", "!!**/*.received.*", "!!docs/src/content/docs/api", "!!src/Dovetail.Build.Tasks/SchemaStore/appsettings.json"]
+    "includes": ["**", "!!**/*.verified.*", "!!**/*.received.*", "!!docs/src/content/docs/api", "!!src/Joinery.Dovetail.Build.Tasks/SchemaStore/appsettings.json"]
   },
   "formatter": {
     "enabled": true,

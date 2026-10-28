@@ -1,5 +1,5 @@
 # Sample-local NuGet cache (see NuGet.config)
 .nuget/
 
-# Developer-machine-only configuration overrides (Dovetail.Sdk warns when these are not ignored)
+# Developer-machine-only configuration overrides (Joinery.Dovetail.Sdk warns when these are not ignored)
 appsettings.local.*

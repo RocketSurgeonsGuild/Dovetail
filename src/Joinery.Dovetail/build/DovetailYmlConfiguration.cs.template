@@ -1,0 +1,38 @@
+using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Configuration.Yaml;
+using Joinery.Dovetail.Joints;
+using Microsoft.Extensions.Configuration;
+
+/// <summary>
+///     Default YAML (<c>.yml</c>) app-settings convention for this project.
+/// </summary>
+[DovetailExport]
+internal class YmlAppSettingsConfiguration : IConfigurationJoint
+{
+    /// <summary>
+    ///     Adds the project's <c>{{ProjectName}}.yml</c>, environment-specific, and local YAML app-settings files to the configuration.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add the YAML sources to.</param>
+    public void Register(IDovetailContext context, IConfigurationBuilder builder)
+    {
+        var environmentName = context.Get<string>("EnvironmentName") ?? "Production";
+        if (context.EmbeddedConfigurationAssembly is not null)
+        {
+            // Hosts without a file system read the copies the Dovetail SDK embedded into this assembly instead.
+            var assembly = typeof(YmlAppSettingsConfiguration).Assembly;
+            builder.AddYamlStream(
+                DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.yml", "appsettings.yml")
+             ?? throw new System.IO.FileNotFoundException($"The embedded configuration file '{{ProjectName}}.yml' was not found in '{assembly.FullName}'.")
+            );
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.{environmentName}.yml", $"appsettings.{environmentName}.yml") is { } environment) builder.AddYamlStream(environment);
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.local.yml", "appsettings.local.yml") is { } local) builder.AddYamlStream(local);
+            return;
+        }
+
+        builder.AddYamlFile("{{ProjectName}}.yml", optional: false, reloadOnChange: false);
+        builder.AddYamlFile($"{{ProjectName}}.{environmentName}.yml", optional: true, reloadOnChange: false);
+        builder.AddYamlFile("{{ProjectName}}.local.yml", optional: true, reloadOnChange: false);
+    }
+}

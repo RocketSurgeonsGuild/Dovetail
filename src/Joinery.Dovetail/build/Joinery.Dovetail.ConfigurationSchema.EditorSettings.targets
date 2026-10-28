@@ -1,0 +1,40 @@
+<Project>
+  <!--
+    Opt-in VS Code settings for a host's configuration schema, imported by Joinery.Dovetail.ConfigurationSchema.targets.
+
+    With DovetailScaffoldEditorSettings=true, building a host creates or updates only Dovetail's own mappings in
+    .vscode/settings.json: json.schemas (appsettings*.json), yaml.schemas (appsettings*.yaml and .yml) and
+    evenBetterToml.schema.associations (appsettings*.toml), each pointing at the host's $(BaseIntermediateOutputPath)appsettings.schema.json.
+    Every host gets entries of its own (they are keyed by its schema path), so several hosts can share one file. Everything else
+    in the file stays as it is, comments included, and nothing is written when the mappings are already there. A file Dovetail
+    can't update safely (invalid JSON, an unexpected shape, read-only) is left alone and the build warns with the entries to paste.
+    Dovetail never adds $schema keys or modelines to the configuration files.
+
+    Properties:
+      DovetailScaffoldEditorSettings=true     turns this on; it is off by default because the file is probably checked in.
+      DovetailEditorSettingsDirectory=<path>  the folder that holds .vscode (relative paths are relative to the project). By
+                                              default the nearest ancestor of the project that contains a .git entry, or the
+                                              project directory itself when there is none.
+
+    Only hosts (see Joinery.Dovetail.ConfigurationSchema.targets) and only once per build: a project that targets several frameworks does
+    it from its first one. Design-time builds and DovetailConfigurationSchema=false skip it.
+  -->
+  <!-- In-repo builds register this from src/Joinery.Dovetail.Build.Tasks instead (Joinery.Dovetail.Build.Tasks.InRepo.targets). -->
+  <UsingTask TaskName="Joinery.Dovetail.Build.Tasks.ScaffoldEditorSettings" AssemblyFile="$(MSBuildThisFileDirectory)tasks/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll" Condition="'$(_DovetailBuildTasksAssembly)' == ''" />
+
+  <Target
+    Name="_DovetailScaffoldEditorSettings"
+    AfterTargets="_DovetailConfigurationSchema"
+    DependsOnTargets="_DovetailComputeConfigurationSchema"
+    Condition="'$(DovetailScaffoldEditorSettings)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true'">
+    <PropertyGroup>
+      <_DovetailEditorSettingsDirectory />
+      <_DovetailEditorSettingsDirectory Condition="'$(DovetailEditorSettingsDirectory)' != ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(DovetailEditorSettingsDirectory)'))</_DovetailEditorSettingsDirectory>
+    </PropertyGroup>
+    <ScaffoldEditorSettings
+      Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host' and '$(_DovetailConfigurationSchemaIsPrimaryTargetFramework)' == 'true'"
+      ProjectDirectory="$(MSBuildProjectDirectory)"
+      SchemaFile="$(_DovetailHostConfigurationSchemaFile)"
+      SettingsDirectory="$(_DovetailEditorSettingsDirectory)" />
+  </Target>
+</Project>

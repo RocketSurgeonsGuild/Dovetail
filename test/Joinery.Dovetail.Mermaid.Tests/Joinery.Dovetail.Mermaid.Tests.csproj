@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\sample\Sample.DependencyOne\Sample.DependencyOne.csproj" />
+        <ProjectReference Include="..\..\sample\Sample.DependencyThree\Sample.DependencyThree.csproj" />
+        <ProjectReference Include="..\..\sample\Sample.DependencyTwo\Sample.DependencyTwo.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Mermaid\Joinery.Dovetail.Mermaid.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Serilog\Joinery.Dovetail.Serilog.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
+        <PackageDescription>Adds support for loading json configuration files</PackageDescription>
+        <PackageTags>$(PackageTags);reflection</PackageTags>
+        <RootNamespace>Joinery.Dovetail.Configuration.Json</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.CommandLine" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.Hosting" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.Web.Hosting" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.WebAssembly.Hosting" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="build/*.*" Pack="true" PackagePath="build" />
+        <None Include="buildMultiTargeting/*.*" Pack="true" PackagePath="buildMultiTargeting" />
+        <None Include="buildTransitive/*.*" Pack="true" PackagePath="buildTransitive" />
+    </ItemGroup>
+</Project>

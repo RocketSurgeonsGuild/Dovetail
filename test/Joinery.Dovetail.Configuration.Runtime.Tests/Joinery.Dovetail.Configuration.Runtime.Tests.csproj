@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Toml\Joinery.Dovetail.Configuration.Toml.csproj" />
+        <!-- Host start for the ValidateOnStart tests. -->
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- Fixtures for the embedded configuration joints, named the way the Dovetail SDK (and, for the Some.Root.* files, other tools) name embedded resources. -->
+        <EmbeddedResource Include="embedded/*" LogicalName="%(Filename)%(Extension)" />
+    </ItemGroup>
+</Project>

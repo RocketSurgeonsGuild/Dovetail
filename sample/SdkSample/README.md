@@ -1,11 +1,11 @@
-# Dovetail.Sdk sample
+# Joinery.Dovetail.Sdk sample
 
 Consumes Dovetail purely as an MSBuild SDK from packed NuGet packages, the way an external project
 would. No project here references Dovetail directly or imports anything from `src/`. The only
 wiring is one line in [`Directory.Build.props`](Directory.Build.props):
 
 ```xml
-<Project Sdk="Dovetail.Sdk">
+<Project Sdk="Joinery.Dovetail.Sdk">
 ```
 
 with the SDK version pinned in [`global.json`](global.json) under `msbuild-sdks`.
@@ -14,15 +14,15 @@ with the SDK version pinned in [`global.json`](global.json) under `msbuild-sdks`
 
 | Project                   | Shape                   | The SDK should...                                                                                                                                               |
 | ------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SdkSample.Greetings`     | plain class library     | inject `Dovetail`, export its `[DovetailExport]` joints, rename `appsettings.yaml` to `SdkSample.Greetings.yaml` and generate a YAML configuration joint for it |
+| `SdkSample.Greetings`     | plain class library     | inject `Joinery.Dovetail`, export its `[DovetailExport]` joints, rename `appsettings.yaml` to `SdkSample.Greetings.yaml` and generate a YAML configuration joint for it |
 | `SdkSample.Notifications` | plain class library     | the same, for a section with every common member type (see below)                                                                                               |
 | `SdkSample.Storage`       | plain class library     | the same, for immutable options that Dovetail creates through generated code (see below)                                                                        |
 | `SdkSample.Diagnostics`   | plain class library     | the same, for options of types the library doesn't own (see below)                                                                                              |
-| `SdkSample.Worker`        | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
-| `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Dovetail.Hosting.Web`, generate `ConfigureDovetail()`                                                            |
+| `SdkSample.Worker`        | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
+| `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting.Web`, generate `ConfigureDovetail()`                                                            |
 
 `DovetailEnableConfiguration=true` (set in `Directory.Build.props`) additionally injects
-`Dovetail.Configuration.Yaml` into every project. YAML is the default format; setting
+`Joinery.Dovetail.Configuration.Yaml` into every project. YAML is the default format; setting
 `DovetailEnableJsonConfiguration` or `DovetailEnableTomlConfiguration` instead opts into that format.
 
 ## What each library shows
@@ -134,8 +134,8 @@ never changes.
 
 ## Why the extra files
 
-- `global.json` pins `Dovetail.Sdk`. MSBuild SDKs resolved from NuGet need an explicit version.
-- `NuGet.config` clears the repository's feeds and maps `Dovetail*` to the local feed.
+- `global.json` pins `Joinery.Dovetail.Sdk`. MSBuild SDKs resolved from NuGet need an explicit version.
+- `NuGet.config` clears the repository's feeds and maps `Joinery.Dovetail*` to the local feed.
 - `Directory.Packages.props` and `Directory.Build.targets` are intentionally empty so MSBuild stops
   here instead of picking up the repository's central package management and build targets.
 - `.gitignore` ignores `appsettings.local.*`. With configuration enabled, the SDK warns when no

@@ -28,7 +28,7 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 
-        <!-- What the Dovetail SDK's MAUI detection sets (see src/Dovetail.Sdk/Sdk/Dovetail.HostDetection.targets); samples reference src directly. -->
+        <!-- What the Dovetail SDK's MAUI detection sets (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets); samples reference src directly. -->
         <DovetailEmbedConfiguration>true</DovetailEmbedConfiguration>
     </PropertyGroup>
 
@@ -43,15 +43,15 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" />
-        <ProjectReference Include="..\..\src\Dovetail.Hosting.Maui\Dovetail.Hosting.Maui.csproj" />
-        <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Maui\Joinery.Dovetail.Hosting.Maui.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
 
         <DovetailHost
             Include="Maui"
             HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder"
             HostBuilderName="builder"
             HostType="global::Microsoft.Maui.Hosting.MauiApp"
-            HelperName="global::Dovetail.DovetailMauiHelpers"
+            HelperName="global::Joinery.Dovetail.DovetailMauiHelpers"
             BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly"
             SyncEntryPoint="true"
         />

@@ -1,6 +1,6 @@
 <!--
-    OutputType=Exe makes Dovetail.Sdk detect a HostApplicationBuilder host: it injects
-    Dovetail.Hosting and generates the ConfigureDovetail() extension used in Program.cs.
+    OutputType=Exe makes Joinery.Dovetail.Sdk detect a HostApplicationBuilder host: it injects
+    Joinery.Dovetail.Hosting and generates the ConfigureDovetail() extension used in Program.cs.
 -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
