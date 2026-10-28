@@ -28,10 +28,12 @@
   </ItemGroup>
 
   <!--
-      Also before XamlPreCompile: WinUI's XAML compiler (MAUI and Uno Windows heads) compiles the project's C# in a first pass, and the
-      generated entry points call these helpers.
+      Right after the references resolve (the project and package analyzers are known by then too): well before CoreCompile and
+      WinUI's XamlPreCompile, which compiles the project's C# in a first pass for MAUI and Uno Windows heads, and before the
+      DovetailHost targets in Joinery.Dovetail.Hosts.targets evaluate their conditions, so _DovetailHostingGateHosts can still
+      remove hosts.
   -->
-  <Target Name="_DovetailResolveHostingHelpers" BeforeTargets="CoreCompile;XamlPreCompile" DependsOnTargets="ResolveAssemblyReferences">
+  <Target Name="_DovetailResolveHostingHelpers" AfterTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <_DovetailHostingReference Include="@(ReferencePath->'%(Filename)')" />
     </ItemGroup>
@@ -83,14 +85,35 @@
   </Target>
 
   <!--
-      The Uno host's ConfigureDovetail<TShell> entry points (NavigateEntryPoint) call DovetailUnoHelpers.Navigate, which needs
-      Uno.Extensions.Navigation: without it there is nothing to navigate with, so the entry points are not emitted.
+      The generated entry points of a DovetailHost call its helper, so a host whose helper this package didn't emit (its framework isn't
+      referenced, say a Microsoft.NET.Sdk.WebAssembly app without Blazor) gets no entry points rather than ones that can't compile.
+      HelperName defaults to Dovetail{Host}Helpers, as in Joinery.Dovetail.Hosts.targets; hosts with a helper of their own are left alone.
+      Likewise the Uno host's ConfigureDovetail<TShell> entry points (NavigateEntryPoint) call DovetailUnoHelpers.Navigate, which needs
+      Uno.Extensions.Navigation.
   -->
-  <Target Name="_DovetailHostingNavigateEntryPoints"
-          BeforeTargets="_DovetailGenerateHostSources"
-          DependsOnTargets="_DovetailResolveHostingHelpers"
-          Condition="'@(DovetailHost)' != ''">
-    <ItemGroup Condition="'$(_DovetailHostingReferenced)' == 'true' and '$(_DovetailHostingUnoNavigation)' != 'true'">
+  <Target Name="_DovetailHostingGateHosts"
+          AfterTargets="_DovetailResolveHostingHelpers"
+          Condition="'$(_DovetailHostingReferenced)' == 'true' and '@(DovetailHost)' != ''">
+    <ItemGroup>
+      <_DovetailHostingHost Include="@(DovetailHost)" HostName="%(DovetailHost.Identity)" Helper="%(DovetailHost.HelperName)" />
+      <_DovetailHostingHost Condition="'%(_DovetailHostingHost.Helper)' == ''">
+        <Helper>Dovetail%(_DovetailHostingHost.HostName)Helpers</Helper>
+      </_DovetailHostingHost>
+      <_DovetailHostingHost>
+        <Helper>$([System.String]::Copy('%(_DovetailHostingHost.Helper)').Replace('global::', '').Replace('Joinery.Dovetail.', ''))</Helper>
+      </_DovetailHostingHost>
+      <!-- Hosts by helper; those whose helper is one of this package's but wasn't emitted are the ones to drop. -->
+      <_DovetailHostingHostByHelper Include="@(_DovetailHostingHost->'%(Helper)')" />
+      <_DovetailHostingMissingHelper Include="@(_DovetailHostingHelper)" Exclude="@(_DovetailHostingEmittedHelper)" />
+      <_DovetailHostingAvailableHost Include="@(_DovetailHostingHostByHelper)" Exclude="@(_DovetailHostingMissingHelper)" />
+      <_DovetailHostingUnavailableHost Include="@(_DovetailHostingHostByHelper)" Exclude="@(_DovetailHostingAvailableHost)" />
+      <DovetailHost Remove="@(_DovetailHostingUnavailableHost->'%(HostName)')" />
+    </ItemGroup>
+    <Message
+      Condition="'@(_DovetailHostingUnavailableHost)' != ''"
+      Importance="normal"
+      Text="Dovetail: no ConfigureDovetail entry points for the %(_DovetailHostingUnavailableHost.HostName) host, because the project doesn't reference what %(_DovetailHostingUnavailableHost.Identity) needs." />
+    <ItemGroup Condition="'$(_DovetailHostingUnoNavigation)' != 'true'">
       <DovetailHost Condition="'%(DovetailHost.NavigateEntryPoint)' == 'true'">
         <NavigateEntryPoint>false</NavigateEntryPoint>
       </DovetailHost>

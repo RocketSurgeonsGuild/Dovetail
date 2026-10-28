@@ -70,7 +70,9 @@ public class HostingHelperTests(string targetFramework)
         using var project = CreateApplication(
             app =>
             {
+                // A plain Microsoft.NET.Sdk application stands in for an Uno app, which would need Uno.Sdk and its workloads.
                 app.Property("NoWarn", "$(NoWarn);UNOB0025")
+                   .Property("UnoDisableUNOB0029Validation", "true")
                    .ItemPackageReference("Uno.Extensions.Hosting.WinUI", Config.CentralPackageVersion("Uno.Extensions.Hosting.WinUI", targetFramework))
                    .ItemInclude(
                         "DovetailHost",
@@ -96,6 +98,24 @@ public class HostingHelperTests(string targetFramework)
 
         helpers.ShouldBe(navigation ? [GenericHost, "DovetailUnoHelpers", "DovetailUnoNavigationHelpers"] : [GenericHost, "DovetailUnoHelpers"]);
         GeneratedFiles(project, "DovetailHost.Uno.Navigate.g.cs").ShouldBe(navigation ? ["DovetailHost.Uno.Navigate.g.cs"] : []);
+    }
+
+    /// <summary>
+    /// The SDK declares a WebAssembly host for every Microsoft.NET.Sdk.BlazorWebAssembly or Microsoft.NET.Sdk.WebAssembly project. Its
+    /// entry points call the WebAssembly helper, so without Blazor's Microsoft.AspNetCore.Components.WebAssembly the project gets none,
+    /// and still builds.
+    /// </summary>
+    [Test]
+    public async Task WebAssemblyHost_WithoutBlazor_GetsNoEntryPoints()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
+           .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly"))
+           .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
+
+        (await BuildAndReadHelpers(project)).ShouldBe([GenericHost]);
+        GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
     }
 
     private ProjectCreator WebAssembly(ProjectCreator app) =>

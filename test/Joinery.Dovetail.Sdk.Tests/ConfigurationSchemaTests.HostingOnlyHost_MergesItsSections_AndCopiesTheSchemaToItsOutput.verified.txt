@@ -29,7 +29,9 @@
       {TempPath}sdk-tests/{id}/host/host.csproj
     ],
     NoImports: [],
-    GeneratedFiles: [],
+    GeneratedFiles: [
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs
+    ],
     OutputFiles: [
       appsettings.schema.json,
       host.runtimeconfig.dev.json

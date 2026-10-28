@@ -62,6 +62,11 @@ public class HostTypeTests(string targetFramework)
                 "wasm/wasm.csproj",
                 ProjectCreator
                    .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly")
+                   // As every Blazor application does; the generated entry points need it (see HostingHelperTests).
+                   .ItemPackageReference(
+                        "Microsoft.AspNetCore.Components.WebAssembly",
+                        Config.CentralPackageVersion("Microsoft.AspNetCore.Components.WebAssembly", targetFramework)
+                    )
             )
            .AddFile("wasm/Program.cs", "System.Console.WriteLine(\"hello\");");
 

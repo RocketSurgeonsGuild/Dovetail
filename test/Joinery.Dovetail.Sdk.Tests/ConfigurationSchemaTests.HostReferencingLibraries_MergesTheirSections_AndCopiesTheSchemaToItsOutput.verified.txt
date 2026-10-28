@@ -27,11 +27,7 @@
       DovetailEnableOpenTelemetry: false,
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
-      DovetailHostingMauiVersion: {sdk-version},
-      DovetailHostingUnoVersion: {sdk-version},
       DovetailHostingVersion: {sdk-version},
-      DovetailHostingWebAssemblyVersion: {sdk-version},
-      DovetailHostingWebVersion: {sdk-version},
       DovetailMermaidVersion: {sdk-version},
       DovetailOpenTelemetryVersion: {sdk-version},
       DovetailSdkVersion: {sdk-version},
@@ -87,7 +83,8 @@
     ],
     GeneratedFiles: [
       DovetailContextBuilder.g.cs,
-      DovetailHost.HostApplication.g.cs
+      DovetailHost.HostApplication.g.cs,
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs
     ],
     OutputFiles: [
       appsettings.schema.json,
