@@ -13,20 +13,29 @@ An application turns OpenTelemetry on by referencing `Joinery.Dovetail.OpenTelem
 Joinery.Dovetail.Sdk adds `Joinery.Dovetail.OpenTelemetry` to every project that references `OpenTelemetry` or
 `OpenTelemetry.Extensions.Hosting`; set `DovetailEnableOpenTelemetry` to `false` to leave OpenTelemetry to the application.
 
-`Joinery.Dovetail.Hosting` then emits a joint into the application that turns OpenTelemetry on for its host and applies every
-OpenTelemetry joint. Which one depends on the host:
+`Joinery.Dovetail.Hosting` then emits joints into the application that add OpenTelemetry to its services, apply every
+OpenTelemetry joint, and start it. OpenTelemetry only listens to activity sources and meters once its providers are resolved,
+which `OpenTelemetry.Extensions.Hosting` does from a hosted service, so what an application needs depends on whether its host runs
+hosted services:
 
-| Host                                                                                   | The application also references    | Emitted joint                                                                                                                                                                                                                                    |
-| -------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The generic host (`Microsoft.Extensions.Hosting`): workers, ASP.NET Core, Uno Platform | `OpenTelemetry.Extensions.Hosting` | `DovetailOpenTelemetryJoint` calls `services.AddOpenTelemetry()`, which starts the providers with the host. On .NET 11 it also traces ASP.NET Core's `Microsoft.AspNetCore` activity source.                                                     |
-| .NET MAUI, Blazor WebAssembly                                                          | nothing else                       | `DovetailOpenTelemetryServicesJoint` adds OpenTelemetry to the services. Nothing starts the tracer and meter providers there, so they start once something resolves `TracerProvider` or `MeterProvider`; logging starts with the logger factory. |
+| Host                                    | Runs hosted services                                                                   | Needs `OpenTelemetry.Extensions.Hosting` | Started by                                                                                                                    |
+| --------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Generic host: workers, ASP.NET Core     | yes                                                                                    | yes                                      | its hosted service                                                                                                            |
+| Uno Platform (`Uno.Extensions.Hosting`) | once started: `NavigateAsync<TShell>()` starts the host, `ConfigureDovetail()` doesn't | no                                       | `DovetailOpenTelemetryUnoStartJoint`, once the host is built                                                                  |
+| .NET MAUI (`MauiAppBuilder`)            | no                                                                                     | no                                       | `DovetailOpenTelemetryMauiStartJoint`, once the app is built                                                                  |
+| Blazor WebAssembly                      | from .NET 11                                                                           | no                                       | `DovetailOpenTelemetryWebAssemblyStartJoint`, once the host is built (and on .NET 11 the hosted service too, when referenced) |
 
-A .NET MAUI or Blazor WebAssembly application gets `DovetailOpenTelemetryServicesJoint` even when `Microsoft.Extensions.Hosting`
-comes along (often through another package), unless it also references `OpenTelemetry.Extensions.Hosting`. Only an application
-none of whose hosts can turn OpenTelemetry on, one that uses the generic host without `OpenTelemetry.Extensions.Hosting` and has no
-MAUI or WebAssembly host, fails to compile, with an `#error` (CS1029) that says to add it. Packages that build on
-`OpenTelemetry.Extensions.Hosting`, such as the Azure Monitor distro or .NET Aspire's service defaults, bring it along, so they
-count.
+- With `OpenTelemetry.Extensions.Hosting`, whatever the host, `DovetailOpenTelemetryJoint` calls `services.AddOpenTelemetry()`. On
+  .NET 11 it also traces ASP.NET Core's `Microsoft.AspNetCore` activity source.
+- Without it, `DovetailOpenTelemetryServicesJoint` adds OpenTelemetry to the services directly, for the hosts that don't need it.
+- A start joint resolves the meter, tracer and logger providers right after the host is built, as the hosted service does when the
+  host starts, so OpenTelemetry runs on those hosts without a package the application wouldn't otherwise use.
+- Only an application whose hosts all need `OpenTelemetry.Extensions.Hosting` (the generic host, with no Uno, MAUI or WebAssembly
+  host) and that doesn't reference it fails to compile, with an `#error` (CS1029) that says to add it. Packages that build on it,
+  such as the Azure Monitor distro or .NET Aspire's service defaults, bring it along, so they count.
+
+OpenTelemetry runs in the browser too: in single-threaded Blazor WebAssembly its batch export processor and periodic metric reader
+run on tasks instead of threads.
 
 Only applications and test projects get the joint, as an internal class: a library's copy would be exported to every application
 that references it. A test project that imports its application's joints gets the application's copy as well as its own, and only

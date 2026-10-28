@@ -81,8 +81,10 @@ how the host wires up OpenTelemetry.</p>
 <p>An application turns OpenTelemetry on by referencing <code dir="auto">Joinery.Dovetail.OpenTelemetry</code> along with <code dir="auto">Joinery.Dovetail.Hosting</code>.
 Joinery.Dovetail.Sdk adds <code dir="auto">Joinery.Dovetail.OpenTelemetry</code> to every project that references <code dir="auto">OpenTelemetry</code> or
 <code dir="auto">OpenTelemetry.Extensions.Hosting</code>; set <code dir="auto">DovetailEnableOpenTelemetry</code> to <code dir="auto">false</code> to leave OpenTelemetry to the application.</p>
-<p><code dir="auto">Joinery.Dovetail.Hosting</code> then emits a joint into the application that turns OpenTelemetry on for its host and applies every
-OpenTelemetry joint. Which one depends on the host:</p>
+<p><code dir="auto">Joinery.Dovetail.Hosting</code> then emits joints into the application that add OpenTelemetry to its services, apply every
+OpenTelemetry joint, and start it. OpenTelemetry only listens to activity sources and meters once its providers are resolved,
+which <code dir="auto">OpenTelemetry.Extensions.Hosting</code> does from a hosted service, so what an application needs depends on whether its host runs
+hosted services:</p>
 
 
 
@@ -103,13 +105,34 @@ OpenTelemetry joint. Which one depends on the host:</p>
 
 
 
-<table><thead><tr><th>Host</th><th>The application also references</th><th>Emitted joint</th></tr></thead><tbody><tr><td>The generic host (<code dir="auto">Microsoft.Extensions.Hosting</code>): workers, ASP.NET Core, Uno Platform</td><td><code dir="auto">OpenTelemetry.Extensions.Hosting</code></td><td><code dir="auto">DovetailOpenTelemetryJoint</code> calls <code dir="auto">services.AddOpenTelemetry()</code>, which starts the providers with the host. On .NET 11 it also traces ASP.NET Core’s <code dir="auto">Microsoft.AspNetCore</code> activity source.</td></tr><tr><td>.NET MAUI, Blazor WebAssembly</td><td>nothing else</td><td><code dir="auto">DovetailOpenTelemetryServicesJoint</code> adds OpenTelemetry to the services. Nothing starts the tracer and meter providers there, so they start once something resolves <code dir="auto">TracerProvider</code> or <code dir="auto">MeterProvider</code>; logging starts with the logger factory.</td></tr></tbody></table>
-<p>A .NET MAUI or Blazor WebAssembly application gets <code dir="auto">DovetailOpenTelemetryServicesJoint</code> even when <code dir="auto">Microsoft.Extensions.Hosting</code>
-comes along (often through another package), unless it also references <code dir="auto">OpenTelemetry.Extensions.Hosting</code>. Only an application
-none of whose hosts can turn OpenTelemetry on, one that uses the generic host without <code dir="auto">OpenTelemetry.Extensions.Hosting</code> and has no
-MAUI or WebAssembly host, fails to compile, with an <code dir="auto">#error</code> (CS1029) that says to add it. Packages that build on
-<code dir="auto">OpenTelemetry.Extensions.Hosting</code>, such as the Azure Monitor distro or .NET Aspire’s service defaults, bring it along, so they
-count.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Host</th><th>Runs hosted services</th><th>Needs <code dir="auto">OpenTelemetry.Extensions.Hosting</code></th><th>Started by</th></tr></thead><tbody><tr><td>Generic host: workers, ASP.NET Core</td><td>yes</td><td>yes</td><td>its hosted service</td></tr><tr><td>Uno Platform (<code dir="auto">Uno.Extensions.Hosting</code>)</td><td>once started: <code dir="auto">NavigateAsync&#x3C;TShell>()</code> starts the host, <code dir="auto">ConfigureDovetail()</code> doesn’t</td><td>no</td><td><code dir="auto">DovetailOpenTelemetryUnoStartJoint</code>, once the host is built</td></tr><tr><td>.NET MAUI (<code dir="auto">MauiAppBuilder</code>)</td><td>no</td><td>no</td><td><code dir="auto">DovetailOpenTelemetryMauiStartJoint</code>, once the app is built</td></tr><tr><td>Blazor WebAssembly</td><td>from .NET 11</td><td>no</td><td><code dir="auto">DovetailOpenTelemetryWebAssemblyStartJoint</code>, once the host is built (and on .NET 11 the hosted service too, when referenced)</td></tr></tbody></table>
+<ul>
+<li>With <code dir="auto">OpenTelemetry.Extensions.Hosting</code>, whatever the host, <code dir="auto">DovetailOpenTelemetryJoint</code> calls <code dir="auto">services.AddOpenTelemetry()</code>. On
+.NET 11 it also traces ASP.NET Core’s <code dir="auto">Microsoft.AspNetCore</code> activity source.</li>
+<li>Without it, <code dir="auto">DovetailOpenTelemetryServicesJoint</code> adds OpenTelemetry to the services directly, for the hosts that don’t need it.</li>
+<li>A start joint resolves the meter, tracer and logger providers right after the host is built, as the hosted service does when the
+host starts, so OpenTelemetry runs on those hosts without a package the application wouldn’t otherwise use.</li>
+<li>Only an application whose hosts all need <code dir="auto">OpenTelemetry.Extensions.Hosting</code> (the generic host, with no Uno, MAUI or WebAssembly
+host) and that doesn’t reference it fails to compile, with an <code dir="auto">#error</code> (CS1029) that says to add it. Packages that build on it,
+such as the Azure Monitor distro or .NET Aspire’s service defaults, bring it along, so they count.</li>
+</ul>
+<p>OpenTelemetry runs in the browser too: in single-threaded Blazor WebAssembly its batch export processor and periodic metric reader
+run on tasks instead of threads.</p>
 <p>Only applications and test projects get the joint, as an internal class: a library’s copy would be exported to every application
 that references it. A test project that imports its application’s joints gets the application’s copy as well as its own, and only
 the first one to run applies OpenTelemetry.</p>
