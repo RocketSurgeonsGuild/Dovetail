@@ -21,6 +21,19 @@ public class BrowserHostingTests(PlaywrightFixture fixture)
         await Assert.That(await page.Locator("#hosted-service").TextContentAsync()).IsEqualTo("started");
     }
 
+    /// <summary>
+    ///     OpenTelemetry runs in the browser without OpenTelemetry.Extensions.Hosting: Joinery.Dovetail.Hosting starts the tracer provider
+    ///     once the host is built, and the sample's batch export processor (a task in the browser, not a thread) exports its activity.
+    /// </summary>
+    [Test]
+    public async Task Should_Export_OpenTelemetry_Activities()
+    {
+        var page = await OpenSampleAsync();
+
+        await page.WaitForSelectorAsync("#telemetry:not(:text('waiting'))", new() { Timeout = 30_000, });
+        await Assert.That(await page.Locator("#telemetry").TextContentAsync()).IsEqualTo("exported index");
+    }
+
     [Test]
     public async Task Should_Load_Dovetail_Configuration()
     {

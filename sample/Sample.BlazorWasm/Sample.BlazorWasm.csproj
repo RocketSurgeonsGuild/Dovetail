@@ -29,6 +29,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <!-- OpenTelemetry in the browser (BrowserTelemetry.cs); no OpenTelemetry.Extensions.Hosting, which WebAssembly doesn't need. -->
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyMetadata Include="ContentRootPath" Value="$([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))" />

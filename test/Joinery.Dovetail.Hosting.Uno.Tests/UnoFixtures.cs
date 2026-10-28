@@ -1,12 +1,22 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
+using Joinery.Dovetail.OpenTelemetry.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 
 namespace Joinery.Dovetail.Hosting.Uno.Tests;
 
 public static class UnoFixtures
 {
+    /// <summary>
+    ///     The activity source <see cref="TracingJoint" /> subscribes the tracer provider to.
+    /// </summary>
+    public const string ActivitySourceName = "Joinery.Dovetail.Hosting.Uno.Tests";
+
     public sealed class FromApplicationBuilderJoint;
 
     public sealed class FromHostBuilderJoint;
@@ -54,5 +64,23 @@ public static class UnoFixtures
     public class HostCreatedJoint : IHostCreatedJoint<IHost>
     {
         public void Register(IDovetailContext context, IHost host) => Observed.CreatedHost = host;
+    }
+
+    /// <summary>
+    ///     Subscribes the tracer provider to <see cref="ActivitySourceName" /> and records the activities it ends. Only a running
+    ///     OpenTelemetry tracer provider records them; TUnit's own listener makes every activity source listened to anyway.
+    /// </summary>
+    [DovetailExport]
+    public class TracingJoint : ITracerProviderJoint
+    {
+        public void Register(IDovetailContext context, TracerProviderBuilder builder) =>
+            builder.AddSource(ActivitySourceName).AddProcessor(new RecordingProcessor());
+    }
+
+    public sealed class RecordingProcessor : BaseProcessor<Activity>
+    {
+        public static ConcurrentQueue<string> Ended { get; } = new();
+
+        public override void OnEnd(Activity data) => Ended.Enqueue(data.DisplayName);
     }
 }

@@ -88,23 +88,7 @@ public class HostingHelperTests(string targetFramework)
         using var project = CreateApplication(
             app =>
             {
-                // A plain Microsoft.NET.Sdk application stands in for an Uno app, which would need Uno.Sdk and its workloads.
-                app.Property("NoWarn", "$(NoWarn);UNOB0025")
-                   .Property("UnoDisableUNOB0029Validation", "true")
-                   .ItemPackageReference("Uno.Extensions.Hosting.WinUI", Config.CentralPackageVersion("Uno.Extensions.Hosting.WinUI", targetFramework))
-                   .ItemInclude(
-                        "DovetailHost",
-                        "Uno",
-                        metadata: new Dictionary<string, string?>
-                        {
-                            ["HostBuilderType"] = "global::Uno.Extensions.Hosting.IApplicationBuilder",
-                            ["HostBuilderName"] = "builder",
-                            ["HostType"] = "global::Microsoft.Extensions.Hosting.IHost",
-                            ["HelperName"] = "global::Joinery.Dovetail.DovetailUnoHelpers",
-                            ["BuildExpression"] = ", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly",
-                            ["NavigateEntryPoint"] = "true",
-                        }
-                    );
+                Uno(app);
                 if (navigation)
                 {
                     app.ItemPackageReference("Uno.Extensions.Navigation.WinUI", Config.CentralPackageVersion("Uno.Extensions.Navigation.WinUI", targetFramework));
@@ -160,16 +144,17 @@ public class HostingHelperTests(string targetFramework)
     }
 
     /// <summary>
-    ///     .NET MAUI and Blazor WebAssembly don't use the generic host, so their applications add OpenTelemetry to the services directly.
+    ///     .NET MAUI doesn't run hosted services, so OpenTelemetry.Extensions.Hosting couldn't start OpenTelemetry: the app adds it to
+    ///     the services directly, and a start joint resolves the providers once the app is built.
     /// </summary>
     [Test]
-    public async Task Maui_WithOpenTelemetry_EmitsTheServicesJoint()
+    public async Task Maui_WithOpenTelemetry_EmitsTheServicesJoint_AndTheStartJoint()
     {
         using var project = CreateApplication(
             app => WithDovetailOpenTelemetry(app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)))
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailMauiHelpers", "DovetailOpenTelemetryServicesJoint"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]);
     }
 
     /// <summary>
@@ -186,16 +171,49 @@ public class HostingHelperTests(string targetFramework)
             )
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailMauiHelpers", "DovetailOpenTelemetryServicesJoint"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(
+            [GenericHost, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]
+        );
     }
 
+    /// <summary>
+    ///     Blazor WebAssembly only runs hosted services from .NET 11, so it doesn't need OpenTelemetry.Extensions.Hosting either.
+    /// </summary>
     [Test]
-    public async Task WebAssembly_WithOpenTelemetry_EmitsTheServicesJoint()
+    public async Task WebAssembly_WithOpenTelemetry_EmitsTheServicesJoint_AndTheStartJoint()
     {
         using var project = CreateApplication(app => WithDovetailOpenTelemetry(WebAssembly(app)));
 
         ( await BuildAndReadHelpers(project) ).ShouldBe(
-            ["DovetailOpenTelemetryServicesJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
+            ["DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryWebAssemblyStartJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
+        );
+    }
+
+    /// <summary>
+    ///     An application that references OpenTelemetry.Extensions.Hosting gets its <c>AddOpenTelemetry()</c> whatever the host, and
+    ///     still the start joint where the host might not run its hosted service (WebAssembly before .NET 11).
+    /// </summary>
+    [Test]
+    public async Task WebAssembly_WithOpenTelemetryHosting_EmitsTheOpenTelemetryJoint_AndTheStartJoint()
+    {
+        using var project = CreateApplication(app => WithOpenTelemetryHosting(WithDovetailOpenTelemetry(WebAssembly(app))));
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe(
+            ["DovetailOpenTelemetryJoint", "DovetailOpenTelemetryWebAssemblyStartJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
+        );
+    }
+
+    /// <summary>
+    ///     Uno Platform uses the generic host, but its host only runs hosted services once started (<c>NavigateAsync</c> does,
+    ///     <c>ConfigureDovetail</c> doesn't), so it isn't asked for OpenTelemetry.Extensions.Hosting.
+    /// </summary>
+    [Test]
+    public async Task Uno_WithOpenTelemetry_WithoutOpenTelemetryHosting_EmitsTheServicesJoint_AndTheStartJoint()
+    {
+        using var project = CreateApplication(app => WithDovetailOpenTelemetry(Uno(app)));
+
+        ( await BuildAndReadHelpers(project) ).ShouldBe(
+            [GenericHost, "DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryUnoStartJoint", "DovetailUnoHelpers"]
         );
     }
 
@@ -248,6 +266,25 @@ public class HostingHelperTests(string targetFramework)
 
     private ProjectCreator WithOpenTelemetryHosting(ProjectCreator app) =>
         app.ItemPackageReference("OpenTelemetry.Extensions.Hosting", Config.CentralPackageVersion("OpenTelemetry.Extensions.Hosting", targetFramework));
+
+    // A plain Microsoft.NET.Sdk application stands in for an Uno app, which would need Uno.Sdk and its workloads.
+    private ProjectCreator Uno(ProjectCreator app) =>
+        app.Property("NoWarn", "$(NoWarn);UNOB0025")
+           .Property("UnoDisableUNOB0029Validation", "true")
+           .ItemPackageReference("Uno.Extensions.Hosting.WinUI", Config.CentralPackageVersion("Uno.Extensions.Hosting.WinUI", targetFramework))
+           .ItemInclude(
+                "DovetailHost",
+                "Uno",
+                metadata: new Dictionary<string, string?>
+                {
+                    ["HostBuilderType"] = "global::Uno.Extensions.Hosting.IApplicationBuilder",
+                    ["HostBuilderName"] = "builder",
+                    ["HostType"] = "global::Microsoft.Extensions.Hosting.IHost",
+                    ["HelperName"] = "global::Joinery.Dovetail.DovetailUnoHelpers",
+                    ["BuildExpression"] = ", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly",
+                    ["NavigateEntryPoint"] = "true",
+                }
+            );
 
     private ProjectCreator WebAssembly(ProjectCreator app) =>
         app.ItemPackageReference(

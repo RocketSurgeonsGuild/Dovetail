@@ -17,14 +17,23 @@ test: @Configuration["Test"]
     <dd id="app-settings">@Configuration["app"]</dd>
     <dt>From the environment</dt>
     <dd id="environment">@Configuration["Sample:FromEnvironment"]</dd>
+    <dt>OpenTelemetry</dt>
+    <dd id="telemetry">@_telemetry</dd>
 </dl>
 
 @code {
     private string _hostedService = "waiting";
+    private string _telemetry = "waiting";
 
     protected override async Task OnInitializedAsync()
     {
+        // Only a started OpenTelemetry tracer provider listens to the sample's activity source, and exports what it ends.
+        using (BrowserTelemetry.Source.StartActivity("index")) { }
+
         var started = await Task.WhenAny(StartupStatus.Started, Task.Delay(TimeSpan.FromSeconds(10)));
         _hostedService = started == StartupStatus.Started ? "started" : "not started";
+
+        var exported = await Task.WhenAny(BrowserTelemetry.Exported, Task.Delay(TimeSpan.FromSeconds(10)));
+        _telemetry = exported == BrowserTelemetry.Exported ? $"exported {BrowserTelemetry.Exported.Result}" : "not exported";
     }
 }

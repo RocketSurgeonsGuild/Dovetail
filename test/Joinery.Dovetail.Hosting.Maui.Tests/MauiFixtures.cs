@@ -1,9 +1,12 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
 using Joinery.Dovetail.OpenTelemetry.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using OpenTelemetry;
 using OpenTelemetry.Trace;
 
 namespace Joinery.Dovetail.Hosting.Maui.Tests;
@@ -62,9 +65,21 @@ public static class MauiFixtures
         public void Register(IDovetailContext context, MauiApp app) => Observed.App = app;
     }
 
+    /// <summary>
+    ///     Subscribes the tracer provider to <see cref="ActivitySourceName" /> and records the activities it ends. Only a running
+    ///     OpenTelemetry tracer provider records them; TUnit's own listener makes every activity source listened to anyway.
+    /// </summary>
     [DovetailExport]
     public class TracingJoint : ITracerProviderJoint
     {
-        public void Register(IDovetailContext context, TracerProviderBuilder builder) => builder.AddSource(ActivitySourceName);
+        public void Register(IDovetailContext context, TracerProviderBuilder builder) =>
+            builder.AddSource(ActivitySourceName).AddProcessor(new RecordingProcessor());
+    }
+
+    public sealed class RecordingProcessor : BaseProcessor<Activity>
+    {
+        public static ConcurrentQueue<string> Ended { get; } = new();
+
+        public override void OnEnd(Activity data) => Ended.Enqueue(data.DisplayName);
     }
 }

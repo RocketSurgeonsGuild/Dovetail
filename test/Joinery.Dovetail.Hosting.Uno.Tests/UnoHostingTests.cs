@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,6 +95,23 @@ public class UnoHostingTests
 
         host.Services.GetService<IStashboxContainer>().ShouldNotBeNull();
         host.Services.GetService<RegisteredByTheHost>().ShouldNotBeNull();
+    }
+
+    /// <summary>
+    ///     The Uno host only runs hosted services once started, which <c>NavigateAsync</c> does and <c>ConfigureDovetail</c> doesn't, so
+    ///     OpenTelemetry.Extensions.Hosting couldn't be relied on to start OpenTelemetry. Joinery.Dovetail.Hosting adds it to the services
+    ///     with the OpenTelemetry joints (<see cref="TracingJoint" />) and starts the providers once the host is built.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_IsStarted_WhenTheHostIsBuilt()
+    {
+        using var host = await new TestApplicationBuilder().ConfigureDovetail();
+
+        var name = Guid.NewGuid().ToString("N");
+        using (var source = new ActivitySource(ActivitySourceName))
+        using (source.StartActivity(name)) { }
+
+        RecordingProcessor.Ended.ShouldContain(name);
     }
 
     private sealed class Marker;

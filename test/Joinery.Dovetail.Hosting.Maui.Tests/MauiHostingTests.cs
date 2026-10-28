@@ -104,18 +104,20 @@ public class MauiHostingTests
     }
 
     /// <summary>
-    ///     MAUI doesn't use the generic host, so Joinery.Dovetail.Hosting turns OpenTelemetry on by adding it to the services and applying
-    ///     the OpenTelemetry joints (<see cref="TracingJoint" />) itself. Nothing starts the tracer provider, so the test resolves it.
+    ///     MAUI doesn't run hosted services, so OpenTelemetry.Extensions.Hosting couldn't start OpenTelemetry here. Joinery.Dovetail.Hosting
+    ///     adds it to the services with the OpenTelemetry joints (<see cref="TracingJoint" />) and starts the providers once the app is
+    ///     built, so the app's activity source is listened to without anything resolving <see cref="TracerProvider" />.
     /// </summary>
     [Test]
-    public async Task OpenTelemetry_IsAddedToTheServices_WithTheOpenTelemetryJoints()
+    public async Task OpenTelemetry_IsStarted_WhenTheAppIsBuilt()
     {
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
-        app.Services.GetService<TracerProvider>().ShouldNotBeNull();
-        using var source = new ActivitySource(ActivitySourceName);
-        using var activity = source.StartActivity("Traced");
-        activity.ShouldNotBeNull();
+        var name = Guid.NewGuid().ToString("N");
+        using (var source = new ActivitySource(ActivitySourceName))
+        using (source.StartActivity(name)) { }
+
+        RecordingProcessor.Ended.ShouldContain(name);
     }
 
     private sealed class Marker;
