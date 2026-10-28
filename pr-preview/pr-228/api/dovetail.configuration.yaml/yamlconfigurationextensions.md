@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Configuration.Yaml](/Dovetail/pr-preview/pr-228/api/dovetail.configuration.yaml.md)
-- Version: `0.2.1-pr.19`
+- Version: `0.2.1-pr.21`
 - Namespace: `Dovetail.Configuration.Yaml`
 - Target framework: `net10.0`
 

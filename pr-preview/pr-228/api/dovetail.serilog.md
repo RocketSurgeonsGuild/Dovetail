@@ -1,7 +1,7 @@
 # Dovetail.Serilog
 
 - Package: `Dovetail.Serilog`
-- Version: `0.2.1-pr.19`
+- Version: `0.2.1-pr.21`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Serilog](https://www.nuget.org/packages/Dovetail.Serilog)
 

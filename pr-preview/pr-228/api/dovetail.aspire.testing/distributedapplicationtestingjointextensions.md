@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Aspire.Testing](/Dovetail/pr-preview/pr-228/api/dovetail.aspire.testing.md)
-- Version: `0.2.1-pr.19`
+- Version: `0.2.1-pr.21`
 - Namespace: `Dovetail.Testing.Joints`
 - Target framework: `net10.0`
 

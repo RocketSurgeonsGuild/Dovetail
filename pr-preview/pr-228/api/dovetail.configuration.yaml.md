@@ -1,7 +1,7 @@
 # Dovetail.Configuration.Yaml
 
 - Package: `Dovetail.Configuration.Yaml`
-- Version: `0.2.1-pr.19`
+- Version: `0.2.1-pr.21`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Configuration.Yaml](https://www.nuget.org/packages/Dovetail.Configuration.Yaml)
 

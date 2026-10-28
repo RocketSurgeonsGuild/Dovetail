@@ -1,7 +1,7 @@
 # Dovetail.Hosting.Maui
 
 - Package: `Dovetail.Hosting.Maui`
-- Version: `0.2.1-pr.19`
+- Version: `0.2.1-pr.21`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Hosting.Maui](https://www.nuget.org/packages/Dovetail.Hosting.Maui)
 

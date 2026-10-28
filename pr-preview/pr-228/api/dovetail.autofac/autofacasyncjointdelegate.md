@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Dovetail.Autofac](/Dovetail/pr-preview/pr-228/api/dovetail.autofac.md)
-- Version: `0.2.1-pr.19`
+- Version: `0.2.1-pr.21`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`

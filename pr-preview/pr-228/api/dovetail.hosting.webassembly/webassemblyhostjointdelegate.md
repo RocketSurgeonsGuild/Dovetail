@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Dovetail.Hosting.WebAssembly](/Dovetail/pr-preview/pr-228/api/dovetail.hosting.webassembly.md)
-- Version: `0.2.1-pr.19`
+- Version: `0.2.1-pr.21`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
