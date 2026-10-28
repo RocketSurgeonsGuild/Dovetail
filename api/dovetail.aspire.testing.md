@@ -1,7 +1,7 @@
 # Dovetail.Aspire.Testing
 
 - Package: `Dovetail.Aspire.Testing`
-- Version: `0.2.1-beta.8`
+- Version: `0.2.2-beta.1`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Aspire.Testing](https://www.nuget.org/packages/Dovetail.Aspire.Testing)
 

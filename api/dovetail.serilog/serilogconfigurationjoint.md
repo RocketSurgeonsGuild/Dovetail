@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Serilog](/Dovetail/api/dovetail.serilog.md)
-- Version: `0.2.1-beta.8`
+- Version: `0.2.2-beta.1`
 - Namespace: `Dovetail.Serilog`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceJoint`

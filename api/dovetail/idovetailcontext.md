@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Dovetail](/Dovetail/api/dovetail.md)
-- Version: `0.2.1-beta.8`
+- Version: `0.2.2-beta.1`
 - Namespace: `Dovetail`
 - Target framework: `net10.0`
 

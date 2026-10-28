@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Dovetail.Testing](/Dovetail/api/dovetail.testing.md)
-- Version: `0.2.1-beta.8`
+- Version: `0.2.2-beta.1`
 - Namespace: `Dovetail.Testing.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`

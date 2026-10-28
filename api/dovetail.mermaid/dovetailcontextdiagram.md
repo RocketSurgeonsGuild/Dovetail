@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Mermaid](/Dovetail/api/dovetail.mermaid.md)
-- Version: `0.2.1-beta.8`
+- Version: `0.2.2-beta.1`
 - Namespace: `Dovetail`
 - Target framework: `net10.0`
 
