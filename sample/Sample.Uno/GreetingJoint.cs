@@ -1,6 +1,6 @@
-using Dovetail;
-using Dovetail.Attributes;
-using Dovetail.Joints;
+using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 
 namespace Sample.Uno;

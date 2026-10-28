@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
+    <PackageDescription>Provides OpenTelemetry support for a Rocket Surgery Application</PackageDescription>
+    <PackageTags>$(PackageTags);OpenTelemetry</PackageTags>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+  <ItemGroup>
+    <DovetailJoint Include="OpenTelemetry" Namespace="Joinery.Dovetail.Joints" ParameterType="global::OpenTelemetry.IOpenTelemetryBuilder" ParameterName="builder" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry"/>
+    <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj"/>
+  </ItemGroup>
+</Project>

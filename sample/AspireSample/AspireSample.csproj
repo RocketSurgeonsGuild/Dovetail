@@ -19,6 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Dovetail.Aspire\Dovetail.Aspire.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Aspire\Joinery.Dovetail.Aspire.csproj" IsAspireProjectResource="false" />
     </ItemGroup>
 </Project>

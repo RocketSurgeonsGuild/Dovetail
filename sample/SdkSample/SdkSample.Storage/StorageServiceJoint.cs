@@ -1,5 +1,5 @@
-using Dovetail.Attributes;
-using Dovetail.Joints;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SdkSample.Storage;

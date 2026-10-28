@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <PackageDescription>
+            Adds helpers to easily bootstrap a .NET MAUI application using conventions by just using the correct extension method. This adds
+            additional configuration, logging and service injections by convention.
+        </PackageDescription>
+        <PackageTags>$(PackageTags);hosting;maui</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+        <DovetailJoint
+            Include="MauiAppBuilder"
+            Namespace="Joinery.Dovetail.Joints"
+            ParameterType="global::Microsoft.Maui.Hosting.MauiAppBuilder"
+            ParameterName="builder"
+        />
+        <DovetailJoint Include="MauiApp" Namespace="Joinery.Dovetail.Joints" ParameterType="global::Microsoft.Maui.Hosting.MauiApp" ParameterName="app" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Maui.Core" />
+        <ProjectReference Include="../Joinery.Dovetail/Joinery.Dovetail.csproj" />
+        <ProjectReference Include="../Joinery.Dovetail.Hosting/Joinery.Dovetail.Hosting.csproj" />
+        <ProjectReference Include="../Joinery.Dovetail.OpenTelemetry/Joinery.Dovetail.OpenTelemetry.csproj" />
+        <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.Maui.Tests" />
+    </ItemGroup>
+</Project>

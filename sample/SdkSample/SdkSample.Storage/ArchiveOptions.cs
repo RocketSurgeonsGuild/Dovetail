@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Dovetail.Attributes;
+using Joinery.Dovetail.Attributes;
 using Microsoft.Extensions.Configuration;
 
 namespace SdkSample.Storage;

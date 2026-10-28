@@ -1,5 +1,5 @@
 <!--
-    The only Dovetail wiring in this sample: applying Dovetail.Sdk here (version pinned by
+    The only Dovetail wiring in this sample: applying Joinery.Dovetail.Sdk here (version pinned by
     global.json's msbuild-sdks) is enough for every project below to pick up the right Dovetail
     packages and generated bootstrapping for its host type. No project references Dovetail directly.
 -->
@@ -8,7 +8,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Opt in to managed configuration: injects Dovetail.Configuration.Yaml (YAML is the default format). -->
+    <!-- Opt in to managed configuration: injects Joinery.Dovetail.Configuration.Yaml (YAML is the default format). -->
     <DovetailEnableConfiguration>true</DovetailEnableConfiguration>
   </PropertyGroup>
 </Project>

@@ -1,0 +1,37 @@
+using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
+using Microsoft.Extensions.Configuration;
+
+/// <summary>
+///     Default JSON app-settings convention for this project.
+/// </summary>
+[DovetailExport]
+internal class JsonAppSettingsConfiguration : IConfigurationJoint
+{
+    /// <summary>
+    ///     Adds the project's <c>{{ProjectName}}.json</c>, environment-specific, and local JSON app-settings files to the configuration.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add the JSON sources to.</param>
+    public void Register(IDovetailContext context, IConfigurationBuilder builder)
+    {
+        var environmentName = context.Get<string>("EnvironmentName") ?? "Production";
+        if (context.EmbeddedConfigurationAssembly is not null)
+        {
+            // Hosts without a file system read the copies the Dovetail SDK embedded into this assembly instead.
+            var assembly = typeof(JsonAppSettingsConfiguration).Assembly;
+            builder.AddJsonStream(
+                DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.json", "appsettings.json")
+             ?? throw new System.IO.FileNotFoundException($"The embedded configuration file '{{ProjectName}}.json' was not found in '{assembly.FullName}'.")
+            );
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.{environmentName}.json", $"appsettings.{environmentName}.json") is { } environment) builder.AddJsonStream(environment);
+            if (DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.local.json", "appsettings.local.json") is { } local) builder.AddJsonStream(local);
+            return;
+        }
+
+        builder.AddJsonFile("{{ProjectName}}.json", optional: false, reloadOnChange: false);
+        builder.AddJsonFile($"{{ProjectName}}.{environmentName}.json", optional: true, reloadOnChange: false);
+        builder.AddJsonFile("{{ProjectName}}.local.json", optional: true, reloadOnChange: false);
+    }
+}

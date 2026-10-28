@@ -36,7 +36,7 @@ Two MSBuild properties decide what the generator emits for a project:
 | `ImportDovetailAssembly` | The `Imports` class is generated.                                                                                               |
 | `ExportDovetailAssembly` | Referencing assemblies import this assembly's joints. When `false`, the joints still reach this assembly's own `Imports` class. |
 
-Dovetail.Sdk sets both as part of its host detection. Projects that don't use the SDK get these defaults:
+Joinery.Dovetail.Sdk sets both as part of its host detection. Projects that don't use the SDK get these defaults:
 
 - test projects (`IsTestProject`) import but don't export;
 - applications (`OutputType` of `Exe` or `WinExe`) import and export;
@@ -45,6 +45,6 @@ Dovetail.Sdk sets both as part of its host detection. Projects that don't use th
 Set either property in a project file to override its default.
 
 The generator runs in every project that references a Dovetail package, including projects that only reference one
-indirectly, for example through `Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint
+indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint
 with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
 generates nothing and reports warning `DT0006` instead.

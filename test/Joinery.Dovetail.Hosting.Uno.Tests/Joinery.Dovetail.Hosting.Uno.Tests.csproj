@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <OutputType>Exe</OutputType>
+        <!--
+            UNOB0025: the Uno.Extensions packages bring Uno's reference assemblies, and this test host has no Uno runtime. The tests
+            only use Uno.Extensions' host builder, which doesn't call into the Uno runtime.
+        -->
+        <NoWarn>$(NoWarn);UNOB0025</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Uno\Joinery.Dovetail.Hosting.Uno.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Stashbox\Joinery.Dovetail.Stashbox.csproj" />
+
+        <!-- Mirrors what the Dovetail SDK's Uno detection adds (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets). -->
+        <DovetailHost
+            Include="Uno"
+            HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Extensions.Hosting.IHost"
+            HelperName="global::Joinery.Dovetail.DovetailUnoHelpers"
+            BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly"
+            NavigateEntryPoint="true"
+        />
+    </ItemGroup>
+</Project>

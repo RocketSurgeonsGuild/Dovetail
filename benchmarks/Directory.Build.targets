@@ -1,5 +1,5 @@
 <Project>
-    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.targets" />
-    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Build.Tasks/Dovetail.Build.Tasks.InRepo.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail/build/Joinery.Dovetail.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.InRepo.targets" />
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

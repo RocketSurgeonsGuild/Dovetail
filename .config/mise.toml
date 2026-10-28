@@ -44,7 +44,7 @@ docs = { run = [
 "sample:sdk" = { run = [
   "dotnet msbuild build/pack.proj",
   "dotnet run --project SdkSample.Worker",
-], dir = "{{config_root}}/sample/SdkSample", description = "Pack src/** locally and run the Dovetail.Sdk sample worker" }
+], dir = "{{config_root}}/sample/SdkSample", description = "Pack src/** locally and run the Joinery.Dovetail.Sdk sample worker" }
 
 [settings]
 experimental = true

@@ -36,13 +36,13 @@ Goals:
 | Schema draft / strictness | Draft-07. Library fragments are permissive (no `required` unless `DovetailConfigurationSchemaRequired=true`). The **merged application schema is strict**: each Dovetail section and its nested objects are closed with a **case-insensitive `propertyNames`** rule (`additionalProperties:false` isn't used, so non-canonical casing still validates). Root, shared parent nodes, dictionaries and overlapping sections stay open. Opt out with `DovetailConfigurationSchemaStrict=false`.                                                                                                            |
 | Merged scope              | Includes SchemaStore's appsettings schema by default (`allOf` + `$ref https://json.schemastore.org/appsettings.json`). Opt out via property.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Which projects merge      | Applications (SDK-detected, plus non-SDK Exe) **and test projects**. Override with `DovetailConfigurationSchemaHost`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Where the merge runs      | A **compiled MSBuild task** (`src/Dovetail.Build.Tasks`, netstandard2.0, packed into `Dovetail/build/tasks/`). It reads fragments from `@(ReferencePath)` and its own `@(IntermediateAssembly)` metadata. Nothing is embedded in application DLLs.                                                                                                                                                                                                                                                                                                                                                     |
-| Runtime                   | No runtime constant or DI service. Optional endpoint `GET /.well-known/dovetail/configuration-schema`: off by default, `DovetailConfigurationSchemaEndpoint=true` auto-maps it through a generated web-host joint (Dovetail.Hosting.Web) in every environment, optionally restricted by `DovetailConfigurationSchemaEndpointEnvironments`. It serves `bin/appsettings.schema.json`, falling back to `obj/` when running from source.                                                                                                                                                                   |
+| Where the merge runs      | A **compiled MSBuild task** (`src/Joinery.Dovetail.Build.Tasks`, netstandard2.0, packed into `Joinery.Dovetail/build/tasks/`). It reads fragments from `@(ReferencePath)` and its own `@(IntermediateAssembly)` metadata. Nothing is embedded in application DLLs.                                                                                                                                                                                                                                                                                                                                                     |
+| Runtime                   | No runtime constant or DI service. Optional endpoint `GET /.well-known/dovetail/configuration-schema`: off by default, `DovetailConfigurationSchemaEndpoint=true` auto-maps it through a generated web-host joint (Joinery.Dovetail.Hosting.Web) in every environment, optionally restricted by `DovetailConfigurationSchemaEndpointEnvironments`. It serves `bin/appsettings.schema.json`, falling back to `obj/` when running from source.                                                                                                                                                                   |
 | Files                     | Host: `$(BaseIntermediateOutputPath)appsettings.schema.json` (stable editor path), copied to output and **always published**. Library: `obj/.../ConfigurationSchema.json`, packed at the **nupkg root** (Aspire-compatible).                                                                                                                                                                                                                                                                                                                                                                           |
 | VS segments               | **Host + per-package.** The host adds a segment for its merged file. Dovetail's targets **discover referenced package folders** that contain a root `ConfigurationSchema.json` and add segments, de-duplicated against segments the package already declares (e.g. Aspire's). No per-package targets files, so no collisions.                                                                                                                                                                                                                                                                          |
 | Editors                   | Opt-in scaffolding (`DovetailScaffoldEditorSettings=true`) creates or updates **only Dovetail's mappings** in `.vscode/settings.json` (`json.schemas`, `yaml.schemas`, `evenBetterToml.schema.associations`), preserving comments. If the file can't be updated safely: warning + snippet, file untouched. Never adds `$schema` keys or modelines.                                                                                                                                                                                                                                                     |
 | Transitive consumers      | **Flow the analyzer** to projects that reference Dovetail only transitively. Gate generation by honouring `ImportDovetailAssembly`/`ExportDovetailAssembly` (made compiler-visible). Non-SDK defaults: import for Exe/test projects, export everywhere. Below C# 12, the generator skips with a warning.                                                                                                                                                                                                                                                                                               |
-| Serilog                   | Hand-written `AssemblyMetadata` fragment in Dovetail.Serilog (the section is dynamic), following the rules of SchemaStore's Serilog definition so the two agree. Models MinimumLevel, Enrich, Filter and Properties; Using, WriteTo, AuditTo, Destructure and the switches stay accepted, unmodelled. Dogfood via SdkSample.                                                                                                                                                                                                                                                                           |
+| Serilog                   | Hand-written `AssemblyMetadata` fragment in Joinery.Dovetail.Serilog (the section is dynamic), following the rules of SchemaStore's Serilog definition so the two agree. Models MinimumLevel, Enrich, Filter and Properties; Using, WriteTo, AuditTo, Destructure and the switches stay accepted, unmodelled. Dogfood via SdkSample.                                                                                                                                                                                                                                                                           |
 | Docs                      | Rewrite `concepts/managed-configuration.md`, removing the old appsettings-inference design, and add an editor-setup page.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Sequencing                | Wait for #209 to merge, then branch from upstream `main`. **PR A:** bug fixes + analyzer flow. **PR B:** spikes (go/no-go report first), then the schema feature.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
@@ -50,14 +50,14 @@ Goals:
 
 1. **Bugs found during research:**
     - The generated `Imports` always passes `DovetailHostType.UnitTest` (`Support/ImportDovetails.cs`), so `TestingJoint` can activate in apps. Use the configured `DovetailHostType`, or leave it to the host helpers' `AddIfMissing(DovetailHostType.Live)`.
-    - Under the Web SDK, `appsettings.json` is a `Content` item, so `Dovetail.PackConfiguration.targets` (which only updates `None` items) never renames it, yet the generated JSON joint requires `{Project}.json`. Handle `Content` items too, with a test using a Web SDK scaffold.
-    - `ImportDovetailAssembly`/`ExportDovetailAssembly` are set but never read. Add them to `CompilerVisibleProperty` (`src/Dovetail/build/Dovetail.targets`), read them in `Support/MsBuildConfig.cs`, and gate `ExportDovetails`/`ImportDovetails` emission. Defaults: `Dovetail.targets` mirrors `Dovetail.HostDetection.targets` (import for Exe/test projects, export everywhere).
+    - Under the Web SDK, `appsettings.json` is a `Content` item, so `Joinery.Dovetail.PackConfiguration.targets` (which only updates `None` items) never renames it, yet the generated JSON joint requires `{Project}.json`. Handle `Content` items too, with a test using a Web SDK scaffold.
+    - `ImportDovetailAssembly`/`ExportDovetailAssembly` are set but never read. Add them to `CompilerVisibleProperty` (`src/Joinery.Dovetail/build/Joinery.Dovetail.targets`), read them in `Support/MsBuildConfig.cs`, and gate `ExportDovetails`/`ImportDovetails` emission. Defaults: `Joinery.Dovetail.targets` mirrors `Joinery.Dovetail.HostDetection.targets` (import for Exe/test projects, export everywhere).
 2. **Flow the analyzer:**
     - Change the integration projects' reference to Dovetail so analyzers aren't private. The exclusion comes from NuGet's default `PrivateAssets` on the plain `ProjectReference`s; fix it with an `ItemDefinitionGroup`/metadata in `src/Directory.Build.targets` (`PrivateAssets="contentfiles;build"`).
     - Verify every nuspec (`exclude="Build"` only).
     - LangVersion guard: emit nothing below C# 12 and report a new DT warning.
     - Accept that existing DT0001–0005 errors can now fire in transitive consumers; document it.
-3. **Tests (`test/Dovetail.Sdk.Tests`):**
+3. **Tests (`test/Joinery.Dovetail.Sdk.Tests`):**
     - New scaffolds that **build** a Hosting-only consumer, both library and Exe, asserting what generates and what doesn't.
     - The Web SDK appsettings.json rename.
     - Host type is Live in apps.
@@ -84,8 +84,8 @@ Goals:
 
 ### P1: Model + fragments (6–8 d)
 
-- `src/Dovetail/Attributes/DovetailConfigurationAttribute.cs`: section path optional; `RegisterOptions`, `ValidateOnStart`; class-only. `DovetailConfigurationAttribute<T>` is the assembly-only form (`AllowMultiple = false`; the same `T` twice is CS0579). `[PublicAPI]`, `[Conditional("CodeGeneration")]`.
-- New pipeline in `src/Dovetail.Analyzers/DovetailAttributesGenerator.cs`: `ForAttributeWithMetadataName` for both forms → equatable model (no `ISymbol`/`Location`/`ImmutableArray` downstream).
+- `src/Joinery.Dovetail/Attributes/DovetailConfigurationAttribute.cs`: section path optional; `RegisterOptions`, `ValidateOnStart`; class-only. `DovetailConfigurationAttribute<T>` is the assembly-only form (`AllowMultiple = false`; the same `T` twice is CS0579). `[PublicAPI]`, `[Conditional("CodeGeneration")]`.
+- New pipeline in `src/Joinery.Dovetail.Analyzers/DovetailAttributesGenerator.cs`: `ForAttributeWithMetadataName` for both forms → equatable model (no `ISymbol`/`Location`/`ImmutableArray` downstream).
 - New files under `Support/Configuration/`: `ConfigurationModel`, `ModelBuilder`, `JsonSchemaWriter` (hand-written, escaping, invariant, deterministic), `EquatableArray`, `DiagnosticInfo`.
 - Supported types:
     - string, bool, all numeric types, enum, TimeSpan, DateTime/DateTimeOffset/DateOnly/TimeOnly, Guid, Version, Uri, byte[];
@@ -112,14 +112,14 @@ Goals:
 
 ### P2: Compiled task + library/host files (6–8 d)
 
-- `src/Dovetail.Build.Tasks` (netstandard2.0). New `src/Dovetail/build/Dovetail.ConfigurationSchema.targets`, imported from `Dovetail.targets`.
+- `src/Joinery.Dovetail.Build.Tasks` (netstandard2.0). New `src/Joinery.Dovetail/build/Joinery.Dovetail.ConfigurationSchema.targets`, imported from `Joinery.Dovetail.targets`.
 - Hook `AfterTargets="CoreCompile"` with a stamp file; skip design-time builds; delete stale outputs.
 - **Library:** extract own fragments → `ConfigurationSchema.json` (segment shape). Pack it at the nupkg root from the first TFM only.
 - **Host:**
     - merge own + `@(ReferencePath)` fragments into a case-insensitive section tree; `allOf` for overlaps and duplicates;
     - apply strict `propertyNames` closing and the SchemaStore base;
     - write `obj/appsettings.schema.json`, copy to output, include in publish.
-- Exclude `appsettings.schema.json` from the `appsettings*.json` globs in `Dovetail.PackConfiguration.targets`.
+- Exclude `appsettings.schema.json` from the `appsettings*.json` globs in `Joinery.Dovetail.PackConfiguration.targets`.
 - In-repo wiring: `src`, `test` and `sample` `Directory.Build.targets` reference the task project via `UsingTask` overrides.
 
 ### P3: Binder, factory, joint (8–11 d)
@@ -128,14 +128,14 @@ Goals:
 - `FactoryEmitter`: `IOptionsFactory<T>` for immutable types, creating from one section, validators.
 - `JointEmitter`: one `DovetailConfigurationOptionsJoint : IServiceJoint` per assembly, appended to `Exported_Dovetails`. Change `ExportDovetails.cs:16`'s early return; `ImportDovetails` self-includes it.
 - One registration per type, emitted in path then type name order. `[OptionsValidator]` pickup via `TryAddEnumerable`; `ValidateOnStart`.
-- One reflection-free `AddDovetailConfigurationOptions(sectionPath, create)` overload in `src/Dovetail/DovetailConfigurationOptionsExtensions.cs`, which every generated registration calls (`[DynamicallyAccessedMembers]`, change-token source for reload).
+- One reflection-free `AddDovetailConfigurationOptions(sectionPath, create)` overload in `src/Joinery.Dovetail/DovetailConfigurationOptionsExtensions.cs`, which every generated registration calls (`[DynamicallyAccessedMembers]`, change-token source for reload).
 
 ### P4: VS segments + editors + endpoint (4–6 d)
 
 - Host `JsonSchemaSegment` for the merged file.
 - Package-folder discovery (derived from `@(ReferencePath)` `NuGetPackageId`/path metadata), de-duplicated against existing segments.
 - Opt-in `.vscode/settings.json` scaffolding (comment-preserving; warning + snippet fallback).
-- Endpoint joint in Dovetail.Hosting.Web, emitted via an MSBuild template when `DovetailConfigurationSchemaEndpoint=true`.
+- Endpoint joint in Joinery.Dovetail.Hosting.Web, emitted via an MSBuild template when `DovetailConfigurationSchemaEndpoint=true`.
 
 ### P5: Dogfood + docs (2–3 d)
 
@@ -153,7 +153,7 @@ Goals:
 
 ## Verification
 
-- **Analyzers** (`test/Dovetail.Analyzers.Tests`, Verify.SourceGenerators):
+- **Analyzers** (`test/Joinery.Dovetail.Analyzers.Tests`, Verify.SourceGenerators):
     - fragments for both attribute forms, default section naming, registration order, records/init, all diagnostics;
     - doc comments parsed vs not parsed;
     - an incremental caching test (`trackIncrementalGeneratorSteps`);
@@ -164,11 +164,11 @@ Goals:
     - malformed and unknown-version fragments skipped;
     - JSONC scaffolding cases, including the fallback;
     - every output validated against the draft-07 meta-schema.
-- **Runtime parity** (`test/Dovetail.Configuration.Runtime.Tests`, net10 + net11):
+- **Runtime parity** (`test/Joinery.Dovetail.Configuration.Runtime.Tests`, net10 + net11):
     - Dovetail binder/factory vs reflection `ConfigurationBinder` (called via a delegate) vs Microsoft's source-gen binder (`EnableConfigurationBindingGenerator` project);
     - DT0015 (class plus assembly form); reload; validators; `ValidateOnStart`;
     - an `IsAotCompatible` project with IL2026/IL3050/IL2091 as errors.
-- **Sdk** (`test/Dovetail.Sdk.Tests`):
+- **Sdk** (`test/Joinery.Dovetail.Sdk.Tests`):
     - the library obj schema and nupkg root `ConfigurationSchema.json` (`VerifyProjectsAndPackages`, no NU5118);
     - host `obj/` + `bin/` + publish files for ProjectReference, PackageReference and **Hosting-only transitive** hosts;
     - a test project merging;

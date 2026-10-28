@@ -5,7 +5,7 @@ description: How to create and register your own joints, including ordering and 
 
 # Defining Dovetail Joints
 
-As stated previously joints are nothing more than a class that implements <xref:Dovetail.Infrastructure.IDovetailJoint>.
+As stated previously joints are nothing more than a class that implements <xref:Joinery.Dovetail.Infrastructure.IDovetailJoint>.
 
 ## Implementing Multiple Dovetail Joints
 
@@ -30,7 +30,7 @@ joints _cannot_ be ordered in this manner and must be sorted manually.
 > Sorting is done using a [Topological sort](https://en.wikipedia.org/wiki/Topological_sorting) and if you define a cycle (A requires B, B requires A)
 > then a `NotSupportedException` will be thrown.
 
-### [[BeforeDovetail]](xref:Dovetail.BeforeJointAttribute) / [[DependentOfDovetail]](xref:Dovetail.DependentOfJointAttribute)
+### [[BeforeDovetail]](xref:Joinery.Dovetail.BeforeJointAttribute) / [[DependentOfDovetail]](xref:Joinery.Dovetail.DependentOfJointAttribute)
 
 This attribute can be used to ensure that your joint is called before another joint. The order is still non-deterministic but
 Dovetail will ensure that the defined joint is run before the joint type defined by the attribute.
@@ -50,7 +50,7 @@ public class DovetailB
 }
 ```
 
-### [[AfterDovetail]](xref:Dovetail.AfterJointAttribute) / [[DependsOnDovetail]](xref:Dovetail.DependsOnJointAttribute)
+### [[AfterDovetail]](xref:Joinery.Dovetail.AfterJointAttribute) / [[DependsOnDovetail]](xref:Joinery.Dovetail.DependsOnJointAttribute)
 
 This attribute can be used to ensure that your joint is called after another joint. The order is still non-deterministic but
 Dovetail will ensure that the defined joint is run after the joint type defined by the attribute.
@@ -72,21 +72,21 @@ public class DovetailB
 
 ### Custom Attributes
 
-If you want you can define your own custom attribute for use with joint ordering. Your attribute must implement <xref:Dovetail.IDovetailDependency>
-and specify the <xref:Dovetail.DependencyDirection>.
+If you want you can define your own custom attribute for use with joint ordering. Your attribute must implement <xref:Joinery.Dovetail.IDovetailDependency>
+and specify the <xref:Joinery.Dovetail.DependencyDirection>.
 
 ## Dovetail Host Type
 
-You can define a joint that only runs for a given <xref:Dovetail.HostType>. The HostType can be defined on the
-<xref:Dovetail.DovetailContextBuilder> using `Set<DovetailHostType>(DovetailHostType.UnitTest)`. Using the `DovetailHostType` an assembly
+You can define a joint that only runs for a given <xref:Joinery.Dovetail.HostType>. The HostType can be defined on the
+<xref:Joinery.Dovetail.DovetailContextBuilder> using `Set<DovetailHostType>(DovetailHostType.UnitTest)`. Using the `DovetailHostType` an assembly
 can define different behaviors given the context.
 
 The generated `Imports` class sets the host type only when the build specifies one. The `DovetailHostType` MSBuild property
 (`Live` or `UnitTest`) takes precedence; otherwise test projects (`IsTestProject`) get `UnitTest`. Anywhere else the host type
 is left unset, and the hosting extensions set it to `Live` if nothing else has.
 
-A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [[LiveDovetail]](xref:Dovetail.LiveJointAttribute) that registers
-`IClock` using the expected calendar system, and another [[UnitTestDovetail]](xref:Dovetail.UnitTestJointAttribute) that registers a `FakeClock`
+A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [[LiveDovetail]](xref:Joinery.Dovetail.LiveJointAttribute) that registers
+`IClock` using the expected calendar system, and another [[UnitTestDovetail]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock`
 with a predefined starting date and time.
 
 > [!NOTE]
@@ -99,7 +99,7 @@ with a predefined starting date and time.
 > [!NOTE]
 > There is no attribute for the `DovetailHostType.Undefined`.
 
-### [[LiveDovetail]](xref:Dovetail.LiveJointAttribute)
+### [[LiveDovetail]](xref:Joinery.Dovetail.LiveJointAttribute)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `Live`.
 
@@ -110,7 +110,7 @@ public class DovetailA
 }
 ```
 
-### [[UnitTestDovetail]](xref:Dovetail.UnitTestJointAttribute)
+### [[UnitTestDovetail]](xref:Joinery.Dovetail.UnitTestJointAttribute)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `UnitTest`.
 
@@ -124,18 +124,18 @@ public class DovetailA
 ## Injecting dependencies
 
 By default joints are a simple class that can be created using `Activator.CreateInstance` however the goal of joints was to allow "bootstrap time"
-configuration to be provided. The <xref:Dovetail.DovetailContextBuilder> acts as a bag of properties using [`indexer`](xref:Dovetail.DovetailContextBuilder#Dovetail_DovetailContextBuilder_Item_System_Object_) or [`Properties`](xref:Dovetail.DovetailContextBuilder#Dovetail_DovetailContextBuilder_Properties).
+configuration to be provided. The <xref:Joinery.Dovetail.DovetailContextBuilder> acts as a bag of properties using [`indexer`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Item_System_Object_) or [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties).
 
 Any type defined in the context is injectable into any defined joint. This can be used for any number of purposes such as...
 
 - allow consumers to provide configuration to your joint
 - allow joints to communicate or share common state
 
-Under the covers the [`Properties`](xref:Dovetail.DovetailContextBuilder#Dovetail_DovetailContextBuilder_Properties) implements `IServiceProvider`
+Under the covers the [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties) implements `IServiceProvider`
 and we simply activate joints using `ActivatorUtilities.CreateInstance`.
 
 > [!NOTE]
-> All dependencies must be registered into the builder, as activation happens while <xref:Dovetail.IDovetailContext> is built.
+> All dependencies must be registered into the builder, as activation happens while <xref:Joinery.Dovetail.IDovetailContext> is built.
 
 ---
 

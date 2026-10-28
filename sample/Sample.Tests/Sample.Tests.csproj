@@ -11,7 +11,7 @@
         <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
         <PackageReference Include="TUnit" />
         <ProjectReference
-            Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+            Include="..\..\src\Joinery.Dovetail.Analyzers\Joinery.Dovetail.Analyzers.csproj"
             IncludeAssets="all"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
@@ -21,7 +21,7 @@
             HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder"
             HostBuilderName="builder"
             HostType="global::Microsoft.Extensions.Hosting.IHost"
-            HelperName="global::Dovetail.DovetailHostApplicationHelpers"
+            HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"
         />
     </ItemGroup>
 

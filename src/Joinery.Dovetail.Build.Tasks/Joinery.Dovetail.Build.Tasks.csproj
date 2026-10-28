@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+      Dovetail's compiled MSBuild tasks. They ship inside the Dovetail package (build/tasks/netstandard2.0, see Joinery.Dovetail.csproj)
+      rather than as a package of their own, and Joinery.Dovetail.ConfigurationSchema.targets registers them.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Joinery.Dovetail.Build.Tasks</RootNamespace>
+    <!-- MSBuild calls the tasks through their public parameters, which are arrays by convention. -->
+    <NoWarn>$(NoWarn);CA1819</NoWarn>
+  </PropertyGroup>
+  <!--
+      Compile-only references: whatever MSBuild runs the tasks provides these assemblies, so none are copied or packed.
+      System.Text.Json and System.Reflection.Metadata 9.0.0 are what .NET Framework MSBuild 17.14 and every 18.x bind
+      (MSBuild.exe.config redirects); .NET MSBuild supplies its shared framework's newer copies.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="System.Reflection.Metadata" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- netstandard2.0 has no NotNullAttribute, and a polyfilled one would clash with the real one in the tests (InternalsVisibleTo). -->
+    <Using Remove="System.Diagnostics.CodeAnalysis.NotNullAttribute" />
+    <InternalsVisibleTo Include="Joinery.Dovetail.Build.Tasks.Tests" />
+    <EmbeddedResource Include="SchemaStore/appsettings.json" LogicalName="Joinery.Dovetail.Build.Tasks.SchemaStore.appsettings.json" />
+  </ItemGroup>
+
+  <!--
+      SchemaStore/appsettings.json is a pinned, unmodified copy of SchemaStore's appsettings schema (Apache-2.0, see
+      THIRD-PARTY-NOTICES.txt); the merge task embeds it into every application schema. Refresh it, then review the diff and
+      record the source commit in THIRD-PARTY-NOTICES.txt:
+        dotnet msbuild src/Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.csproj -t:UpdateSchemaStoreAppSettings
+  -->
+  <Target Name="UpdateSchemaStoreAppSettings">
+    <DownloadFile SourceUrl="https://json.schemastore.org/appsettings.json" DestinationFolder="$(MSBuildThisFileDirectory)SchemaStore" DestinationFileName="appsettings.json" />
+  </Target>
+</Project>

@@ -1,0 +1,158 @@
+<Project>
+  <!--
+      Registered via CustomAfterMicrosoftCommonTargets (see Sdk.props) instead of living inline in
+      Sdk.targets. Sdk.targets is imported by Directory.Build.props's own trailing SDK-targets slot,
+      which runs BEFORE the consuming project's own body (e.g. a worker.csproj's <OutputType>Exe</OutputType>)
+      is ever evaluated - so a Choose block reading $(OutputType) there always sees it empty. Deferring
+      via CustomAfterMicrosoftCommonTargets runs this after the whole project body (and Directory.Build.targets)
+      has been evaluated, while still being early enough (pure evaluation, no Target execution yet) for the
+      DovetailSdkImplicitPackageReference items below to reach NuGet restore.
+  -->
+  <!--
+      Uno.Sdk only normalizes UnoFeatures (whitespace stripped, lower-cased, wrapped in ';') in its own targets, which may
+      not have been evaluated yet, so normalize a copy here.
+  -->
+  <PropertyGroup Condition="'$(UsingUnoSdk)' == 'true'">
+    <_DovetailUnoFeatures>;$([System.Text.RegularExpressions.Regex]::Replace('$(UnoFeatures)', '\s+', '').ToLowerInvariant());</_DovetailUnoFeatures>
+    <_DovetailUnoApplication Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe' or '$(OutputType)' == 'WinExe'">true</_DovetailUnoApplication>
+  </PropertyGroup>
+  <Choose>
+    <!--
+        MAUI first: MAUI apps are OutputType=Exe, so the generic host branch below would claim them. MAUI class
+        libraries also set UseMaui, but have no OutputType=Exe. The app's entry point (MauiProgram.CreateMauiApp)
+        is synchronous, so the host also gets the blocking UseDovetail overloads, and the generated extensions
+        pass their own (application) assembly to the helper. A device has no appsettings files on disk, so they
+        are only embedded.
+    -->
+    <When Condition=" '$(UseMaui)'=='true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe' or '$(OutputType)' == 'WinExe') ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+        <DovetailEmbedConfiguration Condition="'$(DovetailEmbedConfiguration)' == ''">true</DovetailEmbedConfiguration>
+        <_DovetailMauiEnvironmentName>$(DovetailEnvironmentName)</_DovetailMauiEnvironmentName>
+        <_DovetailMauiEnvironmentName Condition="'$(_DovetailMauiEnvironmentName)' == '' and '$(Configuration)' == 'Debug'">Development</_DovetailMauiEnvironmentName>
+        <_DovetailMauiEnvironmentName Condition="'$(_DovetailMauiEnvironmentName)' == ''">Production</_DovetailMauiEnvironmentName>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="Maui" HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder" HostBuilderName="builder" HostType="global::Microsoft.Maui.Hosting.MauiApp" HelperName="global::Joinery.Dovetail.DovetailMauiHelpers" BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly" SyncEntryPoint="true"/>
+        <AssemblyMetadata Include="DovetailEnvironmentName" Value="$(_DovetailMauiEnvironmentName)" />
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting.Maui" Version="$(DovetailHostingMauiVersion)" />
+      </ItemGroup>
+    </When>
+    <!--
+        Uno apps with Uno.Extensions.Hosting (UnoFeatures includes Hosting) - ahead of the WebAssembly branch (the browserwasm
+        head is built on Microsoft.NET.Sdk.WebAssembly) and the Exe branch. Without Hosting an Uno app has no container for
+        Dovetail to plug into; see the warning target below. Navigation apps start with NavigateAsync<TShell>(), so the host
+        also gets ConfigureDovetail<TShell>. Configuration is embedded only, as on a device there are no files on disk.
+    -->
+    <When Condition=" '$(UsingUnoSdk)' == 'true' and '$(_DovetailUnoApplication)' == 'true' and $(_DovetailUnoFeatures.Contains(';hosting;')) ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+        <DovetailEmbedConfiguration Condition="'$(DovetailEmbedConfiguration)' == ''">true</DovetailEmbedConfiguration>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="Uno" HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailUnoHelpers" BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly" NavigateEntryPoint="true"/>
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting.Uno" Version="$(DovetailHostingUnoVersion)" />
+      </ItemGroup>
+    </When>
+    <!-- An Uno app without Uno.Extensions.Hosting is not a generic host either: no host (see _DovetailWarnUnoWithoutHosting). -->
+    <When Condition=" '$(UsingUnoSdk)' == 'true' and '$(_DovetailUnoApplication)' == 'true' ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>false</_DovetailApplicationDetected>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(UsingMicrosoftNETSdkBlazorWebAssembly)'=='true' or '$(UsingMicrosoftNETSdkWebAssembly)'=='true' ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="WebAssembly" HostBuilderType="global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder" HostBuilderName="builder" HostType="Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost"/>
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting.WebAssembly" Version="$(DovetailHostingWebAssemblyVersion)" />
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(UsingMicrosoftNETSdkRazor)'=='true' or '$(UsingMicrosoftNETSdkWeb)'=='true' ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="WebApplication" HostBuilderType="global::Microsoft.AspNetCore.Builder.WebApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.AspNetCore.Builder.WebApplication" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"/>
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting.Web" Version="$(DovetailHostingWebVersion)" />
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(UsingMicrosoftNETSdkWorker)'=='true' or ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe') ">
+      <PropertyGroup>
+        <_DovetailApplicationDetected>true</_DovetailApplicationDetected>
+      </PropertyGroup>
+      <ItemGroup>
+        <DovetailHost Include="HostApplication" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"/>
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <_DovetailApplicationDetected>false</_DovetailApplicationDetected>
+      </PropertyGroup>
+    </Otherwise>
+    <!-- leaving aspire out for the moment -->
+    <!-- <When Condition=" '$(IsAspireHost)'=='true' ">
+            <ItemGroup>
+                <DovetailHost Include="Aspire" HostBuilderType="Aspire.Hosting.IDistributedApplicationBuilder" HostBuilderName="builder" HostType="Aspire.Hosting.DistributedApplication" />
+            </ItemGroup>
+        </When> -->
+  </Choose>
+  <PropertyGroup>
+    <DovetailEnableAutofac Condition="'$(DovetailEnableAutofac)' == ''">false</DovetailEnableAutofac>
+    <DovetailEnableDryIoc Condition="'$(DovetailEnableDryIoc)' == ''">false</DovetailEnableDryIoc>
+    <DovetailEnableStashbox Condition="'$(DovetailEnableStashbox)' == ''">false</DovetailEnableStashbox>
+    <DovetailEnableSerilog Condition="'$(DovetailEnableSerilog)' == ''">false</DovetailEnableSerilog>
+    <DovetailEnableOpenTelemetry Condition="'$(DovetailEnableOpenTelemetry)' == ''">false</DovetailEnableOpenTelemetry>
+    <DovetailEnableHosting Condition="'$(DovetailEnableHosting)' == ''">false</DovetailEnableHosting>
+    <DovetailEnableHostingWeb Condition="'$(DovetailEnableHostingWeb)' == ''">false</DovetailEnableHostingWeb>
+    <DovetailEnableAspire Condition="'$(DovetailEnableAspireHosting)' == ''">false</DovetailEnableAspire>
+    <DovetailEnableAspireTesting Condition="'$(DovetailEnableAspireHostingTesting)' == ''">false</DovetailEnableAspireTesting>
+  </PropertyGroup>
+
+  <Target Name="_DovetailWarnUnoWithoutHosting"
+          BeforeTargets="Build"
+          Condition="'$(UsingUnoSdk)' == 'true' and '$(_DovetailUnoApplication)' == 'true' and !$(_DovetailUnoFeatures.Contains(';hosting;'))">
+    <Warning Text="Dovetail: this Uno Platform app doesn't use Uno.Extensions.Hosting, so Dovetail has no host to configure. Add Hosting to UnoFeatures to use Dovetail here." />
+  </Target>
+
+  <!--
+      Managed configuration is opt-in: either DovetailEnableConfiguration=true, or explicitly enabling a
+      format (DovetailEnable{Json,Yaml,Toml}Configuration=true). The format check has to live here, not in
+      Joinery.Dovetail.Configuration.targets, because that file is only imported once configuration is enabled.
+      An explicit DovetailEnableConfiguration=false still wins.
+  -->
+  <PropertyGroup>
+    <DovetailEnableConfiguration Condition="'$(DovetailEnableConfiguration)' == '' and ('$(DovetailEnableJsonConfiguration)' == 'true' or '$(DovetailEnableYamlConfiguration)' == 'true' or '$(DovetailEnableTomlConfiguration)' == 'true')">true</DovetailEnableConfiguration>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Configuration.targets" Condition="'$(DovetailEnableConfiguration)' == 'true'"/>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">false</ExportDovetailAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_DovetailApplicationDetected)' == 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">true</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_DovetailApplicationDetected)' != 'true'">
+    <ImportDovetailAssembly Condition="'$(ImportDovetailAssembly)' == ''">false</ImportDovetailAssembly>
+    <ExportDovetailAssembly Condition="'$(ExportDovetailAssembly)' == ''">true</ExportDovetailAssembly>
+  </PropertyGroup>
+
+  <!-- Flag-gated optional package references -->
+  <ItemGroup>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail" Version="$(DovetailVersion)"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Autofac" Version="$(DovetailAutofacVersion)" Condition="'$(DovetailEnableAutofac)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac.Extensions.DependencyInjection')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.DryIoc" Version="$(DovetailDryIocVersion)" Condition="'$(DovetailEnableDryIoc)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc.Microsoft.DependencyInjection')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Stashbox" Version="$(DovetailStashboxVersion)" Condition="'$(DovetailEnableStashbox)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.DependencyInjection')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.Hosting')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Serilog" Version="$(DovetailSerilogVersion)" Condition="'$(DovetailEnableSerilog)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Serilog')) == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailOpenTelemetryVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true'"/>
+  </ItemGroup>
+  <!-- Imported last: expands every RsgSdkImplicitPackageReference declared above (and in this
+         file's own SBOM ItemGroup) into a real PackageReference. -->
+  <Import Project="$(MSBuildThisFileDirectory)ImplicitPackageReferences.targets"/>
+</Project>

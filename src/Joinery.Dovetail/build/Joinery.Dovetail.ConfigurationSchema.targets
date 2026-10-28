@@ -1,0 +1,210 @@
+<Project>
+  <!--
+    Configuration JSON Schema files, built from the fragments Dovetail's generator embeds in assemblies as
+    [assembly: AssemblyMetadata("Dovetail.ConfigurationSchema.v1:<Section path>", "<schema of the section's value>")].
+
+      Hosts (applications and test projects) merge their own fragments and those of every assembly they reference into
+      $(BaseIntermediateOutputPath)appsettings.schema.json, a stable path editors can point at. It is strict (each Dovetail
+      section and the object types it uses accept only their keys, ignoring case), embeds SchemaStore's appsettings schema, and is
+      copied to the output directory and always published, except by hosts that embed their configuration (MAUI, Uno). A host
+      that targets several frameworks writes that file from its first one and $(IntermediateOutputPath)appsettings.schema.json
+      from the others.
+
+      Every other project (a library) writes its own fragments to $(IntermediateOutputPath)ConfigurationSchema.json, permissive
+      and rooted at the configuration root like Aspire's, and packs it at the package root from its first target framework. A
+      library that declares no sections writes nothing.
+
+    Properties:
+      DovetailConfigurationSchema=false                    no schema files at all.
+      DovetailConfigurationSchemaHost=true|false           overrides which projects are hosts: by default test projects
+                                                           (IsTestProject), and applications (Joinery.Dovetail.Sdk's detection, or
+                                                           OutputType Exe/WinExe or an Android app without the SDK).
+      DovetailConfigurationSchemaStrict=false              leaves Dovetail's sections open (no propertyNames) in the host file.
+      DovetailConfigurationSchemaIncludeSchemaStore=false  leaves SchemaStore's appsettings schema out of the host file.
+
+    Merging (Joinery.Dovetail.Build.Tasks): section paths compare ignoring case. When fragments spell a section (or a key) differently,
+    the ordinal-smallest spelling is displayed, so "Greetings" wins over "greetings". A section several fragments declare
+    becomes an allOf of their schemas, closed once on the merged object. Fragments' definitions move to the file's root
+    definitions as "<section path>.<name>" (".2", ".3"... when taken). Nothing depends on the order of references: the same
+    fragments always give a byte-identical file.
+  -->
+  <PropertyGroup>
+    <_DovetailConfigurationSchemaTargetsImported>true</_DovetailConfigurationSchemaTargetsImported>
+    <_DovetailConfigurationSchemaTargetsDirectory>$(MSBuildThisFileDirectory)</_DovetailConfigurationSchemaTargetsDirectory>
+  </PropertyGroup>
+
+  <!-- In-repo builds register these from src/Joinery.Dovetail.Build.Tasks instead (Joinery.Dovetail.Build.Tasks.InRepo.targets). -->
+  <UsingTask TaskName="Joinery.Dovetail.Build.Tasks.MergeConfigurationSchema" AssemblyFile="$(MSBuildThisFileDirectory)tasks/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll" Condition="'$(_DovetailBuildTasksAssembly)' == ''" />
+  <UsingTask TaskName="Joinery.Dovetail.Build.Tasks.WriteConfigurationSchemaSegment" AssemblyFile="$(MSBuildThisFileDirectory)tasks/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll" Condition="'$(_DovetailBuildTasksAssembly)' == ''" />
+
+  <!--
+    Decides the project's role and its file paths. Runs inside a target so properties set anywhere (Directory.Build.targets
+    included, which is imported after this file) count. Every path handed to the tasks is absolute.
+  -->
+  <Target Name="_DovetailComputeConfigurationSchema">
+    <PropertyGroup>
+      <_DovetailConfigurationSchemaIsHost>$(DovetailConfigurationSchemaHost)</_DovetailConfigurationSchemaIsHost>
+      <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == '' and '$(IsTestProject)' == 'true'">true</_DovetailConfigurationSchemaIsHost>
+      <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == ''">$(_DovetailApplicationDetected)</_DovetailConfigurationSchemaIsHost>
+      <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true')">true</_DovetailConfigurationSchemaIsHost>
+
+      <_DovetailConfigurationSchemaRole>None</_DovetailConfigurationSchemaRole>
+      <_DovetailConfigurationSchemaRole Condition="'$(DovetailConfigurationSchema)' != 'false' and '$(_DovetailConfigurationSchemaIsHost)' == 'true'">Host</_DovetailConfigurationSchemaRole>
+      <_DovetailConfigurationSchemaRole Condition="'$(DovetailConfigurationSchema)' != 'false' and '$(_DovetailConfigurationSchemaIsHost)' != 'true'">Library</_DovetailConfigurationSchemaRole>
+
+      <_DovetailConfigurationSchemaPrimaryTargetFramework>$(TargetFramework)</_DovetailConfigurationSchemaPrimaryTargetFramework>
+      <_DovetailConfigurationSchemaPrimaryTargetFramework Condition="'$(TargetFrameworks)' != ''">$([System.Text.RegularExpressions.Regex]::Match('$(TargetFrameworks)', '[^;\s]+').Value)</_DovetailConfigurationSchemaPrimaryTargetFramework>
+      <_DovetailConfigurationSchemaIsPrimaryTargetFramework>false</_DovetailConfigurationSchemaIsPrimaryTargetFramework>
+      <_DovetailConfigurationSchemaIsPrimaryTargetFramework Condition="'$(TargetFramework)' == '$(_DovetailConfigurationSchemaPrimaryTargetFramework)'">true</_DovetailConfigurationSchemaIsPrimaryTargetFramework>
+
+      <_DovetailHostConfigurationSchemaFile>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(BaseIntermediateOutputPath)', 'appsettings.schema.json'))</_DovetailHostConfigurationSchemaFile>
+      <_DovetailTargetFrameworkHostConfigurationSchemaFile>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'appsettings.schema.json'))</_DovetailTargetFrameworkHostConfigurationSchemaFile>
+      <_DovetailLibraryConfigurationSchemaFile>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'ConfigurationSchema.json'))</_DovetailLibraryConfigurationSchemaFile>
+      <_DovetailConfigurationSchemaFile />
+      <_DovetailConfigurationSchemaFile Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host' and '$(_DovetailConfigurationSchemaIsPrimaryTargetFramework)' == 'true'">$(_DovetailHostConfigurationSchemaFile)</_DovetailConfigurationSchemaFile>
+      <_DovetailConfigurationSchemaFile Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host' and '$(_DovetailConfigurationSchemaIsPrimaryTargetFramework)' != 'true'">$(_DovetailTargetFrameworkHostConfigurationSchemaFile)</_DovetailConfigurationSchemaFile>
+
+      <_DovetailConfigurationSchemaStrict>true</_DovetailConfigurationSchemaStrict>
+      <_DovetailConfigurationSchemaStrict Condition="'$(DovetailConfigurationSchemaStrict)' == 'false'">false</_DovetailConfigurationSchemaStrict>
+      <_DovetailConfigurationSchemaIncludeSchemaStore>true</_DovetailConfigurationSchemaIncludeSchemaStore>
+      <_DovetailConfigurationSchemaIncludeSchemaStore Condition="'$(DovetailConfigurationSchemaIncludeSchemaStore)' == 'false'">false</_DovetailConfigurationSchemaIncludeSchemaStore>
+      <!-- Hosts that embed their configuration have no files on disk: the schema stays in obj/ for editors. -->
+      <_DovetailConfigurationSchemaCopy>false</_DovetailConfigurationSchemaCopy>
+      <_DovetailConfigurationSchemaCopy Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host' and '$(DovetailEmbedConfiguration)' != 'true'">true</_DovetailConfigurationSchemaCopy>
+
+      <_DovetailConfigurationSchemaTasksAssembly>$(_DovetailBuildTasksAssembly)</_DovetailConfigurationSchemaTasksAssembly>
+      <_DovetailConfigurationSchemaTasksAssembly Condition="'$(_DovetailConfigurationSchemaTasksAssembly)' == ''">$(_DovetailConfigurationSchemaTargetsDirectory)tasks/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll</_DovetailConfigurationSchemaTasksAssembly>
+      <_DovetailConfigurationSchemaInputsFile>$(IntermediateOutputPath)$(MSBuildProjectName).ConfigurationSchema.inputs</_DovetailConfigurationSchemaInputsFile>
+      <_DovetailConfigurationSchemaStampFile>$(IntermediateOutputPath)$(MSBuildProjectName).ConfigurationSchema.stamp</_DovetailConfigurationSchemaStampFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target
+    Name="_DovetailConfigurationSchema"
+    AfterTargets="CoreCompile"
+    DependsOnTargets="_DovetailComputeConfigurationSchema;_DovetailConfigurationSchemaInputs;_DovetailWriteConfigurationSchema;_DovetailDeleteStaleConfigurationSchema"
+    Condition="'$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' == 'true'" />
+
+  <!--
+    Everything that should rewrite the schema without changing a timestamp - a reference added or removed, a property flipped -
+    goes into a hash, written only when it changes.
+  -->
+  <Target Name="_DovetailConfigurationSchemaInputs" Condition="'$(_DovetailConfigurationSchemaRole)' != 'None'">
+    <ItemGroup>
+      <_DovetailConfigurationSchemaHashInput Include="@(ReferencePath->'%(FullPath)')" />
+      <_DovetailConfigurationSchemaHashInput Include="@(IntermediateAssembly->'%(FullPath)')" />
+      <_DovetailConfigurationSchemaHashInput Include="$(_DovetailConfigurationSchemaRole)|$(_DovetailConfigurationSchemaFile)|$(_DovetailConfigurationSchemaStrict)|$(_DovetailConfigurationSchemaIncludeSchemaStore)|$(_DovetailConfigurationSchemaTasksAssembly)" />
+    </ItemGroup>
+    <Hash ItemsToHash="@(_DovetailConfigurationSchemaHashInput)">
+      <Output TaskParameter="HashResult" PropertyName="_DovetailConfigurationSchemaHash" />
+    </Hash>
+    <WriteLinesToFile File="$(_DovetailConfigurationSchemaInputsFile)" Lines="$(_DovetailConfigurationSchemaHash)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <!-- Recorded on every build, not only when the schema is rewritten, so IncrementalClean never takes them for stale files. -->
+    <ItemGroup>
+      <FileWrites Include="$(_DovetailConfigurationSchemaInputsFile);$(_DovetailConfigurationSchemaStampFile)" />
+      <FileWrites Include="$(_DovetailLibraryConfigurationSchemaFile)" Condition="'$(_DovetailConfigurationSchemaRole)' == 'Library'" />
+      <FileWrites Include="$(_DovetailConfigurationSchemaFile)" Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host'" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="_DovetailWriteConfigurationSchema"
+    Condition="'$(_DovetailConfigurationSchemaRole)' != 'None'"
+    Inputs="@(ReferencePath);@(IntermediateAssembly);$(_DovetailConfigurationSchemaInputsFile);$(_DovetailConfigurationSchemaTasksAssembly)"
+    Outputs="$(_DovetailConfigurationSchemaStampFile);$(_DovetailConfigurationSchemaFile)">
+    <MergeConfigurationSchema
+      Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host'"
+      References="@(ReferencePath->'%(FullPath)')"
+      ProjectAssemblies="@(IntermediateAssembly->'%(FullPath)')"
+      OutputFile="$(_DovetailConfigurationSchemaFile)"
+      Strict="$(_DovetailConfigurationSchemaStrict)"
+      IncludeSchemaStore="$(_DovetailConfigurationSchemaIncludeSchemaStore)" />
+    <WriteConfigurationSchemaSegment
+      Condition="'$(_DovetailConfigurationSchemaRole)' == 'Library'"
+      Assemblies="@(IntermediateAssembly->'%(FullPath)')"
+      OutputFile="$(_DovetailLibraryConfigurationSchemaFile)" />
+    <Touch Files="$(_DovetailConfigurationSchemaStampFile)" AlwaysCreate="true" />
+  </Target>
+
+  <!-- Files this project's role doesn't write any more, e.g. after it stopped being a host or turned the schema off. -->
+  <Target Name="_DovetailDeleteStaleConfigurationSchema">
+    <Delete
+      Files="$(_DovetailLibraryConfigurationSchemaFile)"
+      Condition="'$(_DovetailConfigurationSchemaRole)' != 'Library' and Exists('$(_DovetailLibraryConfigurationSchemaFile)')" />
+    <Delete
+      Files="$(_DovetailHostConfigurationSchemaFile)"
+      Condition="'$(_DovetailConfigurationSchemaRole)' != 'Host' and Exists('$(_DovetailHostConfigurationSchemaFile)')" />
+    <Delete
+      Files="$(_DovetailTargetFrameworkHostConfigurationSchemaFile)"
+      Condition="('$(_DovetailConfigurationSchemaRole)' != 'Host' or '$(_DovetailConfigurationSchemaIsPrimaryTargetFramework)' == 'true') and Exists('$(_DovetailTargetFrameworkHostConfigurationSchemaFile)')" />
+    <!-- Without these, turning the schema back on would find an up-to-date stamp and write nothing. -->
+    <Delete
+      Files="$(_DovetailConfigurationSchemaInputsFile);$(_DovetailConfigurationSchemaStampFile)"
+      Condition="'$(_DovetailConfigurationSchemaRole)' == 'None'" />
+  </Target>
+
+  <!--
+    The host's schema goes next to its configuration files. It is copied here rather than through a None item, so projects
+    that reference the host (a test project referencing an application) don't get a second appsettings.schema.json.
+  -->
+  <Target
+    Name="_DovetailCopyConfigurationSchemaToOutputDirectory"
+    AfterTargets="CopyFilesToOutputDirectory"
+    DependsOnTargets="_DovetailComputeConfigurationSchema"
+    Condition="'$(DesignTimeBuild)' != 'true'">
+    <Copy
+      Condition="'$(_DovetailConfigurationSchemaCopy)' == 'true' and Exists('$(_DovetailConfigurationSchemaFile)')"
+      SourceFiles="$(_DovetailConfigurationSchemaFile)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
+  <Target
+    Name="_DovetailPublishConfigurationSchema"
+    AfterTargets="ComputeResolvedFilesToPublishList"
+    DependsOnTargets="_DovetailComputeConfigurationSchema">
+    <ItemGroup Condition="'$(_DovetailConfigurationSchemaCopy)' == 'true' and Exists('$(_DovetailConfigurationSchemaFile)')">
+      <!-- A hand-made appsettings.schema.json (Web SDK content, or a reference's) would collide with this one (NETSDK1152). -->
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'appsettings.schema.json'" />
+      <ResolvedFileToPublish
+        Include="$(_DovetailConfigurationSchemaFile)"
+        RelativePath="appsettings.schema.json"
+        CopyToPublishDirectory="PreserveNewest"
+        ExcludeFromSingleFile="true" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Packs a library's file at the package root. Each target framework writes its own, so the first one's is packed: a
+    multi-targeted project's outer build (where Pack runs) asks that inner build for it.
+  -->
+  <Target Name="_DovetailPackConfigurationSchema" BeforeTargets="_GetPackageFiles" DependsOnTargets="_DovetailComputeConfigurationSchema">
+    <MSBuild
+      Condition="'$(TargetFramework)' == '' and '$(_DovetailConfigurationSchemaPrimaryTargetFramework)' != ''"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_DovetailConfigurationSchemaPackFile"
+      Properties="TargetFramework=$(_DovetailConfigurationSchemaPrimaryTargetFramework)">
+      <Output TaskParameter="TargetOutputs" ItemName="_DovetailConfigurationSchemaPackFile" />
+    </MSBuild>
+    <ItemGroup Condition="'$(TargetFramework)' != '' and '$(_DovetailConfigurationSchemaRole)' == 'Library' and Exists('$(_DovetailLibraryConfigurationSchemaFile)')">
+      <_DovetailConfigurationSchemaPackFile Include="$(_DovetailLibraryConfigurationSchemaFile)" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="@(_DovetailConfigurationSchemaPackFile)" Pack="true" PackagePath="/" Visible="false" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_DovetailConfigurationSchemaPackFile" DependsOnTargets="_DovetailComputeConfigurationSchema" Returns="@(_DovetailConfigurationSchemaPackFile)">
+    <ItemGroup Condition="'$(_DovetailConfigurationSchemaRole)' == 'Library' and Exists('$(_DovetailLibraryConfigurationSchemaFile)')">
+      <_DovetailConfigurationSchemaPackFile Include="$(_DovetailLibraryConfigurationSchemaFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.ConfigurationSchema.VisualStudio.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.ConfigurationSchema.EditorSettings.targets" />
+</Project>

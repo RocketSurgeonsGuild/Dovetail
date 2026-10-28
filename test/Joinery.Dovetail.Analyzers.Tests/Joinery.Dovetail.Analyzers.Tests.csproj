@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0-browser</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <DefineConstants>$(DefineConstants);ROSLYN_CURRENT</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="FluentValidation" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Features" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+        <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Analyzers\Joinery.Dovetail.Analyzers.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Aspire.Testing\Joinery.Dovetail.Aspire.Testing.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Aspire\Joinery.Dovetail.Aspire.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Serilog\Joinery.Dovetail.Serilog.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.WebAssembly\Joinery.Dovetail.Hosting.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Toml\Joinery.Dovetail.Configuration.Toml.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- The generator's key naming is internal; the tests compare it with System.Text.Json's naming policies. -->
+        <Compile Include="..\..\src\Joinery.Dovetail.Analyzers\Support\Configuration\KeyNaming.cs" Link="KeyNaming.cs" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Verify.SourceGenerators" />
+    </ItemGroup>
+</Project>

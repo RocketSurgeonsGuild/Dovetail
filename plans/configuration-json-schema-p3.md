@@ -4,7 +4,7 @@ Status: done. The generator side (binder, factory entry points, joint, exports w
 
 ## How the binder is produced
 
-Dovetail ports Microsoft's configuration binding source generator rather than reimplementing it: the parser, the type specs and the `CoreBindingHelpers` emitter from dotnet/runtime (MIT), at tags `v10.0.13` and `v11.0.0-rc.2.26504.105`. The port lives in `src/Dovetail.Analyzers/Support/Configuration/Binding/`.
+Dovetail ports Microsoft's configuration binding source generator rather than reimplementing it: the parser, the type specs and the `CoreBindingHelpers` emitter from dotnet/runtime (MIT), at tags `v10.0.13` and `v11.0.0-rc.2.26504.105`. The port lives in `src/Joinery.Dovetail.Analyzers/Support/Configuration/Binding/`.
 
 It can't call Microsoft's generator: a generator never sees another generator's output, so calls in Dovetail's generated code are never intercepted (S5).
 
@@ -43,7 +43,7 @@ Every root has one entry point, `Create…(configuration)`, and the joint regist
 - **Types the options pipeline can create**, those with a public parameterless constructor: `var instance = new T(); Bind…(configuration, instance); return instance;`. The `Bind…` helper is private. It's `BindCoreMain`: a section with neither a value nor children leaves the instance alone; otherwise `BindCore(…, defaultValueIfNotFound: false)`, as `services.Configure<T>(section)` does.
 - **The rest**, constructor parameters, init-only or `required` members. It's `GetCore`: `Initialize…`, then `BindCore(…, defaultValueIfNotFound: true)`. The difference is that it still creates an instance for an empty section, where `Get<T>()` returns null: `IOptions<T>.Value` can't be null. A missing required constructor parameter therefore throws when the options are first read.
 
-There is one public overload because everything is created through generated create code, with no reflection anywhere. The joint calls `AddDovetailConfigurationOptions<T>(services, path, create)`, in path then type name order, and `ValidateOnStart` when asked. Every `[OptionsValidator]` class in the assembly that validates a registered type is added with `TryAddEnumerable`. The runtime API (`src/Dovetail/DovetailConfigurationOptionsExtensions.cs`):
+There is one public overload because everything is created through generated create code, with no reflection anywhere. The joint calls `AddDovetailConfigurationOptions<T>(services, path, create)`, in path then type name order, and `ValidateOnStart` when asked. Every `[OptionsValidator]` class in the assembly that validates a registered type is added with `TryAddEnumerable`. The runtime API (`src/Joinery.Dovetail/DovetailConfigurationOptionsExtensions.cs`):
 
 - reads only its own section from the application's complete `IConfiguration`, resolved from the container when the options are first created, like `BindConfiguration`. Only the default options are registered; another options name throws `InvalidOperationException`;
 - adds one `IOptionsFactory<T>` (`OptionsFactory<T>` subclass), with `TryAdd`: an existing factory wins, whether the application's or an earlier registration's, so only the first registration for a type counts, and a factory the application registers itself wins over ours. Configure, post-configure and validators still run on the created instance, in the base class, for the default options. The factory has no fallback to the base class's own creation, so the `DynamicallyAccessedMembers` annotation stays only because `OptionsFactory<T>` declares it (the trim analyzer reports IL2091 without it);
@@ -73,12 +73,12 @@ These belong in the managed-configuration docs (P5).
 ## Verification
 
 - **Analyzer tests** (`ConfigurationOptionsTests`): snapshots of the generated file for a mutable options class and for records, init-only and constructor types, under both binder versions; the generated code compiles; joint registration order (path, then type name), validators, `ValidateOnStart` and opting out; `[ConfigurationIgnore]` by version; and caching.
-- **Parity tests** (`test/Dovetail.Configuration.Parity.Tests`, 266 per target framework): the same types and data bound three ways:
+- **Parity tests** (`test/Joinery.Dovetail.Configuration.Parity.Tests`, 266 per target framework): the same types and data bound three ways:
     - Microsoft's generator (`EnableConfigurationBindingGenerator`, `Configure<T>` → `IOptions<T>` for mutable types, `Get<T>()` for factory types);
     - the reflection binder (through a generic helper the generator can't intercept);
     - Dovetail's joint → `IOptions<T>`.
 
     They run on net10.0 (Binder 10) and net11.0 (Binder 11), from the S5 case matrix plus reload, collections of records and init-only types. Microsoft's generator is the oracle except for the differences above, which are asserted against the reflection binder or the documented behaviour.
 
-- **Runtime tests** (`test/Dovetail.Configuration.Runtime.Tests`): registration (two registrations of one type from different assemblies: the first factory wins; an application-registered factory wins), factories, validators, `ValidateOnStart`, reload, with hand-written delegates.
-- **AOT** (`test/Dovetail.Configuration.Aot.Tests`): the real generated joint and binder for a class, a record and an init-only type compile with IL2026, IL3050 and IL2091 as errors, and bind.
+- **Runtime tests** (`test/Joinery.Dovetail.Configuration.Runtime.Tests`): registration (two registrations of one type from different assemblies: the first factory wins; an application-registered factory wins), factories, validators, `ValidateOnStart`, reload, with hand-written delegates.
+- **AOT** (`test/Joinery.Dovetail.Configuration.Aot.Tests`): the real generated joint and binder for a class, a record and an init-only type compile with IL2026, IL3050 and IL2091 as errors, and bind.

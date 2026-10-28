@@ -1,9 +1,9 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Build.Tasks/Dovetail.Build.Tasks.InRepo.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail/build/Joinery.Dovetail.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.InRepo.targets" />
   <ItemGroup>
     <ProjectReference
-      Include="$(MSBuildThisFileDirectory)../src/Dovetail.Analyzers/Dovetail.Analyzers.csproj"
+      Include="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Analyzers/Joinery.Dovetail.Analyzers.csproj"
       IncludeAssets="all"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
@@ -11,6 +11,6 @@
     />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
-  <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Configuration.Yaml/build/Dovetail.Configuration.Yaml.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Configuration.Json/build/Dovetail.Configuration.Json.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Configuration.Yaml/build/Joinery.Dovetail.Configuration.Yaml.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Configuration.Json/build/Joinery.Dovetail.Configuration.Json.targets" />
 </Project>

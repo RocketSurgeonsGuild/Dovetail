@@ -1,0 +1,35 @@
+﻿{
+  Properties: {
+    DovetailEmbedConfiguration: true,
+    ExportDovetailAssembly: true,
+    ImportDovetailAssembly: true,
+    _DovetailApplicationDetected: true
+  },
+  Items: {
+    AssemblyMetadata: {
+      DovetailEnvironmentName: {
+        Value: Development
+      }
+    },
+    DovetailHost: {
+      Maui: {
+        BuildExpression: , static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly,
+        HelperName: global::Joinery.Dovetail.DovetailMauiHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.Maui.Hosting.MauiAppBuilder,
+        HostType: global::Microsoft.Maui.Hosting.MauiApp,
+        SyncEntryPoint: true
+      }
+    },
+    PackageReference: {
+      Joinery.Dovetail: {
+        IsImplicitlyDefined: true,
+        Version: {sdk-version}
+      },
+      Joinery.Dovetail.Hosting.Maui: {
+        IsImplicitlyDefined: true,
+        Version: {sdk-version}
+      }
+    }
+  }
+}

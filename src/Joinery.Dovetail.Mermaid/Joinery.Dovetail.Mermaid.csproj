@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
+    <PackageDescription>
+      Adds support for loading configuration, services, logging, command line
+      and more via simple and easy to setup assembly attributes
+    </PackageDescription>
+    <PackageTags>$(PackageTags);reflection</PackageTags>
+    <IsTrimmable>true</IsTrimmable>
+    <RootNamespace>Joinery.Dovetail</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Interactive" />
+    <PackageReference Include="FoggyBalrog.MermaidDotNet" />
+    <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+  </ItemGroup>
+</Project>

@@ -29,7 +29,7 @@ Put `[DovetailConfiguration]` on the options class:
 ```c#
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Dovetail.Attributes;
+using Joinery.Dovetail.Attributes;
 
 /// <summary>Options for the greetings this library prints.</summary>
 [DovetailConfiguration]
@@ -309,7 +309,7 @@ packs the first one's. A library with no sections writes nothing.
 
 ### The merged application schema
 
-Hosts are test projects (`IsTestProject`) and applications (detected by Dovetail.Sdk, or `OutputType` of `Exe` or
+Hosts are test projects (`IsTestProject`) and applications (detected by Joinery.Dovetail.Sdk, or `OutputType` of `Exe` or
 `WinExe`). A host merges its own fragments and those of every referenced assembly into
 `$(BaseIntermediateOutputPath)appsettings.schema.json`, normally `obj/appsettings.schema.json`.
 
@@ -318,7 +318,7 @@ Hosts are test projects (`IsTestProject`) and applications (detected by Dovetail
   others.
 - It is copied to `$(OutDir)`, next to `appsettings.json`, and published as `appsettings.schema.json`. A project that
   references the host (a test project referencing an application) doesn't get a second copy.
-- Hosts that embed their configuration (`DovetailEmbedConfiguration` is `true`, which Dovetail.Sdk sets for MAUI and
+- Hosts that embed their configuration (`DovetailEmbedConfiguration` is `true`, which Joinery.Dovetail.Sdk sets for MAUI and
   Uno applications) keep the file in `obj/` only: no copy to the output directory and no publishing.
 - A hand-made `appsettings.schema.json` (Web SDK content, or one from a reference) is removed from the publish items so
   it doesn't collide with the generated one (NETSDK1152). The generated file is what gets published.
@@ -339,7 +339,7 @@ Hosts are test projects (`IsTestProject`) and applications (detected by Dovetail
 | `DovetailConfigurationSchemaHost`               | detected | `true` or `false` overrides which projects count as hosts.                                                                                                      |
 | `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail's sections open (no `propertyNames`) in the host file.                                                                                  |
 | `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore's schema out of the host file.                                                                                                       |
-| `DovetailEmbedConfiguration`                    | detected | `true` for hosts that embed their configuration (Dovetail.Sdk sets it for MAUI and Uno): the schema stays in `obj/`, with no copy to the output and no publish. |
+| `DovetailEmbedConfiguration`                    | detected | `true` for hosts that embed their configuration (Joinery.Dovetail.Sdk sets it for MAUI and Uno): the schema stays in `obj/`, with no copy to the output and no publish. |
 | `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`. The generator reads this one, so it changes the fragments in every project; the MSBuild targets don't use it.      |
 
 ```xml
@@ -355,16 +355,16 @@ Hosts are test projects (`IsTestProject`) and applications (detected by Dovetail
 
 The build target runs after `CoreCompile` and skips design-time builds. It writes only when its inputs change: the
 references, the project's own assembly and the properties above.
-Merging runs in a compiled MSBuild task (`Dovetail.Build.Tasks`) that reads the fragments with `System.Reflection.Metadata`,
+Merging runs in a compiled MSBuild task (`Joinery.Dovetail.Build.Tasks`) that reads the fragments with `System.Reflection.Metadata`,
 so no assembly is loaded and nothing is embedded in your application.
 
 ### Serilog
 
-`Dovetail.Serilog` ships a schema for the `Serilog` section, in the format
+`Joinery.Dovetail.Serilog` ships a schema for the `Serilog` section, in the format
 [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) reads, so a host that
 references it gets completion and validation for `Serilog` without any setup. The section is dynamic (sinks, enrichers and
 their arguments come from other packages), so no options type can describe it and the generator has nothing to emit.
-`Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the
+`Joinery.Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the
 pipeline above unchanged: the library's `ConfigurationSchema.json` is packed at the package root, and a host merges the
 fragment into its `appsettings.schema.json` like any other.
 
@@ -399,7 +399,7 @@ What differs from SchemaStore's schema, and why it is harmless:
 
 ### Serving the schema
 
-Applications built on Dovetail.Hosting.Web can serve the merged schema over HTTP at
+Applications built on Joinery.Dovetail.Hosting.Web can serve the merged schema over HTTP at
 `GET /.well-known/dovetail/configuration-schema`. It is off by default. Setting `DovetailConfigurationSchemaEndpoint` to
 `true` generates a joint that maps it, and the public `MapDovetailConfigurationSchema(fallbackDirectory, environments)`
 extension on `IEndpointRouteBuilder` maps it by hand. The properties, the response and the security trade-off are

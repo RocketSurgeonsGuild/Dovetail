@@ -1,4 +1,4 @@
-# Dovetail.Sdk sample
+# Joinery.Dovetail.Sdk sample
 
 Consumes Dovetail purely as an MSBuild SDK from packed NuGet packages, the way an external project
 would. No project here references Dovetail directly or imports anything from `src/`. The only

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
+        <PackageDescription>
+            Adds helpers to easily bootstrap an application using conventions by
+            just using the correct extension method. This adds command line operations, additional
+            configuration, logging and service injections by convention.
+        </PackageDescription>
+        <PackageTags>$(PackageTags);hosting;generic host</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+        <ProjectReference Include="../Joinery.Dovetail/Joinery.Dovetail.csproj" />
+        <ProjectReference Include="../Joinery.Dovetail.OpenTelemetry/Joinery.Dovetail.OpenTelemetry.csproj" />
+        <ProjectReference Include="../Joinery.Dovetail.Hosting/Joinery.Dovetail.Hosting.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.AspNetCore.Tests" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="build/*.*" Pack="true" PackagePath="build" />
+        <None Include="buildTransitive/*.*" Pack="true" PackagePath="buildTransitive" />
+    </ItemGroup>
+</Project>

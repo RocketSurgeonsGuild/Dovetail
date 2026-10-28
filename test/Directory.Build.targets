@@ -11,13 +11,13 @@
         <PackageReference Include="Verify.TUnit" />
         <Using Include="Shouldly" />
         <ProjectReference
-            Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+            Include="..\..\src\Joinery.Dovetail.Analyzers\Joinery.Dovetail.Analyzers.csproj"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
-            Condition="!$(MSBuildProjectName.StartsWith('Dovetail.Analyzers.'))"
+            Condition="!$(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers.'))"
         />
     </ItemGroup>
-    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail/build/Dovetail.targets" />
-    <Import Project="$(MSBuildThisFileDirectory)../src/Dovetail.Build.Tasks/Dovetail.Build.Tasks.InRepo.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail/build/Joinery.Dovetail.targets" />
+    <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.InRepo.targets" />
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

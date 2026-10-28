@@ -1,0 +1,30 @@
+using Microsoft.Extensions.Configuration;
+
+using YamlDotNet.Core;
+
+namespace Joinery.Dovetail.Configuration.Yaml;
+
+/// <summary>
+///     A YAML file based <see cref="FileConfigurationProvider" />.
+/// </summary>
+/// <remarks>
+///     The yaml configuration provider
+/// </remarks>
+/// <param name="source">The source settings used to load the YAML file.</param>
+public class YamlConfigurationProvider(YamlConfigurationSource source) : FileConfigurationProvider(source)
+{
+    /// <inheritdoc />
+    /// <exception cref="FormatException">The YAML content in <paramref name="stream" /> could not be parsed.</exception>
+    public override void Load(Stream stream)
+    {
+        var parser = new YamlConfigurationStreamParser();
+        try
+        {
+            Data = parser.Parse(stream);
+        }
+        catch (YamlException e)
+        {
+            throw new FormatException($"Could not parse the YAML file: {e.Message}", e);
+        }
+    }
+}

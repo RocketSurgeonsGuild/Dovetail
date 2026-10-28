@@ -1,0 +1,57 @@
+<Project>
+  <!--
+    Visual Studio's JSON editor reads schemas from JsonSchemaSegment items, merging every segment whose FilePathPattern (a regular
+    expression over the file name) matches the file. Editors other than Visual Studio's JSON editor ignore them. Imported at the
+    end of Joinery.Dovetail.ConfigurationSchema.targets, which decides the project's role (_DovetailConfigurationSchemaRole) and the host
+    file's path (_DovetailHostConfigurationSchemaFile).
+
+      A host (application or test project) adds a segment for its merged obj/appsettings.schema.json. The file may not exist
+      yet; the build writes it.
+
+      Every project with a role also adds a segment for each referenced package that ships a ConfigurationSchema.json at its
+      root, as libraries built with Dovetail do. Packages are found from the NuGetPackageId and NuGetPackageVersion metadata of
+      @(ReferencePath): the package folder is the part of the reference's path up to and including <id>/<version>/, wherever
+      NuGet put it. A package that declares its own segment for the same file (Aspire's client packages do, from their
+      buildTransitive targets) is skipped, comparing full paths, and so is a package found twice. There are no per-package
+      targets files. Project references need nothing: their fragments are merged into the host's file.
+
+    The pattern is the one Aspire's packages use: appsettings\..*json, i.e. appsettings.json, appsettings.Development.json and so on.
+
+    Design-time builds: the target is hooked after ResolveAssemblyReferences, which the design-time build runs as well (it does not
+    need to compile), so the items exist in the builds a Visual Studio session runs on load. It does not depend on
+    BuildingProject or DesignTimeBuild. Whether Visual Studio reads items a target adds, rather than only evaluated ones, is
+    not verified (plans/configuration-json-schema-p0.md, S1, step 4).
+
+    Properties:
+      DovetailConfigurationSchema=false                  no segments (no schema files at all).
+      DovetailConfigurationSchemaVisualStudio=false      no segments, though the schema files are still written.
+  -->
+  <PropertyGroup>
+    <_DovetailConfigurationSchemaVisualStudioFilePathPattern>appsettings\..*json</_DovetailConfigurationSchemaVisualStudioFilePathPattern>
+  </PropertyGroup>
+
+  <Target
+    Name="_DovetailConfigurationSchemaVisualStudio"
+    AfterTargets="ResolveAssemblyReferences"
+    DependsOnTargets="_DovetailComputeConfigurationSchema"
+    Condition="'$(DovetailConfigurationSchemaVisualStudio)' != 'false'">
+    <ItemGroup Condition="'$(_DovetailConfigurationSchemaRole)' != 'None'">
+      <!-- The segments the project and its packages already declare, as full paths: Include="$(MSBuildThisFileDirectory)..\..\x.json" is normalized by FullPath. -->
+      <_DovetailVisualStudioExistingSegment Include="@(JsonSchemaSegment->'%(FullPath)')" />
+
+      <!-- The package folder of each package reference: everything up to and including "<id>/<version>/". -->
+      <_DovetailVisualStudioPackageFolder Include="@(ReferencePath)" Condition="'%(ReferencePath.NuGetPackageId)' != '' and '%(ReferencePath.NuGetPackageVersion)' != ''">
+        <Folder>$([System.Text.RegularExpressions.Regex]::Match('%(ReferencePath.FullPath)', '(?i)^.*?[/\\]$([System.Text.RegularExpressions.Regex]::Escape('%(ReferencePath.NuGetPackageId)'))[/\\]$([System.Text.RegularExpressions.Regex]::Escape('%(ReferencePath.NuGetPackageVersion)'))[/\\]').Value)</Folder>
+      </_DovetailVisualStudioPackageFolder>
+      <_DovetailVisualStudioPackageFolder Remove="@(_DovetailVisualStudioPackageFolder)" Condition="'%(_DovetailVisualStudioPackageFolder.Folder)' == ''" />
+      <_DovetailVisualStudioPackageSchema Include="@(_DovetailVisualStudioPackageFolder->'%(Folder)ConfigurationSchema.json')" />
+      <_DovetailVisualStudioPackageSchema Remove="@(_DovetailVisualStudioPackageSchema)" Condition="!Exists('%(_DovetailVisualStudioPackageSchema.FullPath)')" />
+
+      <_DovetailVisualStudioHostSchema Include="$(_DovetailHostConfigurationSchemaFile)" Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host'" />
+
+      <!-- Distinct also drops a package found twice, e.g. through two target frameworks' references. -->
+      <_DovetailVisualStudioNewSegment Include="@(_DovetailVisualStudioHostSchema->'%(FullPath)');@(_DovetailVisualStudioPackageSchema->'%(FullPath)')" Exclude="@(_DovetailVisualStudioExistingSegment)" />
+      <JsonSchemaSegment Include="@(_DovetailVisualStudioNewSegment->Distinct())" FilePathPattern="$(_DovetailConfigurationSchemaVisualStudioFilePathPattern)" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,19 @@
+<Project>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+    <PropertyGroup>
+        <_Analyzer_Roslyn_Version_>$(MSBuildProjectName.Replace('Joinery.Dovetail.Analyzers.Tests.', ''))</_Analyzer_Roslyn_Version_>
+        <DefineConstants>$(DefineConstants);$(_Analyzer_Roslyn_Version_.Replace('.', '_').ToUpper())</DefineConstants>
+        <BaseOutputPath>bin/$(_Analyzer_Roslyn_Version_)/</BaseOutputPath>
+        <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj/$(_Analyzer_Roslyn_Version_)/</BaseIntermediateOutputPath>
+        <NoWarn>$(NoWarn);NU1605</NoWarn>
+        <RootNamespace>Joinery.Dovetail.Analyzers.Tests</RootNamespace>
+        <TargetFramework>net10.0-browser</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="../Joinery.Dovetail.Analyzers.Tests/*.cs" />
+        <!-- The generator's key naming is internal; the tests compare it with System.Text.Json's naming policies. -->
+        <Compile Include="../../src/Joinery.Dovetail.Analyzers/Support/Configuration/KeyNaming.cs" Link="KeyNaming.cs" />
+    </ItemGroup>
+</Project>

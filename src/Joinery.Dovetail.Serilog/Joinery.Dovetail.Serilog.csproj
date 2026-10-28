@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
+        <PackageDescription>Provides Serilog support for a Rocket Surgery Application</PackageDescription>
+        <PackageTags>$(PackageTags);Serilog</PackageTags>
+    </PropertyGroup>
+    <ItemGroup>
+    <DovetailJoint Include="Serilog" Namespace="Joinery.Dovetail.Joints" ProvideServices="true" ParameterType="global::Serilog.LoggerConfiguration" ParameterName="loggerConfiguration" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Serilog" />
+        <PackageReference Include="Serilog.Extensions.Logging" />
+        <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+    </ItemGroup>
+</Project>

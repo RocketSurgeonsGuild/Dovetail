@@ -1,5 +1,5 @@
-using Dovetail.Attributes;
-using Dovetail.Infrastructure;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Infrastructure;
 using FluentValidation;
 
 namespace Sample.DependencyOne;

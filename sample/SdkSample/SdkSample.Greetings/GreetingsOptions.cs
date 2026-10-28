@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Dovetail.Attributes;
+using Joinery.Dovetail.Attributes;
 
 namespace SdkSample.Greetings;
 

@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <ProjectReference
-            Include="..\..\src\Dovetail.Analyzers\Dovetail.Analyzers.csproj"
+            Include="..\..\src\Joinery.Dovetail.Analyzers\Joinery.Dovetail.Analyzers.csproj"
             IncludeAssets="all"
             OutputItemType="Analyzer"
             ReferenceOutputAssembly="false"
@@ -22,13 +22,13 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Gateway" PrivateAssets="all" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))" />
-        <ProjectReference Include="..\..\src\Dovetail.Configuration.Yaml\Dovetail.Configuration.Yaml.csproj" />
-        <ProjectReference Include="..\..\src\Dovetail.Configuration.Json\Dovetail.Configuration.Json.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\Sample.Core\Sample.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Dovetail.Hosting.WebAssembly\Dovetail.Hosting.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.WebAssembly\Joinery.Dovetail.Hosting.WebAssembly.csproj" />
     </ItemGroup>
     <ItemGroup>
         <AssemblyMetadata Include="ContentRootPath" Value="$([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))" />
