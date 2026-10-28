@@ -68,6 +68,12 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NUGET_API_KEY: ${{ secrets.RSG_NUGET_API_KEY }}
+                  # The folder of the gh-pages branch these docs deploy to (see the docs job): a pull request's preview, a
+                  # release's version folder, or (empty) the site root that holds latest main.
+                  DOCS_BASE: >-
+                      ${{ github.event_name == 'pull_request' && format('/{0}/pr-preview/pr-{1}', github.event.repository.name, github.event.number)
+                      || startsWith(github.ref, 'refs/tags/v') && format('/{0}/{1}', github.event.repository.name, github.ref_name)
+                      || '' }}
             - name: 🏺 Save GitHub event
               if: always()
               run: cp "$GITHUB_EVENT_PATH" artifacts/event.json || true
@@ -106,8 +112,99 @@ jobs:
               with:
                   name: event
                   path: artifacts/event.json
+            - name: 🏺 Publish docs
+              uses: actions/upload-artifact@v7
+              with:
+                  name: docs
+                  path: artifacts/docs/
+                  include-hidden-files: true
             # Before the post step saves the mise cache: drop tool versions nothing selects anymore, so it holds only the
             # current ones.
             - name: 🧹 Prune tools
               if: always() && github.ref == 'refs/heads/main'
               run: mise prune --tools
+
+    # Deploys the docs the build made to the gh-pages branch: main to the root, each release to v<version>/ (listed in
+    # versions.json for the version switcher), and each pull request from this repository to pr-preview/pr-<n>/ (removed
+    # again by docs-preview-cleanup.yml). Pre-release tags and fork pull requests don't deploy.
+    docs:
+        needs: build
+        if: >-
+            github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-'))
+            || github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        # Every gh-pages writer (main, releases, previews and their cleanup) shares this group, so they push one at a time;
+        # queue: max keeps every waiting deploy rather than only the newest.
+        concurrency:
+            group: gh-pages
+            cancel-in-progress: false
+            queue: max
+        steps:
+            # The deploy action runs git in the workspace, so it needs a checkout. A full one: a sparse checkout is a
+            # partial (blob-less) clone, and fetching gh-pages into it fails with "missing blob object".
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: 📥 Download docs
+              uses: actions/download-artifact@v8
+              with:
+                  name: docs
+                  path: site
+            # A pull request closed while its build ran already had its preview removed by docs-preview-cleanup.yml, so
+            # deploying now would leave an orphaned preview behind.
+            - name: 🔍 Check the pull request is still open
+              id: pr
+              if: github.event_name == 'pull_request'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+              run: echo "state=$(gh pr view "$PR_URL" --json state --jq .state)" >> "$GITHUB_OUTPUT"
+            - name: 🚀 Deploy pull request preview
+              if: github.event_name == 'pull_request' && steps.pr.outputs.state == 'OPEN'
+              uses: rossjrw/pr-preview-action@v1
+              with:
+                  source-dir: site
+                  action: deploy
+            - name: 🚀 Deploy main
+              if: github.ref == 'refs/heads/main'
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                  folder: site
+                  branch: gh-pages
+                  clean: true
+                  # Releases, previews and the release list live beside main's build; don't clean them away.
+                  clean-exclude: |
+                      /pr-preview/
+                      /v[0-9]*/
+                      /versions.json
+            - name: 🏷️ Add the release to versions.json
+              if: startsWith(github.ref, 'refs/tags/v')
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  version="${GITHUB_REF_NAME#v}"
+                  mkdir -p "release/v$version"
+                  cp -R site/. "release/v$version/"
+                  gh api "repos/$GITHUB_REPOSITORY/contents/versions.json?ref=gh-pages" -H "Accept: application/vnd.github.raw" > versions.json \
+                    || echo '{"versions":[]}' > versions.json
+                  VERSION="$version" node -e '
+                    const fs = require("fs");
+                    const { versions = [] } = JSON.parse(fs.readFileSync("versions.json", "utf8"));
+                    const parts = (v) => v.split(".").map(Number);
+                    const sorted = [...new Set([process.env.VERSION, ...versions])].sort((a, b) => {
+                      const [x, y] = [parts(a), parts(b)];
+                      return y[0] - x[0] || y[1] - x[1] || y[2] - x[2];
+                    });
+                    fs.writeFileSync("release/versions.json", JSON.stringify({ versions: sorted }, null, 2) + "\n");
+                  '
+                  cat release/versions.json
+            - name: 🚀 Deploy release
+              if: startsWith(github.ref, 'refs/tags/v')
+              uses: JamesIves/github-pages-deploy-action@v4
+              with:
+                  folder: release
+                  branch: gh-pages
+                  # Only adds v<version>/ and replaces versions.json; everything else on gh-pages stays.
+                  clean: false
