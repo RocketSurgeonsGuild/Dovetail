@@ -39,7 +39,7 @@ internal record DovetailConfigurationData(string Property, string Namespace, str
         return [
             .. GetType()
                .GetProperties()
-               .Select(z => Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{z.Name}", z.GetValue(this) is string ? (string)z.GetValue(this) : null))
+               .Select(z => Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{z.Name}", z.GetValue(this) as string))
         ];
     }
 
