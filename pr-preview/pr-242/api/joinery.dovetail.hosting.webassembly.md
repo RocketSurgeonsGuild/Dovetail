@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Hosting.WebAssembly
 
 - Package: `Joinery.Dovetail.Hosting.WebAssembly`
-- Version: `0.2.3-pr.7`
+- Version: `0.2.3-pr.8`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Hosting.WebAssembly](https://www.nuget.org/packages/Joinery.Dovetail.Hosting.WebAssembly)
 

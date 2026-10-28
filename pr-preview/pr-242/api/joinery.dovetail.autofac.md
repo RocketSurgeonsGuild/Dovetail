@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Autofac
 
 - Package: `Joinery.Dovetail.Autofac`
-- Version: `0.2.3-pr.7`
+- Version: `0.2.3-pr.8`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Autofac](https://www.nuget.org/packages/Joinery.Dovetail.Autofac)
 

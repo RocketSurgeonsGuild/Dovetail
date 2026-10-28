@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Hosting.Uno](/Dovetail/pr-preview/pr-242/api/joinery.dovetail.hosting.uno.md)
-- Version: `0.2.3-pr.7`
+- Version: `0.2.3-pr.8`
 - Namespace: `Joinery.Dovetail.Hosting.Uno`
 - Target framework: `net10.0`
 
