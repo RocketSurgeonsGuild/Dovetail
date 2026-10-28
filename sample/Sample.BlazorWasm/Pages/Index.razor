@@ -19,21 +19,28 @@ test: @Configuration["Test"]
     <dd id="environment">@Configuration["Sample:FromEnvironment"]</dd>
     <dt>OpenTelemetry</dt>
     <dd id="telemetry">@_telemetry</dd>
+    <dt>OpenTelemetry metrics</dt>
+    <dd id="metrics">@_metrics</dd>
 </dl>
 
 @code {
     private string _hostedService = "waiting";
     private string _telemetry = "waiting";
+    private string _metrics = "waiting";
 
     protected override async Task OnInitializedAsync()
     {
-        // Only a started OpenTelemetry tracer provider listens to the sample's activity source, and exports what it ends.
+        // Only started OpenTelemetry providers listen to the sample's activity source and meter, and export what they record.
         using (BrowserTelemetry.Source.StartActivity("index")) { }
+        BrowserTelemetry.Renders.Add(3);
 
         var started = await Task.WhenAny(StartupStatus.Started, Task.Delay(TimeSpan.FromSeconds(10)));
         _hostedService = started == StartupStatus.Started ? "started" : "not started";
 
         var exported = await Task.WhenAny(BrowserTelemetry.Exported, Task.Delay(TimeSpan.FromSeconds(10)));
         _telemetry = exported == BrowserTelemetry.Exported ? $"exported {BrowserTelemetry.Exported.Result}" : "not exported";
+
+        var measured = await Task.WhenAny(BrowserTelemetry.Measured, Task.Delay(TimeSpan.FromSeconds(10)));
+        _metrics = measured == BrowserTelemetry.Measured ? $"exported {BrowserTelemetry.Measured.Result}" : "not exported";
     }
 }

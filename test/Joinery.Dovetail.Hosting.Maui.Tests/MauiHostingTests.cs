@@ -1,9 +1,12 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Stashbox;
 using static Joinery.Dovetail.Hosting.Maui.Tests.MauiFixtures;
@@ -118,6 +121,36 @@ public class MauiHostingTests
         using (source.StartActivity(name)) { }
 
         RecordingProcessor.Ended.ShouldContain(name);
+    }
+
+    /// <summary>
+    ///     Dovetail starts the meter provider once the app is built too, so a measurement the app records before anything resolves the
+    ///     provider is still collected by <see cref="MetricsJoint" />'s exporter.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_CollectsMetrics_FromWhenTheAppIsBuilt()
+    {
+        await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
+
+        var name = "dovetail.test.counter." + Guid.NewGuid().ToString("N");
+        using var meter = new Meter(ActivitySourceName);
+        meter.CreateCounter<long>(name).Add(3);
+        app.Services.GetRequiredService<MeterProvider>().ForceFlush();
+
+        ExportedMetrics.ShouldContain(metric => metric.Name == name && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
+    }
+
+    /// <summary>
+    ///     <see cref="ResourceJoint" />'s attribute is on the resource of every signal's provider.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_AppliesTheResourceJoints_ToEveryProvider()
+    {
+        await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
+
+        var attribute = new KeyValuePair<string, object>(ResourceAttribute, "maui");
+        app.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.ShouldContain(attribute);
+        app.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.ShouldContain(attribute);
     }
 
     private sealed class Marker;

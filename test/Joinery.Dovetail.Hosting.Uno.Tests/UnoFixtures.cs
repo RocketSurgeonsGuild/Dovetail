@@ -6,6 +6,8 @@ using Joinery.Dovetail.OpenTelemetry.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 namespace Joinery.Dovetail.Hosting.Uno.Tests;
@@ -13,7 +15,8 @@ namespace Joinery.Dovetail.Hosting.Uno.Tests;
 public static class UnoFixtures
 {
     /// <summary>
-    ///     The activity source <see cref="TracingJoint" /> subscribes the tracer provider to.
+    ///     The activity source <see cref="TracingJoint" /> subscribes the tracer provider to, and the meter <see cref="MetricsJoint" />
+    ///     subscribes the meter provider to.
     /// </summary>
     public const string ActivitySourceName = "Joinery.Dovetail.Hosting.Uno.Tests";
 
@@ -75,6 +78,33 @@ public static class UnoFixtures
     {
         public void Register(IDovetailContext context, TracerProviderBuilder builder) =>
             builder.AddSource(ActivitySourceName).AddProcessor(new RecordingProcessor());
+    }
+
+    /// <summary>
+    ///     The resource attribute <see cref="ResourceJoint" /> adds.
+    /// </summary>
+    public const string ResourceAttribute = "dovetail.test.host";
+
+    /// <summary>
+    ///     What the meter provider exported, through <see cref="MetricsJoint" />'s in-memory exporter.
+    /// </summary>
+    public static List<MetricSnapshot> ExportedMetrics { get; } = [];
+
+    /// <summary>
+    ///     Subscribes the meter provider to <see cref="ActivitySourceName" /> and exports to <see cref="ExportedMetrics" />.
+    /// </summary>
+    [DovetailExport]
+    public class MetricsJoint : IMeterProviderBuilderJoint
+    {
+        public void Register(IDovetailContext context, MeterProviderBuilder builder) =>
+            builder.AddMeter(ActivitySourceName).AddInMemoryExporter(ExportedMetrics);
+    }
+
+    [DovetailExport]
+    public class ResourceJoint : IResourceBuilderJoint
+    {
+        public void Register(IDovetailContext context, ResourceBuilder builder) =>
+            builder.AddAttributes([new KeyValuePair<string, object>(ResourceAttribute, "uno")]);
     }
 
     public sealed class RecordingProcessor : BaseProcessor<Activity>
