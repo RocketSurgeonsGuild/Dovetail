@@ -3,8 +3,9 @@
     Joinery.Dovetail.Hosting.targets
     Emits the helpers that the generated ConfigureDovetail entry points (Joinery.Dovetail.Hosts.targets) call into, from the
     *.cs.template files next to this file, the same way the entry points themselves are emitted. A helper is only emitted when
-    every assembly it compiles against is among the project's resolved references, so this package depends on none of .NET MAUI,
-    Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of them is what turns its helper on.
+    every assembly it compiles against is among the project's resolved references, so this package depends on none of
+    Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of
+    them is what turns its helper on.
 
     Templates must not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to forward slashes
     on Linux and macOS.
@@ -19,7 +20,7 @@
   -->
   <ItemGroup>
     <_DovetailHostingHelper Include="DovetailHostApplicationHelpers" References="Microsoft.Extensions.Hosting" />
-    <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Extensions.Hosting;Microsoft.Maui" />
+    <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Maui" />
     <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
     <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
     <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />

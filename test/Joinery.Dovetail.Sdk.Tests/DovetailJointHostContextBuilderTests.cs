@@ -29,6 +29,8 @@ public class DovetailJointHostContextBuilderTests(string targetFramework)
                 "worker/worker.csproj",
                 ProjectCreator
                    .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                   // The generic host's own package, which a HostApplicationBuilder application references (see HostingHelperTests).
+                   .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework))
                    .ItemInclude(
                         "PackageReference",
                         include: "Microsoft.Extensions.Logging",

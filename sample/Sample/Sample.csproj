@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
         <ProjectReference Include="..\Sample.Core\Sample.Core.csproj" />
         <DovetailHost
             Include="HostApplication"

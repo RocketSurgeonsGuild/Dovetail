@@ -5,9 +5,9 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// <summary>
 /// Joinery.Dovetail.Hosting emits the helpers the generated <c>ConfigureDovetail</c> entry points call from templates
 /// (<c>src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets</c>), each only when the assemblies it compiles against
-/// are among the project's references, so the package itself depends on no host framework. These build an application that
-/// references the package and one host framework, which also proves the emitted helpers compile there, and read which helpers
-/// landed in <c>obj/</c>.
+/// are among the project's references, so the package itself depends on no host framework, the generic host's
+/// Microsoft.Extensions.Hosting included. These build an application that references the package and one host framework, which also
+/// proves the emitted helpers compile there, and read which helpers landed in <c>obj/</c>.
 /// </summary>
 [TargetFrameworks]
 public class HostingHelperTests(string targetFramework)
@@ -17,9 +17,26 @@ public class HostingHelperTests(string targetFramework)
     [Test]
     public async Task GenericHost_EmitsOnlyTheGenericHostHelper()
     {
-        using var project = CreateApplication();
+        using var project = CreateApplication(app => app.ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework)));
 
         ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
+    }
+
+    /// <summary>
+    /// The package depends on Microsoft.Extensions.Hosting.Abstractions only, so the generic-host helper (and the SDK's HostApplication
+    /// entry points, which call it) only appear once the application references Microsoft.Extensions.Hosting itself.
+    /// </summary>
+    [Test]
+    public async Task WithoutTheGenericHost_EmitsNoHelpers_AndNoEntryPoints()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
+           .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe"))
+           .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
+
+        ( await BuildAndReadHelpers(project) ).ShouldBeEmpty();
+        GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
     }
 
     [Test]
@@ -31,19 +48,19 @@ public class HostingHelperTests(string targetFramework)
     }
 
     [Test]
-    public async Task Maui_AlsoEmitsTheMauiHelpers()
+    public async Task Maui_EmitsTheMauiHelpers()
     {
         using var project = CreateApplication(app => app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailMauiHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailMauiHelpers"]);
     }
 
     [Test]
-    public async Task WebAssembly_AlsoEmitsTheWebAssemblyHelpers()
+    public async Task WebAssembly_EmitsTheWebAssemblyHelpers()
     {
         using var project = CreateApplication(app => WebAssembly(app));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]);
     }
 
     /// <summary>
@@ -55,7 +72,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WebAssembly(app).Property("LangVersion", "13"));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailWebAssemblyHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailWebAssemblyHelpers"]);
     }
 
     /// <summary>
@@ -114,7 +131,7 @@ public class HostingHelperTests(string targetFramework)
            .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly"))
            .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBeEmpty();
         GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
     }
 
