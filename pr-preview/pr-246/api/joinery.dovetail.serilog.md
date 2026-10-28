@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Serilog
 
 - Package: `Joinery.Dovetail.Serilog`
-- Version: `0.2.4-pr.15`
+- Version: `0.2.4-pr.17`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Serilog](https://www.nuget.org/packages/Joinery.Dovetail.Serilog)
 

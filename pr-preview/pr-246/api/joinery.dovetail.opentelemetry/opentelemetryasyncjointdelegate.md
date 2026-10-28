@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.OpenTelemetry](/Dovetail/pr-preview/pr-246/api/joinery.dovetail.opentelemetry.md)
-- Version: `0.2.4-pr.15`
+- Version: `0.2.4-pr.17`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
