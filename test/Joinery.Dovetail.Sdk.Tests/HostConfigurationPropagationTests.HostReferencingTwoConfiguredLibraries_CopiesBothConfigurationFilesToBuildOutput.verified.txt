@@ -24,7 +24,7 @@
       DovetailEnableDryIoc: false,
       DovetailEnableHosting: false,
       DovetailEnableHostingWeb: false,
-      DovetailEnableOpenTelemetry: false,
+      DovetailEnableOpenTelemetry: true,
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
       DovetailHostingVersion: {sdk-version},
@@ -81,11 +81,7 @@
         ]
       }
     ],
-    GeneratedFiles: [
-      DovetailContextBuilder.g.cs,
-      DovetailHost.HostApplication.g.cs,
-      DovetailHosting.DovetailHostApplicationHelpers.g.cs
-    ],
+    GeneratedFiles: [],
     OutputFiles: [
       appsettings.schema.json,
       host.runtimeconfig.dev.json,

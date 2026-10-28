@@ -29,9 +29,7 @@
       {TempPath}sdk-tests/{id}/app/app.csproj
     ],
     NoImports: [],
-    GeneratedFiles: [
-      DovetailHosting.DovetailHostApplicationHelpers.g.cs
-    ],
+    GeneratedFiles: [],
     OutputFiles: []
   }
 ]

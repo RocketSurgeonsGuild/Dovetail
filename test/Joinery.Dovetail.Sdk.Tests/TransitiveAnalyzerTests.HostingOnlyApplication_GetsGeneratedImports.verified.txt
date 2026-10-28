@@ -30,7 +30,6 @@
     ],
     NoImports: [],
     GeneratedFiles: [
-      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
       Imported_Assembly_Dovetails.g.cs
     ],
     OutputFiles: [

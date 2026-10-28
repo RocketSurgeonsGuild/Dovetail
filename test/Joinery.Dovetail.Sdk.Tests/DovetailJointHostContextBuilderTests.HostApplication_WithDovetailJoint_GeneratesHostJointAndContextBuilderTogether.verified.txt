@@ -24,7 +24,7 @@
       DovetailEnableDryIoc: false,
       DovetailEnableHosting: false,
       DovetailEnableHostingWeb: false,
-      DovetailEnableOpenTelemetry: false,
+      DovetailEnableOpenTelemetry: true,
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
       DovetailHostingVersion: {sdk-version},
@@ -53,6 +53,7 @@
       Joinery.Dovetail.Hosting: {
         IsImplicitlyDefined: true
       },
+      Microsoft.Extensions.Hosting: {},
       Microsoft.Extensions.Logging: {}
     },
     DovetailJoint: {
