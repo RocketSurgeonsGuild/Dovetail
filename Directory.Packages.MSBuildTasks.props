@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!--
+      What netstandard2.0 MSBuild tasks (Dovetail.Build.Tasks) compile against, and never ship: MSBuild provides these at run
+      time. 9.0.0 is the newest that .NET Framework MSBuild 17.14 and every 18.x bind (MSBuild.exe.config redirects); .NET
+      MSBuild supplies its shared framework's newer copies. Don't raise them to match other projects.
+  -->
+  <ItemGroup Label="MSBuild task references" Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageVersion Include="System.Reflection.Metadata" Version="9.0.22" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.22" />
+  </ItemGroup>
+</Project>

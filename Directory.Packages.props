@@ -85,14 +85,10 @@
     <PackageVersion Include="Corvus.Json.JsonSchema.Draft7" Version="5.7.9" />
   </ItemGroup>
   <!--
-      What netstandard2.0 MSBuild tasks (Dovetail.Build.Tasks) compile against, and never ship: MSBuild provides these at run
-      time. 9.0.0 is the newest that .NET Framework MSBuild 17.14 and every 18.x bind (MSBuild.exe.config redirects); .NET
-      MSBuild supplies its shared framework's newer copies. Don't raise them to match other projects.
+      The pinned MSBuild task references sit in their own file so Renovate can leave just that group alone
+      (.github/renovate.json) while the same packages elsewhere keep updating.
   -->
-  <ItemGroup Label="MSBuild task references" Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageVersion Include="System.Reflection.Metadata" Version="9.0.22" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.22" />
-  </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Packages.MSBuildTasks.props" />
   <!--
       Uno.Extensions per release line: no stable 7.x has net10.0+ assets (its net9.0 ones serve net10.0), and only the 8.0
       prereleases target net10.0+, so net11.0 builds take those until 8.0 is stable. Kept apart from the per-framework groups
