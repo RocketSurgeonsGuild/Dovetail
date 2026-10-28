@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Configuration.Yaml](/Dovetail/api/dovetail.configuration.yaml.md)
-- Version: `0.2.2-beta.1`
+- Version: `0.2.2-beta.2`
 - Namespace: `Dovetail.Configuration.Yaml`
 - Target framework: `net10.0`
 - Inherits: `FileConfigurationSource`

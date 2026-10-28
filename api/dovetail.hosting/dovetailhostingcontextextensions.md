@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Hosting](/Dovetail/api/dovetail.hosting.md)
-- Version: `0.2.2-beta.1`
+- Version: `0.2.2-beta.2`
 - Namespace: `Dovetail`
 - Target framework: `net10.0`
 

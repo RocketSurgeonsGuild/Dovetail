@@ -2,7 +2,7 @@
 
 - Kind: `record`
 - Package: [Dovetail.Serilog](/Dovetail/api/dovetail.serilog.md)
-- Version: `0.2.2-beta.1`
+- Version: `0.2.2-beta.2`
 - Namespace: `Dovetail.Serilog`
 - Target framework: `net10.0`
 - Implements: `IEquatable<SerilogRuntimeConfiguration>`

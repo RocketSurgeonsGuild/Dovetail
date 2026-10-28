@@ -1,7 +1,7 @@
 # Dovetail.Stashbox
 
 - Package: `Dovetail.Stashbox`
-- Version: `0.2.2-beta.1`
+- Version: `0.2.2-beta.2`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Stashbox](https://www.nuget.org/packages/Dovetail.Stashbox)
 

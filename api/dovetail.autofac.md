@@ -1,7 +1,7 @@
 # Dovetail.Autofac
 
 - Package: `Dovetail.Autofac`
-- Version: `0.2.2-beta.1`
+- Version: `0.2.2-beta.2`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Autofac](https://www.nuget.org/packages/Dovetail.Autofac)
 
