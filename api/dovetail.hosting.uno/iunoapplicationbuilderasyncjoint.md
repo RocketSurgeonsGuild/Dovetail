@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Dovetail.Hosting.Uno](/Dovetail/api/dovetail.hosting.uno.md)
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`

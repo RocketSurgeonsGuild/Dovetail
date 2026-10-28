@@ -1,7 +1,7 @@
 # Dovetail
 
 - Package: `Dovetail`
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Target framework: `net10.0`
 - NuGet: [Dovetail](https://www.nuget.org/packages/Dovetail)
 

@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail](/Dovetail/api/dovetail.md)
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Namespace: `Dovetail.Attributes`
 - Target framework: `net10.0`
 - Inherits: `Attribute`

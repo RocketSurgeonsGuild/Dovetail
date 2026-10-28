@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.OpenTelemetry](/Dovetail/api/dovetail.opentelemetry.md)
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Namespace: `Dovetail.OpenTelemetry`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`

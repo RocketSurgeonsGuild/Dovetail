@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Dovetail.Serilog](/Dovetail/api/dovetail.serilog.md)
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`

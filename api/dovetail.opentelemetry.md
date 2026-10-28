@@ -1,7 +1,7 @@
 # Dovetail.OpenTelemetry
 
 - Package: `Dovetail.OpenTelemetry`
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.OpenTelemetry](https://www.nuget.org/packages/Dovetail.OpenTelemetry)
 

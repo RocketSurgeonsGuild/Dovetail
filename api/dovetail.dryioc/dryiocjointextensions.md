@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.DryIoc](/Dovetail/api/dovetail.dryioc.md)
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 

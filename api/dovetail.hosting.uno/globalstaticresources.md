@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Hosting.Uno](/Dovetail/api/dovetail.hosting.uno.md)
-- Version: `0.2.3-beta.1`
+- Version: `0.2.3-beta.3`
 - Namespace: `Dovetail.Hosting.Uno`
 - Target framework: `net10.0`
 
