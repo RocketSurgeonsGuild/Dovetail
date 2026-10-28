@@ -1,0 +1,30 @@
+# IAutofacJoint
+
+- Kind: `interface`
+- Package: [Joinery.Dovetail.Autofac](/Dovetail/v0.2.3/api/joinery.dovetail.autofac.md)
+- Version: `0.2.3`
+- Namespace: `Joinery.Dovetail.Joints`
+- Target framework: `net10.0`
+- Implements: `IDovetailJoint`
+
+Joint interface for Autofac. Implements the `Infrastructure.IDovetailJoint`
+
+## Definition
+
+```csharp
+namespace Joinery.Dovetail.Joints;
+
+public interface IAutofacJoint
+    : Joinery.Dovetail.Infrastructure.IDovetailJoint
+{
+    // ...
+}
+```
+
+## Methods
+
+- [Register(IDovetailContext, ContainerBuilder)](/Dovetail/v0.2.3/api/joinery.dovetail.autofac/iautofacjoint/methods.md#register-idovetailcontext-containerbuilder) `abstract` -- Register the Autofac part.
+
+## See Also
+
+- `Infrastructure.IDovetailJoint`
