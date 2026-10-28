@@ -1,0 +1,25 @@
+# MauiAppBuilderHostBuilderExtensions
+
+- Kind: `class`
+- Package: [Dovetail.Hosting.Maui](/Dovetail/api/dovetail.hosting.maui.md)
+- Version: `0.2.1-beta.8`
+- Namespace: `Dovetail.Joints`
+- Target framework: `net10.0`
+
+Builder-method extensions for applying MauiAppBuilder parts to a `DovetailContextBuilder`.
+
+## Definition
+
+```csharp
+namespace Dovetail.Joints;
+
+public static class MauiAppBuilderHostBuilderExtensions
+{
+    // ...
+}
+```
+
+## Methods
+
+- [ConfigureMauiAppBuilder(DovetailContextBuilder, MauiAppBuilderJointDelegate, int, DovetailCategory?, DovetailHostType, string?)](/Dovetail/api/dovetail.hosting.maui/mauiappbuilderhostbuilderextensions/methods.md#configuremauiappbuilder-dovetailcontextbuilder-mauiappbuilderjointdelegate-int-dovetailcategory-dovetailhosttype-string) : `DovetailContextBuilder` `extension`
+- [ConfigureMauiAppBuilder(DovetailContextBuilder, MauiAppBuilderAsyncJointDelegate, int, DovetailCategory?, DovetailHostType, string?)](/Dovetail/api/dovetail.hosting.maui/mauiappbuilderhostbuilderextensions/methods.md#configuremauiappbuilder-dovetailcontextbuilder-mauiappbuilderasyncjointdelegate-int-dovetailcategory-dovetailhosttype-string) : `DovetailContextBuilder` `extension`

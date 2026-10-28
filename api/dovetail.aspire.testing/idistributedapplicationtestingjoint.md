@@ -1,0 +1,30 @@
+# IDistributedApplicationTestingJoint
+
+- Kind: `interface`
+- Package: [Dovetail.Aspire.Testing](/Dovetail/api/dovetail.aspire.testing.md)
+- Version: `0.2.1-beta.8`
+- Namespace: `Dovetail.Testing.Joints`
+- Target framework: `net10.0`
+- Implements: `IDovetailJoint`
+
+Joint interface for DistributedApplicationTesting. Implements the `Infrastructure.IDovetailJoint`
+
+## Definition
+
+```csharp
+namespace Dovetail.Testing.Joints;
+
+public interface IDistributedApplicationTestingJoint
+    : Dovetail.Infrastructure.IDovetailJoint
+{
+    // ...
+}
+```
+
+## Methods
+
+- [Register(IDovetailContext, IDistributedApplicationTestingBuilder)](/Dovetail/api/dovetail.aspire.testing/idistributedapplicationtestingjoint/methods.md#register-idovetailcontext-idistributedapplicationtestingbuilder) `abstract` -- Register the DistributedApplicationTesting part.
+
+## See Also
+
+- `Infrastructure.IDovetailJoint`

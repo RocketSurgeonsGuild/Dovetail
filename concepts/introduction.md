@@ -25,7 +25,7 @@ You have to make a choice with every library you introduce, and using Dovetail i
 ### Reasons to use?
 
 - You can create library code that "just works" without having to ensure that the correct extension method was called, with the correct parameters, for every library you add.
-- You can don't have to worry about service registration extension methods  in instead each module can setup it's own registrations.
+- You can don't have to worry about service registration extension methods in instead each module can setup it's own registrations.
 - You can can group bootstrapping logic together to lessen cognitive load.
 
 ### Reasons not to use?

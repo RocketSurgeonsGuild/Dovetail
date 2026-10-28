@@ -1,0 +1,30 @@
+# ISerilogAsyncJoint
+
+- Kind: `interface`
+- Package: [Dovetail.Serilog](/Dovetail/api/dovetail.serilog.md)
+- Version: `0.2.1-beta.8`
+- Namespace: `Dovetail.Joints`
+- Target framework: `net10.0`
+- Implements: `IDovetailJoint`
+
+Async part interface for Serilog. Implements the `Infrastructure.IDovetailJoint`
+
+## Definition
+
+```csharp
+namespace Dovetail.Joints;
+
+public interface ISerilogAsyncJoint
+    : Dovetail.Infrastructure.IDovetailJoint
+{
+    // ...
+}
+```
+
+## Methods
+
+- [Register(IDovetailContext, IServiceCollection, LoggerConfiguration, CancellationToken)](/Dovetail/api/dovetail.serilog/iserilogasyncjoint/methods.md#register-idovetailcontext-iservicecollection-loggerconfiguration-cancellationtoken) : `ValueTask` `abstract` -- Register the Serilog part asynchronously.
+
+## See Also
+
+- `Infrastructure.IDovetailJoint`

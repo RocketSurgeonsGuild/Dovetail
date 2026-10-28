@@ -1,13 +1,22 @@
-# API Reference
+# C# API Reference
 
-API reference documentation is auto-generated from XML doc comments in the source, one page per assembly. Run
-`mise run docs:api` (docfx metadata + docfx2astro) before running the docs site — see `mise run docs:build`.
+Browse the C# API reference for every package this repository publishes.
 
-[Core](/api/dovetail/)
-	[Hosting](/api/dovetail.hosting/)
-	[Configuration (TOML)](/api/dovetail.configuration.toml/)
-	[Configuration (YAML)](/api/dovetail.configuration.yaml/)
-	[Aspire](/api/dovetail.aspire/)
-	[Autofac](/api/dovetail.autofac/)
-	[DryIoc](/api/dovetail.dryioc/)
-	[Serilog](/api/dovetail.serilog/)
+## Packages
+
+- [Dovetail](/Dovetail/api/dovetail.md) -- v0.2.1-beta.8 - 77 types - 234 members - net10.0
+- [Dovetail.Aspire](/Dovetail/api/dovetail.aspire.md) -- v0.2.1-beta.8 - 13 types - 23 members - net10.0
+- [Dovetail.Aspire.Testing](/Dovetail/api/dovetail.aspire.testing.md) -- v0.2.1-beta.8 - 7 types - 12 members - net10.0
+- [Dovetail.Autofac](/Dovetail/api/dovetail.autofac.md) -- v0.2.1-beta.8 - 7 types - 12 members - net10.0
+- [Dovetail.Configuration.Yaml](/Dovetail/api/dovetail.configuration.yaml.md) -- v0.2.1-beta.8 - 3 types - 10 members - net10.0
+- [Dovetail.DryIoc](/Dovetail/api/dovetail.dryioc.md) -- v0.2.1-beta.8 - 9 types - 15 members - net10.0
+- [Dovetail.Hosting](/Dovetail/api/dovetail.hosting.md) -- v0.2.1-beta.8 - 14 types - 24 members - net10.0
+- [Dovetail.Hosting.Maui](/Dovetail/api/dovetail.hosting.maui.md) -- v0.2.1-beta.8 - 13 types - 24 members - net10.0
+- [Dovetail.Hosting.Uno](/Dovetail/api/dovetail.hosting.uno.md) -- v0.2.1-beta.8 - 14 types - 28 members - net10.0
+- [Dovetail.Hosting.Web](/Dovetail/api/dovetail.hosting.web.md) -- v0.2.1-beta.8 - 1 types - 4 members - net10.0
+- [Dovetail.Hosting.WebAssembly](/Dovetail/api/dovetail.hosting.webassembly.md) -- v0.2.1-beta.8 - 14 types - 24 members - net10.0
+- [Dovetail.Mermaid](/Dovetail/api/dovetail.mermaid.md) -- v0.2.1-beta.8 - 1 types - 4 members - net10.0
+- [Dovetail.OpenTelemetry](/Dovetail/api/dovetail.opentelemetry.md) -- v0.2.1-beta.8 - 16 types - 32 members - net10.0
+- [Dovetail.Serilog](/Dovetail/api/dovetail.serilog.md) -- v0.2.1-beta.8 - 9 types - 24 members - net10.0
+- [Dovetail.Stashbox](/Dovetail/api/dovetail.stashbox.md) -- v0.2.1-beta.8 - 9 types - 17 members - net10.0
+- [Dovetail.Testing](/Dovetail/api/dovetail.testing.md) -- v0.2.1-beta.8 - 6 types - 11 members - net10.0
