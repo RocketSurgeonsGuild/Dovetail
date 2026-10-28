@@ -27,6 +27,13 @@ permissions:
     repository-projects: none
     security-events: none
     statuses: write
+
+# Only the newest push to a branch needs to draft the release. A fixed prefix, not github.workflow: when this runs
+# through workflow_call, github.workflow is the caller's name.
+concurrency:
+    group: draft-release-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     draft_release:
         runs-on: ubuntu-latest

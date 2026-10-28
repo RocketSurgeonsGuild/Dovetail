@@ -19,6 +19,11 @@ on:
 permissions:
     contents: read
 
+# A newer run for the same branch (or pull request head) cancels this one; tags and merge-queue refs are unique.
+concurrency:
+    group: build-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -36,13 +41,26 @@ jobs:
                   MISE_JOBS: '1'
               with:
                   install: true
+                  # Only dotnet (the SDK and the runtime) here; the other tools install in parallel in the next step.
+                  install_args: dotnet
+                  # One cache for every tool: restored here, before anything installs, and saved in the post step
+                  # (cache_save_post), after the next step's tools and the pruning at the end of the job. The key is fixed
+                  # rather than hashed from the tool versions, so a bump doesn't start a new multi-GB cache; it rolls over
+                  # every cache_max_age_days to pick up bumps. Only main saves it (pull requests and the merge queue each
+                  # have their own cache scope, so saving there would make one per ref); every ref can restore main's.
                   cache: true
-                  # Save in the post step: `mise run build` fills the npm cache (npm_config_cache lives in the mise data dir) after
-                  # `mise install`, and mise-action otherwise saves right after install, leaving the npm cache out.
+                  cache_key: mise-{{platform}}-{{cache_period}}
+                  cache_max_age_days: 7
+                  cache_save: ${{ github.ref == 'refs/heads/main' }}
                   cache_save_post: true
-                  cache_key_prefix: mise-v2
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
+            # Everything but dotnet, in parallel (mise's default jobs). Naming the tools keeps `mise install` from running
+            # dotnet's `when = "always"` postinstall (the workloads) a second time.
+            - name: 🧰 Install tools
+              run: mise ls --current --local --json | jq -r 'keys[] | select(. != "dotnet")' | xargs mise install
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             - name: ⚙️ Build
               id: build
               run: |
@@ -58,19 +76,24 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   name: logs
-                  path: artifacts/logs/
+                  # Test results and coverage have their own artifacts below; the HTML coverage report alone is over 1 GB.
+                  path: |
+                      artifacts/logs/
+                      !artifacts/logs/tests/
+                      !artifacts/logs/coverage/
             - name: 🏺 Publish test data
               if: always()
               uses: actions/upload-artifact@v7
               with:
                   name: test data
-                  path: artifacts/tests/
+                  # The pipeline writes test results and coverage under artifacts/logs/ (Publish Results reads both artifacts).
+                  path: artifacts/logs/tests/
             - name: 🏺 Publish coverage data
               if: always()
               uses: actions/upload-artifact@v7
               with:
                   name: coverage
-                  path: artifacts/coverage/
+                  path: artifacts/logs/coverage/
             - name: 🏺 Publish NuGet Packages
               if: always()
               uses: actions/upload-artifact@v7
@@ -83,3 +106,8 @@ jobs:
               with:
                   name: event
                   path: artifacts/event.json
+            # Before the post step saves the mise cache: drop tool versions nothing selects anymore, so it holds only the
+            # current ones.
+            - name: 🧹 Prune tools
+              if: always() && github.ref == 'refs/heads/main'
+              run: mise prune --tools

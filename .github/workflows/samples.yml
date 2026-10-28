@@ -32,9 +32,45 @@ on:
 permissions:
     contents: read
 
+# A newer run for the same branch (or pull request head) cancels this one; tags and merge-queue refs are unique.
+concurrency:
+    group: samples-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+    cancel-in-progress: true
+
 jobs:
+    # The samples only build from src/, sample/ and the root Directory.*.props/targets, plus the toolchain (.config/mise.toml,
+    # global.json, NuGet.config) and this workflow. Anything else skips the legs; tags always build them.
+    changes:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
+        outputs:
+            samples: ${{ startsWith(github.ref, 'refs/tags/') || steps.filter.outputs.samples == 'true' }}
+        steps:
+            - name: Checkout
+              if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+              uses: actions/checkout@v7
+            - name: 🔎 Detect sample changes
+              id: filter
+              if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+              uses: dorny/paths-filter@v4
+              with:
+                  filters: |
+                      samples:
+                          - 'src/**'
+                          - 'sample/**'
+                          - 'Directory.*.props'
+                          - 'Directory.*.targets'
+                          - '.config/mise.toml'
+                          - 'global.json'
+                          - 'NuGet.config'
+                          - '.github/workflows/samples.yml'
+
     sample:
         name: ${{ matrix.name }}
+        needs: changes
+        if: needs.changes.outputs.samples == 'true'
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
@@ -157,15 +193,23 @@ jobs:
                   path: artifacts/logs/
 
     # The ruleset requires a check named `samples`. Each matrix leg reports under its own name, so this job stands in for all
-    # of them and passes only when every leg did.
+    # of them and passes only when every leg did, or when nothing the samples build from changed.
     samples:
         name: samples
-        needs: sample
+        needs: [changes, sample]
         if: always()
         runs-on: ubuntu-latest
         steps:
             - name: ✅ All samples built
-              if: needs.sample.result != 'success'
               run: |
-                  echo "::error::A sample leg didn't succeed (${{ needs.sample.result }})."
-                  exit 1
+                  echo "changes: $CHANGES (samples: $SAMPLES), sample: $SAMPLE"
+                  if [ "$CHANGES" = success ] && [ "$SAMPLES" != true ] && [ "$SAMPLE" = skipped ]; then
+                      echo "Nothing the samples build from changed."
+                  elif [ "$SAMPLE" != success ]; then
+                      echo "::error::A sample leg didn't succeed ($SAMPLE)."
+                      exit 1
+                  fi
+              env:
+                  CHANGES: ${{ needs.changes.result }}
+                  SAMPLES: ${{ needs.changes.outputs.samples }}
+                  SAMPLE: ${{ needs.sample.result }}

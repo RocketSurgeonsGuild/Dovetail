@@ -1,6 +1,7 @@
 amends "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Config.pkl"
 
 import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.9.0/hk@2.9.0#/builtins/test/helpers.pkl"
 
 // Solution the .NET formatters operate against.
 local solution = "Dovetail.slnx"
@@ -49,6 +50,10 @@ local excludes = new Listing<String> {
   "**/*.received.*"
 }
 
+local yamlTest = new helpers.TestMaker { filename = "foo.yml" }
+local badYaml = "key:   value\nlist:\n    -   item\n"
+local goodYaml = "key: value\nlist:\n  - item\n"
+
 local excludedDiagnosticsString = excludeDiagnostics.join(" ")
 
 // `dotnet format` — whitespace / code-style / analyzer fixes, scoped to the changed C# files.
@@ -94,7 +99,28 @@ steps {
   ["detect-private-key"] = Builtins.detect_private_key
   ["large-files"] = Builtins.check_added_large_files
   ["dotnet-format"] = dotnetFormat
-  // ["oxfmt"] = Builtins.oxfmt
+  // YAML, Markdown and CSS/HTML only: biome formats JS/TS/JSON and tombi formats TOML. Style and ignores live in .oxfmtrc.json.
+  ["oxfmt"] = (Builtins.oxfmt) {
+    glob =
+      List(
+        "**/*.yml",
+        "**/*.yaml",
+        "**/*.md",
+        "**/*.mdx",
+        "**/*.markdown",
+        "**/*.css",
+        "**/*.scss",
+        "**/*.html",
+        "**/*.htm",
+      )
+    // The builtin's tests format a .ts file, which this glob leaves to biome; test the same way with YAML.
+    tests = new {
+      ["check bad file"] = yamlTest.checkFail(badYaml, 1)
+      ["check good file"] = yamlTest.checkPass(goodYaml)
+      ["fix bad file"] = yamlTest.fixPass(badYaml, goodYaml)
+      ["diff bad file"] = yamlTest.diffPass(badYaml, goodYaml)
+    }
+  }
   // ["jb-cleanupcode"] = jbCleanupCode
 }
 

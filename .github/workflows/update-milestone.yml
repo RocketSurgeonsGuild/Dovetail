@@ -24,6 +24,12 @@ permissions:
     security-events: none
     statuses: write
 
+# A newer run for the same branch cancels this one. head_ref, because github.ref is the base branch on
+# pull_request_target (it would put every pull request in one group).
+concurrency:
+    group: update-milestone-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     update_milestone:
         runs-on: ubuntu-latest

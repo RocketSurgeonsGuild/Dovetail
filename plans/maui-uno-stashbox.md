@@ -6,10 +6,10 @@ Status: design agreed (2026-10-22). Nothing is implemented yet.
 
 Three new packages, plus shared pieces, delivered in **one PR**:
 
-| Package                 | Kind         | Modeled on                                                                  |
-| ----------------------- | ------------ | --------------------------------------------------------------------------- |
-| `Dovetail.Stashbox`     | DI container | `Dovetail.DryIoc`                                                           |
-| `Dovetail.Hosting.Maui` | Host         | `Dovetail.Hosting` (`MauiAppBuilder` is an `IHostApplicationBuilder`)       |
+| Package                 | Kind         | Modeled on                                                                   |
+| ----------------------- | ------------ | ---------------------------------------------------------------------------- |
+| `Dovetail.Stashbox`     | DI container | `Dovetail.DryIoc`                                                            |
+| `Dovetail.Hosting.Maui` | Host         | `Dovetail.Hosting` (`MauiAppBuilder` is an `IHostApplicationBuilder`)        |
 | `Dovetail.Hosting.Uno`  | Host         | New `IHostBuilder` bridge (Uno.Extensions only exposes the old generic host) |
 
 ### Commit order inside the PR
@@ -68,21 +68,21 @@ Three new packages, plus shared pieces, delivered in **one PR**:
 - `Dovetail.Stashbox.csproj`: `net10.0;net11.0`, `RuntimeAsyncBrowserWasmAsset`, `ProjectReference`
   to `Dovetail`, `PackageReference Include="Stashbox.Extensions.DependencyInjection"`. Like DryIoc,
   it sets **no** AOT/trim properties.
-  - `<DovetailJoint Include="Stashbox" Namespace="Dovetail.Joints" ParameterType="global::Stashbox.IStashboxContainer" ParameterName="container" />`
+    - `<DovetailJoint Include="Stashbox" Namespace="Dovetail.Joints" ParameterType="global::Stashbox.IStashboxContainer" ParameterName="container" />`
 - `StashboxJoint.cs`: `[DovetailExport, ConnectsJoint<IStashboxJoint>]`, same shape as `DryIocJoint`.
 - `ConfigureStashbox.cs`: `[DovetailExport] internal class ConfigureStashbox : ISetupJoint`
-  - `context.UseServiceProviderFactory<IStashboxContainer>(async (ctx, services, ct) => …)`
-  - `ctx.GetOrAdd<IStashboxContainer>(() => new StashboxContainer(configure))`. `configure` applies
-    `StashboxOptions.ConfigureContainer`, plus `WithLifetimeValidation()` when the environment is
-    Development and `ValidateLifetimesInDevelopment` is true.
-  - `await container.ApplyStashbox(ctx, ct)`, then return a `file`-scoped factory that delegates to
-    `new StashboxServiceProviderFactory(container)`. After the provider is created, it calls
-    `container.Validate()` when `ValidateOnBuild` is set.
+    - `context.UseServiceProviderFactory<IStashboxContainer>(async (ctx, services, ct) => …)`
+    - `ctx.GetOrAdd<IStashboxContainer>(() => new StashboxContainer(configure))`. `configure` applies
+      `StashboxOptions.ConfigureContainer`, plus `WithLifetimeValidation()` when the environment is
+      Development and `ValidateLifetimesInDevelopment` is true.
+    - `await container.ApplyStashbox(ctx, ct)`, then return a `file`-scoped factory that delegates to
+      `new StashboxServiceProviderFactory(container)`. After the provider is created, it calls
+      `container.Validate()` when `ValidateOnBuild` is set.
 - `StashboxOptions.cs` + `StashboxOptionsExtensions.cs` (C# 14 `extension(IDovetailContext)`, like DryIoc):
-  - `Action<ContainerConfigurator>? ConfigureContainer`: registration behavior, disposable-transient
-    tracking, etc. go through here. There is no dedicated "no more registrations" flag.
-  - `bool ValidateOnBuild`: full `Validate()`, default `false`.
-  - `bool ValidateLifetimesInDevelopment`: default `true`, matching `Stashbox.Extensions.Hosting`.
+    - `Action<ContainerConfigurator>? ConfigureContainer`: registration behavior, disposable-transient
+      tracking, etc. go through here. There is no dedicated "no more registrations" flag.
+    - `bool ValidateOnBuild`: full `Validate()`, default `false`.
+    - `bool ValidateLifetimesInDevelopment`: default `true`, matching `Stashbox.Extensions.Hosting`.
 - `PublicAPI.Shipped/Unshipped.txt` entries (RS0017).
 
 ### SDK
@@ -118,7 +118,7 @@ them to the output, which only helps desktop).
 - SDK: **every** Dovetail project embeds its appsettings files as `EmbeddedResource`, named
   `{Project}.{ext}` like the copied files (`appsettings.local.*` only with `DovetailEmbedConfiguration=true`,
   so packed libraries never carry it). This goes beyond embedding only for MAUI/Uno apps,
-  because each project's *generated* config joint
+  because each project's _generated_ config joint
   (`Dovetail{Json,Yaml,Yml,Toml}Configuration.cs.template`) requires its `{Project}.{ext}` file:
   a library with config used in a MAUI app would otherwise throw on device. In embedded mode
   that generated joint reads its own assembly's embedded copy.
@@ -164,18 +164,18 @@ them to the output, which only helps desktop).
 
 - csproj: `net10.0;net11.0` (plain TFMs), `PackageReference Include="Microsoft.Maui.Core"`,
   `ProjectReference` to `Dovetail.Hosting` and `Dovetail.OpenTelemetry`.
-  - `<DovetailJoint Include="MauiAppBuilder" ParameterType="global::Microsoft.Maui.Hosting.MauiAppBuilder" ParameterName="builder" />`
-  - `<DovetailJoint Include="MauiApp" ParameterType="global::Microsoft.Maui.Hosting.MauiApp" ParameterName="app" />`
+    - `<DovetailJoint Include="MauiAppBuilder" ParameterType="global::Microsoft.Maui.Hosting.MauiAppBuilder" ParameterName="builder" />`
+    - `<DovetailJoint Include="MauiApp" ParameterType="global::Microsoft.Maui.Hosting.MauiApp" ParameterName="app" />`
 - `DovetailMauiHelpers.Configure(MauiAppBuilder, Func<MauiAppBuilder, MauiApp>, DovetailContextBuilder, ct)`:
   same steps as `DovetailHostApplicationHelpers.Configure`. It runs `ApplyHostApplication` (generic
   joints) **and** `ApplyMauiAppBuilder`, then after `Build()` runs `ApplyMauiApp` + `ApplyHostCreated`.
-  - Seeds `EmbeddedConfigurationAssembly`, plus `DeviceInfo.Platform` / idiom under well-known keys.
-  - Uses the internal `SharedHostConfigurationAsync` via `InternalsVisibleTo`. It does **not**
-    relax `THost : IHost` on the existing helper.
+    - Seeds `EmbeddedConfigurationAssembly`, plus `DeviceInfo.Platform` / idiom under well-known keys.
+    - Uses the internal `SharedHostConfigurationAsync` via `InternalsVisibleTo`. It does **not**
+      relax `THost : IHost` on the existing helper.
 - **EnvironmentName**, in this order:
-  1. `DOTNET_ENVIRONMENT` if set
-  2. an assembly attribute the SDK stamps at build time: Debug → `Development`, Release → `Production`
-  3. the `DovetailEnvironmentName` MSBuild property, when set, overrides the stamped value
+    1. `DOTNET_ENVIRONMENT` if set
+    2. an assembly attribute the SDK stamps at build time: Debug → `Development`, Release → `Production`
+    3. the `DovetailEnvironmentName` MSBuild property, when set, overrides the stamped value
 
 ### As implemented (`31b71df`)
 
@@ -200,12 +200,12 @@ them to the output, which only helps desktop).
 
 - `test/Dovetail.Hosting.Maui.Tests/` on plain `net10.0;net11.0` with `MauiApp.CreateBuilder(useDefaults: false)`.
   Covers:
-  - services, config and logging flow through
-  - `IHostApplicationJoint` and `IMauiAppBuilderJoint` both fire, and `IMauiAppJoint` sees the built app
-  - the container factory is honored (DryIoc, Autofac, Stashbox)
-  - environment-name precedence
-  - embedded config loading
-  - `UseDovetail` returns a built app
+    - services, config and logging flow through
+    - `IHostApplicationJoint` and `IMauiAppBuilderJoint` both fire, and `IMauiAppJoint` sees the built app
+    - the container factory is honored (DryIoc, Autofac, Stashbox)
+    - environment-name precedence
+    - embedded config loading
+    - `UseDovetail` returns a built app
 - `test/Dovetail.Sdk.Tests/HostTypeTests`: `Maui_DetectsHostAndInjectsHostingMaui`,
   `MauiLibrary_NoHostDetected`, sync overloads emitted only for MAUI, appsettings embedded rather than copied.
 
@@ -223,57 +223,57 @@ them to the output, which only helps desktop).
   `UsingMicrosoftNETSdkWebAssembly=true`. Nothing in Uno.Sdk sets the Blazor one.
 - `Uno.Extensions.Hosting.IApplicationBuilder` ships in **`Uno.Extensions.Hosting.WinUI`**.
   `CreateBuilder(this Application, LaunchActivatedEventArgs[, Assembly])` is in the same package. Members:
-  - `Application App`
-  - `LaunchActivatedEventArgs Arguments`
-  - `Window Window`
-  - `IDictionary<object,object> Properties`
-  - `Configure(Action<IHostBuilder>)` and `Configure(Action<IHostBuilder, Window>)`
-  - `IHost Build()`, marked `[RequiresDynamicCode]` and `[RequiresUnreferencedCode]`
+    - `Application App`
+    - `LaunchActivatedEventArgs Arguments`
+    - `Window Window`
+    - `IDictionary<object,object> Properties`
+    - `Configure(Action<IHostBuilder>)` and `Configure(Action<IHostBuilder, Window>)`
+    - `IHost Build()`, marked `[RequiresDynamicCode]` and `[RequiresUnreferencedCode]`
 - `NavigateAsync<TShell>(this IApplicationBuilder, Func<IServiceProvider, INavigator, Task>? = null)`
   returns `Task<IHost>` (`TShell : UIElement, new()`), in **`Uno.Extensions.Navigation.WinUI`**.
 - `Build()` goes through the old `IHostBuilder` (`UnoHost.CreateDefaultBuilder`). Its
   `ConfigureServices` and `ConfigureAppConfiguration` callbacks are synchronous and run inside `Build()`.
 - Versions:
-  - Uno.Extensions stable is **7.3.6**, with a plain `net9.0` asset plus net9 platform TFMs. That is
-    what Uno.Sdk 6.7.30 (latest stable) pins.
-  - **8.0.0-dev.\*** has `net10.0`, `net10.0-android36.0`, `net10.0-ios26.0` and
-    `net10.0-windows10.0.19041`, but no browserwasm/desktop yet, and it needs Uno.WinUI 7 prereleases.
-  - Uno.WinUI and Uno.Foundation.\* are stable at 6.7.135, with net9.0 and net10.0 assets.
+    - Uno.Extensions stable is **7.3.6**, with a plain `net9.0` asset plus net9 platform TFMs. That is
+      what Uno.Sdk 6.7.30 (latest stable) pins.
+    - **8.0.0-dev.\*** has `net10.0`, `net10.0-android36.0`, `net10.0-ios26.0` and
+      `net10.0-windows10.0.19041`, but no browserwasm/desktop yet, and it needs Uno.WinUI 7 prereleases.
+    - Uno.WinUI and Uno.Foundation.\* are stable at 6.7.135, with net9.0 and net10.0 assets.
 
 ### Package `src/Dovetail.Hosting.Uno/`
 
 - csproj: `net10.0;net11.0`, `ProjectReference` to `Dovetail.Hosting`. References
   `Uno.Extensions.Hosting.WinUI` and `Uno.Extensions.Navigation.WinUI`, **multi-versioned per TFM**:
-  - `net10.0` → **7.3.6** (stable; its net9.0 asset is consumed from net10.0)
-  - `net11.0` → **8.0.0-dev.\*** (preview until Uno.Extensions 8.0 is stable)
-  - The pins live in their **own conditional `ItemGroup`** in `Directory.Packages.props` (keyed to
-    the Uno packages, separate from the generic net11 group), so Renovate can bump the 7.x and 8.x lines independently.
-  - API differences go behind `#if NET11_0_OR_GREATER`. The docs mark the net11.0 build as preview.
+    - `net10.0` → **7.3.6** (stable; its net9.0 asset is consumed from net10.0)
+    - `net11.0` → **8.0.0-dev.\*** (preview until Uno.Extensions 8.0 is stable)
+    - The pins live in their **own conditional `ItemGroup`** in `Directory.Packages.props` (keyed to
+      the Uno packages, separate from the generic net11 group), so Renovate can bump the 7.x and 8.x lines independently.
+    - API differences go behind `#if NET11_0_OR_GREATER`. The docs mark the net11.0 build as preview.
 - Joints:
-  - `<DovetailJoint Include="UnoApplicationBuilder" ParameterType="global::Uno.Extensions.Hosting.IApplicationBuilder" ParameterName="builder" />`
-  - `<DovetailJoint Include="UnoHostBuilder" ParameterType="global::Microsoft.Extensions.Hosting.IHostBuilder" ParameterName="builder" />`
+    - `<DovetailJoint Include="UnoApplicationBuilder" ParameterType="global::Uno.Extensions.Hosting.IApplicationBuilder" ParameterName="builder" />`
+    - `<DovetailJoint Include="UnoHostBuilder" ParameterType="global::Microsoft.Extensions.Hosting.IHostBuilder" ParameterName="builder" />`
 - **`IHostBuilder` bridge, internal to this package** (`Dovetail.Hosting` does not advertise
   `IHostBuilder` support). All async work runs **before** `Build()`:
-  1. `await DovetailContext.FromAsync(...)`.
-  2. `await cb.ApplyConfiguration(...)` into a standalone `ConfigurationBuilder`. From
-     `ConfigureAppConfiguration`, add it as a `ChainedConfigurationSource` **layered on top** of Uno's
-     own sources: Uno's `EmbeddedSource<App>()` entries are kept, and Dovetail's chained source is
-     added after them so it wins on conflicts. Files read through Uno's existing resource names
-     (see Shared pieces) may be parsed by both. That's harmless because the values are the same.
-  3. `await stagingServices.ApplyService(...)` into a staging `ServiceCollection`, then copy the
-     descriptors into the real collection in `ConfigureServices`.
-  4. Container factory: resolve `ServiceProviderFactoryAdapter` up front against a **forwarding
-     `IServiceCollection`**, retargeted to the real collection inside `ConfigureServices`, then
-     `UseServiceProviderFactory(...)`. No sync-over-async.
-  5. `ApplyHostCreated` after `Build()` / `NavigateAsync`.
-  - Documented limitation: service joints run against the staging collection, so they can't see
-    Uno's built-in registrations (e.g. `TryAdd` over a framework default).
+    1. `await DovetailContext.FromAsync(...)`.
+    2. `await cb.ApplyConfiguration(...)` into a standalone `ConfigurationBuilder`. From
+       `ConfigureAppConfiguration`, add it as a `ChainedConfigurationSource` **layered on top** of Uno's
+       own sources: Uno's `EmbeddedSource<App>()` entries are kept, and Dovetail's chained source is
+       added after them so it wins on conflicts. Files read through Uno's existing resource names
+       (see Shared pieces) may be parsed by both. That's harmless because the values are the same.
+    3. `await stagingServices.ApplyService(...)` into a staging `ServiceCollection`, then copy the
+       descriptors into the real collection in `ConfigureServices`.
+    4. Container factory: resolve `ServiceProviderFactoryAdapter` up front against a **forwarding
+       `IServiceCollection`**, retargeted to the real collection inside `ConfigureServices`, then
+       `UseServiceProviderFactory(...)`. No sync-over-async.
+    5. `ApplyHostCreated` after `Build()` / `NavigateAsync`.
+    - Documented limitation: service joints run against the staging collection, so they can't see
+      Uno's built-in registrations (e.g. `TryAdd` over a framework default).
 - `DovetailUnoHelpers`:
-  - `Configure(IApplicationBuilder, Func<IApplicationBuilder, IHost>, …)` wraps `Build()`.
-  - `ConfigureNavigate<TShell>(IApplicationBuilder, …)` wraps `NavigateAsync<TShell>()`.
-  - Both seed the context with `IApplicationBuilder`, `App`, `Window`, `Arguments`, and
-    `EmbeddedConfigurationAssembly`, then run `ApplyUnoApplicationBuilder` and
-    `builder.Configure(host => bridge(host))`.
+    - `Configure(IApplicationBuilder, Func<IApplicationBuilder, IHost>, …)` wraps `Build()`.
+    - `ConfigureNavigate<TShell>(IApplicationBuilder, …)` wraps `NavigateAsync<TShell>()`.
+    - Both seed the context with `IApplicationBuilder`, `App`, `Window`, `Arguments`, and
+      `EmbeddedConfigurationAssembly`, then run `ApplyUnoApplicationBuilder` and
+      `builder.Configure(host => bridge(host))`.
 - **EnvironmentName: defer to Uno.** Read the environment Uno.Extensions computes and pass it into
   the Dovetail context unchanged. Dovetail does not call `UseEnvironment`.
 - Generated entry points: `ConfigureDovetail(...)` (wraps `Build()`) and `ConfigureDovetail<TShell>(...)`
@@ -283,12 +283,12 @@ them to the output, which only helps desktop).
 ### SDK
 
 - Replace the Uno stub (it targeted `IUnoPlatformHostBuilder`, which is only the platform/window host):
-  - `<When>` on `'$(UsingUnoSdk)' == 'true'` **and** the normalized `UnoFeatures` containing
-    `;hosting;`, placed **before** both the WebAssembly branch and the `Exe` branch.
-  - `HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder"`,
-    `HostType="global::Microsoft.Extensions.Hosting.IHost"`, `HelperName="global::Dovetail.DovetailUnoHelpers"`.
-  - The template also needs to emit the `<TShell>` overloads for this host (internal metadata,
-    the same mechanism as `SyncEntryPoint`).
+    - `<When>` on `'$(UsingUnoSdk)' == 'true'` **and** the normalized `UnoFeatures` containing
+      `;hosting;`, placed **before** both the WebAssembly branch and the `Exe` branch.
+    - `HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder"`,
+      `HostType="global::Microsoft.Extensions.Hosting.IHost"`, `HelperName="global::Dovetail.DovetailUnoHelpers"`.
+    - The template also needs to emit the `<TShell>` overloads for this host (internal metadata,
+      the same mechanism as `SyncEntryPoint`).
 - Uno.Sdk detected **without** `Hosting`: emit a build warning ("Dovetail needs UnoFeatures=Hosting")
   and inject no host. Plain Uno apps without Extensions are out of scope.
 
@@ -296,19 +296,19 @@ them to the output, which only helps desktop).
 
 - `test/Dovetail.Hosting.Uno.Tests/` on `net10.0;net11.0`: bridge tests against plain
   `Host.CreateDefaultBuilder()`. Covers:
-  - config layering order
-  - staged services land after the host defaults
-  - the forwarding collection with each container (DryIoc, Autofac, Stashbox)
-  - `HostCreated` fires
-  - environment passthrough
-  Plus an `IApplicationBuilder` fake for joint ordering and context keys. Anything that touches the
-  real WinUI runtime is covered by the samples, not unit tests.
+    - config layering order
+    - staged services land after the host defaults
+    - the forwarding collection with each container (DryIoc, Autofac, Stashbox)
+    - `HostCreated` fires
+    - environment passthrough
+      Plus an `IApplicationBuilder` fake for joint ordering and context keys. Anything that touches the
+      real WinUI runtime is covered by the samples, not unit tests.
 - `test/Dovetail.Sdk.Tests/HostTypeTests`:
-  - Uno + Hosting
-  - Uno without Hosting (warning, no host)
-  - `UnoFeatures` with whitespace/newlines/mixed case
-  - Uno browserwasm head detected as Uno, not WebAssembly
-  - an Uno-embedded appsettings file isn't embedded twice
+    - Uno + Hosting
+    - Uno without Hosting (warning, no host)
+    - `UnoFeatures` with whitespace/newlines/mixed case
+    - Uno browserwasm head detected as Uno, not WebAssembly
+    - an Uno-embedded appsettings file isn't embedded twice
 
 ---
 
@@ -342,12 +342,12 @@ them to the output, which only helps desktop).
   Uno samples can differ and Renovate tracks both.
 - All three are listed in `Dovetail.slnx`, but they are left out of the default build (they need workloads).
 - **New workload CI job, full matrix, every PR, required check**:
-  - **ubuntu**: MAUI android; Uno desktop/browserwasm/android (net10) and android (net11)
-  - **macos**: MAUI ios/maccatalyst; Uno ios (net10 and net11)
-  - **windows**: MAUI windows; Uno windows (net10 and net11)
-  - Installs workloads per leg. Also confirms that net10 Uno heads resolve Uno.Extensions 7.3.6's
-    net9.0 platform assets (unverified NuGet nearest-TFM behavior for the `browserwasm`/`desktop` platform TFMs).
-  - Expect noticeable PR latency and runner cost from the macOS/Windows legs.
+    - **ubuntu**: MAUI android; Uno desktop/browserwasm/android (net10) and android (net11)
+    - **macos**: MAUI ios/maccatalyst; Uno ios (net10 and net11)
+    - **windows**: MAUI windows; Uno windows (net10 and net11)
+    - Installs workloads per leg. Also confirms that net10 Uno heads resolve Uno.Extensions 7.3.6's
+      net9.0 platform assets (unverified NuGet nearest-TFM behavior for the `browserwasm`/`desktop` platform TFMs).
+    - Expect noticeable PR latency and runner cost from the macOS/Windows legs.
 
 ---
 
@@ -375,12 +375,12 @@ them to the output, which only helps desktop).
 - `Dovetail.slnx` updated (`/src/`, `/test/`, `/sample/`).
 - `prettier --write . && dotnet format`.
 - Docs:
-  - a DI-containers page (Autofac, DryIoc, Stashbox; AOT caveat)
-  - a MAUI host guide (`UseDovetail`, environment precedence, UI-thread caveat)
-  - an Uno host guide (Hosting feature requirement, `<TShell>` entry point, the staged-services
-    limitation, net11 preview status)
-  - an embedded-configuration section
-  - a `Readme.md` line for each
+    - a DI-containers page (Autofac, DryIoc, Stashbox; AOT caveat)
+    - a MAUI host guide (`UseDovetail`, environment precedence, UI-thread caveat)
+    - an Uno host guide (Hosting feature requirement, `<TShell>` entry point, the staged-services
+      limitation, net11 preview status)
+    - an embedded-configuration section
+    - a `Readme.md` line for each
 - AOT: Stashbox and DryIoc aren't AOT/trim-safe, and neither is Uno's `Build()`. Document this for
   MAUI iOS Native AOT users.
 
@@ -388,16 +388,16 @@ them to the output, which only helps desktop).
 
 ## Decision log
 
-| #   | Decision                                                                                                |
-| --- | ------------------------------------------------------------------------------------------------------- |
-| Q1  | One combined PR, one commit per area                                                                    |
-| Q2  | `StashboxOptions`: `ConfigureContainer`, `ValidateOnBuild` (false); lifetime validation auto-on in Development, with opt-out |
-| Q3  | Fix DryIoc/Autofac adapter-package detection in the Stashbox commit                                     |
-| Q4  | Sync `UseDovetail(...)` from the core template, gated by internal metadata set only by MAUI             |
-| Q5  | `InternalsVisibleTo` for the MAUI/Uno packages; no new public API, no constraint relaxation             |
-| Q6  | MAUI env: `DOTNET_ENVIRONMENT` → build config → `DovetailEnvironmentName` override. Uno: defer to Uno.Extensions |
-| Q7  | Uno.Extensions.Hosting apps only; bridge internal to the Uno package; `Build()` + `NavigateAsync<TShell>` entry points |
+| #    | Decision                                                                                                                                                      |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1   | One combined PR, one commit per area                                                                                                                          |
+| Q2   | `StashboxOptions`: `ConfigureContainer`, `ValidateOnBuild` (false); lifetime validation auto-on in Development, with opt-out                                  |
+| Q3   | Fix DryIoc/Autofac adapter-package detection in the Stashbox commit                                                                                           |
+| Q4   | Sync `UseDovetail(...)` from the core template, gated by internal metadata set only by MAUI                                                                   |
+| Q5   | `InternalsVisibleTo` for the MAUI/Uno packages; no new public API, no constraint relaxation                                                                   |
+| Q6   | MAUI env: `DOTNET_ENVIRONMENT` → build config → `DovetailEnvironmentName` override. Uno: defer to Uno.Extensions                                              |
+| Q7   | Uno.Extensions.Hosting apps only; bridge internal to the Uno package; `Build()` + `NavigateAsync<TShell>` entry points                                        |
 | Q7c′ | Revised during implementation: config/service joints run **inside** Uno's build callbacks (not staged up front), because Uno only knows its environment there |
-| Q7  | Uno.Extensions multi-versioned: 7.3.6 for net10.0, 8.0.0-dev for net11.0, in a separate props group     |
-| Q8  | Embedded-resource joints in the existing config packages; MAUI/Uno embed rather than copy; Uno: reuse Uno's resources and layer on top of its sources |
-| Q9  | Samples: one multi-target MAUI sample, two Uno samples (6.7.30 / 7.0 dev); workload CI full matrix on every PR, required |
+| Q7   | Uno.Extensions multi-versioned: 7.3.6 for net10.0, 8.0.0-dev for net11.0, in a separate props group                                                           |
+| Q8   | Embedded-resource joints in the existing config packages; MAUI/Uno embed rather than copy; Uno: reuse Uno's resources and layer on top of its sources         |
+| Q9   | Samples: one multi-target MAUI sample, two Uno samples (6.7.30 / 7.0 dev); workload CI full matrix on every PR, required                                      |

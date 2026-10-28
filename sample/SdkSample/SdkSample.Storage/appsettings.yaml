@@ -1,12 +1,12 @@
 storage:
-  root: ./data
-  max-file-size-mb: 64
-  compress: false
+    root: ./data
+    max-file-size-mb: 64
+    compress: false
 
 archive:
-  name: sdk-sample
-  keep_days: 30
-  allowed_extensions:
-    - .txt
-    - .json
-    - .csv
+    name: sdk-sample
+    keep_days: 30
+    allowed_extensions:
+        - .txt
+        - .json
+        - .csv

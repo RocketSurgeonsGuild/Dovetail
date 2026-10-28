@@ -1,17 +1,17 @@
 Notifications:
-  Enabled: true
-  MinimumLevel: Warning
-  DefaultChannels: Email, Push
-  Timeout: 00:00:20
-  ServiceUri: https://notify.example.com/v1/
-  Recipients:
-    - ops@example.com
-  Channels:
-    Email:
-      RateLimitPerMinute: 60
-    Sms:
-      Enabled: false
-      RateLimitPerMinute: 5
-    Push:
-      Endpoint: https://push.example.com/send
-  Sender: alerts@example.com
+    Enabled: true
+    MinimumLevel: Warning
+    DefaultChannels: Email, Push
+    Timeout: 00:00:20
+    ServiceUri: https://notify.example.com/v1/
+    Recipients:
+        - ops@example.com
+    Channels:
+        Email:
+            RateLimitPerMinute: 60
+        Sms:
+            Enabled: false
+            RateLimitPerMinute: 5
+        Push:
+            Endpoint: https://push.example.com/send
+    Sender: alerts@example.com
