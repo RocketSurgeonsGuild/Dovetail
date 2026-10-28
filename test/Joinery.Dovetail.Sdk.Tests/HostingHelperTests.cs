@@ -19,7 +19,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication();
 
-        (await BuildAndReadHelpers(project)).ShouldBe([GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
     }
 
     [Test]
@@ -27,7 +27,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemInclude("FrameworkReference", "Microsoft.AspNetCore.App"));
 
-        (await BuildAndReadHelpers(project)).ShouldBe(["DovetailConfigurationSchemaEndpointExtensions", GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailConfigurationSchemaEndpointExtensions", GenericHost]);
     }
 
     [Test]
@@ -35,7 +35,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)));
 
-        (await BuildAndReadHelpers(project)).ShouldBe([GenericHost, "DovetailMauiHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailMauiHelpers"]);
     }
 
     [Test]
@@ -43,7 +43,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WebAssembly(app));
 
-        (await BuildAndReadHelpers(project)).ShouldBe([GenericHost, "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WebAssembly(app).Property("LangVersion", "13"));
 
-        (await BuildAndReadHelpers(project)).ShouldBe([GenericHost, "DovetailWebAssemblyHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, "DovetailWebAssemblyHelpers"]);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public class HostingHelperTests(string targetFramework)
            .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly"))
            .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
 
-        (await BuildAndReadHelpers(project)).ShouldBe([GenericHost]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost]);
         GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
     }
 
