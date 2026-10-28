@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Testing](/Dovetail/pr-preview/pr-246/api/joinery.dovetail.testing.md)
-- Version: `0.2.4-pr.12`
+- Version: `0.2.4-pr.15`
 - Namespace: `Joinery.Dovetail.Testing.Joints`
 - Target framework: `net10.0`
 
