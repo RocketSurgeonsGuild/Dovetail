@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Hosting.Maui
 
 - Package: `Joinery.Dovetail.Hosting.Maui`
-- Version: `0.2.4-beta.5`
+- Version: `0.2.4-beta.6`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Hosting.Maui](https://www.nuget.org/packages/Joinery.Dovetail.Hosting.Maui)
 
