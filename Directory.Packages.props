@@ -79,7 +79,7 @@
     <PackageVersion Include="Microsoft.Testing.Extensions.CrashDump" Version="2.5.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.HangDump" Version="2.5.2" />
     <PackageVersion Include="Verify.AngleSharp" Version="5.1.2" />
-    <PackageVersion Include="Verify.Playwright" Version="3.1.2" />
+    <PackageVersion Include="Verify.Playwright" Version="3.2.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
     <!-- Validates Dovetail.Build.Tasks' schemas against the draft-07 meta-schema in its tests (Apache-2.0). -->
     <PackageVersion Include="Corvus.Json.JsonSchema.Draft7" Version="5.7.9" />
