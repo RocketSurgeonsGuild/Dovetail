@@ -36,7 +36,7 @@
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <!-- Sample.Uno pulls 10.0.12 of Pkcs and Xml through Uno (GHSA-7hqp-7c5m-4vq6 and others, fixed in 10.0.13). -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.14" />
-    <PackageVersion Include="Rocket.Surgery.ModularPipelines.Extensions" Version="0.1.14" />
+    <PackageVersion Include="Rocket.Surgery.ModularPipelines.Extensions" Version="0.1.15" />
     <PackageVersion Include="Sourcy.DotNet" Version="1.1.1" />
     <PackageVersion Include="Sourcy.Git" Version="1.1.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
