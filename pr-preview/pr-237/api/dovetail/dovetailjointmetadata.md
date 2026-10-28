@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail](/Dovetail/pr-preview/pr-237/api/dovetail.md)
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Namespace: `Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Implements: [IDovetailJointMetadata](/Dovetail/pr-preview/pr-237/api/dovetail/idovetailjointmetadata.md)

@@ -1,7 +1,7 @@
 # Dovetail.Hosting.Uno
 
 - Package: `Dovetail.Hosting.Uno`
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Hosting.Uno](https://www.nuget.org/packages/Dovetail.Hosting.Uno)
 

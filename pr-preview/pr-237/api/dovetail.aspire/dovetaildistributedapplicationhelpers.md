@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Aspire](/Dovetail/pr-preview/pr-237/api/dovetail.aspire.md)
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Namespace: `Dovetail`
 - Target framework: `net10.0`
 

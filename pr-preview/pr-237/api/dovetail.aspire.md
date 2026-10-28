@@ -1,7 +1,7 @@
 # Dovetail.Aspire
 
 - Package: `Dovetail.Aspire`
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Aspire](https://www.nuget.org/packages/Dovetail.Aspire)
 

@@ -2,7 +2,7 @@
 
 - Kind: `enum`
 - Package: [Dovetail](/Dovetail/pr-preview/pr-237/api/dovetail.md)
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Namespace: `Dovetail.Attributes`
 - Target framework: `net10.0`
 

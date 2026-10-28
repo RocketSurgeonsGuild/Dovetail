@@ -1,7 +1,7 @@
 # Dovetail.Mermaid
 
 - Package: `Dovetail.Mermaid`
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Target framework: `net10.0`
 - NuGet: [Dovetail.Mermaid](https://www.nuget.org/packages/Dovetail.Mermaid)
 

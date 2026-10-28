@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Dovetail.Hosting.Uno](/Dovetail/pr-preview/pr-237/api/dovetail.hosting.uno.md)
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`

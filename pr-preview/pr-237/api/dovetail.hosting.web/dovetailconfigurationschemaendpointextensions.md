@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Dovetail.Hosting.Web](/Dovetail/pr-preview/pr-237/api/dovetail.hosting.web.md)
-- Version: `0.2.2-pr.3`
+- Version: `0.2.2-pr.4`
 - Namespace: `Dovetail.Hosting.Web`
 - Target framework: `net10.0`
 
