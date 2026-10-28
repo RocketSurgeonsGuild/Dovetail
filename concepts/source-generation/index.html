@@ -104,7 +104,7 @@ referenced assembly that exports joints. The <code dir="auto">DovetailImportName
 
 
 <table><thead><tr><th>Property</th><th>When <code dir="auto">true</code></th></tr></thead><tbody><tr><td><code dir="auto">ImportDovetailAssembly</code></td><td>The <code dir="auto">Imports</code> class is generated.</td></tr><tr><td><code dir="auto">ExportDovetailAssembly</code></td><td>Referencing assemblies import this assembly’s joints. When <code dir="auto">false</code>, the joints still reach this assembly’s own <code dir="auto">Imports</code> class.</td></tr></tbody></table>
-<p>Dovetail.Sdk sets both as part of its host detection. Projects that don’t use the SDK get these defaults:</p>
+<p>Joinery.Dovetail.Sdk sets both as part of its host detection. Projects that don’t use the SDK get these defaults:</p>
 <ul>
 <li>test projects (<code dir="auto">IsTestProject</code>) import but don’t export;</li>
 <li>applications (<code dir="auto">OutputType</code> of <code dir="auto">Exe</code> or <code dir="auto">WinExe</code>) import and export;</li>
@@ -112,6 +112,6 @@ referenced assembly that exports joints. The <code dir="auto">DovetailImportName
 </ul>
 <p>Set either property in a project file to override its default.</p>
 <p>The generator runs in every project that references a Dovetail package, including projects that only reference one
-indirectly, for example through <code dir="auto">Dovetail.Hosting</code>. Its diagnostics (<code dir="auto">DT0001</code> to <code dir="auto">DT0005</code>, such as the error for a joint
+indirectly, for example through <code dir="auto">Joinery.Dovetail.Hosting</code>. Its diagnostics (<code dir="auto">DT0001</code> to <code dir="auto">DT0005</code>, such as the error for a joint
 with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose <code dir="auto">LangVersion</code> is older, it
 generates nothing and reports warning <code dir="auto">DT0006</code> instead.</p></div><footer class="sl-flex astro-3xw26dxv"><div class="meta sl-flex astro-3xw26dxv"></div><div class="pagination-links print:hidden astro-5rmeaiz3" dir="ltr"><a href="/Dovetail/concepts/opentelemetry/" rel="prev" class="astro-5rmeaiz3"><svg aria-hidden="true" class="astro-5rmeaiz3 astro-pmjwzxtb" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.5rem;"><path d="M17 11H9.41l3.3-3.29a1.004 1.004 0 1 0-1.42-1.42l-5 5a1 1 0 0 0-.21.33 1 1 0 0 0 0 .76 1 1 0 0 0 .21.33l5 5a1.002 1.002 0 0 0 1.639-.325 1 1 0 0 0-.219-1.095L9.41 13H17a1 1 0 0 0 0-2Z"/></svg><span class="astro-5rmeaiz3">Previous<br class="astro-5rmeaiz3"><span class="link-title astro-5rmeaiz3">OpenTelemetry</span></span></a><a href="/Dovetail/concepts/unit-tests/" rel="next" class="astro-5rmeaiz3"><svg aria-hidden="true" class="astro-5rmeaiz3 astro-pmjwzxtb" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.5rem;"><path d="M17.92 11.62a1.001 1.001 0 0 0-.21-.33l-5-5a1.003 1.003 0 1 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1.002 1.002 0 0 0 .325 1.639 1 1 0 0 0 1.095-.219l5-5a1 1 0 0 0 .21-.33 1 1 0 0 0 0-.76Z"/></svg><span class="astro-5rmeaiz3">Next<br class="astro-5rmeaiz3"><span class="link-title astro-5rmeaiz3">Unit Tests</span></span></a></div></footer></div></div></main></div></div></div></div></body></html>
