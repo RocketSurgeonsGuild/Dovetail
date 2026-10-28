@@ -90,8 +90,8 @@
       MSBuild supplies its shared framework's newer copies. Don't raise them to match other projects.
   -->
   <ItemGroup Label="MSBuild task references" Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageVersion Include="System.Reflection.Metadata" Version="9.0.22" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.22" />
+    <PackageVersion Include="System.Reflection.Metadata" Version="10.0.14" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.14" />
   </ItemGroup>
   <!--
       Uno.Extensions per release line: no stable 7.x has net10.0+ assets (its net9.0 ones serve net10.0), and only the 8.0
