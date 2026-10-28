@@ -1,0 +1,24 @@
+# DovetailHostingContextExtensions
+
+- Kind: `class`
+- Package: [Dovetail.Hosting](/Dovetail/v0.2.2/api/dovetail.hosting.md)
+- Version: `0.2.2`
+- Namespace: `Dovetail`
+- Target framework: `net10.0`
+
+Extension members for `IDovetailContext` host environment access.
+
+## Definition
+
+```csharp
+namespace Dovetail;
+
+public static class DovetailHostingContextExtensions
+{
+    // ...
+}
+```
+
+## Methods
+
+- [get_Environment(IDovetailContext)](/Dovetail/v0.2.2/api/dovetail.hosting/dovetailhostingcontextextensions/methods.md#get-environment-idovetailcontext) : `IHostEnvironment` `static`

@@ -1,0 +1,24 @@
+# YamlConfigurationSource Constructors
+
+- Package: [Dovetail.Configuration.Yaml](/Dovetail/v0.2.2/api/dovetail.configuration.yaml.md)
+- Type: [YamlConfigurationSource](/Dovetail/v0.2.2/api/dovetail.configuration.yaml/yamlconfigurationsource.md)
+- Kind: `Constructors`
+- Members: `1`
+
+A YAML file based `Configuration.FileConfigurationSource`.
+
+<a id="constructor"></a>
+
+## YamlConfigurationSource
+
+- Name: `Constructor`
+
+```csharp
+public class YamlConfigurationSource
+{
+    public YamlConfigurationSource()
+    {
+        // ...
+    }
+}
+```
