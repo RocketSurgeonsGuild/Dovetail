@@ -2,7 +2,7 @@
 
 - Kind: `record`
 - Package: [Dovetail](/Dovetail/api/dovetail.md)
-- Version: `0.2.2-beta.2`
+- Version: `0.2.3-beta.1`
 - Namespace: `Dovetail.Diagnostics`
 - Target framework: `net10.0`
 - Implements: `IEquatable<DovetailDiagnosticMetadataJoint>`

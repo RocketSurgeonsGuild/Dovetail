@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Dovetail.Hosting.Maui](/Dovetail/api/dovetail.hosting.maui.md)
-- Version: `0.2.2-beta.2`
+- Version: `0.2.3-beta.1`
 - Namespace: `Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`

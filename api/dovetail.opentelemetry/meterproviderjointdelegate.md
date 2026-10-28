@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Dovetail.OpenTelemetry](/Dovetail/api/dovetail.opentelemetry.md)
-- Version: `0.2.2-beta.2`
+- Version: `0.2.3-beta.1`
 - Namespace: `Dovetail.OpenTelemetry.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
