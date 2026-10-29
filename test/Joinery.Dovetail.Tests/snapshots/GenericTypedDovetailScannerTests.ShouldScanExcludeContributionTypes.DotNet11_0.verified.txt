@@ -1,4 +1,0 @@
-﻿[
-  contribution2,
-  contribution
-]

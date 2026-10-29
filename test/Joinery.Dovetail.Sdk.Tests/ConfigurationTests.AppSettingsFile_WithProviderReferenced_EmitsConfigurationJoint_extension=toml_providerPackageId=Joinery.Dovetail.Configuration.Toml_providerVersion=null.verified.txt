@@ -1,16 +1,16 @@
 ﻿[
   {
-    Name: wasm.csproj,
+    Name: lib.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
     TargetFramework: {TargetFramework},
     Properties: {
-      _DovetailApplicationDetected: true,
+      _DovetailApplicationDetected: false,
       AspireTestingVersion: {sdk-version},
       AspireVersion: {sdk-version},
-      AssemblyName: wasm,
+      AssemblyName: lib,
       AutofacVersion: {sdk-version},
-      BaseIntermediateOutputPath: {TempPath}sdk-tests/{id}/wasm/obj/,
+      BaseIntermediateOutputPath: obj\,
       BaseOutputPath: bin\,
       ConfigurationJsonVersion: {sdk-version},
       ConfigurationTomlVersion: {sdk-version},
@@ -50,13 +50,13 @@
       HostingVersion: {sdk-version},
       HostingWebAssemblyVersion: {sdk-version},
       HostingWebVersion: {sdk-version},
-      ImportDovetailAssembly: true,
-      IsPackable: false,
+      ImportDovetailAssembly: false,
+      IsPackable: true,
       MermaidVersion: {sdk-version},
       NoWarn: 1701;1702,
       OpenTelemetryVersion: {sdk-version},
       PackageOutputPath: bin\Debug/,
-      RootNamespace: wasm,
+      RootNamespace: lib,
       SdkVersion: {sdk-version},
       SerilogVersion: {sdk-version},
       StashboxVersion: {sdk-version},
@@ -69,22 +69,13 @@
       Joinery.Dovetail: {
         IsImplicitlyDefined: true
       },
-      Joinery.Dovetail.Hosting: {
-        IsImplicitlyDefined: true
-      },
-      Microsoft.AspNetCore.Components.WebAssembly: {}
+      Joinery.Dovetail.Configuration.Toml: {}
     },
     DovetailJoint: {},
-    DovetailHost: {
-      WebAssembly: {
-        HostBuilderName: builder,
-        HostBuilderType: global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder,
-        HostType: Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost
-      }
-    },
+    DovetailHost: {},
     Using: [],
     Imports: [
-      {TempPath}sdk-tests/{id}/wasm/wasm.csproj,
+      {TempPath}sdk-tests/{id}/lib/lib.csproj,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
@@ -101,15 +92,10 @@
       }
     ],
     GeneratedFiles: [
-      DovetailContextBuilder.g.cs,
-      DovetailHost.WebAssembly.g.cs,
-      DovetailHosting.DovetailWebAssemblyContextExtensions.g.cs,
-      DovetailHosting.DovetailWebAssemblyHelpers.g.cs
+      Dovetail.TomlConfiguration.g.cs
     ],
     OutputFiles: [
-      appsettings.schema.json,
-      wasm.runtimeconfig.dev.json,
-      wasm.staticwebassets.runtime.json
+      lib.toml
     ]
   }
 ]

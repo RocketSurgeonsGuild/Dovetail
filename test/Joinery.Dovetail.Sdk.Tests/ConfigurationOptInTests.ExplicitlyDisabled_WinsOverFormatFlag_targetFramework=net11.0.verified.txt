@@ -1,6 +1,0 @@
-﻿{
-  Properties: {
-    DovetailEnableConfiguration: false
-  },
-  Items: {}
-}

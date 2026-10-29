@@ -1,3 +1,0 @@
-﻿[
-  Joinery.Dovetail.Tests.Contrib
-]

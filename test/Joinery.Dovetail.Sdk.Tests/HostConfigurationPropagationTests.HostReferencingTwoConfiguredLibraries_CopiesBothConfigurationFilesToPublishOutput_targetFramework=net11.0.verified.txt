@@ -1,5 +1,0 @@
-﻿[
-  appsettings.schema.json,
-  lib1.yaml,
-  lib2.json
-]

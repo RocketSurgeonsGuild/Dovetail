@@ -69,14 +69,9 @@
       Joinery.Dovetail: {
         IsImplicitlyDefined: true
       },
-      Microsoft.Extensions.Logging: {}
+      Joinery.Dovetail.Configuration.Yaml: {}
     },
-    DovetailJoint: {
-      Logging: {
-        ParameterName: builder,
-        ParameterType: global::Microsoft.Extensions.Logging.ILoggingBuilder
-      }
-    },
+    DovetailJoint: {},
     DovetailHost: {},
     Using: [],
     Imports: [
@@ -97,9 +92,10 @@
       }
     ],
     GeneratedFiles: [
-      DovetailJoint.Logging.g.cs,
-      DovetailJointAsync.Logging.g.cs
+      Dovetail.YmlConfiguration.g.cs
     ],
-    OutputFiles: []
+    OutputFiles: [
+      lib.yml
+    ]
   }
 ]

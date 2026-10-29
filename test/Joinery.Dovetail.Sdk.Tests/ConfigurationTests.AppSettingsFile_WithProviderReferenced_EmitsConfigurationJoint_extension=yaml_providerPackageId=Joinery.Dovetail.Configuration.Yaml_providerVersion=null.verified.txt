@@ -1,14 +1,14 @@
 ﻿[
   {
-    Name: host.csproj,
+    Name: lib.csproj,
     Configuration: Debug,
     Platform: AnyCPU,
     TargetFramework: {TargetFramework},
     Properties: {
-      _DovetailApplicationDetected: true,
+      _DovetailApplicationDetected: false,
       AspireTestingVersion: {sdk-version},
       AspireVersion: {sdk-version},
-      AssemblyName: host,
+      AssemblyName: lib,
       AutofacVersion: {sdk-version},
       BaseIntermediateOutputPath: obj\,
       BaseOutputPath: bin\,
@@ -50,13 +50,13 @@
       HostingVersion: {sdk-version},
       HostingWebAssemblyVersion: {sdk-version},
       HostingWebVersion: {sdk-version},
-      ImportDovetailAssembly: true,
+      ImportDovetailAssembly: false,
       IsPackable: true,
       MermaidVersion: {sdk-version},
       NoWarn: 1701;1702,
       OpenTelemetryVersion: {sdk-version},
       PackageOutputPath: bin\Debug/,
-      RootNamespace: host,
+      RootNamespace: lib,
       SdkVersion: {sdk-version},
       SerilogVersion: {sdk-version},
       StashboxVersion: {sdk-version},
@@ -69,22 +69,13 @@
       Joinery.Dovetail: {
         IsImplicitlyDefined: true
       },
-      Joinery.Dovetail.Hosting: {
-        IsImplicitlyDefined: true
-      }
+      Joinery.Dovetail.Configuration.Yaml: {}
     },
     DovetailJoint: {},
-    DovetailHost: {
-      HostApplication: {
-        HelperName: global::Joinery.Dovetail.DovetailHostApplicationHelpers,
-        HostBuilderName: builder,
-        HostBuilderType: global::Microsoft.Extensions.Hosting.HostApplicationBuilder,
-        HostType: global::Microsoft.Extensions.Hosting.IHost
-      }
-    },
+    DovetailHost: {},
     Using: [],
     Imports: [
-      {TempPath}sdk-tests/{id}/host/host.csproj,
+      {TempPath}sdk-tests/{id}/lib/lib.csproj,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
@@ -100,10 +91,11 @@
         ]
       }
     ],
-    GeneratedFiles: [],
+    GeneratedFiles: [
+      Dovetail.YamlConfiguration.g.cs
+    ],
     OutputFiles: [
-      appsettings.schema.json,
-      host.runtimeconfig.dev.json
+      lib.yaml
     ]
   }
 ]
