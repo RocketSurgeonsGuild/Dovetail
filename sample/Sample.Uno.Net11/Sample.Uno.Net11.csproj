@@ -1,4 +1,4 @@
-<Project Sdk="Uno.Sdk/7.0.0-dev.102">
+<Project Sdk="Uno.Sdk/7.0.0-dev.104">
   <!--
       Sample.Uno on the next release lines: the Uno 7 prerelease SDK and the net11.0 heads, with the Uno.Extensions 8.0 prereleases
       the repo pins for net11.0 (which have no desktop or browserwasm assets yet). The app code is linked from
