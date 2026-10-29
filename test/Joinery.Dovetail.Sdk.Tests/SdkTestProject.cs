@@ -321,9 +321,15 @@ public sealed class SdkTestProject : IDisposable
         // DovetailContextBuilder.g.cs, Dovetail.*Configuration.g.cs, ...) are added by
         // BeforeTargets="CoreCompile" targets at execution time, so they never show up in the
         // evaluation snapshot above - read them straight off disk instead.
+        // context.Environment is left out: it's emitted whenever Microsoft.Extensions.Hosting.Abstractions is referenced, which
+        // from .NET 11 is every project (it's part of the shared framework), so it would differ between the target frameworks that
+        // share one snapshot. HostingHelperTests covers it per target framework instead.
         var objDirectory = Path.Combine(relativePath, "obj");
         var generatedFiles = System.IO.Directory.Exists(objDirectory)
-            ? System.IO.Directory.EnumerateFiles(objDirectory, "*.g.cs", SearchOption.AllDirectories).Select(Path.GetFileName).ToArray()
+            ? System.IO.Directory.EnumerateFiles(objDirectory, "*.g.cs", SearchOption.AllDirectories)
+                    .Select(Path.GetFileName)
+                    .Where(z => z != "DovetailEnvironment.DovetailHostingContextExtensions.g.cs")
+                    .ToArray()
             : [];
 
         // Joinery.Dovetail.PackConfiguration.targets renames/copies appsettings.{ext} to

@@ -83,8 +83,8 @@
     ],
     GeneratedFiles: [
       DovetailContextBuilder.g.cs,
+      DovetailEnvironment.DovetailWebAssemblyContextExtensions.g.cs,
       DovetailHost.WebAssembly.g.cs,
-      DovetailHosting.DovetailWebAssemblyContextExtensions.g.cs,
       DovetailHosting.DovetailWebAssemblyHelpers.g.cs
     ],
     OutputFiles: [

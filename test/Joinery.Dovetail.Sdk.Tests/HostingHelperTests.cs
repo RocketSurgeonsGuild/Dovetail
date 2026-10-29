@@ -46,7 +46,7 @@ public class HostingHelperTests(string targetFramework)
            .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe"))
            .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
 
-        ( await BuildAndReadHelpers(project) ).ShouldBeEmpty();
+        ( await BuildAndReadHelpers(project) ).ShouldBe(WithSharedFrameworkHostingContext());
         GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
     }
 
@@ -71,7 +71,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WebAssembly(app));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(WithSharedFrameworkHostingContext("DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"));
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public class HostingHelperTests(string targetFramework)
            .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly"))
            .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
 
-        ( await BuildAndReadHelpers(project) ).ShouldBeEmpty();
+        ( await BuildAndReadHelpers(project) ).ShouldBe(WithSharedFrameworkHostingContext());
         GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
     }
 
@@ -197,7 +197,12 @@ public class HostingHelperTests(string targetFramework)
         using var project = CreateApplication(app => WithDovetailOpenTelemetry(WebAssembly(app)));
 
         ( await BuildAndReadHelpers(project) ).ShouldBe(
-            ["DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryWebAssemblyStartJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
+            WithSharedFrameworkHostingContext(
+                "DovetailOpenTelemetryServicesJoint",
+                "DovetailOpenTelemetryWebAssemblyStartJoint",
+                "DovetailWebAssemblyContextExtensions",
+                "DovetailWebAssemblyHelpers"
+            )
         );
     }
 
@@ -211,7 +216,7 @@ public class HostingHelperTests(string targetFramework)
         using var project = CreateApplication(app => WithOpenTelemetryHosting(WithDovetailOpenTelemetry(WebAssembly(app))));
 
         ( await BuildAndReadHelpers(project) ).ShouldBe(
-            ["DovetailOpenTelemetryJoint", "DovetailOpenTelemetryWebAssemblyStartJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
+            [HostingContext, "DovetailOpenTelemetryJoint", "DovetailOpenTelemetryWebAssemblyStartJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
         );
     }
 
@@ -297,6 +302,13 @@ public class HostingHelperTests(string targetFramework)
                     ["NavigateEntryPoint"] = "true",
                 }
             );
+
+    /// <summary>
+    ///     From .NET 11 Microsoft.Extensions.Hosting.Abstractions is part of the shared framework, so every project gets
+    ///     <c>context.Environment</c>, not only the ones whose host puts an <c>IHostEnvironment</c> in the context.
+    /// </summary>
+    private string[] WithSharedFrameworkHostingContext(params string[] helpers) =>
+        Version.Parse(targetFramework["net".Length..]).Major >= 11 ? [.. helpers.Append(HostingContext).Order(StringComparer.Ordinal)] : helpers;
 
     private ProjectCreator WebAssembly(ProjectCreator app) =>
         app.ItemPackageReference(
