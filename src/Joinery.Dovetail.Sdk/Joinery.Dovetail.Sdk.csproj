@@ -33,8 +33,9 @@
         var versionsById = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var packages = Directory.EnumerateDirectories("$(MSBuildThisFileDirectory)../");
         // Joinery.Dovetail.Build.Tasks ships inside the Dovetail package rather than as a package of its own.
-        // Hidden folders (an IDE's .vs, for one) are tool state, not packages.
-        foreach (var package in packages.Where(z => !z.Contains("Analyzers") && !z.Contains("Build.Tasks") && !Path.GetFileName(z).StartsWith(".")))
+        // Hidden folders (an IDE's .vs, for one) are tool state, not packages, and a folder without its project
+        // (a renamed project's leftover bin/obj) isn't one either.
+        foreach (var package in packages.Where(z => !z.Contains("Analyzers") && !z.Contains("Build.Tasks") && !Path.GetFileName(z).StartsWith(".") && File.Exists(Path.Combine(z, Path.GetFileName(z) + ".csproj"))))
         {
           versionsById[Path.GetFileName(package)] = "$(Version)";
         }

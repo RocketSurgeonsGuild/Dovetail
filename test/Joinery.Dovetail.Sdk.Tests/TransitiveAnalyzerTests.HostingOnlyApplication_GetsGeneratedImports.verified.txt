@@ -16,8 +16,7 @@
       NoWarn: 1701;1702,
       PackageOutputPath: bin\Debug/,
       RootNamespace: app,
-      TargetFramework: {TargetFramework},
-      Version: 1.0.0
+      TargetFramework: {TargetFramework}
     },
     AdditionalFiles: [],
     PackageReference: {
