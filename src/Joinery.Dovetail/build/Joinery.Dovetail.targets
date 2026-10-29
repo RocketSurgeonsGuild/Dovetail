@@ -108,6 +108,7 @@
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Joints.targets" Condition="'$(_DovetailJointTargetsImported)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.ContextBuilder.targets" Condition="'$(_DovetailContextBuilderTargetsImported)' != 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Hosts.targets" Condition="'$(_DovetailHostsTargetsImported)' != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Environment.targets" Condition="'$(_DovetailEnvironmentTargetsImported)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Metadata.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.PackConfiguration.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.ConfigurationSchema.targets" Condition="'$(_DovetailConfigurationSchemaTargetsImported)' != 'true'" />

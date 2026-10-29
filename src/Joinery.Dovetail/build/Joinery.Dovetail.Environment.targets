@@ -1,0 +1,69 @@
+<Project>
+  <!--
+    Joinery.Dovetail.Environment.targets
+    Emits extension members that read a host environment off IDovetailContext, from the *.cs.template files next to this file,
+    the same way Joinery.Dovetail.Hosting emits its helpers. A helper is only emitted when the assembly its environment
+    interface lives in is among the project's resolved references, so Joinery.Dovetail itself depends on neither
+    Microsoft.Extensions.Hosting.Abstractions nor Microsoft.AspNetCore.Components.WebAssembly: referencing one of them is what
+    turns its extension on, in any project that references Joinery.Dovetail - whether or not it also references
+    Joinery.Dovetail.Hosting. The generic host, .NET MAUI and Uno Platform helpers (Joinery.Dovetail.Hosting) populate
+    context.Environment's IHostEnvironment; Blazor WebAssembly's helper populates context.WebAssemblyHostEnvironment's
+    IWebAssemblyHostEnvironment - neither helper needs to reference this file's output itself.
+
+    Templates must not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to forward slashes
+    on Linux and macOS.
+
+    _DovetailEnvironmentHelper item metadata:
+      References  - semicolon-separated assembly names (file names without extension) that must all be referenced.
+
+    The emitted types are internal and [Embedded]; Joinery.Dovetail.Analyzers (referenced by every project that references
+    Joinery.Dovetail) always emits that attribute's definition, so the type is always available here.
+  -->
+  <PropertyGroup>
+    <_DovetailEnvironmentTargetsImported>true</_DovetailEnvironmentTargetsImported>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_DovetailEnvironmentHelper Include="DovetailHostingContextExtensions" References="Microsoft.Extensions.Hosting.Abstractions" />
+    <_DovetailEnvironmentHelper Include="DovetailWebAssemblyContextExtensions" References="Microsoft.AspNetCore.Components.WebAssembly" />
+  </ItemGroup>
+
+  <!-- Right after the references resolve, same hook Joinery.Dovetail.Hosting.targets uses for its own helpers. -->
+  <Target Name="_DovetailResolveEnvironmentHelpers" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_DovetailEnvironmentReference Include="@(ReferencePath->'%(Filename)')" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_DovetailEnvironmentExtensionMembers>true</_DovetailEnvironmentExtensionMembers>
+      <_DovetailEnvironmentLangVersion Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(LangVersion.Trim())', '^\d+(\.\d+)?$'))">$(LangVersion.Trim())</_DovetailEnvironmentLangVersion>
+      <_DovetailEnvironmentExtensionMembers Condition="'$(_DovetailEnvironmentLangVersion)' != '' and $([MSBuild]::VersionLessThan('$(_DovetailEnvironmentLangVersion)', '14.0'))">false</_DovetailEnvironmentExtensionMembers>
+    </PropertyGroup>
+    <!-- Both templates use C# 14 extension members, so neither is emitted below C# 14. -->
+    <ItemGroup Condition="'$(_DovetailEnvironmentExtensionMembers)' == 'true'">
+      <_DovetailEnvironmentRequirement Include="%(_DovetailEnvironmentHelper.References)" Helper="%(_DovetailEnvironmentHelper.Identity)" />
+      <_DovetailEnvironmentMissingRequirement Include="@(_DovetailEnvironmentRequirement)" Exclude="@(_DovetailEnvironmentReference)" />
+      <_DovetailEnvironmentSkippedHelper Include="@(_DovetailEnvironmentMissingRequirement->'%(Helper)')" />
+      <_DovetailEnvironmentEmittedHelper Include="@(_DovetailEnvironmentHelper)" Exclude="@(_DovetailEnvironmentSkippedHelper)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Batched once per emitted helper via Outputs, same as Joinery.Dovetail.Hosting.targets. -->
+  <Target Name="_DovetailGenerateEnvironmentHelpers"
+          AfterTargets="_DovetailResolveEnvironmentHelpers"
+          Condition="'@(_DovetailEnvironmentEmittedHelper)' != ''"
+          Outputs="%(_DovetailEnvironmentEmittedHelper.Identity)">
+    <PropertyGroup>
+      <_DovetailEnvironmentHelperContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)%(_DovetailEnvironmentEmittedHelper.Identity).cs.template'))</_DovetailEnvironmentHelperContent>
+      <_DovetailEnvironmentHelperOutputFile>$(IntermediateOutputPath)DovetailEnvironment.%(_DovetailEnvironmentEmittedHelper.Identity).g.cs</_DovetailEnvironmentHelperOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailEnvironmentHelperOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailEnvironmentHelperContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_DovetailEnvironmentHelperOutputFile)" />
+      <FileWrites Include="$(_DovetailEnvironmentHelperOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

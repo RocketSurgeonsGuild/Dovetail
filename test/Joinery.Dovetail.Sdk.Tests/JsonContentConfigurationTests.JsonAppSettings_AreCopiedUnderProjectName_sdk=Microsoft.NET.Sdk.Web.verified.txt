@@ -86,8 +86,7 @@
       DovetailContextBuilder.g.cs,
       DovetailHost.WebApplication.g.cs,
       DovetailHosting.DovetailConfigurationSchemaEndpointExtensions.g.cs,
-      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
-      DovetailHosting.DovetailHostingContextExtensions.g.cs
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs
     ],
     OutputFiles: [
       app.Development.json,
