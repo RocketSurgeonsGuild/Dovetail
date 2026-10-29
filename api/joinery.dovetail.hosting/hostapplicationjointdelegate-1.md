@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Hosting](/Dovetail/api/joinery.dovetail.hosting.md)
-- Version: `0.2.4-beta.6`
+- Version: `0.2.4-beta.9`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
@@ -17,7 +17,6 @@ namespace Joinery.Dovetail.Joints;
 public sealed delegate void HostApplicationJointDelegate<TBuilder>(
     Joinery.Dovetail.IDovetailContext context,
     TBuilder builder)
-    where TBuilder : IHostApplicationBuilder
 ```
 
 ## Delegate Parameters
