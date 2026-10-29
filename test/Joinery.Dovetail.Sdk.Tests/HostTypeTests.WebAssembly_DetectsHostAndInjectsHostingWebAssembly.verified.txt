@@ -24,14 +24,10 @@
       DovetailEnableDryIoc: false,
       DovetailEnableHosting: false,
       DovetailEnableHostingWeb: false,
-      DovetailEnableOpenTelemetry: false,
+      DovetailEnableOpenTelemetry: true,
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
-      DovetailHostingMauiVersion: {sdk-version},
-      DovetailHostingUnoVersion: {sdk-version},
       DovetailHostingVersion: {sdk-version},
-      DovetailHostingWebAssemblyVersion: {sdk-version},
-      DovetailHostingWebVersion: {sdk-version},
       DovetailMermaidVersion: {sdk-version},
       DovetailOpenTelemetryVersion: {sdk-version},
       DovetailSdkVersion: {sdk-version},
@@ -54,9 +50,10 @@
       Joinery.Dovetail: {
         IsImplicitlyDefined: true
       },
-      Joinery.Dovetail.Hosting.WebAssembly: {
+      Joinery.Dovetail.Hosting: {
         IsImplicitlyDefined: true
-      }
+      },
+      Microsoft.AspNetCore.Components.WebAssembly: {}
     },
     DovetailJoint: {},
     DovetailHost: {
@@ -86,7 +83,9 @@
     ],
     GeneratedFiles: [
       DovetailContextBuilder.g.cs,
-      DovetailHost.WebAssembly.g.cs
+      DovetailHost.WebAssembly.g.cs,
+      DovetailHosting.DovetailWebAssemblyContextExtensions.g.cs,
+      DovetailHosting.DovetailWebAssemblyHelpers.g.cs
     ],
     OutputFiles: [
       appsettings.schema.json,

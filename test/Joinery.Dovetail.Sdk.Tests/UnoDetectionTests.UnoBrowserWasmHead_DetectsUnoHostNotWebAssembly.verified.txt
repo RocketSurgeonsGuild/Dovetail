@@ -20,7 +20,7 @@
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       },
-      Joinery.Dovetail.Hosting.Uno: {
+      Joinery.Dovetail.Hosting: {
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       }

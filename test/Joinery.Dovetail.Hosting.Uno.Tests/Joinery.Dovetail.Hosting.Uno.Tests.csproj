@@ -9,9 +9,17 @@
         <NoWarn>$(NoWarn);UNOB0025</NoWarn>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Uno\Joinery.Dovetail.Hosting.Uno.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <PackageReference Include="Uno.Extensions.Hosting.WinUI" />
+        <PackageReference Include="Uno.Extensions.Navigation.WinUI" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Stashbox\Joinery.Dovetail.Stashbox.csproj" />
+        <!--
+            Without OpenTelemetry.Extensions.Hosting: the Uno host only runs hosted services once started, so Joinery.Dovetail.Hosting
+            adds OpenTelemetry to the services and starts it when the host is built (DovetailOpenTelemetryUnoStartJoint).
+        -->
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
+        <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
 
         <!-- Mirrors what the Dovetail SDK's Uno detection adds (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets). -->
         <DovetailHost

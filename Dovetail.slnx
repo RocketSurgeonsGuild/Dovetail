@@ -101,10 +101,6 @@
     <Project Path="src/Joinery.Dovetail.Testing/Joinery.Dovetail.Testing.csproj" />
     <Project Path="src/Joinery.Dovetail/Joinery.Dovetail.csproj" />
     <Project Path="src/Joinery.Dovetail.Mermaid/Joinery.Dovetail.Mermaid.csproj" />
-    <Project Path="src/Joinery.Dovetail.Hosting.Web/Joinery.Dovetail.Hosting.Web.csproj" />
-    <Project Path="src/Joinery.Dovetail.Hosting.Maui/Joinery.Dovetail.Hosting.Maui.csproj" />
-    <Project Path="src/Joinery.Dovetail.Hosting.Uno/Joinery.Dovetail.Hosting.Uno.csproj" />
-    <Project Path="src/Joinery.Dovetail.Hosting.WebAssembly/Joinery.Dovetail.Hosting.WebAssembly.csproj" />
     <Project Path="src/Joinery.Dovetail.Hosting/Joinery.Dovetail.Hosting.csproj" />
     <Project Path="src/Joinery.Dovetail.Sdk/Joinery.Dovetail.Sdk.csproj" />
   </Folder>

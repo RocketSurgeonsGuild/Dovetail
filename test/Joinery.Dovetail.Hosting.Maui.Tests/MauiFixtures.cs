@@ -1,12 +1,26 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
+using Joinery.Dovetail.OpenTelemetry.Joints;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace Joinery.Dovetail.Hosting.Maui.Tests;
 
 public static class MauiFixtures
 {
+    /// <summary>
+    ///     The activity source <see cref="TracingJoint" /> subscribes the tracer provider to, and the meter <see cref="MetricsJoint" />
+    ///     subscribes the meter provider to.
+    /// </summary>
+    public const string ActivitySourceName = "Joinery.Dovetail.Hosting.Maui.Tests";
+
     public interface IFromHostApplicationJoint;
 
     public interface IFromMauiAppBuilderJoint;
@@ -26,15 +40,18 @@ public static class MauiFixtures
         public static string? Platform { get; set; }
     }
 
+    /// <summary>
+    ///     A joint for any <see cref="IHostApplicationBuilder" />, which runs for MAUI too since <see cref="MauiAppBuilder" /> is one.
+    /// </summary>
     [DovetailExport]
-    public class HostApplicationJoint : IHostApplicationJoint<MauiAppBuilder>
+    public class HostApplicationJoint : IHostApplicationJoint<IHostApplicationBuilder>
     {
-        public void Register(IDovetailContext context, MauiAppBuilder builder) =>
+        public void Register(IDovetailContext context, IHostApplicationBuilder builder) =>
             builder.Services.AddSingleton<IFromHostApplicationJoint, FromHostApplicationJoint>();
     }
 
     [DovetailExport]
-    public class MauiAppBuilderJoint : IMauiAppBuilderJoint
+    public class MauiAppBuilderJoint : IHostApplicationJoint<MauiAppBuilder>
     {
         public void Register(IDovetailContext context, MauiAppBuilder builder)
         {
@@ -46,8 +63,53 @@ public static class MauiFixtures
     }
 
     [DovetailExport]
-    public class MauiAppJoint : IMauiAppJoint
+    public class MauiAppJoint : IHostCreatedJoint<MauiApp>
     {
         public void Register(IDovetailContext context, MauiApp app) => Observed.App = app;
+    }
+
+    /// <summary>
+    ///     Subscribes the tracer provider to <see cref="ActivitySourceName" /> and records the activities it ends. Only a running
+    ///     OpenTelemetry tracer provider records them; TUnit's own listener makes every activity source listened to anyway.
+    /// </summary>
+    [DovetailExport]
+    public class TracingJoint : ITracerProviderJoint
+    {
+        public void Register(IDovetailContext context, TracerProviderBuilder builder) =>
+            builder.AddSource(ActivitySourceName).AddProcessor(new RecordingProcessor());
+    }
+
+    /// <summary>
+    ///     The resource attribute <see cref="ResourceJoint" /> adds.
+    /// </summary>
+    public const string ResourceAttribute = "dovetail.test.host";
+
+    /// <summary>
+    ///     What the meter provider exported, through <see cref="MetricsJoint" />'s in-memory exporter.
+    /// </summary>
+    public static List<MetricSnapshot> ExportedMetrics { get; } = [];
+
+    /// <summary>
+    ///     Subscribes the meter provider to <see cref="ActivitySourceName" /> and exports to <see cref="ExportedMetrics" />.
+    /// </summary>
+    [DovetailExport]
+    public class MetricsJoint : IMeterProviderBuilderJoint
+    {
+        public void Register(IDovetailContext context, MeterProviderBuilder builder) =>
+            builder.AddMeter(ActivitySourceName).AddInMemoryExporter(ExportedMetrics);
+    }
+
+    [DovetailExport]
+    public class ResourceJoint : IResourceBuilderJoint
+    {
+        public void Register(IDovetailContext context, ResourceBuilder builder) =>
+            builder.AddAttributes([new KeyValuePair<string, object>(ResourceAttribute, "maui")]);
+    }
+
+    public sealed class RecordingProcessor : BaseProcessor<Activity>
+    {
+        public static ConcurrentQueue<string> Ended { get; } = new();
+
+        public override void OnEnd(Activity data) => Ended.Enqueue(data.DisplayName);
     }
 }

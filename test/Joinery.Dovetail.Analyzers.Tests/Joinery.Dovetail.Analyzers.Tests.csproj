@@ -21,7 +21,7 @@
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Serilog\Joinery.Dovetail.Serilog.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.WebAssembly\Joinery.Dovetail.Hosting.WebAssembly.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Toml\Joinery.Dovetail.Configuration.Toml.csproj" />

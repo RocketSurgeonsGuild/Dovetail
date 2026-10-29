@@ -19,7 +19,7 @@ with the SDK version pinned in [`global.json`](global.json) under `msbuild-sdks`
 | `SdkSample.Storage`       | plain class library     | the same, for immutable options that Dovetail creates through generated code (see below)                                                                        |
 | `SdkSample.Diagnostics`   | plain class library     | the same, for options of types the library doesn't own (see below)                                                                                              |
 | `SdkSample.Worker`        | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
-| `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting.Web`, generate `ConfigureDovetail()`                                                            |
+| `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                                |
 
 `DovetailEnableConfiguration=true` (set in `Directory.Build.props`) additionally injects
 `Joinery.Dovetail.Configuration.Yaml` into every project. YAML is the default format; setting

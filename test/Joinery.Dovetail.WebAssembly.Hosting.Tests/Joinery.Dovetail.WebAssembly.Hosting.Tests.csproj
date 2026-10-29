@@ -8,7 +8,8 @@
         <PackageReference Include="Microsoft.Playwright" />
         <PackageReference Include="Verify.AngleSharp" />
         <PackageReference Include="Verify.Playwright" />
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.WebAssembly\Joinery.Dovetail.Hosting.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
         <PackageReference Include="bunit.web" />

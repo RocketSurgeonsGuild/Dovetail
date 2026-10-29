@@ -4,9 +4,13 @@
         <OutputType>Exe</OutputType>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Maui\Joinery.Dovetail.Hosting.Maui.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <PackageReference Include="Microsoft.Maui.Core" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Stashbox\Joinery.Dovetail.Stashbox.csproj" />
+        <!-- MAUI doesn't use the generic host, so Joinery.Dovetail.Hosting turns OpenTelemetry on through the services (DovetailOpenTelemetryServicesJoint). -->
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
+        <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
 
         <!-- Mirrors what the Dovetail SDK's MAUI detection adds (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets). -->
         <DovetailHost

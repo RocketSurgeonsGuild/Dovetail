@@ -24,7 +24,7 @@ public class AspNetCoreActivitySourceTests
 
         var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
 
-        using var source = new ActivitySource(OpenTelemetryConnector.AspNetCoreActivitySourceName);
+        using var source = new ActivitySource("Microsoft.AspNetCore");
         using (source.StartActivity("Microsoft.AspNetCore.Hosting.HttpRequestIn")) { }
 
         tracerProvider.ForceFlush();

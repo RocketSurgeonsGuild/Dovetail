@@ -24,14 +24,10 @@
       DovetailEnableDryIoc: false,
       DovetailEnableHosting: false,
       DovetailEnableHostingWeb: false,
-      DovetailEnableOpenTelemetry: false,
+      DovetailEnableOpenTelemetry: true,
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
-      DovetailHostingMauiVersion: {sdk-version},
-      DovetailHostingUnoVersion: {sdk-version},
       DovetailHostingVersion: {sdk-version},
-      DovetailHostingWebAssemblyVersion: {sdk-version},
-      DovetailHostingWebVersion: {sdk-version},
       DovetailMermaidVersion: {sdk-version},
       DovetailOpenTelemetryVersion: {sdk-version},
       DovetailSdkVersion: {sdk-version},
@@ -57,6 +53,7 @@
       Joinery.Dovetail.Hosting: {
         IsImplicitlyDefined: true
       },
+      Microsoft.Extensions.Hosting: {},
       Microsoft.Extensions.Logging: {}
     },
     DovetailJoint: {
@@ -95,6 +92,8 @@
     GeneratedFiles: [
       DovetailContextBuilder.g.cs,
       DovetailHost.HostApplication.g.cs,
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostingContextExtensions.g.cs,
       DovetailJoint.CustomLogging.g.cs,
       DovetailJointAsync.CustomLogging.g.cs
     ],

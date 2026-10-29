@@ -15,7 +15,10 @@ public class HostTypeRuntimeTests(string targetFramework)
     [Arguments("UnitTest", "UnitTest")]
     public async Task Application_RunsWithTheExpectedHostType(string? dovetailHostType, string expected)
     {
-        var app = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe");
+        // The generic host's own package, which a HostApplicationBuilder application references (see HostingHelperTests).
+        var app = ProjectCreator
+                 .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                 .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework));
         if (dovetailHostType is not null)
         {
             app.Property("DovetailHostType", dovetailHostType);

@@ -26,6 +26,8 @@ public class ConfigurationSchemaFragmentTests(string targetFramework)
                 ProjectCreator
                    .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
                    .Property("EmitCompilerGeneratedFiles", "true")
+                   // HostOptions comes from the generic host's own package.
+                   .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework))
             )
            .AddFile(
                 "app/Program.cs",

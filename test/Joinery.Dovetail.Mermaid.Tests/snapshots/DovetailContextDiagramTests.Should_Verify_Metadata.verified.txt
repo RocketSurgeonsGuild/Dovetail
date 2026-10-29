@@ -1,16 +1,5 @@
 ﻿[
   {
-    JointName: Joinery.Dovetail.OpenTelemetry.OpenTelemetryConnector,
-    AssemblyName: Joinery.Dovetail.OpenTelemetry,
-    ImplementsJointTypes: [
-      Service
-    ],
-    ConnectsToJointTypes: [
-      OpenTelemetry
-    ],
-    Category: Application
-  },
-  {
     JointName: Joinery.Dovetail.Infrastructure.LoggingConnector,
     AssemblyName: Joinery.Dovetail,
     ImplementsJointTypes: [

@@ -132,6 +132,52 @@ public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestR
         resource.Attributes.ShouldContain(new KeyValuePair<string, object>("test.resource.attribute", "test-value"));
     }
 
+    /// <summary>
+    ///     The tests above resolve the providers themselves. An application doesn't: starting the generic host runs
+    ///     OpenTelemetry.Extensions.Hosting's hosted service, which Dovetail's <c>AddOpenTelemetry()</c> joint registers, and that starts
+    ///     tracing and metrics, with the resource joints applied to both.
+    /// </summary>
+    [Test]
+    public async Task Starting_The_Host_Starts_Traces_And_Metrics_With_The_Resource()
+    {
+        const string name = "Joinery.Dovetail.OpenTelemetry.Tests.Started";
+        List<Activity> exportedActivities = [];
+        List<MetricSnapshot> exportedMetrics = [];
+        var attribute = new KeyValuePair<string, object>("test.resource.started", "started");
+
+        using var host = await Host
+                              .CreateApplicationBuilder()
+                              .ConfigureDovetail(
+                                   rb => rb
+                                        .ConfigureResourceBuilder((_, builder) => builder.AddAttributes([attribute]))
+                                        .ConfigureTracerProvider((_, builder) => builder.AddSource(name).AddInMemoryExporter(exportedActivities))
+                                        .ConfigureMeterProvider((_, builder) => builder.AddMeter(name).AddInMemoryExporter(exportedMetrics))
+                               );
+        await host.StartAsync();
+        try
+        {
+            using (var source = new ActivitySource(name))
+            using (source.StartActivity("started-span")) { }
+
+            using var meter = new Meter(name);
+            meter.CreateCounter<long>("started.counter").Add(3);
+
+            var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
+            var meterProvider = host.Services.GetRequiredService<MeterProvider>();
+            tracerProvider.ForceFlush();
+            meterProvider.ForceFlush();
+
+            exportedActivities.ShouldContain(activity => activity.DisplayName == "started-span");
+            exportedMetrics.ShouldContain(metric => metric.Name == "started.counter" && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
+            tracerProvider.GetResource().Attributes.ShouldContain(attribute);
+            meterProvider.GetResource().Attributes.ShouldContain(attribute);
+        }
+        finally
+        {
+            await host.StopAsync();
+        }
+    }
+
     // tasks.md 4.6
     [Test]
     public async Task Two_Joints_Same_Kind_Different_Priorities_Apply_In_Ascending_Priority_Order()

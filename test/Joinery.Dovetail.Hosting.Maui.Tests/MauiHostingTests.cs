@@ -1,8 +1,13 @@
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Stashbox;
 using static Joinery.Dovetail.Hosting.Maui.Tests.MauiFixtures;
 
@@ -99,6 +104,53 @@ public class MauiHostingTests
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
         app.Services.GetService<IStashboxContainer>().ShouldNotBeNull();
+    }
+
+    /// <summary>
+    ///     MAUI doesn't run hosted services, so OpenTelemetry.Extensions.Hosting couldn't start OpenTelemetry here. Joinery.Dovetail.Hosting
+    ///     adds it to the services with the OpenTelemetry joints (<see cref="TracingJoint" />) and starts the providers once the app is
+    ///     built, so the app's activity source is listened to without anything resolving <see cref="TracerProvider" />.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_IsStarted_WhenTheAppIsBuilt()
+    {
+        await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
+
+        var name = Guid.NewGuid().ToString("N");
+        using (var source = new ActivitySource(ActivitySourceName))
+        using (source.StartActivity(name)) { }
+
+        RecordingProcessor.Ended.ShouldContain(name);
+    }
+
+    /// <summary>
+    ///     Dovetail starts the meter provider once the app is built too, so a measurement the app records before anything resolves the
+    ///     provider is still collected by <see cref="MetricsJoint" />'s exporter.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_CollectsMetrics_FromWhenTheAppIsBuilt()
+    {
+        await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
+
+        var name = "dovetail.test.counter." + Guid.NewGuid().ToString("N");
+        using var meter = new Meter(ActivitySourceName);
+        meter.CreateCounter<long>(name).Add(3);
+        app.Services.GetRequiredService<MeterProvider>().ForceFlush();
+
+        ExportedMetrics.ShouldContain(metric => metric.Name == name && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
+    }
+
+    /// <summary>
+    ///     <see cref="ResourceJoint" />'s attribute is on the resource of every signal's provider.
+    /// </summary>
+    [Test]
+    public async Task OpenTelemetry_AppliesTheResourceJoints_ToEveryProvider()
+    {
+        await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
+
+        var attribute = new KeyValuePair<string, object>(ResourceAttribute, "maui");
+        app.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.ShouldContain(attribute);
+        app.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.ShouldContain(attribute);
     }
 
     private sealed class Marker;

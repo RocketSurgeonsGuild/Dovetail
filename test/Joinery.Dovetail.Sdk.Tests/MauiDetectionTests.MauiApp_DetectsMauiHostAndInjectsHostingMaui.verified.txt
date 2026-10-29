@@ -26,7 +26,7 @@
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       },
-      Joinery.Dovetail.Hosting.Maui: {
+      Joinery.Dovetail.Hosting: {
         IsImplicitlyDefined: true,
         Version: {sdk-version}
       }

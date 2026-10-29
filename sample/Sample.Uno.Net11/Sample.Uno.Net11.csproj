@@ -1,7 +1,7 @@
 <Project Sdk="Uno.Sdk/7.0.0-dev.97">
   <!--
-      Sample.Uno on the next release lines: the Uno 7 prerelease SDK and the net11.0 heads, with Joinery.Dovetail.Hosting.Uno's net11.0
-      build (Uno.Extensions 8.0 prereleases, which have no desktop or browserwasm assets yet). The app code is linked from
+      Sample.Uno on the next release lines: the Uno 7 prerelease SDK and the net11.0 heads, with the Uno.Extensions 8.0 prereleases
+      the repo pins for net11.0 (which have no desktop or browserwasm assets yet). The app code is linked from
       Sample.Uno; only the per-platform head files live here. Needs the Uno Platform workloads, so Dovetail.slnx doesn't build it
       by default; the workload-samples workflow builds it per platform.
   -->
@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting.Uno\Joinery.Dovetail.Hosting.Uno.csproj" />
+    <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
     <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
     <!-- Uno.Sdk adds this one implicitly at its own version; referencing it takes the Directory.Packages.props pin, in step with Microsoft.Extensions.Hosting (otherwise NU1605). -->
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
@@ -79,8 +79,8 @@
   </ItemDefinitionGroup>
   <!--
     Uno.Sdk adds the Uno.Extensions packages for UnoFeatures implicitly at its own UnoExtensionsVersion, ignoring
-    Directory.Packages.props. The 8.0 prereleases move ahead of the prerelease SDK, so take the version Joinery.Dovetail.Hosting.Uno is
-    pinned to (otherwise NU1605 against its references).
+    Directory.Packages.props. The 8.0 prereleases move ahead of the prerelease SDK, so take the version the repo pins (and the Uno
+    hosting tests build against).
   -->
   <Target Name="_SampleUnoExtensionsVersion" BeforeTargets="UnoImplicitPackages">
     <PropertyGroup>

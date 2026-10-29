@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 #nullable enable
 
-namespace Joinery.Dovetail.Hosting.Web.Generated;
+namespace Joinery.Dovetail.Hosting.Generated;
 
 /// <summary>
 ///     Maps <c>GET /.well-known/dovetail/configuration-schema</c>, which serves the application's merged configuration schema.
@@ -16,6 +16,6 @@ internal sealed class DovetailConfigurationSchemaEndpointJoint : global::Joinery
 {
     public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.AspNetCore.Builder.WebApplication host)
     {
-        global::Joinery.Dovetail.Hosting.Web.DovetailConfigurationSchemaEndpointExtensions.MapDovetailConfigurationSchema(host, {FallbackDirectory}, {Environments});
+        global::Joinery.Dovetail.Hosting.DovetailConfigurationSchemaEndpointExtensions.MapDovetailConfigurationSchema(host, {FallbackDirectory}, {Environments});
     }
 }

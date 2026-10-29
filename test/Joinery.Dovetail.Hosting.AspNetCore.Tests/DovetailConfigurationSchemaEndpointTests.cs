@@ -1,5 +1,4 @@
 using System.Net;
-using Joinery.Dovetail.Hosting.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 

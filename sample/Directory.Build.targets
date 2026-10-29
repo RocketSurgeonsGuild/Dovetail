@@ -1,5 +1,6 @@
 <Project>
   <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail/build/Joinery.Dovetail.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets" />
   <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.InRepo.targets" />
   <ItemGroup>
     <ProjectReference

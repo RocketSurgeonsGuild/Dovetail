@@ -41,6 +41,8 @@ public class HostTypeTests(string targetFramework)
                 "worker/worker.csproj",
                 ProjectCreator
                    .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                   // The generic host's own package, which a HostApplicationBuilder application references (see HostingHelperTests).
+                   .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework))
             )
            .AddFile("worker/Program.cs", "System.Console.WriteLine(\"hello\");");
 
@@ -62,6 +64,11 @@ public class HostTypeTests(string targetFramework)
                 "wasm/wasm.csproj",
                 ProjectCreator
                    .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly")
+                   // As every Blazor application does; the generated entry points need it (see HostingHelperTests).
+                   .ItemPackageReference(
+                        "Microsoft.AspNetCore.Components.WebAssembly",
+                        Config.CentralPackageVersion("Microsoft.AspNetCore.Components.WebAssembly", targetFramework)
+                    )
             )
            .AddFile("wasm/Program.cs", "System.Console.WriteLine(\"hello\");");
 
