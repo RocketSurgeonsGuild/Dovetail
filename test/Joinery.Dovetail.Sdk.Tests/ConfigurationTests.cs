@@ -14,15 +14,14 @@ namespace Joinery.Dovetail.Sdk.Tests;
 public class ConfigurationTests(string targetFramework)
 {
     [Test]
-    [Arguments("json", "Microsoft.Extensions.Configuration.Json", "10.0.9", "Dovetail.JsonConfiguration.g.cs")]
-    [Arguments("yaml", "Joinery.Dovetail.Configuration.Yaml", null, "Dovetail.YamlConfiguration.g.cs")]
-    [Arguments("yml", "Joinery.Dovetail.Configuration.Yaml", null, "Dovetail.YmlConfiguration.g.cs")]
-    [Arguments("toml", "Joinery.Dovetail.Configuration.Toml", null, "Dovetail.TomlConfiguration.g.cs")]
+    [Arguments("json", "Microsoft.Extensions.Configuration.Json", "10.0.9")]
+    [Arguments("yaml", "Joinery.Dovetail.Configuration.Yaml", null)]
+    [Arguments("yml", "Joinery.Dovetail.Configuration.Yaml", null)]
+    [Arguments("toml", "Joinery.Dovetail.Configuration.Toml", null)]
     public async Task AppSettingsFile_WithProviderReferenced_EmitsConfigurationJoint(
         string extension,
         string providerPackageId,
-        string? providerVersion,
-        string generatedFileName
+        string? providerVersion
     )
     {
         var version = providerVersion ?? Config.DovetailPackageVersion(providerPackageId);
