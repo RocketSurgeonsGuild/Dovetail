@@ -1,0 +1,24 @@
+# SerilogJointExtensions
+
+- Kind: `class`
+- Package: [Joinery.Dovetail.Serilog](/Dovetail/v0.3.0/api/joinery.dovetail.serilog.md)
+- Version: `0.3.0`
+- Namespace: `Joinery.Dovetail.Joints`
+- Target framework: `net10.0`
+
+Extension methods for applying Serilog parts.
+
+## Definition
+
+```csharp
+namespace Joinery.Dovetail.Joints;
+
+public static class SerilogJointExtensions
+{
+    // ...
+}
+```
+
+## Methods
+
+- [ApplySerilog(LoggerConfiguration, IDovetailContext, IServiceCollection, CancellationToken)](/Dovetail/v0.3.0/api/joinery.dovetail.serilog/serilogjointextensions/methods.md#applyserilog-loggerconfiguration-idovetailcontext-iservicecollection-cancellationtoken) : `ValueTask` `extension` -- Applies the registered Serilog parts.
