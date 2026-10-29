@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.OpenTelemetry](/Dovetail/api/joinery.dovetail.opentelemetry.md)
-- Version: `0.2.4-beta.9`
+- Version: `0.2.4-beta.10`
 - Namespace: `Joinery.Dovetail.OpenTelemetry.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, [IOpenTelemetryJoint](/Dovetail/api/joinery.dovetail.opentelemetry/iopentelemetryjoint.md)
