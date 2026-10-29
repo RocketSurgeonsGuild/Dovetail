@@ -1,7 +1,7 @@
 # Joinery.Dovetail.DryIoc
 
 - Package: `Joinery.Dovetail.DryIoc`
-- Version: `0.3.1-beta.1`
+- Version: `0.3.1-beta.3`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.DryIoc](https://www.nuget.org/packages/Joinery.Dovetail.DryIoc)
 
