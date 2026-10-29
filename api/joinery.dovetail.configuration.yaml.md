@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Configuration.Yaml
 
 - Package: `Joinery.Dovetail.Configuration.Yaml`
-- Version: `0.2.4-beta.13`
+- Version: `0.2.4-beta.14`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Configuration.Yaml](https://www.nuget.org/packages/Joinery.Dovetail.Configuration.Yaml)
 
