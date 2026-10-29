@@ -1,0 +1,7 @@
+﻿{
+  EmbeddedResources: [
+    lib.Production.json,
+    lib.json,
+    lib.local.json
+  ]
+}

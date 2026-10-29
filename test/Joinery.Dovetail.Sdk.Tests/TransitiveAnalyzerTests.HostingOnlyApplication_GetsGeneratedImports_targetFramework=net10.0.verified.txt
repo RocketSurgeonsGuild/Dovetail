@@ -1,0 +1,41 @@
+﻿[
+  {
+    Name: app.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: {TargetFramework},
+    Properties: {
+      AssemblyName: app,
+      BaseIntermediateOutputPath: obj\,
+      BaseOutputPath: bin\,
+      CustomAfterMicrosoftCommonTargets: /sdk/{dotnet-sdk-version}/vCurrent/Custom.After.Microsoft.Common.targets,
+      DefineConstants: TRACE;DEBUG,
+      EnableDefaultCompileItems: false,
+      GenerateDocumentationFile: false,
+      IsPackable: true,
+      NoWarn: 1701;1702,
+      PackageOutputPath: bin\Debug/,
+      RootNamespace: app,
+      TargetFramework: {TargetFramework},
+      Version: 1.0.0
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Joinery.Dovetail.Hosting: {}
+    },
+    DovetailJoint: {},
+    DovetailHost: {},
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/app/app.csproj
+    ],
+    NoImports: [],
+    GeneratedFiles: [
+      Imported_Assembly_Dovetails.g.cs
+    ],
+    OutputFiles: [
+      app.runtimeconfig.dev.json,
+      appsettings.schema.json
+    ]
+  }
+]

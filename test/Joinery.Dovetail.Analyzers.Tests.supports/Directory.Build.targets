@@ -4,7 +4,6 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
-        <PackageReference Include="NodaTime" />
         <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Aspire.Testing\Joinery.Dovetail.Aspire.Testing.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Aspire\Joinery.Dovetail.Aspire.csproj" />

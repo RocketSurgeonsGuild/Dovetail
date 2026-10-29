@@ -1,0 +1,11 @@
+﻿{
+  OutputFiles: [
+    lib.Production.json,
+    lib.json,
+    lib.local.json
+  ],
+  EmbeddedResources: [
+    lib.Production.json,
+    lib.appsettings.json
+  ]
+}

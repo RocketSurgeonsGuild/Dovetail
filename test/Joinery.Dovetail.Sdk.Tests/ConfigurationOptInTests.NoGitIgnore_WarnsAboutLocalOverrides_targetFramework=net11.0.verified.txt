@@ -1,0 +1,5 @@
+﻿{
+  Warnings: [
+    DovetailConfiguration: no .gitignore at or above '{TempPath}sdk-tests/{id}/lib' appears to ignore appsettings.local.{json,yaml,yml,toml}. Add those patterns to your .gitignore so local-only configuration overrides are never committed.
+  ]
+}

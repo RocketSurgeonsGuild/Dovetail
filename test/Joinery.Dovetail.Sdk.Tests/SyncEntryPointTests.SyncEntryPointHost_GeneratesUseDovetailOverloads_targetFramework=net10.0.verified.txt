@@ -1,0 +1,124 @@
+﻿[
+  {
+    Name: worker.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: {TargetFramework},
+    Properties: {
+      _DovetailApplicationDetected: true,
+      AspireTestingVersion: {sdk-version},
+      AspireVersion: {sdk-version},
+      AssemblyName: worker,
+      AutofacVersion: {sdk-version},
+      BaseIntermediateOutputPath: obj\,
+      BaseOutputPath: bin\,
+      ConfigurationJsonVersion: {sdk-version},
+      ConfigurationTomlVersion: {sdk-version},
+      ConfigurationYamlVersion: {sdk-version},
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;,
+      DefineConstants: TRACE;DEBUG,
+      DovetailAspireTestingVersion: {sdk-version},
+      DovetailAspireVersion: {sdk-version},
+      DovetailAutofacVersion: {sdk-version},
+      DovetailConfigurationJsonVersion: {sdk-version},
+      DovetailConfigurationTomlVersion: {sdk-version},
+      DovetailConfigurationYamlVersion: {sdk-version},
+      DovetailDryIocVersion: {sdk-version},
+      DovetailEnableAspire: false,
+      DovetailEnableAspireTesting: false,
+      DovetailEnableAutofac: false,
+      DovetailEnableDryIoc: false,
+      DovetailEnableHosting: false,
+      DovetailEnableHostingWeb: false,
+      DovetailEnableOpenTelemetry: true,
+      DovetailEnableSerilog: false,
+      DovetailEnableStashbox: false,
+      DovetailHostingVersion: {sdk-version},
+      DovetailMermaidVersion: {sdk-version},
+      DovetailOpenTelemetryVersion: {sdk-version},
+      DovetailSdkVersion: {sdk-version},
+      DovetailSerilogVersion: {sdk-version},
+      DovetailStashboxVersion: {sdk-version},
+      DovetailTestingVersion: {sdk-version},
+      DovetailVersion: {sdk-version},
+      DryIocVersion: {sdk-version},
+      EnableDefaultCompileItems: false,
+      ExportDovetailAssembly: true,
+      GenerateDocumentationFile: false,
+      HostingMauiVersion: {sdk-version},
+      HostingUnoVersion: {sdk-version},
+      HostingVersion: {sdk-version},
+      HostingWebAssemblyVersion: {sdk-version},
+      HostingWebVersion: {sdk-version},
+      ImportDovetailAssembly: true,
+      IsPackable: true,
+      MermaidVersion: {sdk-version},
+      NoWarn: 1701;1702,
+      OpenTelemetryVersion: {sdk-version},
+      PackageOutputPath: bin\Debug/,
+      RootNamespace: worker,
+      SdkVersion: {sdk-version},
+      SerilogVersion: {sdk-version},
+      StashboxVersion: {sdk-version},
+      TargetFramework: {TargetFramework},
+      TestingVersion: {sdk-version},
+      Version: {sdk-version}
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Joinery.Dovetail: {
+        IsImplicitlyDefined: true
+      },
+      Joinery.Dovetail.Hosting: {
+        IsImplicitlyDefined: true
+      },
+      Microsoft.Extensions.Hosting: {}
+    },
+    DovetailJoint: {},
+    DovetailHost: {
+      HostApplication: {
+        HelperName: global::Joinery.Dovetail.DovetailHostApplicationHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.Extensions.Hosting.HostApplicationBuilder,
+        HostType: global::Microsoft.Extensions.Hosting.IHost
+      },
+      SyncHost: {
+        HelperName: global::Joinery.Dovetail.DovetailHostApplicationHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.Extensions.Hosting.HostApplicationBuilder,
+        HostType: global::Microsoft.Extensions.Hosting.IHost,
+        SyncEntryPoint: true
+      }
+    },
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/worker/worker.csproj,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/Directory.Build.props
+    ],
+    NoImports: [
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Joinery.Dovetail.Configuration.targets,
+            Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      }
+    ],
+    GeneratedFiles: [
+      DovetailContextBuilder.g.cs,
+      DovetailHost.HostApplication.g.cs,
+      DovetailHost.SyncHost.Sync.g.cs,
+      DovetailHost.SyncHost.g.cs,
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostingContextExtensions.g.cs
+    ],
+    OutputFiles: [
+      appsettings.schema.json,
+      worker.runtimeconfig.dev.json
+    ]
+  }
+]
