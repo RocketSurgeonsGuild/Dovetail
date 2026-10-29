@@ -5,15 +5,19 @@
     *.cs.template files next to this file, the same way the entry points themselves are emitted. A helper is only emitted when
     every assembly it compiles against is among the project's resolved references, so this package depends on none of
     Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of
-    them is what turns its helper on. context.Environment and the joints that turn OpenTelemetry on for the application's host are
-    emitted the same way (see _DovetailResolveHostingHelpers), so the package depends on nothing but Joinery.Dovetail.
+    them is what turns its helper on. The joints that turn OpenTelemetry on for the application's host are emitted the same way
+    (see _DovetailResolveHostingHelpers), so the package depends on nothing but Joinery.Dovetail.
+
+    context.Environment and context.WebAssemblyHostEnvironment are emitted by Joinery.Dovetail itself
+    (Joinery.Dovetail.Environment.targets), whenever Microsoft.Extensions.Hosting.Abstractions or
+    Microsoft.AspNetCore.Components.WebAssembly is referenced - independent of whether this package is referenced too, so a
+    library that merely holds an IDovetailContext (without hosting anything itself) still gets them.
 
     Templates must not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to forward slashes
     on Linux and macOS.
 
     _DovetailHostingHelper item metadata:
       References        - semicolon-separated assembly names (file names without extension) that must all be referenced.
-      ExtensionMembers  - 'true' when the template uses C# 14 extension members; it is not emitted below C# 14.
 
     The emitted types are internal and [Embedded], so an assembly never sees the copy a referenced assembly emitted for itself (an
     application's tests, say, that it grants InternalsVisibleTo). The Dovetail source generator defines that attribute, so a project
@@ -25,7 +29,6 @@
     <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
     <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
     <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
-    <_DovetailHostingHelper Include="DovetailWebAssemblyContextExtensions" References="Microsoft.AspNetCore.Components.WebAssembly" ExtensionMembers="true" />
     <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
   </ItemGroup>
 
@@ -46,34 +49,20 @@
     <PropertyGroup>
       <_DovetailHostingReferenced>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'Joinery.Dovetail.Hosting'))</_DovetailHostingReferenced>
       <_DovetailHostingReferenced Condition="@(Analyzer->AnyHaveMetadataValue('Filename', 'Joinery.Dovetail.Analyzers')) != 'true'">false</_DovetailHostingReferenced>
-      <_DovetailHostingExtensionMembers>true</_DovetailHostingExtensionMembers>
-      <_DovetailHostingLangVersion Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(LangVersion.Trim())', '^\d+(\.\d+)?$'))">$(LangVersion.Trim())</_DovetailHostingLangVersion>
-      <_DovetailHostingExtensionMembers Condition="'$(_DovetailHostingLangVersion)' != '' and $([MSBuild]::VersionLessThan('$(_DovetailHostingLangVersion)', '14.0'))">false</_DovetailHostingExtensionMembers>
     </PropertyGroup>
     <ItemGroup Condition="'$(_DovetailHostingReferenced)' == 'true'">
       <_DovetailHostingRequirement Include="%(_DovetailHostingHelper.References)" Helper="%(_DovetailHostingHelper.Identity)" />
       <_DovetailHostingMissingRequirement Include="@(_DovetailHostingRequirement)" Exclude="@(_DovetailHostingReference)" />
       <_DovetailHostingSkippedHelper Include="@(_DovetailHostingMissingRequirement->'%(Helper)')" />
-      <_DovetailHostingSkippedHelper Include="@(_DovetailHostingHelper)" Condition="'%(_DovetailHostingHelper.ExtensionMembers)' == 'true' and '$(_DovetailHostingExtensionMembers)' != 'true'" />
       <_DovetailHostingEmittedHelper Include="@(_DovetailHostingHelper)" Exclude="@(_DovetailHostingSkippedHelper)" />
     </ItemGroup>
     <PropertyGroup>
       <_DovetailHostingUnoNavigation>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoNavigationHelpers'))</_DovetailHostingUnoNavigation>
       <_DovetailHostingAspNetCore>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailConfigurationSchemaEndpointExtensions'))</_DovetailHostingAspNetCore>
-      <_DovetailHostingGenericHostHelper>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailHostApplicationHelpers'))</_DovetailHostingGenericHostHelper>
       <_DovetailHostingMaui>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailMauiHelpers'))</_DovetailHostingMaui>
       <_DovetailHostingWebAssembly>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailWebAssemblyHelpers'))</_DovetailHostingWebAssembly>
       <_DovetailHostingUno>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoHelpers'))</_DovetailHostingUno>
     </PropertyGroup>
-
-    <!--
-        context.Environment reads the IHostEnvironment that the generic host, MAUI and Uno helpers put in the context (Blazor WebAssembly
-        has context.WebAssemblyHostEnvironment instead), so it comes with those helpers. That leaves the package itself depending on
-        nothing from Microsoft.Extensions.Hosting, which a Blazor WebAssembly app on .NET 10 wouldn't otherwise reference.
-    -->
-    <ItemGroup Condition="'$(_DovetailHostingExtensionMembers)' == 'true' and ('$(_DovetailHostingGenericHostHelper)' == 'true' or '$(_DovetailHostingMaui)' == 'true' or '$(_DovetailHostingUno)' == 'true')">
-      <_DovetailHostingEmittedHelper Include="DovetailHostingContextExtensions" />
-    </ItemGroup>
 
     <!--
         OpenTelemetry, for applications that reference Joinery.Dovetail.OpenTelemetry (the Dovetail SDK adds it when OpenTelemetry is

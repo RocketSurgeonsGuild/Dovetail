@@ -8,7 +8,10 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// (<c>src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets</c>), each only when the assemblies it compiles against
 /// are among the project's references, so the package itself depends on no host framework, the generic host's
 /// Microsoft.Extensions.Hosting included. These build an application that references the package and one host framework, which also
-/// proves the emitted helpers compile there, and read which helpers landed in <c>obj/</c>.
+/// proves the emitted helpers compile there, and read which helpers landed in <c>obj/</c>. The <c>IDovetailContext</c> environment
+/// extensions are emitted the same way, but by Joinery.Dovetail itself
+/// (<c>src/Joinery.Dovetail/build/Joinery.Dovetail.Environment.targets</c>), so they land in a differently-prefixed generated file;
+/// <see cref="BuildAndReadHelpers" /> merges both.
 /// </summary>
 [TargetFrameworks]
 public class HostingHelperTests(string targetFramework)
@@ -16,8 +19,9 @@ public class HostingHelperTests(string targetFramework)
     private const string GenericHost = "DovetailHostApplicationHelpers";
 
     /// <summary>
-    ///     <c>context.Environment</c>, which comes with the hosts that put an <c>IHostEnvironment</c> in the context: the generic host,
-    ///     .NET MAUI and Uno Platform.
+    ///     <c>context.Environment</c>, which comes with any project referencing Microsoft.Extensions.Hosting.Abstractions (the
+    ///     assembly <c>IHostEnvironment</c> lives in) - in practice the generic host, .NET MAUI and Uno Platform, whose helpers
+    ///     populate it.
     /// </summary>
     private const string HostingContext = "DovetailHostingContextExtensions";
 
@@ -332,6 +336,8 @@ public class HostingHelperTests(string targetFramework)
         await project.BuildProject("app");
         return GeneratedFiles(project, "DovetailHosting.*.g.cs")
               .Select(z => z["DovetailHosting.".Length..^".g.cs".Length])
+              .Concat(GeneratedFiles(project, "DovetailEnvironment.*.g.cs").Select(z => z["DovetailEnvironment.".Length..^".g.cs".Length]))
+              .Order(StringComparer.Ordinal)
               .ToArray();
     }
 

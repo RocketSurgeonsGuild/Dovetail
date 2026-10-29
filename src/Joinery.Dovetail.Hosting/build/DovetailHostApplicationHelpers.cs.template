@@ -88,9 +88,12 @@ internal static class DovetailHostApplicationHelpers
     {
         // Dovetail's own IConfigurationJoint conventions (JsonDovetail/YamlDovetail/TomlDovetail, etc.) now
         // own file-based configuration loading end to end, so the host's own default file providers
-        // (appsettings.json, appsettings.{Environment}.json, secrets.json, ...) would just be redundant/
-        // conflicting - strip them before inserting Dovetail's own configuration.
-        foreach (var fileSource in hostApplicationBuilder.Configuration.Sources.OfType<FileConfigurationSource>().ToArray())
+        // (appsettings.json, appsettings.{Environment}.json, ...) would just be redundant/conflicting -
+        // strip them before inserting Dovetail's own configuration. User secrets (secrets.json) are left in
+        // place: Dovetail has no equivalent convention for them, and secrets.json lives outside the project
+        // tree (keyed off a user secrets ID, not a file Dovetail's joints would know to look for), so
+        // removing it would silently drop local secrets with no replacement.
+        foreach (var fileSource in hostApplicationBuilder.Configuration.Sources.OfType<FileConfigurationSource>().Where(source => !IsUserSecretsSource(source)).ToArray())
         {
             hostApplicationBuilder.Configuration.Sources.Remove(fileSource);
         }
@@ -128,5 +131,13 @@ internal static class DovetailHostApplicationHelpers
             new Dictionary<string, string?> { ["RocketSurgeryDovetails:HostType"] = context.GetHostType().ToString(), }
         );
     }
+
+    /// <summary>
+    ///     Identifies the <see cref="FileConfigurationSource" /> that <c>AddUserSecrets</c> adds for a user secrets store - always
+    ///     backed by a file named <c>secrets.json</c> - so it can be preserved while the host's other default file providers are
+    ///     stripped.
+    /// </summary>
+    private static bool IsUserSecretsSource(FileConfigurationSource source) =>
+        string.Equals(source.Path, "secrets.json", StringComparison.OrdinalIgnoreCase);
 }
 #pragma warning restore CS0105, CA1002, CA1034, CA1822, CS8603, CS8602, CS8618
