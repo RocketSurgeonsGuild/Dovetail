@@ -792,21 +792,18 @@ The build target runs after `CoreCompile` and skips design-time builds. It write
 
 [Section titled “Serilog”](#serilog)
 
-`Joinery.Dovetail.Serilog` ships a schema for the `Serilog` section, in the format [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) reads, so a host that references it gets completion and validation for `Serilog` without any setup. The section is dynamic (sinks, enrichers and their arguments come from other packages), so no options type can describe it and the generator has nothing to emit. `Joinery.Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the pipeline above unchanged: the library’s `ConfigurationSchema.json` is packed at the package root, and a host merges the fragment into its `appsettings.schema.json` like any other.
+`Joinery.Dovetail.Serilog` ships a schema for the `Serilog` section, so a host that references it gets completion and validation for `Serilog` without any setup. The section is read by hand (see [Serilog](./serilog)), so no options type describes it and the generator has nothing to emit. `Joinery.Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the pipeline above unchanged: the library’s `ConfigurationSchema.json` is packed at the package root, and a host merges the fragment into its `appsettings.schema.json` like any other.
 
-The fragment follows the rules of the `Serilog` definition in SchemaStore’s `appsettings.json` schema, the one the merged file embeds by default, so the two never disagree about a value. It models these keys:
+The schema describes what `Joinery.Dovetail.Serilog` reads, which is the minimum level and nothing else, because the rest of Serilog.Settings.Configuration’s format needs reflection that is not trimming or Native AOT safe. It models one key:
 
-* **`MinimumLevel`**, as a level name (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`, and `Off` as in SchemaStore’s list; the names are matched exactly) or as an object with `Default`, `Override` (a map from a source such as `Microsoft.AspNetCore` to a level) and `ControlledBy`. In the object form a value may also be a switch reference, a `$` and a name; SchemaStore’s pattern for that is loose enough to accept any plain word too, and the fragment keeps it. A number, or an unknown name in the string form, is flagged.
-* **`Enrich`** and **`Filter`**, as a non-empty list of unique items, a single name, or a map of items by name. An item is a method name (letters, digits and underscores, not starting with a digit, so `Some.Namespace.WithThing` is flagged) or `{ "Name": ..., "Args": { ... } }` with `Name` required. `Name` completes the well-known enrichers and filters and accepts any other method name. `Args` keys must be identifiers and their values are not checked, since their shape belongs to the extension method.
-* **`Properties`**, a map of strings.
-* **`$schema`**, a string.
+* **`MinimumLevel`**, as a level name (`Verbose`, `Debug`, `Information`, `Warning`, `Error` or `Fatal`; the names are matched exactly) or as an object with `Default` and `Override` (a map from a source such as `Microsoft.AspNetCore` to a level). A number, or an unknown name, is flagged.
 
-`Using`, `WriteTo`, `AuditTo`, `Destructure`, `LevelSwitches` and `FilterSwitches` are not modelled by the fragment. They are listed so the strict merged schema keeps accepting them, with a description and no constraint on their value. SchemaStore’s schema, part of the same merged file, still checks them.
+Every other key of the section (`Using`, `WriteTo`, `AuditTo`, `Enrich`, `Filter`, `Destructure`, `Properties`, `LevelSwitches`, `FilterSwitches` and `MinimumLevel`’s `ControlledBy`, or a level switch given as a value) is flagged by the strict merged schema rather than accepted, so that configuration copied from Serilog’s documentation, which would be ignored, does not look as if it were working. The level rules follow the `Serilog` definition in SchemaStore’s `appsettings.json` schema, the one the merged file embeds by default, narrowed to the six levels (SchemaStore also lists `Off`, which Serilog has no level for) and with no switches. Both apply in the merged file, so the fragment is what rejects the keys that are not read.
 
-What differs from SchemaStore’s schema, and why it is harmless:
+What else differs from SchemaStore’s schema, and why it is harmless:
 
 * **Casing.** Configuration keys ignore case, so the fragment, like every Dovetail fragment, accepts any casing of its keys. SchemaStore’s schema lists them case-sensitively, and both apply in the merged file, so `minimumlevel` is flagged by SchemaStore’s half.
-* **Flat keys.** SchemaStore’s schema accepts the flat forms `"WriteTo:Async"` and `"Enrich:0"`, which Serilog reads. The strict merge closes the `Serilog` section with the names it knows, so those are flagged. Use the array or object form, or set `DovetailConfigurationSchemaStrict` to `false`.
+* **Flat keys.** SchemaStore’s schema accepts the flat forms `"WriteTo:Async"` and `"Enrich:0"`, which Serilog reads. They are flagged like the other keys that are not read. Set `DovetailConfigurationSchemaStrict` to `false` to leave the section open.
 
 ### Serving the schema
 
@@ -1004,6 +1001,8 @@ Dovetail adds it when something configures logging. Every `ILoggerProviderBuilde
 
 `Logs_Are_Exported_Through_The_Logging_Provider` shows the result: the provider is an `OpenTelemetryLoggerProvider` among the host’s `ILoggerProvider`s, and a warning written through `ILogger<T>` reaches the exporter with its category, level, body and structured state.
 
+Log export keeps working when the [Serilog](./serilog) joint is also applied: Serilog’s logger forwards each event to the other logging providers of the container, the OpenTelemetry one included ([the other logging providers](./serilog#the-other-logging-providers)).
+
 ## Resource defaults
 
 [Section titled “Resource defaults”](#resource-defaults)
@@ -1028,6 +1027,142 @@ To name the service, set `OTEL_SERVICE_NAME` or call `AddService(...)` from a re
 | Blazor WebAssembly | `BrowserHostingTests` and `BrowserOpenTelemetryTests` in `Joinery.Dovetail.WebAssembly.Hosting.Tests`: traces, metrics and logs exported in a real browser, with the resource on each provider                            |
 
 The browser tests run the sample’s `net11.0-browser` build behind the Blazor Gateway, so they run on .NET 11 only.
+
+# Serilog
+
+> Serilog integration that builds a Serilog logger from Serilog joints and the application's configuration, and registers it in place of the host's default logging providers. Trimming and Native AOT safe.
+
+# Serilog
+
+[Section titled “Serilog”](#serilog)
+
+`Joinery.Dovetail.Serilog` makes Serilog the logging of an application, and exposes Serilog’s `LoggerConfiguration` as an ordinary Dovetail [joint](./defining-joints). Any library can contribute a sink, an enricher or a destructuring policy without taking a dependency on how the application builds its logger.
+
+## Turning it on
+
+[Section titled “Turning it on”](#turning-it-on)
+
+Reference `Joinery.Dovetail.Serilog`. Its `SerilogJoint` is exported to the application like any other joint, so there is nothing to call: every host that calls `ConfigureDovetail` and references it gets a Serilog logger. With `Joinery.Dovetail.Sdk`, set `DovetailEnableSerilog` to `true` and every project that references `Serilog` gets the package.
+
+## What it does
+
+[Section titled “What it does”](#what-it-does)
+
+Once every Serilog joint has run, `SerilogJoint`:
+
+1. applies the minimum level and the level overrides in the `Serilog:MinimumLevel` section of the application’s configuration to the logger configuration ([below](#configuration));
+2. removes the logging providers the host builders add by default (console, debug, event source and, on Windows, event log: the `ConsoleLoggerProvider`, `DebugLoggerProvider`, `EventSourceLoggerProvider` and `EventLogLoggerProvider` of `Microsoft.Extensions.Logging`) and the default `ILoggerFactory`;
+3. registers the logger, as `Serilog.Core.Logger` and as Serilog’s `ILogger`, and `ILoggerFactory` (a `SerilogLoggerFactory`, which is what backs every `ILogger<T>`), as singletons. The logger also writes to the other logging providers of the container ([below](#the-other-logging-providers)).
+
+So `Serilog.ILogger`, `Microsoft.Extensions.Logging.ILogger<T>` and `ILoggerFactory.CreateLogger(...)` all write to the one logger, once. The container owns it: disposing the host disposes the logger, which flushes and disposes its sinks.
+
+A few consequences of replacing `ILoggerFactory`:
+
+* The `Logging:LogLevel` filters and `builder.Logging.SetMinimumLevel(...)` belong to the factory that was replaced. Use Serilog’s levels, `Serilog:MinimumLevel` and its `Override` entries, instead.
+* Serilog’s levels decide what every logging provider receives, the other providers included. A provider that used to be given `Debug` events by its own filter gets them only if the `Serilog:MinimumLevel` lets them through.
+* Dovetail does not set the static `Log.Logger`. Resolve the logger from the container.
+
+### The other logging providers
+
+[Section titled “The other logging providers”](#the-other-logging-providers)
+
+Replacing `ILoggerFactory` would leave every other `ILoggerProvider` of the container without events: the default factory is what writes to them. OpenTelemetry’s is one, since its logging joints (`ConfigureLoggerProvider`) add the `OpenTelemetryLoggerProvider` that exports log records, and so is any provider an application or a package registers. So the logger forwards each event it writes to them, the way Serilog.Extensions.Hosting does with `writeToProviders`: a `WriteTo.Providers(...)` sink over a `LoggerProviderCollection`, which the logger factory fills with the container’s `ILoggerProvider`s when it is created. A provider registered at any point before the container is built is included, by a Serilog joint or after it, with the logging builder (`builder.Logging.AddProvider(...)`) or with the services. The events keep their level, category (the `SourceContext`) and exception, and the Serilog properties are the state they are logged with.
+
+Each event is written once to every sink and once to every provider. Two kinds of provider are not written to:
+
+* Serilog’s own `SerilogLoggerProvider`, which would write the event to Serilog again (and, if it wraps this very logger, without end).
+* The default providers that Serilog replaces: exactly the four types named above, matched by their full names. They are removed from the services; one that is registered after the Serilog joint ran stays out of the forwarding too, so that the events are not written to the console twice. Providers that merely share a namespace with them are not defaults and are written to, such as Application Insights’ `ApplicationInsightsLoggerProvider` (`Microsoft.Extensions.Logging.ApplicationInsights`) and the Azure App Service providers (`Microsoft.Extensions.Logging.AzureAppServices`).
+
+The logger factory is created when the container is asked for it, which a host does while it is being built. Until then the other providers are not known: an event written through `Serilog.ILogger` before that reaches the sinks only. The logger disposes the providers it writes to when it is disposed, as the container does, so they are disposed twice, which `Dispose` allows.
+
+## The Serilog joint
+
+[Section titled “The Serilog joint”](#the-serilog-joint)
+
+`Joinery.Dovetail.Serilog` declares one `<DovetailJoint>`, `Serilog`, for `Serilog.LoggerConfiguration`: `ISerilogJoint`, `ISerilogAsyncJoint`, the `SerilogJointDelegate` and the `ConfigureSerilog(...)` builder method. A joint is handed the context, the service collection and the logger configuration. Sinks and enrichers are configured here, in code:
+
+```c#
+using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+
+
+namespace MyLibrary;
+
+
+[DovetailExport]
+public class MyLibraryLogging : ISerilogJoint
+{
+    public void Register(IDovetailContext context, IServiceCollection services, LoggerConfiguration loggerConfiguration) =>
+        loggerConfiguration.Enrich.WithProperty("Library", "MyLibrary");
+}
+```
+
+or, for one application, without a class:
+
+```c#
+var host = await Host
+                .CreateApplicationBuilder(args)
+                .ConfigureDovetail(dovetail => dovetail.ConfigureSerilog((_, _, logger) => logger.WriteTo.Console()));
+```
+
+## Configuring the logger
+
+[Section titled “Configuring the logger”](#configuring-the-logger)
+
+The logger configuration is built in this order, and what comes later wins where only one value can exist (the minimum level):
+
+1. the Serilog joints, in the executor’s usual priority order;
+2. the `Serilog:MinimumLevel` section of the configuration;
+3. the `IConfigureOptions<LoggerConfiguration>` registered in the services (`services.Configure<LoggerConfiguration>(...)`);
+4. the `IPostConfigureOptions<LoggerConfiguration>` registered in the services (`services.PostConfigure<LoggerConfiguration>(...)`).
+
+The options are applied the way the options pattern applies them, to the unnamed options, when the logger is first resolved (which a host does while it is being built). That is what lets them use other services:
+
+```c#
+services
+   .AddOptions<LoggerConfiguration>()
+   .Configure<IHostEnvironment>((logger, environment) => logger.Enrich.WithProperty("Environment", environment.EnvironmentName));
+```
+
+### Configuration
+
+[Section titled “Configuration”](#configuration)
+
+The application’s configuration sets the minimum level of the logger and of each source, in the `Serilog:MinimumLevel` section, in the same format as Serilog.Settings.Configuration:
+
+```json
+{
+    "Serilog": {
+        "MinimumLevel": {
+            "Default": "Information",
+            "Override": { "Microsoft": "Warning", "Microsoft.Hosting.Lifetime": "Information" }
+        }
+    }
+}
+```
+
+`"MinimumLevel": "Debug"` is the short form of `"Default": "Debug"`. A level is the name of one of Serilog’s levels (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`; casing is ignored), and anything else fails while Dovetail builds the host, with an exception that names the key.
+
+Levels follow the configuration when it reloads (a file provider with `reloadOnChange`, say). Only the levels that were in the configuration when the application started do: an override that is added later is not picked up, and a level that is removed or not a level any more leaves the level in effect as it is.
+
+That is all that is read from the `Serilog` section. In particular, **sinks, enrichers, filters and `Using` are not read from configuration**: Serilog.Settings.Configuration finds the methods they name by reflection, which is neither trimming nor Native AOT safe, so `Joinery.Dovetail.Serilog` does not depend on it. A `"WriteTo"` or `"Enrich"` in the section is ignored, and the schema flags it (below). Configure them in a [Serilog joint](#the-serilog-joint) instead, in code.
+
+`Joinery.Dovetail.Serilog` ships a JSON Schema for the section, which is merged into the application’s [`appsettings.schema.json`](../guides/editor-setup) for editor completion and validation. It describes exactly what is read: `MinimumLevel`, as a level name or as an object with `Default` and `Override`. Any other key of the `Serilog` section is flagged, so a `WriteTo` copied from Serilog’s documentation does not look as if it were working.
+
+## Trimming and Native AOT
+
+[Section titled “Trimming and Native AOT”](#trimming-and-native-aot)
+
+`Joinery.Dovetail.Serilog` is trimming and Native AOT compatible: the project sets `IsAotCompatible`, builds with the trim and AOT analyzers on without a warning, and has no reflection to annotate or suppress. Reading the configuration uses only `IConfiguration` and enum parsing (`Enum.TryParse<LogEventLevel>`), and the rest is registration of the logger, which is Serilog’s, and of `Microsoft.Extensions.Logging`’s own open generic `ILogger<T>`.
+
+Forwarding to the other logging providers is not reflection either: it is Serilog.Extensions.Logging’s `WriteTo.Providers` sink and `SerilogLoggerFactory`, and a type check on the providers.
+
+The claim was checked by publishing a generic-host application that references `Joinery.Dovetail.Serilog`, reads `Serilog:MinimumLevel:Default` and `Override` from configuration, configures a sink in a `ConfigureSerilog(...)` joint and registers an `ILoggerProvider` in its services, with `PublishTrimmed` (`TrimMode=full`) and with `PublishAot` (.NET 10, osx-arm64, self-contained). Neither publish reported a trim or AOT warning, and both applications ran: the factory was a `SerilogLoggerFactory`, `ILogger<T>` wrote through the sink and to the provider, the default level and the override applied to both, and no default logging provider was left.
+
+What a published application depends on is therefore Serilog and the sinks and enrichers it configures in its joints, which are referenced from code and so are kept by the trimmer and compiled by the AOT compiler like any other code. Check the ones you use: Serilog and its sinks are not Dovetail’s.
 
 # Source Generation
 

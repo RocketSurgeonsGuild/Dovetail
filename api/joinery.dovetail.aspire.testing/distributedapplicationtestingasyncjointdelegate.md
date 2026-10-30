@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Aspire.Testing](/Dovetail/api/joinery.dovetail.aspire.testing.md)
-- Version: `0.3.1-beta.6`
+- Version: `0.3.1-beta.7`
 - Namespace: `Joinery.Dovetail.Testing.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`

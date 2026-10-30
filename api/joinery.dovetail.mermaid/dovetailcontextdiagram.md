@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Mermaid](/Dovetail/api/joinery.dovetail.mermaid.md)
-- Version: `0.3.1-beta.6`
+- Version: `0.3.1-beta.7`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 

@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/api/joinery.dovetail.stashbox.md)
-- Version: `0.3.1-beta.6`
+- Version: `0.3.1-beta.7`
 - Namespace: `Joinery.Dovetail.Stashbox`
 - Target framework: `net10.0`
 
