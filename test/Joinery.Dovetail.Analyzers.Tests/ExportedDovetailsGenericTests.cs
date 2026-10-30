@@ -327,7 +327,7 @@ using Joinery.Dovetail.Tests;
 namespace Joinery.Dovetail.Tests
 {
     [DovetailExport]
-    [{HostType}Dovetail]
+    [{HostType}Joint]
     internal class Contrib : IDovetailJoint { }
 }
 ".Replace("{HostType}", hostType.ToString(), StringComparison.OrdinalIgnoreCase)

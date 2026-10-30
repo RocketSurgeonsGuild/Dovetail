@@ -9,6 +9,10 @@
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Yaml\Joinery.Dovetail.Configuration.Yaml.csproj" />
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+        <!-- OpenTelemetry on ASP.NET Core (OpenTelemetryAspNetCoreTests): Joinery.Dovetail.Hosting turns it on with OpenTelemetry.Extensions.Hosting. -->
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
+        <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
         <DovetailHost
             Include="WebApplication"
             HostBuilderType="global::Microsoft.AspNetCore.Builder.WebApplicationBuilder"

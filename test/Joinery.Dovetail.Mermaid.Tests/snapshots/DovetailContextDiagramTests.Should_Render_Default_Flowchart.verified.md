@@ -6,14 +6,14 @@ flowchart TB
     subgraph sub1 [Setup]
     direction RL
     subgraph sub2 [Joinery.Dovetail.Mermaid.Tests]
-    id3["`**Joinery.Dovetail.Mermaid.Tests.MySetupJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
+    id3["`**Joinery.Dovetail.Mermaid.Tests.MySetupJoint**<br/>Category: **Application**`"]
     end
     end
     subgraph sub6 [Configuration]
     direction RL
     subgraph sub7 [Joinery.Dovetail.Mermaid.Tests]
-    id8["`**Joinery.Dovetail.Mermaid.Tests.ConfigurationJoint1**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
-    id9["`**Joinery.Dovetail.Mermaid.Tests.LiveConfigurationJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
+    id8["`**Joinery.Dovetail.Mermaid.Tests.ConfigurationJoint1**<br/>Category: **Application**`"]
+    id9["`**Joinery.Dovetail.Mermaid.Tests.LiveConfigurationJoint**<br/>HostType: **Live**<br/>Category: **Application**`"]
     end
     end
     subgraph sub12 [Service]
@@ -26,7 +26,7 @@ flowchart TB
     id18["`**Joinery.Dovetail.Mermaid.Tests.FirstLoggingBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
     id19["`**Joinery.Dovetail.Mermaid.Tests.SecondLoggingBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
     id20["`**Joinery.Dovetail.Mermaid.Tests.SpecificStepBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
-    id21["`**Joinery.Dovetail.Mermaid.Tests.TaggedJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
+    id21["`**Joinery.Dovetail.Mermaid.Tests.TaggedJoint**<br/>Category: **Application**`"]
     id22["`**Joinery.Dovetail.Mermaid.Tests.UnitTestOnlyJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
     end
     subgraph sub24 [Joinery.Dovetail.Serilog]
@@ -43,8 +43,8 @@ flowchart TB
     subgraph sub33 [Logging via Joinery.Dovetail.Infrastructure.LoggingConnector, Joinery.Dovetail.Serilog.SerilogJoint]
     direction RL
     subgraph sub34 [Joinery.Dovetail.Mermaid.Tests]
-    id35["`**Joinery.Dovetail.Mermaid.Tests.MyLoggingJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
-    id36["`**Joinery.Dovetail.Mermaid.Tests.DependsOnDependsOnPlainJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
+    id35["`**Joinery.Dovetail.Mermaid.Tests.MyLoggingJoint**<br/>Category: **Application**`"]
+    id36["`**Joinery.Dovetail.Mermaid.Tests.DependsOnDependsOnPlainJoint**<br/>Category: **Application**`"]
     id37["`**Joinery.Dovetail.Mermaid.Tests.SpecificStepBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
     end
     end
@@ -56,19 +56,19 @@ flowchart TB
     classDef hostUndefined text-align:left,fill:#eceff1,stroke:#607d8b,color:#263238
     classDef hostLive text-align:left,fill:#c8e6c9,stroke:#2e7d32,color:#1b5e20
     classDef hostUnitTest text-align:left,fill:#ffe0b2,stroke:#ef6c00,color:#e65100
-    class id3 hostUnitTest
-    class id8 hostUnitTest
-    class id9 hostUnitTest
+    class id3 hostUndefined
+    class id8 hostUndefined
+    class id9 hostLive
     class id14 hostUndefined
     class id17 hostUnitTest
     class id18 hostUnitTest
     class id19 hostUnitTest
     class id20 hostUnitTest
-    class id21 hostUnitTest
+    class id21 hostUndefined
     class id22 hostUnitTest
     class id25 hostUndefined
     class id26 hostUndefined
-    class id35 hostUnitTest
-    class id36 hostUnitTest
+    class id35 hostUndefined
+    class id36 hostUndefined
     class id37 hostUnitTest
 ```
