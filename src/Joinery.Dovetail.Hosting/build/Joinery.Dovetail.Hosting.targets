@@ -82,9 +82,12 @@
         turns on. .NET MAUI and Blazor WebAssembly don't run it, so they get no helper even when Microsoft.Extensions.Hosting is
         among their references (another package brought it along, say): methods that compile but never run their handlers would be worse
         than none.
+        What is written is the DovetailEmittedTemplate items, so the helper has to leave those too (_DovetailHostingEmittedHelper is
+        only this package's copy of them, which the host gating below reads).
     -->
     <ItemGroup Condition="'$(_DovetailHostingMaui)' == 'true' or '$(_DovetailHostingWebAssembly)' == 'true'">
       <_DovetailHostingEmittedHelper Remove="DovetailHostLifecycleHelpers" />
+      <DovetailEmittedTemplate Remove="DovetailHostLifecycleHelpers" />
     </ItemGroup>
 
     <!--
