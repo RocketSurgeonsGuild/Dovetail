@@ -1,0 +1,1243 @@
+<SYSTEM>This is the full developer documentation for Dovetail</SYSTEM>
+
+# Dovetail
+
+> Joint-driven application wiring for .NET. AOT-safe, zero runtime reflection.
+
+AOT & Trim Safe
+
+Generated code requires zero runtime reflection — fully compatible with .NET Native AOT and IL trimming.
+
+Module Wiring
+
+Define services, configuration, logging, and hosting as assembly-level joints resolved at build time by a Roslyn source generator.
+
+Composable
+
+First-class support for Generic Host, ASP.NET Core, Autofac, DryIoc, Serilog, and .NET Aspire — all wired automagically.
+
+# Concepts
+
+> Core concepts behind Dovetail — how joint-driven wiring works in .NET.
+
+import { CardGrid, LinkCard } from ‘@astrojs/starlight/components’;
+
+Dovetail replaces runtime reflection-based application wiring with compile-time source generation. These pages explain the core ideas behind the library.
+
+# Dovetail Context
+
+> The context object passed to every joint — how to create, configure, and query it.
+
+# Dovetail Contexts
+
+[Section titled “Dovetail Contexts”](#dovetail-contexts)
+
+The joint context is the the result of collecting all the known joints for a given set of assembly. How those assemblies are collected can diff depending on on the joint context is created. Generally the joint context is created using the <xref:Joinery.Dovetail.DovetailContextBuilder> however you can implement your own <xref:Joinery.Dovetail.IDovetailContext> if you wish.
+
+## Builder
+
+[Section titled “Builder”](#builder)
+
+A joint context is created from a <xref:Joinery.Dovetail.DovetailContextBuilder>. This class is used during the bootstrapping phase of your application.
+
+You can add joints manually, you can add them via attribute scanning, you can disable attribute scanning if you wish as well.
+
+Note
+
+The assemblies used during scanning can be added by using an AppDomain, DependencyContext, or List of assemblies.
+
+## Creating the context
+
+[Section titled “Creating the context”](#creating-the-context)
+
+A context can be created from a <xref:Joinery.Dovetail.DovetailContextBuilder> by using [DovetailContext.From](xref:Joinery.Dovetail.DovetailContext#Joinery_Dovetail_DovetailContext_From_Dovetail_DovetailContextBuilder_).
+
+## Using the context
+
+[Section titled “Using the context”](#using-the-context)
+
+Once the context is created you can use the context to find out all sorts of information.
+
+Useful properties:
+
+* [`AssemblyProvider`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_AssemblyProvider) - The type provider can be used to get a list of assemblies
+* [`Logger`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_Logger) - This is a diagnostic logger that can be used for logging details. If a logger is provided to the builder it will be used here.
+* [`Properties`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_Properties) - Contains all the properties provided to the builder. This implements `IServiceProvider` and can be used with \`ActivatorExtensions
+
+Useful methods / extension methods:
+
+* [`Get<T>([string name])`](xref:Joinery.Dovetail.DovetailContextExtensions#Joinery_Dovetail_DovetailContextExtensions_Get__1_Dovetail_IDovetailContext_) - Get a given type from the `Properties` dictionary.
+* [`GetHostType()`](xref:Joinery.Dovetail.DovetailContextExtensions#Joinery_Dovetail_DovetailContextExtensions_GetHostType_Dovetail_IDovetailContext_) - Get’s the given host type, as defined in the builder.
+* [`IsUnitTestHost()`](xref:Joinery.Dovetail.DovetailContextExtensions#Joinery_Dovetail_DovetailContextExtensions_IsUnitTestHost_Dovetail_IDovetailContext_) - Tests if the builder was setup for unit testing
+  * This is handy to ensure different behavior during [unit tests](./unit-tests.md).
+
+# Defining Dovetails
+
+> How to create and register your own joints, including ordering and host type filtering.
+
+# Defining Dovetail Joints
+
+[Section titled “Defining Dovetail Joints”](#defining-dovetail-joints)
+
+As stated previously joints are nothing more than a class that implements <xref:Joinery.Dovetail.Infrastructure.IDovetailJoint>.
+
+## Implementing Multiple Dovetail Joints
+
+[Section titled “Implementing Multiple Dovetail Joints”](#implementing-multiple-dovetail-joints)
+
+A defined joint can implement as many joints as you want. Configuration, Services, Command Line, Custom Dovetail Joints can all be handled by one joint.
+
+```c#
+public class MultipleDovetail : IServiceJoint, IConfigurationJoint
+{
+    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services) { }
+    public void Register(IDovetailContext context, IConfiguration configuration, IConfigurationBuilder builder) { }
+}
+```
+
+## Dovetail Ordering
+
+[Section titled “Dovetail Ordering”](#dovetail-ordering)
+
+By default the order of joints is [non-deterministic](https://en.m.wikipedia.org/wiki/Nondeterministic_algorithm) and not controlled. Dovetails are “left in place” such that once the list of joints is created it is not changed between runs.
+
+Sometimes you want to ensure that one joint runs before another, that can be done using different attributes. Delegate joints *cannot* be ordered in this manner and must be sorted manually.
+
+Note
+
+Sorting is done using a [Topological sort](https://en.wikipedia.org/wiki/Topological_sorting) and if you define a cycle (A requires B, B requires A) then a `NotSupportedException` will be thrown.
+
+### [\[BeforeDovetail\]](xref:Joinery.Dovetail.BeforeJointAttribute) / [\[DependentOfDovetail\]](xref:Joinery.Dovetail.DependentOfJointAttribute)
+
+[Section titled “\[BeforeDovetail\] / \[DependentOfDovetail\]”](#beforedovetail--dependentofdovetail)
+
+This attribute can be used to ensure that your joint is called before another joint. The order is still non-deterministic but Dovetail will ensure that the defined joint is run before the joint type defined by the attribute.
+
+Note
+
+Multiple dependencies can be defined.
+
+```c#
+// A before B
+[BeforeDovetail(typeof(DovetailB))]
+public class DovetailA
+{
+}
+
+
+public class DovetailB
+{
+}
+```
+
+### [\[AfterDovetail\]](xref:Joinery.Dovetail.AfterJointAttribute) / [\[DependsOnDovetail\]](xref:Joinery.Dovetail.DependsOnJointAttribute)
+
+[Section titled “\[AfterDovetail\] / \[DependsOnDovetail\]”](#afterdovetail--dependsondovetail)
+
+This attribute can be used to ensure that your joint is called after another joint. The order is still non-deterministic but Dovetail will ensure that the defined joint is run after the joint type defined by the attribute.
+
+Note
+
+Multiple dependencies can be defined.
+
+```c#
+// B before A
+[AfterDovetail(typeof(DovetailB))]
+public class DovetailA
+{
+}
+
+
+public class DovetailB
+{
+}
+```
+
+### Custom Attributes
+
+[Section titled “Custom Attributes”](#custom-attributes)
+
+If you want you can define your own custom attribute for use with joint ordering. Your attribute must implement <xref:Joinery.Dovetail.IDovetailDependency> and specify the <xref:Joinery.Dovetail.DependencyDirection>.
+
+## Dovetail Host Type
+
+[Section titled “Dovetail Host Type”](#dovetail-host-type)
+
+You can define a joint that only runs for a given <xref:Joinery.Dovetail.HostType>. The HostType can be defined on the <xref:Joinery.Dovetail.DovetailContextBuilder> using `Set<DovetailHostType>(DovetailHostType.UnitTest)`. Using the `DovetailHostType` an assembly can define different behaviors given the context.
+
+The generated `Imports` class sets the host type only when the build specifies one. The `DovetailHostType` MSBuild property (`Live` or `UnitTest`) takes precedence; otherwise test projects (`IsTestProject`) get `UnitTest`. Anywhere else the host type is left unset, and the hosting extensions set it to `Live` if nothing else has.
+
+A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [\[LiveDovetail\]](xref:Joinery.Dovetail.LiveJointAttribute) that registers `IClock` using the expected calendar system, and another [\[UnitTestDovetail\]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock` with a predefined starting date and time.
+
+Note
+
+Currently only three host types are defined
+
+* `Undefined` - The default host type, means the joint runs everywhere.
+* `Live` - This joint applies in a live running application
+* `UnitTest` - This joint applies to unit tests.
+
+Note
+
+There is no attribute for the `DovetailHostType.Undefined`.
+
+### [\[LiveDovetail\]](xref:Joinery.Dovetail.LiveJointAttribute)
+
+[Section titled “\[LiveDovetail\]”](#livedovetail)
+
+This attribute ensures a joint that only runs when the `DovetailHostType` is `Live`.
+
+```c#
+[LiveDovetail]
+public class DovetailA
+{
+}
+```
+
+### [\[UnitTestDovetail\]](xref:Joinery.Dovetail.UnitTestJointAttribute)
+
+[Section titled “\[UnitTestDovetail\]”](#unittestdovetail)
+
+This attribute ensures a joint that only runs when the `DovetailHostType` is `UnitTest`.
+
+```c#
+[UnitTestDovetail]
+public class DovetailA
+{
+}
+```
+
+## Injecting dependencies
+
+[Section titled “Injecting dependencies”](#injecting-dependencies)
+
+By default joints are a simple class that can be created using `Activator.CreateInstance` however the goal of joints was to allow “bootstrap time” configuration to be provided. The <xref:Joinery.Dovetail.DovetailContextBuilder> acts as a bag of properties using [`indexer`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Item_System_Object_) or [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties).
+
+Any type defined in the context is injectable into any defined joint. This can be used for any number of purposes such as…
+
+* allow consumers to provide configuration to your joint
+* allow joints to communicate or share common state
+
+Under the covers the [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties) implements `IServiceProvider` and we simply activate joints using `ActivatorUtilities.CreateInstance`.
+
+Note
+
+All dependencies must be registered into the builder, as activation happens while <xref:Joinery.Dovetail.IDovetailContext> is built.
+
+***
+
+```c#
+public class InjectableDovetail : IServiceJoint
+{
+    private readonly IInjectData _joint;
+
+
+    public InjectableDovetail(IInjectData joint) => _joint = joint;
+
+
+    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    {
+        //...
+    }
+}
+
+
+public class OptionalInjectableDovetail : IServiceJoint
+{
+    private readonly IInjectData? _joint;
+
+
+    public OptionalInjectableDovetail(IInjectData? joint = null) => _joint = joint;
+
+
+    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    {
+        if (_joint is { })
+        {
+            //...
+        }
+    }
+}
+```
+
+# Host Lifecycle
+
+> Run code when the host is starting, started, stopping and stopped, without writing a hosted service, from an application builder or a service collection.
+
+# Host Lifecycle
+
+[Section titled “Host Lifecycle”](#host-lifecycle)
+
+A host that runs `IHostedLifecycleService` (the generic host, and so ASP.NET Core) tells its hosted services when it is about to start, has started, is about to stop and has stopped. Most applications only want to run a little code at one of those moments — warm a cache once the host has started, flush a buffer before it stops — and writing a hosted service for that is a lot of ceremony. `Joinery.Dovetail.Hosting` lets you register the code directly:
+
+```c#
+var builder = Host.CreateApplicationBuilder(args);
+
+
+builder
+   .OnHostStarting(provider => Console.WriteLine("Starting"))
+   .OnHostStarted(async provider => await provider.GetRequiredService<CacheWarmer>().WarmUpAsync())
+   .OnHostStopping(async (provider, cancellationToken) => await provider.GetRequiredService<Outbox>().FlushAsync(cancellationToken))
+   .OnHostStopped(provider => Console.WriteLine("Stopped"));
+
+
+using var host = await builder.ConfigureDovetail();
+await host.RunAsync();
+```
+
+An `ASP.NET Core` application does the same on its `WebApplicationBuilder`.
+
+## The methods
+
+[Section titled “The methods”](#the-methods)
+
+There are four, one per moment, and each comes in three forms:
+
+| Method           | Runs                                           | `IHostedLifecycleService` method |
+| ---------------- | ---------------------------------------------- | -------------------------------- |
+| `OnHostStarting` | before the host starts its hosted services     | `StartingAsync`                  |
+| `OnHostStarted`  | after the host has started its hosted services | `StartedAsync`                   |
+| `OnHostStopping` | before the host stops its hosted services      | `StoppingAsync`                  |
+| `OnHostStopped`  | after the host has stopped its hosted services | `StoppedAsync`                   |
+
+| Form         | Handler                                           |
+| ------------ | ------------------------------------------------- |
+| synchronous  | `Action<IServiceProvider>`                        |
+| asynchronous | `Func<IServiceProvider, Task>`                    |
+| cancellable  | `Func<IServiceProvider, CancellationToken, Task>` |
+
+The handler gets the host’s service provider. The cancellable form also gets the cancellation token the host passes to the lifecycle method, which follows the token given to `StartAsync` or `StopAsync`.
+
+## From an application builder or a service collection
+
+[Section titled “From an application builder or a service collection”](#from-an-application-builder-or-a-service-collection)
+
+Every method is an extension of both `IHostApplicationBuilder` (`HostApplicationBuilder`, `WebApplicationBuilder`, …), which returns the builder so the calls chain, and `IServiceCollection`, which returns the service collection. A host built the older way, with an `IHostBuilder`, has no application builder, but it has a service collection:
+
+```c#
+using var host = Host
+                .CreateDefaultBuilder(args)
+                .ConfigureServices(services => services.OnHostStopped(_ => Console.WriteLine("Stopped")))
+                .Build();
+```
+
+A [joint](./defining-joints) registers its handlers the same way, while the application’s services are configured. That is how a library runs code with the host without the application doing anything:
+
+```c#
+[DovetailExport]
+public class WarmUpCache : IServiceJoint
+{
+    public void Register(IDovetailContext context, IServiceCollection services) =>
+        services.OnHostStarted(async (provider, cancellationToken) => await provider.GetRequiredService<ICache>().WarmUpAsync(cancellationToken));
+}
+```
+
+Handlers have to be registered before the host is built. The first registration adds the hosted service that runs them, so there is nothing else to call, and an application that registers no handler gets no hosted service.
+
+## Handlers of one moment run in parallel
+
+[Section titled “Handlers of one moment run in parallel”](#handlers-of-one-moment-run-in-parallel)
+
+All the handlers registered for a moment are started together and awaited together (with `Task.WhenAll`), not one after the other, so one slow handler doesn’t hold up the rest. The host moves on to the next step once every one of them has finished.
+
+* **Don’t depend on the order** the handlers of one moment run in. The moments themselves are ordered by the host, which calls `StartingAsync` on all its hosted lifecycle services, then `StartAsync` on all of them, then `StartedAsync` on all of them (and likewise `StoppingAsync`, `StopAsync` and `StoppedAsync` when it stops). The handlers of a moment have all finished before the host moves on to the next.
+* A **synchronous** handler runs to completion when it is started, so synchronous handlers of one moment, which don’t wait for anything, happen to run one after another. Handlers that `await` overlap.
+* A handler that **throws**, even before its first `await`, fails that step of the host like any hosted service would, and the other handlers of the moment have still been started.
+
+## Where it is available
+
+[Section titled “Where it is available”](#where-it-is-available)
+
+The methods are emitted by `Joinery.Dovetail.Hosting` into the projects that reference the generic host (`Microsoft.Extensions.Hosting`), the same way it emits its other helpers, and nothing is emitted where the host doesn’t run `IHostedLifecycleService`:
+
+| Host                                    | Methods                                                                                                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Generic host: workers                   | yes                                                                                                                                            |
+| ASP.NET Core                            | yes                                                                                                                                            |
+| Uno Platform (`Uno.Extensions.Hosting`) | yes: its host is a generic host, so handlers run once the host is started (`NavigateAsync<TShell>()` starts it, `ConfigureDovetail()` doesn’t) |
+| .NET MAUI                               | no                                                                                                                                             |
+| Blazor WebAssembly                      | no                                                                                                                                             |
+
+A .NET MAUI or Blazor WebAssembly project gets none even when `Microsoft.Extensions.Hosting` ends up among its references (another package brought it along, say): methods that compile but never run their handlers would be worse than methods that don’t exist, so calling one is a compile error.
+
+The methods are `internal`, as are all the helpers `Joinery.Dovetail.Hosting` emits, so a library that registers handlers needs to reference `Joinery.Dovetail.Hosting` and the generic host itself. Every project gets its own copy of the methods and of the hosted service, but the registrations they add (`HostLifecycleRegistration`, which is public) are shared, and whichever project registers first adds the one hosted service that runs them all. A library’s handlers therefore run with the application’s, once.
+
+# Introduction
+
+> What Dovetail is, why it exists, and when to use it.
+
+# What is Dovetail?
+
+[Section titled “What is Dovetail?”](#what-is-dovetail)
+
+![Dovetail overview diagram](https://dummyimage.com/1200x560/0b1220/f8fafc.png\&text=Dovetail+Overview+Architecture)
+
+The goal of Dovetail is to be a simple way to bridge the gap between Configuration driven development and Dovetail driven development. In an ASP.NET Core application it is “pay-for-play” in that you must register all your configurations, services, etc. This is great but it also forces you into cases where if you forget to call an extension method nothing lights up like you expected. Another draw back of using extension methods is that any dependencies you need, to configure services for example, must be included in the method call.
+
+One thing to keep in mind is that ASP.NET Core just got rid of the [double container](https://github.com/aspnet/Announcements/issues/353) problem, we are not introducing a second container, instead we just implement `IServiceProvider` using the same [dictionary that is provided by `IHostBuilder.Properties`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.ihostbuilder.properties). Any services that you inject into your joints must exist inside of this dictionary, or be optional.
+
+At a high level Dovetail solves this problem in a very similar way to something like [Autofac Modules](https://autofaccn.readthedocs.io/en/latest/configuration/modules.html) or other similar assembly scanning solutions. Our goal is to be agnostic at a high level, strictly speaking using MSDI/MSEL/MSC is not required however is currently assumed that .NET Platform Extensions are going to be used. In the future this might be broken out.
+
+## Why use Dovetail?
+
+[Section titled “Why use Dovetail?”](#why-use-dovetail)
+
+You have to make a choice with every library you introduce, and using Dovetail is no different. If it’s not for you, that’s okay! Here are some possible reasons why and why not to use Dovetail.
+
+### Reasons to use?
+
+[Section titled “Reasons to use?”](#reasons-to-use)
+
+* You can create library code that “just works” without having to ensure that the correct extension method was called, with the correct parameters, for every library you add.
+* You can don’t have to worry about service registration extension methods in instead each module can setup it’s own registrations.
+* You can can group bootstrapping logic together to lessen cognitive load.
+
+### Reasons not to use?
+
+[Section titled “Reasons not to use?”](#reasons-not-to-use)
+
+Everything has it’s positives and negatives. We cannot lie using joints will add time to starting up your application. There is a trade off to be made here and optimizations that can be made to lessen that trade-off.
+
+Fundamentally if you’re making a highly focused, and specialized microservice then using Dovetail may not be for you. You will own the burden to ensuring that configuration is done the same, extension methods are called, and everything else. It is called “pay-to-play” after all.
+
+#### Note on performance
+
+[Section titled “Note on performance”](#note-on-performance)
+
+A quick note on performance. We are now using Source Generators to generate export methods, that return all joints for a given assembly. This allows joint loading to have similar performance characteristics to pure extension methods, it’s still slower but reduces the need to assembly scan.
+
+The <xref:Joinery.Dovetail.ICompiledTypeProvider> is now generated by source generator at compile time, further reducing the need to assembly scan at runtime.
+
+# What is a Dovetail
+
+[Section titled “What is a Dovetail”](#what-is-a-dovetail)
+
+A joint is nothing but a class that implements the <xref:Joinery.Dovetail.Infrastructure.IDovetailJoint> interface. Nothing special. By itself <xref:Joinery.Dovetail.Infrastructure.IDovetailJoint> is just a marker interface used to identify a class that may implement one more joints.
+
+Dovetails are then interfaces that are implemented by the class some examples are:
+
+* <xref:Joinery.Dovetail.Configuration.IConfigurationJoint>
+* <xref:Joinery.Dovetail.DependencyInjection.IServiceJoint>
+* <xref:Joinery.Dovetail.Logging.ILoggingJoint>
+* <xref:Joinery.Dovetail.Setup.ISetupJoint>
+* <xref:Joinery.Dovetail.Hosting.IHostingDovetail>
+
+ad-hoc Dovetails (or delegate Dovetails) are a different kind of joint but written as a delegate, but they mirror the method given by the Dovetail interface. These can be used to during program startup just like `ConfigureServices` are used today.
+
+Some examples are:
+
+* <xref:Joinery.Dovetail.Configuration.ConfigurationJoint>
+* <xref:Joinery.Dovetail.DependencyInjection.ServiceJoint>
+* <xref:Joinery.Dovetail.Logging.LoggingJoint>
+* <xref:Joinery.Dovetail.Setup.SetupJoint>
+* <xref:Joinery.Dovetail.Hosting.HostingDovetail>
+
+## Exporting a Dovetail
+
+[Section titled “Exporting a Dovetail”](#exporting-a-dovetail)
+
+A joint can be exported by using the <xref:Joinery.Dovetail.DovetailAttribute> (eg. `[assembly: Dovetail(typeof(MyDovetail))]`). This is important you may want to make joints are **not** enabled by default but are available to be loaded by users if they want to.
+
+The rules are straight forward.
+
+* A public joint - Will not be loaded unless it is added to the <xref:Joinery.Dovetail.DovetailContextBuilder>.
+* A public exported joint - Will always be loaded unless excluded by assembly or type in the <xref:Joinery.Dovetail.DovetailContextBuilder>.
+* A private joint - Will never be loaded. ever.
+* A private exported joint - Will always be loaded unless excluded by assembly in the <xref:Joinery.Dovetail.DovetailContextBuilder>.
+
+# Writing your own custom joints
+
+[Section titled “Writing your own custom joints”](#writing-your-own-custom-joints)
+
+Creating your own joints is fairly easily, and can be done by using existing joints or by executing it yourself.
+
+Tip
+
+More information can be found [here](../guides/custom-joints.md)
+
+# Managed Configuration
+
+> Declare a library's configuration as code and get typed options, a reflection-free binder, and a JSON Schema for editors, merged per application.
+
+# Managed Configuration
+
+[Section titled “Managed Configuration”](#managed-configuration)
+
+A library that ships configuration describes it once, as a C# type. Dovetail’s source generator reads that type and produces two things from the same model:
+
+* a **binder** that fills the type from `IConfiguration` and registers it as `IOptions<T>`, with no reflection, so it is AOT and trimming safe;
+* a **JSON Schema** fragment that describes the type’s section. The build merges the fragments of every referenced library into one schema for the application, which editors use for completion, hover documentation and validation of `appsettings.json`, YAML and TOML files. See [Editor setup](../guides/editor-setup).
+
+The library’s default values still ship as an `appsettings` file, which Dovetail packs and copies into hosts ([below](#shipping-default-values)).
+
+Note
+
+The schema and the generated binder need C# 12 or later. In a project with an older `LangVersion` the generator emits nothing and reports [`DT0006`](#diagnostics).
+
+## Declaring a section
+
+[Section titled “Declaring a section”](#declaring-a-section)
+
+Put `[DovetailConfiguration]` on the options class:
+
+```c#
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Joinery.Dovetail.Attributes;
+
+
+/// <summary>Options for the greetings this library prints.</summary>
+[DovetailConfiguration]
+public sealed class GreetingsOptions
+{
+    /// <summary>What the greeting says before the name.</summary>
+    [Description("The text that comes before the name, e.g. \"Hello\".")]
+    public string Message { get; set; } = "Hello";
+
+
+    /// <summary>How many times the greeting is said.</summary>
+    [Range(1, 5)]
+    public int Repeat { get; set; } = 1;
+}
+```
+
+Consume it the usual way, with `IOptions<GreetingsOptions>`, `IOptionsSnapshot<T>` or `IOptionsMonitor<T>`. The generator also exports a joint (`DovetailConfigurationOptions`) that registers the binding in every host that references the assembly, so there is nothing to call. The [`SdkSample.Greetings`](https://github.com/RocketSurgeonsGuild/Dovetail/tree/main/sample/SdkSample/SdkSample.Greetings) project is a working example.
+
+### Types you don’t own
+
+[Section titled “Types you don’t own”](#types-you-dont-own)
+
+To bind a type from another library, use the generic attribute on the assembly. This registers `HostOptions` under `Hosting`:
+
+```c#
+[assembly: DovetailConfiguration<HostOptions>("Hosting")]
+```
+
+The assembly form is `DovetailConfiguration<T>` and needs C# 11. Descriptions for third-party types come from the XML documentation file that ships with the package, when there is one.
+
+### Section names
+
+[Section titled “Section names”](#section-names)
+
+| Attribute                               | Section                                                                                                                                                                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `[DovetailConfiguration]`               | The type name with one `Options`, `Settings`, `Configuration` or `Config` suffix removed: `GreetingsOptions` becomes `Greetings` (in the declared [key style](#key-style)). |
+| `[DovetailConfiguration("Http:Retry")]` | The path you give. `:` nests sections. Keys are case-insensitive.                                                                                                           |
+| `[assembly: DovetailConfiguration<T>]`  | The same rule as the class form, applied to `T`.                                                                                                                            |
+
+There is no prefix. A name that would become empty after stripping the suffix (a class called `Options`) is an error ([`DT0008`](#diagnostics)); give it a path.
+
+### Key style
+
+[Section titled “Key style”](#key-style)
+
+`KeyStyle` on `[DovetailConfiguration]` (and on `DovetailConfiguration<T>`) picks how the keys of the section are spelled. It is set per attribute; there is no assembly-wide or MSBuild default. There are five values:
+
+| `KeyStyle`   | What the canonical key is                            | `MaxFileSizeMb`    | `HTTPServer`  | `HttpClientOptions` section |
+| ------------ | ---------------------------------------------------- | ------------------ | ------------- | --------------------------- |
+| `Undefined`  | The declared name exactly as written. The default.   | `MaxFileSizeMb`    | `HTTPServer`  | `HttpClient`                |
+| `Pascal`     | The declared name with its first letter upper-cased. | `MaxFileSizeMb`    | `HTTPServer`  | `HttpClient`                |
+| `Camel`      | Lower camel case (`JsonNamingPolicy.CamelCase`).     | `maxFileSizeMb`    | `httpServer`  | `httpClient`                |
+| `Dash`       | Lower-case words joined with `-` (`KebabCaseLower`). | `max-file-size-mb` | `http-server` | `http-client`               |
+| `Underscore` | Lower-case words joined with `_` (`SnakeCaseLower`). | `max_file_size_mb` | `http_server` | `http_client`               |
+
+```csharp
+[DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Underscore)]
+public class HttpClientOptions // section "http_client"
+{
+    public int MaxFileSizeMb { get; set; } // key "max_file_size_mb"
+    public RetryPolicy Retry { get; set; } = new(); // "retry:max_attempts" through RetryPolicy.MaxAttempts
+}
+```
+
+* **`Undefined` respells nothing.** The binder literal, the schema’s `properties` key, the strict closing of the section and the derived section path (after the suffix is stripped) are the names as declared. Configuration keys are case-insensitive, so data in any casing binds, as long as the letters are right: `maxfilesizemb`, `MaxFileSizeMb` and `MAXFILESIZEMB` are the same key. Dashes and underscores are other letters, so `max-file-size-mb` does not match `MaxFileSizeMb`.
+* **`Pascal` is an explicit style.** It upper-cases the first letter of a declared name. C# property names already start in upper case, so for them `Undefined` and `Pascal` give identical output; they differ for a member declared as `myKey`, which stays `myKey` under `Undefined` and becomes `MyKey` under `Pascal`.
+* **What it covers.** The key of every bound property and constructor parameter of the options type and of every object type nested in it (in lists and dictionary values too). The generated binder reads those keys, and the schema uses them for `properties`, the case-insensitive `patternProperties` twins and the strict `propertyNames`.
+* **What it leaves alone.** Dictionary keys, enum values and every other piece of data are never restyled, and neither is an explicit section string (`"Http:Retry"` is used as written, segment by segment).
+* **Word splitting** is `System.Text.Json`’s: `Camel` is `JsonNamingPolicy.CamelCase`, `Dash` is `JsonNamingPolicy.KebabCaseLower` and `Underscore` is `JsonNamingPolicy.SnakeCaseLower`, so `HTTPServer` is `httpServer`, `http-server` and `http_server`, and `Http2Enabled` is `http2Enabled`, `http2-enabled` and `http2_enabled`.
+* **`[ConfigurationKeyName]` wins.** An explicit key name is used verbatim, in every style.
+* **Derived section names** follow the style, after the `Options`, `Settings`, `Configuration` or `Config` suffix is removed: `GreetingsOptions` is `Greetings`, `greetings` and `greetings`; `HttpClientOptions` is `HttpClient`, `httpClient`, `http-client` and `http_client`.
+* **Case.** Because keys ignore case, `Camel` against `Undefined` or `Pascal` only changes the spelling the schema suggests; `maxFileSizeMb` and `MaxFileSizeMb` bind the same value. `Dash` and `Underscore` change the letters the binder reads: a value written as `MaxFileSizeMb` no longer binds (`max-file-size-mb` or `max_file_size_mb` does), and the schema’s `patternProperties` only accept those keys in any case.
+* **One spelling per type.** The generated binder exists once for each type, so a type reached from sections that spell its keys differently, such as a `RetryOptions` used by a camel section and a dash section, can’t be bound correctly. The later declaration is reported as [`DT0016`](#diagnostics) and produces nothing, the same way as `DT0015`. The comparison is of the effective keys, not of the style names: `Undefined` and `Pascal` do not conflict on ordinary names, which spell the same keys, but do on a member declared in lower case. Use the same `KeyStyle` for every section that reaches the type, or give the shared type `[ConfigurationKeyName]` attributes (a type whose keys don’t depend on the style isn’t a conflict). Sections with `RegisterOptions = false` bind nothing, so they can’t conflict.
+
+### One section per type
+
+[Section titled “One section per type”](#one-section-per-type)
+
+A type has exactly one section, so it is declared once. There are two attribute forms:
+
+* `[DovetailConfiguration]` (or `[DovetailConfiguration("Section")]`) on the class. It can’t be repeated on a type.
+* `[assembly: DovetailConfiguration<T>("Section")]` for a type you don’t own. Repeat it for each type; naming the same `T` twice is [`DT0015`](#diagnostics) as well.
+
+Declaring a type with both forms is an error ([`DT0015`](#diagnostics)). The diagnostic is reported on the assembly attribute; the class declaration is the one that produces the schema fragment and the registration, and the assembly attribute produces nothing.
+
+At run time each library reads only its own section from the application’s complete `IConfiguration`, which the service provider supplies when the options are first created, and creates or binds its options from it. Dovetail doesn’t order, de-duplicate or merge sections. The generated joint registers an assembly’s types by section path, then type name, and the standard options pipeline does the rest.
+
+Every type is created by generated code and registered through an `IOptionsFactory<T>`, so your own `Configure<T>`, `PostConfigure<T>` and validators run on the created instance, whenever they were registered.
+
+### Registering by hand
+
+[Section titled “Registering by hand”](#registering-by-hand)
+
+The generated joint calls one public extension method on `IServiceCollection`, `AddDovetailConfigurationOptions`. You can call it yourself, for example for a type declared with `RegisterOptions = false`. It returns the `OptionsBuilder<TOptions>`, so `Validate` and `ValidateOnStart()` chain as usual.
+
+| Overload                                                                          | Does                                                                                                                                                     |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AddDovetailConfigurationOptions<T>(sectionPath, Func<IConfiguration, T> create)` | Creates the default `T` with `create`, from the section at `sectionPath`, and watches the configuration for reloads. Reflection free, so it is AOT safe. |
+
+There is one overload because everything is created through generated create code: for a type with a public parameterless constructor the generator emits `new T()` followed by the bind, and for the rest the constructor or initializer call. No registration path uses reflection. To bind a type with reflection, use Microsoft’s `Configure<T>(IConfiguration)` or `AddOptions<T>().Bind(...)` yourself.
+
+* The configuration is the application’s complete `IConfiguration`, resolved from the service provider when the options are first created. `create` receives that configuration’s section at `sectionPath` (such as `Http:Retry`). An empty path throws.
+* A change token source watches the configuration, so `IOptionsMonitor<T>` and `IOptionsSnapshot<T>` see reloads of the default options.
+* The call registers an `IOptionsFactory<T>` with `TryAdd`: the first registration for a type wins, and later calls are ignored. A factory your application registers itself wins over Dovetail’s, so `create` is never called for that type.
+* The factory derives from `OptionsFactory<T>`, so configure and post-configure actions and validators still run on the instance `create` returns. On .NET 11, don’t give such a type asynchronous validators: they fail synchronous validation through a derived factory.
+
+### Named options
+
+[Section titled “Named options”](#named-options)
+
+Dovetail registers the default options only. Reading a name other than the default, such as `IOptionsMonitor<T>.Get("tenant-a")`, throws an `InvalidOperationException` naming the type and the options name.
+
+### `RegisterOptions` and `ValidateOnStart`
+
+[Section titled “RegisterOptions and ValidateOnStart”](#registeroptions-and-validateonstart)
+
+| Property          | Default | Effect                                                                                                  |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `RegisterOptions` | `true`  | `false` only describes the section in the schema. Nothing is registered, so you bind the type yourself. |
+| `ValidateOnStart` | `false` | Validates the options when the host starts, instead of the first time they are read.                    |
+
+## Validation
+
+[Section titled “Validation”](#validation)
+
+Dovetail never turns on `ValidateDataAnnotations`. `[Range]`, `[MinLength]` and the other annotations describe the schema, which is how editors flag a bad value; they are not enforced at run time. To enforce rules, write an `[OptionsValidator]` class, the options validation source generator from `Microsoft.Extensions.Options`:
+
+```c#
+[OptionsValidator]
+public sealed partial class GreetingsOptionsValidator : IValidateOptions<GreetingsOptions>;
+```
+
+Dovetail registers every such validator in the assembly for the option types it registers, with `TryAddEnumerable`, so it never duplicates one you added yourself. Add `ValidateOnStart = true` on the attribute and a bad configuration fails the host at startup.
+
+## Supported types
+
+[Section titled “Supported types”](#supported-types)
+
+The generator follows Microsoft’s configuration binding source generator, not the serializer:
+
+* `string`, `bool`, every numeric type (including `Half`, `Int128` and `UInt128`), `char`, enums (any casing), `TimeSpan`, `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid`, `Version`, `Uri`, `CultureInfo`, `byte[]`;
+* `Nullable<T>` of the above;
+* nested classes, structs and records, and recursive types (the schema uses `$ref`);
+* arrays, lists, sets and the other collection types the binder supports, and dictionaries with string, enum or integer keys;
+* `object` and `IConfigurationSection`, which accept any value.
+
+A type with a `[TypeConverter]` is described as an object, because the binder ignores converters. A member the binder can’t bind is left out of both the schema and the binder, with warning [`DT0009`](#diagnostics). `[ConfigurationKeyName]` renames a key (see [Key style](#key-style) for restyling them all), and from binder 11 `[ConfigurationIgnore]` leaves a member out.
+
+### Annotations that reach the schema
+
+[Section titled “Annotations that reach the schema”](#annotations-that-reach-the-schema)
+
+| Source                                      | Schema                                                    |
+| ------------------------------------------- | --------------------------------------------------------- |
+| `[Description]`, else the XML `<summary>`   | `description`. For a record parameter, its `<param>`.     |
+| `[Range]`, length attributes                | `minimum`/`maximum`, `minLength`/`maxLength`, item counts |
+| `[RegularExpression]`                       | `pattern`, when the expression can be anchored            |
+| `[Url]`, `[EmailAddress]`                   | `format`                                                  |
+| `[Obsolete]`                                | `deprecated` and a deprecation message                    |
+| A constant initializer or parameter default | `default`, except an empty string                         |
+
+Ranges and defaults are also written into the description, since editors don’t show them. A default of `""` is skipped, both as `default` and in the description, because “Default: .” tells nobody anything. The XML summary is read from the source whether or not `GenerateDocumentationFile` is on. `<inheritdoc />` and `<include>` produce no description. Annotations that JSON Schema can’t express are dropped with [`DT0013`](#diagnostics).
+
+Fragments are permissive: nothing is `required` unless you set `<DovetailConfigurationSchemaRequired>true</DovetailConfigurationSchemaRequired>`, which marks `required` members, `[Required]` properties and value-type constructor parameters without defaults.
+
+## The generated binder
+
+[Section titled “The generated binder”](#the-generated-binder)
+
+Dovetail doesn’t call Microsoft’s binding generator. A source generator never sees another generator’s output, so the calls in Dovetail’s own code would not be intercepted. Instead it **ports** that generator: the parser, the type specifications and the emitter from dotnet/runtime (MIT), at tags `v10.0.13` and `v11.0.0-rc.2`. The rules follow the **major version of `Microsoft.Extensions.Configuration.Binder`** that the project references (version 11 when it references none), not the target framework, because a net10.0 application can reference Binder 11.
+
+What the two versions do differently:
+
+| Case                                           | Binder 10              | Binder 11                    |
+| ---------------------------------------------- | ---------------------- | ---------------------------- |
+| `Nullable<T>` set to `""`                      | value kept             | `null`                       |
+| String or object constructor parameter missing | throws                 | `null`                       |
+| Value-type constructor parameter set to `""`   | default                | throws                       |
+| Nullable or reference-type parameter missing   | throws                 | `null` (structs still throw) |
+| Parameter with a default, set to null          | `null`                 | the default                  |
+| Properties bound through the constructor       | bound again afterwards | not bound again              |
+| `[ConfigurationIgnore]`                        | ignored                | honoured, in the schema too  |
+
+The same data is bound three ways in the parity tests (Microsoft’s generator, the reflection binder, Dovetail’s) on both versions.
+
+### Records and other immutable types
+
+[Section titled “Records and other immutable types”](#records-and-other-immutable-types)
+
+Types the options pipeline can’t create (constructor parameters, `init`-only or `required` members) are registered like any other type: the generated create code builds the instance from the type’s section, and your `Configure<T>` and validators still run on it.
+
+```c#
+[DovetailConfiguration]
+public sealed record FarewellOptions(string Message, [property: Range(0, 5)] int Exclamations);
+```
+
+### Where Dovetail differs from Microsoft’s generator, on purpose
+
+[Section titled “Where Dovetail differs from Microsoft’s generator, on purpose”](#where-dovetail-differs-from-microsofts-generator-on-purpose)
+
+1. **Object-initializer types.** Microsoft’s generator never sets `init`-only members of a type with a parameterless constructor, and can’t create a type with `required` members (CS9035). Dovetail creates them with an object initializer, then binds the rest. A missing key keeps the member’s own initial value, as the reflection binder does; a `required` member with no value gets `default`.
+2. **`required` members that can’t be bound** (an unsupported type or `[ConfigurationIgnore]`) are set to `default!`, so the generated code compiles. [`DT0009`](#diagnostics) reports the member.
+3. **Empty sections still produce an instance** for factory types. `Get<T>()` returns `null` there, but `IOptions<T>.Value` can’t be `null`. A missing required constructor parameter throws the first time the options are read.
+4. **No `NotSupportedException`s** and no `BindNonPublicProperties`.
+5. **Self-expanding generics** such as `class Node<T> { Node<Node<T>> Next; }` are treated as unsupported past a nesting depth of 10 or 1,000 types, instead of making the analysis run forever. The schema reports [`DT0012`](#diagnostics) for the same graphs.
+
+Microsoft’s own quirks are kept. A positional record’s extra `init`-only property is set to `default` when its key is missing, overriding its initializer, and Binder 10 binds constructor-bound collections twice.
+
+Registration also differs from `services.Configure<T>(section)` in that the configuration’s reload token feeds `IOptionsMonitor<T>` through one change token source per type, and the `IConfiguration` is resolved from the container when the options are first created, not captured at registration.
+
+## The schema
+
+[Section titled “The schema”](#the-schema)
+
+### Library fragments
+
+[Section titled “Library fragments”](#library-fragments)
+
+Each assembly embeds one fragment per section as `[assembly: AssemblyMetadata("Dovetail.ConfigurationSchema.v1:<Section>", "<JSON Schema>")]`. Each fragment is a Draft-07 schema of the section’s value, with every object type described once under `definitions`. Every key also has a case-insensitive `patternProperties` entry with the same schema, so `retries: 99` is checked even when written as `Retries`.
+
+Every project that isn’t a host (a library) also writes its own fragments as `$(IntermediateOutputPath)ConfigurationSchema.json` (permissive, rooted at the configuration root like Aspire’s) and packs it at the NuGet package root, so Visual Studio and other tools that understand Aspire’s layout can use it. A multi-targeted library writes one per target framework and packs the first one’s. A library with no sections writes nothing.
+
+### The merged application schema
+
+[Section titled “The merged application schema”](#the-merged-application-schema)
+
+Hosts are test projects (`IsTestProject`) and applications (detected by Joinery.Dovetail.Sdk, or `OutputType` of `Exe` or `WinExe`). A host merges its own fragments and those of every referenced assembly into `$(BaseIntermediateOutputPath)appsettings.schema.json`, normally `obj/appsettings.schema.json`.
+
+* The file is a stable path editors can point at. A host that targets several frameworks writes that file from its first target framework, and `$(IntermediateOutputPath)appsettings.schema.json` (for example `obj/Debug/net10.0/`) from the others.
+
+* It is copied to `$(OutDir)`, next to `appsettings.json`, and published as `appsettings.schema.json`. A project that references the host (a test project referencing an application) doesn’t get a second copy.
+
+* Hosts that embed their configuration (`DovetailEmbedConfiguration` is `true`, which Joinery.Dovetail.Sdk sets for MAUI and Uno applications) keep the file in `obj/` only: no copy to the output directory and no publishing.
+
+* A hand-made `appsettings.schema.json` (Web SDK content, or one from a reference) is removed from the publish items so it doesn’t collide with the generated one (NETSDK1152). The generated file is what gets published.
+
+* **It is strict.** Each Dovetail section, and the object types it uses, accepts only its own keys. The check is a case-insensitive `propertyNames` pattern rather than `additionalProperties: false`, so `message` is accepted and `Mesage` is flagged, with an error that lists the known keys. The root, parents shared between sections, dictionaries and sections declared by more than one assembly stay open for keys of other sources.
+
+* **It includes SchemaStore’s `appsettings.json` schema**, embedded rather than referenced, so `Logging`, `Kestrel` and `ConnectionStrings` complete too, online or offline. The copy ships with Dovetail and is refreshed each release (Apache-2.0).
+
+* **It is deterministic.** Sections compare ignoring case; when libraries spell a section differently, the ordinal-smallest spelling is displayed. A section several assemblies declare is merged into one object. The same references always produce a byte-identical file.
+
+| Property                                        | Default  | Effect                                                                                                                                                                  |
+| ----------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DovetailConfigurationSchema`                   | on       | `false` writes no schema files at all, and removes the ones an earlier build wrote.                                                                                     |
+| `DovetailConfigurationSchemaHost`               | detected | `true` or `false` overrides which projects count as hosts.                                                                                                              |
+| `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail’s sections open (no `propertyNames`) in the host file.                                                                                          |
+| `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore’s schema out of the host file.                                                                                                               |
+| `DovetailEmbedConfiguration`                    | detected | `true` for hosts that embed their configuration (Joinery.Dovetail.Sdk sets it for MAUI and Uno): the schema stays in `obj/`, with no copy to the output and no publish. |
+| `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`. The generator reads this one, so it changes the fragments in every project; the MSBuild targets don’t use it.              |
+
+```xml
+<PropertyGroup>
+  <!-- Permissive: unknown keys under Dovetail sections aren't flagged -->
+  <DovetailConfigurationSchemaStrict>false</DovetailConfigurationSchemaStrict>
+</PropertyGroup>
+```
+
+Note
+
+Editors flag a quoted number such as `"Timeout": "30"` as an incorrect type, although the .NET binder accepts it. Dovetail keeps the schema strict about types so that ranges are always checked.
+
+The build target runs after `CoreCompile` and skips design-time builds. It writes only when its inputs change: the references, the project’s own assembly and the properties above. Merging runs in a compiled MSBuild task (`Joinery.Dovetail.Build.Tasks`) that reads the fragments with `System.Reflection.Metadata`, so no assembly is loaded and nothing is embedded in your application.
+
+### Serilog
+
+[Section titled “Serilog”](#serilog)
+
+`Joinery.Dovetail.Serilog` ships a schema for the `Serilog` section, in the format [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) reads, so a host that references it gets completion and validation for `Serilog` without any setup. The section is dynamic (sinks, enrichers and their arguments come from other packages), so no options type can describe it and the generator has nothing to emit. `Joinery.Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the pipeline above unchanged: the library’s `ConfigurationSchema.json` is packed at the package root, and a host merges the fragment into its `appsettings.schema.json` like any other.
+
+The fragment follows the rules of the `Serilog` definition in SchemaStore’s `appsettings.json` schema, the one the merged file embeds by default, so the two never disagree about a value. It models these keys:
+
+* **`MinimumLevel`**, as a level name (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`, and `Off` as in SchemaStore’s list; the names are matched exactly) or as an object with `Default`, `Override` (a map from a source such as `Microsoft.AspNetCore` to a level) and `ControlledBy`. In the object form a value may also be a switch reference, a `$` and a name; SchemaStore’s pattern for that is loose enough to accept any plain word too, and the fragment keeps it. A number, or an unknown name in the string form, is flagged.
+* **`Enrich`** and **`Filter`**, as a non-empty list of unique items, a single name, or a map of items by name. An item is a method name (letters, digits and underscores, not starting with a digit, so `Some.Namespace.WithThing` is flagged) or `{ "Name": ..., "Args": { ... } }` with `Name` required. `Name` completes the well-known enrichers and filters and accepts any other method name. `Args` keys must be identifiers and their values are not checked, since their shape belongs to the extension method.
+* **`Properties`**, a map of strings.
+* **`$schema`**, a string.
+
+`Using`, `WriteTo`, `AuditTo`, `Destructure`, `LevelSwitches` and `FilterSwitches` are not modelled by the fragment. They are listed so the strict merged schema keeps accepting them, with a description and no constraint on their value. SchemaStore’s schema, part of the same merged file, still checks them.
+
+What differs from SchemaStore’s schema, and why it is harmless:
+
+* **Casing.** Configuration keys ignore case, so the fragment, like every Dovetail fragment, accepts any casing of its keys. SchemaStore’s schema lists them case-sensitively, and both apply in the merged file, so `minimumlevel` is flagged by SchemaStore’s half.
+* **Flat keys.** SchemaStore’s schema accepts the flat forms `"WriteTo:Async"` and `"Enrich:0"`, which Serilog reads. The strict merge closes the `Serilog` section with the names it knows, so those are flagged. Use the array or object form, or set `DovetailConfigurationSchemaStrict` to `false`.
+
+### Serving the schema
+
+[Section titled “Serving the schema”](#serving-the-schema)
+
+ASP.NET Core applications that reference Joinery.Dovetail.Hosting can serve the merged schema over HTTP at `GET /.well-known/dovetail/configuration-schema`. It is off by default. Setting `DovetailConfigurationSchemaEndpoint` to `true` generates a joint that maps it, and the `MapDovetailConfigurationSchema(fallbackDirectory, environments)` extension on `IEndpointRouteBuilder`, which Joinery.Dovetail.Hosting emits into ASP.NET Core projects, maps it by hand. The properties, the response and the security trade-off are described in [Editor setup](../guides/editor-setup#the-schema-endpoint).
+
+## Shipping default values
+
+[Section titled “Shipping default values”](#shipping-default-values)
+
+Defaults still live in a normal `appsettings` file in the library. The SDK renames it, packs it, and loads it into the host’s configuration, where the generated binder picks it up:
+
+```plaintext
+MyLibrary/
+├── appsettings.yaml
+├── appsettings.Development.yaml
+├── appsettings.local.yaml   # never packed, never committed
+└── MyLibrary.csproj
+```
+
+* `appsettings.{ext}` becomes `MyLibrary.{ext}` (`appsettings.Production.json` becomes `MyLibrary.Production.json`), so several libraries can ship their own file into one output directory.
+* The files are packed under `contentFiles/any/any/configuration/`, copied to a same-solution host’s output directory through a `ProjectReference`, and restored from the package otherwise.
+* The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the project ignores `appsettings.local.*`.
+* JSON, YAML and TOML are supported. Opt in with `DovetailEnableConfiguration`; YAML is the default format, and `DovetailEnableJsonConfiguration` or `DovetailEnableTomlConfiguration` chooses another. Hosts with no file system (MAUI, Uno) read copies embedded in the assembly: `DovetailEmbedConfiguration`.
+
+| Property                          | Default                            | Purpose                                                                                             |
+| --------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `DovetailEnableConfiguration`     | `false`                            | Turns the pipeline on. Existing consumers see no change until it or a format flag is set.           |
+| `DovetailEnableYamlConfiguration` | `true` when no other format is set | Adds the YAML provider. Setting it to `true` also enables the pipeline.                             |
+| `DovetailEnableJsonConfiguration` | `false`                            | Adds the JSON provider. Setting it to `true` also enables the pipeline, replacing the YAML default. |
+| `DovetailEnableTomlConfiguration` | `false`                            | Adds the TOML provider. Setting it to `true` also enables the pipeline, replacing the YAML default. |
+| `DovetailPackConfiguration`       | `true`, `false` if not packable    | Packs the library’s configuration files into the package.                                           |
+
+## Diagnostics
+
+[Section titled “Diagnostics”](#diagnostics)
+
+| Id       | Severity | Meaning                                                                                                                                                                          |
+| -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DT0006` | Warning  | The project’s C# version is older than 12, so Dovetail generated nothing. Set `LangVersion` to 12 or later.                                                                      |
+| `DT0007` | Error    | The type can’t be described as configuration: an interface, a static or abstract class, a struct or enum, an open generic type, or a collection.                                 |
+| `DT0008` | Error    | The section isn’t valid for the type: empty, an empty segment (`A::B`), or a name that is only a suffix such as `Options`.                                                       |
+| `DT0009` | Warning  | A member has a type configuration binding doesn’t support. It is left out of the schema and the binder.                                                                          |
+| `DT0010` | Warning  | Two members bind the same key (keys are case-insensitive). Only the first is described.                                                                                          |
+| `DT0011` | Error    | The type can’t be created from configuration: no public constructor, several public constructors with parameters and none without, or a parameter that matches no property.      |
+| `DT0012` | Warning  | The type graph uses more than 200 distinct types, so the schema stops describing them at the member named.                                                                       |
+| `DT0013` | Warning  | An annotation has no JSON Schema equivalent and is left out.                                                                                                                     |
+| `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                                                                            |
+| `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                             |
+| `DT0016` | Error    | A type is bound with more than one key style. The later declaration is reported and produces nothing; use the same `KeyStyle`, or give the shared type `[ConfigurationKeyName]`. |
+
+The generator runs in every project that references a Dovetail package, including those that only reference one indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under [Source Generation](./source-generation).
+
+# OpenTelemetry
+
+> OpenTelemetry integration that exposes the OpenTelemetry builder, resource, and tracer, meter and logger providers as Dovetail joints, turned on for the application's host.
+
+# OpenTelemetry
+
+[Section titled “OpenTelemetry”](#opentelemetry)
+
+`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry’s configuration surface — the top-level `IOpenTelemetryBuilder`, the resource builder, and the tracer, meter and logger provider builders — as ordinary Dovetail [joints](./defining-joints). Any library can contribute an activity source, a meter, a log processor, or a resource attribute without taking a direct dependency on how the host wires up OpenTelemetry.
+
+## Turning it on
+
+[Section titled “Turning it on”](#turning-it-on)
+
+An application turns OpenTelemetry on by referencing `Joinery.Dovetail.OpenTelemetry` along with `Joinery.Dovetail.Hosting`. Joinery.Dovetail.Sdk adds `Joinery.Dovetail.OpenTelemetry` to every project that references `OpenTelemetry` or `OpenTelemetry.Extensions.Hosting`; set `DovetailEnableOpenTelemetry` to `false` to leave OpenTelemetry to the application.
+
+`Joinery.Dovetail.Hosting` then emits joints into the application that add OpenTelemetry to its services, apply every OpenTelemetry joint, and start it. OpenTelemetry only listens to activity sources and meters once its providers are resolved, which `OpenTelemetry.Extensions.Hosting` does from a hosted service, so what an application needs depends on whether its host runs hosted services:
+
+| Host                                    | Runs hosted services                                                                   | Needs `OpenTelemetry.Extensions.Hosting` | Started by                                                                                                                    |
+| --------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Generic host: workers, ASP.NET Core     | yes                                                                                    | yes                                      | its hosted service                                                                                                            |
+| Uno Platform (`Uno.Extensions.Hosting`) | once started: `NavigateAsync<TShell>()` starts the host, `ConfigureDovetail()` doesn’t | no                                       | `DovetailOpenTelemetryUnoStartJoint`, once the host is built                                                                  |
+| .NET MAUI (`MauiAppBuilder`)            | no                                                                                     | no                                       | `DovetailOpenTelemetryMauiStartJoint`, once the app is built                                                                  |
+| Blazor WebAssembly                      | from .NET 11                                                                           | no                                       | `DovetailOpenTelemetryWebAssemblyStartJoint`, once the host is built (and on .NET 11 the hosted service too, when referenced) |
+
+* With `OpenTelemetry.Extensions.Hosting`, whatever the host, `DovetailOpenTelemetryJoint` calls `services.AddOpenTelemetry()`. On .NET 11 it also traces ASP.NET Core’s `Microsoft.AspNetCore` activity source.
+* Without it, `DovetailOpenTelemetryServicesJoint` adds OpenTelemetry to the services directly, for the hosts that don’t need it.
+* A start joint resolves the meter, tracer and logger providers right after the host is built, as the hosted service does when the host starts, so OpenTelemetry runs on those hosts without a package the application wouldn’t otherwise use.
+* Only an application whose hosts all need `OpenTelemetry.Extensions.Hosting` (the generic host, with no Uno, MAUI or WebAssembly host) and that doesn’t reference it fails to compile, with an `#error` (CS1029) that says to add it. Packages that build on it, such as the Azure Monitor distro or .NET Aspire’s service defaults, bring it along, so they count.
+
+OpenTelemetry runs in the browser too: in single-threaded Blazor WebAssembly its batch export processor and periodic metric reader run on tasks instead of threads.
+
+Only applications and test projects get the joint, as an internal class: a library’s copy would be exported to every application that references it. A test project that imports its application’s joints gets the application’s copy as well as its own, and only the first one to run applies OpenTelemetry.
+
+Every `[DovetailExport]` joint, and anything registered with a `DovetailContextBuilder` method such as `ConfigureTracerProvider(...)`, is then applied with nothing else to call:
+
+```c#
+var host = await Host
+                .CreateApplicationBuilder(args)
+                .ConfigureDovetail(dovetail => dovetail.ConfigureTracerProvider((_, tracing) => tracing.AddConsoleExporter()));
+```
+
+## The joints
+
+[Section titled “The joints”](#the-joints)
+
+`Joinery.Dovetail.OpenTelemetry` declares one `<DovetailJoint>`, `OpenTelemetry`, for `OpenTelemetry.IOpenTelemetryBuilder`: `IOpenTelemetryJoint`, its `OpenTelemetryJointDelegate`, the `ConfigureOpenTelemetry(...)` builder method and the `ApplyOpenTelemetry` extension that the emitted joint calls. Narrower interfaces derive from `IOpenTelemetryJoint`, each for one of OpenTelemetry’s builders:
+
+| Joint interface               | Builder                                      | `DovetailContextBuilder` method |
+| ----------------------------- | -------------------------------------------- | ------------------------------- |
+| `IOpenTelemetryJoint`         | `OpenTelemetry.IOpenTelemetryBuilder`        | `ConfigureOpenTelemetry`        |
+| `IResourceBuilderJoint`       | `OpenTelemetry.Resources.ResourceBuilder`    | `ConfigureResourceBuilder`      |
+| `ITracerProviderJoint`        | `OpenTelemetry.Trace.TracerProviderBuilder`  | `ConfigureTracerProvider`       |
+| `IMeterProviderBuilderJoint`  | `OpenTelemetry.Metrics.MeterProviderBuilder` | `ConfigureMeterProvider`        |
+| `ILoggerProviderBuilderJoint` | `OpenTelemetry.Logs.LoggerProviderBuilder`   | `ConfigureLoggerProvider`       |
+
+Since they’re all OpenTelemetry joints, they run together in the executor’s usual priority order. A library that only wants to register an activity source implements `ITracerProviderJoint` without knowing anything about `WithMetrics`, `WithLogging` or the resource — the same narrow, composable extension point the rest of Dovetail follows.
+
+## Example: contributing an activity source
+
+[Section titled “Example: contributing an activity source”](#example-contributing-an-activity-source)
+
+A library adds a `System.Diagnostics.ActivitySource` to tracing by implementing `ITracerProviderJoint` and marking the class `[DovetailExport]`, the same pattern used for any other discovered Dovetail joint:
+
+```c#
+using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.OpenTelemetry.Joints;
+using OpenTelemetry.Trace;
+
+
+namespace MyLibrary;
+
+
+[DovetailExport]
+public class MyLibraryTracing : ITracerProviderJoint
+{
+    public static readonly ActivitySource ActivitySource = new("MyLibrary");
+
+
+    public void Register(IDovetailContext context, TracerProviderBuilder builder) =>
+        builder.AddSource(ActivitySource.Name);
+}
+```
+
+## What this package does *not* do
+
+[Section titled “What this package does not do”](#what-this-package-does-not-do)
+
+`Joinery.Dovetail.OpenTelemetry` only opens the extension points — it does not ship any exporters or instrumentation. In particular, it does **not** include:
+
+* The console exporter, the OTLP exporter, or any other exporter package.
+* ASP.NET Core, HttpClient, or other instrumentation packages.
+* Any default sampler, resource attribute, or processor configuration.
+
+Consumers add exporters and instrumentation the same way they add anything else to a provider: by writing their own `ITracerProviderJoint`/`IMeterProviderBuilderJoint`/`ILoggerProviderBuilderJoint` implementation (or a plain `Configure{Kind}(...)` delegate) that calls the relevant `AddConsoleExporter()`, `AddOtlpExporter()`, `AddAspNetCoreInstrumentation()`, etc. This keeps `Joinery.Dovetail.OpenTelemetry` itself free of exporter dependencies, which also keeps it friendly to trimming/AOT — see [Non-Goals in the OpenTelemetry design doc](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/openspec/changes/add-dovetail-opentelemetry/design.md#goals--non-goals) for the full rationale.
+
+# Source Generation
+
+> How the Roslyn source generator resolves and exports joints at build time.
+
+# Source Generation and Dovetails \[New]
+
+[Section titled “Source Generation and Dovetails \[New\]”](#source-generation-and-dovetails-new)
+
+We have built a Source Generator to use with Dovetail that allows us to export joints and import joints with easy, in a way that is statically compiled.
+
+# Exporting Dovetails
+
+[Section titled “Exporting Dovetails”](#exporting-dovetails)
+
+Any joint marked with `[assembly: Dovetail(typeof(MyDovetail))]` will automatically be added to a public partial static class named `Exports` that will exist in the root namespace of the assembly being built.
+
+Tip
+
+This class is partial if you want to add any custom methods to it for consumers.
+
+# Importing Dovetails
+
+[Section titled “Importing Dovetails”](#importing-dovetails)
+
+The generator creates an internal static partial `Imports` class in the assembly’s root namespace. `Imports.Joints` is a `DovetailContextBuilderFactory` that creates a context builder loaded with the assembly’s own joints and those of every referenced assembly that exports joints. The `DovetailImportNamespace`, `DovetailImportClassName` and `DovetailImportMethodName` MSBuild properties change those names.
+
+Tip
+
+This class is partial if you want to add any custom methods to it for consumers.
+
+You can also import the `GetDovetails` method onto a given class by using the `[ImportDovetails]` attribute on the class.
+
+## Which projects import and export
+
+[Section titled “Which projects import and export”](#which-projects-import-and-export)
+
+Two MSBuild properties decide what the generator emits for a project:
+
+| Property                 | When `true`                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `ImportDovetailAssembly` | The `Imports` class is generated.                                                                                               |
+| `ExportDovetailAssembly` | Referencing assemblies import this assembly’s joints. When `false`, the joints still reach this assembly’s own `Imports` class. |
+
+Joinery.Dovetail.Sdk sets both as part of its host detection. Projects that don’t use the SDK get these defaults:
+
+* test projects (`IsTestProject`) import but don’t export;
+* applications (`OutputType` of `Exe` or `WinExe`) import and export;
+* libraries export but don’t import.
+
+Set either property in a project file to override its default.
+
+The generator runs in every project that references a Dovetail package, including projects that only reference one indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it generates nothing and reports warning `DT0006` instead.
+
+# Unit Tests
+
+> How to write unit tests for your joints using DovetailContextBuilder and TestHost.
+
+# Unit Testing with Dovetails
+
+[Section titled “Unit Testing with Dovetails”](#unit-testing-with-dovetails)
+
+Dovetail offers some great magic but without being able to write unit tests, then the magic hurts more than it might help.
+
+Unit Tests can be written many different ways.
+
+## Use <xref:Joinery.Dovetail.DovetailContextBuilder> directly
+
+[Section titled “Use xref:Joinery.Dovetail.DovetailContextBuilder directly”](#use-xrefjoinerydovetaildovetailcontextbuilder-directly)
+
+You can make use of the <xref:Joinery.Dovetail.DovetailContextBuilder> by itself, and apply all the joints. This requires more manual configuration but gives the greatest flexibility.
+
+\[!code-c#[Sample Test](../../sample/Sample.Core.Tests/SampleTests.cs?name=codeblock)]
+
+## Use <xref:Joinery.Dovetail.Hosting.TestHost>
+
+[Section titled “Use xref:Joinery.Dovetail.Hosting.TestHost”](#use-xrefjoinerydovetailhostingtesthost)
+
+The <xref:Joinery.Dovetail.Hosting.TestHost> can be used to create a `IHostBuilder` configured for testing. This will automatically do the work for setting up Configuration, Services and Logging.
+
+\[!code-c#[Sample Test](../../sample/Sample.Tests/SampleTestHostTests.cs?name=codeblock)]
+
+Tip
+
+There is <xref:Joinery.Dovetail.WebAssembly.Hosting.TestWebAssemblyHost> for WebAssembly / Blazor apps
+
+## Logging
+
+[Section titled “Logging”](#logging)
+
+Some unit testing frameworks have the ability to capture log output for a given test, this can be handy for helping identify any problems. If you provide a `ILogger` or a `ILoggerFactory` into the <xref:Joinery.Dovetail.DovetailContextBuilder> or <xref:Joinery.Dovetail.IDovetailContext> it will be used during the joint scanning process and spit out diagnostic logs that may be useful.
+
+Tip
+
+With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `AutoFakeTest<TestRecord>`): its Serilog logger writes to the test’s output.
+
+# Getting Started
+
+> Get up and running with Dovetail.
+
+import { CardGrid, LinkCard } from ‘@astrojs/starlight/components’;
+
+Dovetail is a joint-driven application wiring library for .NET. It uses a Roslyn source generator to resolve and order joints at build time — eliminating runtime reflection and making your app AOT and trimming safe.
+
+Note
+
+Dovetail requires .NET 8 or .NET 10 and a compatible Roslyn-based build.
+
+# Custom Dovetails
+
+> Step-by-step guide to creating and distributing your own Dovetails.
+
+# Creating a custom joint
+
+[Section titled “Creating a custom joint”](#creating-a-custom-joint)
+
+The essence of a joint is a method, with any number of parameters, that can be implemented to do some work.
+
+Lets say you want to create a joint for handling database configuration.
+
+Goal: Distribute database configuration across assemblies
+
+Given this fake interface for configuring the database.
+
+\[!code-c#[IDatabaseConfigurator](../../sample/Sample.Core/Databases/IDatabaseConfigurator.cs?name=codeblock)]
+
+## Define your interface and optional delegate
+
+[Section titled “Define your interface and optional delegate”](#define-your-interface-and-optional-delegate)
+
+Now we will define our interface and delegate. The delegate and extenison methods are optional but makes it easier for consumers to create adhoc joints.
+
+\[!code-c#[IDatabaseConfigurator](../../sample/Sample.Core/Databases/DatabaseDovetail.cs?name=codeblock)] \[!code-c#[IDatabaseConfigurator](../../sample/Sample.Core/Databases/IDatabaseDovetail.cs?name=codeblock)] \[!code-c#[IDatabaseConfigurator](../../sample/Sample.Core/Databases/DatabaseDovetailContextBuilderExtensions.cs?name=codeblock)]
+
+## Create your application method
+
+[Section titled “Create your application method”](#create-your-application-method)
+
+We have defined our joints now we need to be able to apply our joints.
+
+There are two ways to do this, if for example your database configuration happens during service registration (perhaps via `IOptions`) then you can implement this a joint that will run during the services joint. The other way additional way is to create an extension method that takes takes the joint and applies it.
+
+In this example we’ll support both. The manual way using an extension method and a joint that will do it “automagically”.
+
+\[!code-c#[IDatabaseConfigurator](../../sample/Sample.Core/Databases/DatabaseConfiguratorExtensions.cs?name=codeblock)] \[!code-c#[IDatabaseConfigurator](../../sample/Sample.Core/Databases/DatabaseServiceJoint.cs?name=codeblock)]
+
+# Editor Setup
+
+> Get completion, hover documentation and validation for your Dovetail configuration in VS Code, Visual Studio and Rider.
+
+# Editor setup
+
+[Section titled “Editor setup”](#editor-setup)
+
+Every application built with Dovetail gets one JSON Schema for its configuration, merged from the [`[DovetailConfiguration]`](../concepts/managed-configuration) sections of every library it references. This guide points your editor at it, so `appsettings.json`, YAML and TOML files complete section and key names, show the documentation you wrote on the options classes, and flag unknown keys and out-of-range values.
+
+## Where the schema comes from
+
+[Section titled “Where the schema comes from”](#where-the-schema-comes-from)
+
+A build of an application or a test project writes the merged schema to:
+
+```text
+<project>/obj/appsettings.schema.json
+```
+
+That path is stable, so editor settings can point at it and be checked in. Build the project once before expecting completion: the file doesn’t exist before then.
+
+* A project that targets several frameworks writes that file from its first target framework. The others write `$(IntermediateOutputPath)appsettings.schema.json`, for example `obj/Debug/net10.0/appsettings.schema.json`.
+* The build also copies the file next to the application’s `appsettings.json` in the output directory and publishes it as `appsettings.schema.json`.
+* Applications that embed their configuration (MAUI and Uno, where `DovetailEmbedConfiguration` is `true`) keep the file in `obj/` only. It is not copied to the output directory and not published, so editors still use the `obj/` path.
+* A library (any project that isn’t a host) doesn’t write `appsettings.schema.json`. It writes `$(IntermediateOutputPath)ConfigurationSchema.json` and packs it at the package root.
+
+If a project that isn’t detected as an application should merge a schema, or an application shouldn’t, set `DovetailConfigurationSchemaHost` to `true` or `false`. The other properties (`DovetailConfigurationSchema`, `DovetailConfigurationSchemaStrict`, `DovetailConfigurationSchemaIncludeSchemaStore`, `DovetailEmbedConfiguration` and `DovetailConfigurationSchemaRequired`) are described under [the schema](../concepts/managed-configuration#the-schema).
+
+## Visual Studio Code
+
+[Section titled “Visual Studio Code”](#visual-studio-code)
+
+VS Code needs one mapping per file type: its JSON support reads `json.schemas`, and the YAML and Even Better TOML extensions read `yaml.schemas` and `evenBetterToml.schema.associations`. Put them in `.vscode/settings.json`, which allows comments:
+
+```jsonc
+{
+    "json.schemas": [
+        {
+            "fileMatch": ["/MyApp/appsettings*.json"],
+            "url": "./MyApp/obj/appsettings.schema.json",
+        },
+    ],
+    "yaml.schemas": {
+        "./MyApp/obj/appsettings.schema.json": ["MyApp/appsettings*.yaml", "MyApp/appsettings*.yml"],
+    },
+    "evenBetterToml.schema.associations": {
+        "^.+/MyApp/appsettings.*\\.toml$": "./MyApp/obj/appsettings.schema.json",
+    },
+}
+```
+
+The [SdkSample](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/sample/SdkSample/.vscode/settings.json) checks in a working file for a solution with two applications.
+
+Notes on the three extensions:
+
+* **JSON** reports unknown keys, completes the canonical names and shows descriptions on hover.
+* **YAML** (the Red Hat extension) does the same. Its `fileMatch` globs don’t match files under a dot-folder.
+* **TOML** needs the explicit association above: Even Better TOML can’t use the SchemaStore catalog, and it reports an unknown key on the table header rather than on the key. It ignores `deprecated`.
+* Keys are matched ignoring case, as the configuration system does: `message` is accepted, `Mesage` is flagged.
+
+### Let Dovetail write the settings
+
+[Section titled “Let Dovetail write the settings”](#let-dovetail-write-the-settings)
+
+Set `DovetailScaffoldEditorSettings` to `true` in the application’s project file:
+
+```xml
+<PropertyGroup>
+  <DovetailScaffoldEditorSettings>true</DovetailScaffoldEditorSettings>
+</PropertyGroup>
+```
+
+On build, Dovetail creates or updates **only its own** entries in `.vscode/settings.json` (`json.schemas`, `yaml.schemas` and `evenBetterToml.schema.associations`), pointing at the application’s `obj/appsettings.schema.json`. Comments, trailing commas, indentation, line endings and a byte-order mark are preserved, other settings and other entries in those three maps are untouched, and re-running changes nothing (the file isn’t even rewritten, so its timestamp stays). Dovetail never adds `$schema` keys or `# yaml-language-server` modelines to your configuration files.
+
+Each application gets entries of its own, keyed by its schema path, so several applications in one repository can share one settings file. Dovetail recognises its entries by that path: an entry that already maps the application’s schema only gets whatever is missing (a file pattern, a glob), and anything you added to it stays. If you move a project, delete its old entries by hand.
+
+The file goes in the folder that holds `.vscode`: the nearest ancestor of the project that contains a `.git` entry, or the project folder when there is none. Set `DovetailEditorSettingsDirectory` to use another folder (a relative path is relative to the project). The folder must contain the project, because VS Code resolves the schema path relative to the folder it has open. The file and the `.vscode` folder are created only when they don’t exist.
+
+Only applications write the file, once per build (from the first target framework of a project that targets several), never in design-time builds, and not when `DovetailConfigurationSchema` is `false`.
+
+If the file can’t be updated safely, because it isn’t valid JSON with comments, isn’t UTF-8, has an unexpected shape (say `json.schemas` isn’t an array) or is read-only, Dovetail leaves it as it is and the build reports a warning with the entries to paste. Fix the file, or set `DovetailScaffoldEditorSettings` to `false`, to get rid of the warning.
+
+| Property                          | Default  | Effect                               |
+| --------------------------------- | -------- | ------------------------------------ |
+| `DovetailScaffoldEditorSettings`  | off      | `true` writes the mappings on build. |
+| `DovetailEditorSettingsDirectory` | git root | The folder that holds `.vscode`.     |
+
+It is off by default because it edits a file that is probably checked in.
+
+## Visual Studio
+
+[Section titled “Visual Studio”](#visual-studio)
+
+Visual Studio’s JSON editor reads schemas from `JsonSchemaSegment` items, with no per-file settings. Dovetail adds, with the file pattern `appsettings\..*json` (the one Aspire’s packages use):
+
+* a segment for the application’s (or test project’s) merged `obj/appsettings.schema.json`;
+* a segment for each referenced package that ships a `ConfigurationSchema.json` at its root, which is where libraries built with Dovetail pack theirs. A package that declares its own segment for the file (Aspire’s client packages do) is skipped, so completions aren’t doubled. Referenced projects need no segment: their sections are in the merged file.
+
+Nothing needs configuring. Dovetail finds the packages from the build’s resolved references, in the builds Visual Studio runs when it loads the project too, not only in full builds. `DovetailConfigurationSchemaVisualStudio=false` turns the segments off and keeps the schema files; `DovetailConfigurationSchema=false` turns off both. If completion doesn’t appear after the first build, close and reopen the file.
+
+Note
+
+Segments only affect Visual Studio’s JSON editor. YAML and TOML files get nothing from them in Visual Studio.
+
+The repository’s tests check the items MSBuild produces, including in a design-time build. Whether Visual Studio itself picks up items a target adds, and how it merges two segments that describe the same section, has not been verified in Visual Studio.
+
+## JetBrains Rider
+
+[Section titled “JetBrains Rider”](#jetbrains-rider)
+
+Rider uses its own JSON Schema mappings rather than the VS Code settings or the segments:
+
+1. Open **Settings | Languages & Frameworks | Schemas and DTDs | JSON Schema Mappings**.
+2. Add a mapping, choose `obj/appsettings.schema.json` as the schema file, set the version to Draft 7, and add the application’s `appsettings*.json` files as the mapped files.
+3. Rider applies JSON Schema mappings to YAML files too. Add the `appsettings*.yaml` files the same way.
+
+## TOML and YAML in other editors
+
+[Section titled “TOML and YAML in other editors”](#toml-and-yaml-in-other-editors)
+
+Any editor with a language server for the format can use the schema file:
+
+* **yaml-language-server** reads a `yaml.schemas` setting like VS Code’s, or a `# yaml-language-server: $schema=...` modeline in the file.
+* **Taplo** takes the schema from `.taplo.toml` or, in VS Code, `evenBetterToml.schema.associations`.
+
+## The schema endpoint
+
+[Section titled “The schema endpoint”](#the-schema-endpoint)
+
+An application can also serve its schema, for tools that read it over HTTP. This needs an ASP.NET Core application that references Joinery.Dovetail.Hosting, and is off by default:
+
+```xml
+<PropertyGroup>
+  <DovetailConfigurationSchemaEndpoint>true</DovetailConfigurationSchemaEndpoint>
+  <!-- Optional: serve it only in these environments -->
+  <DovetailConfigurationSchemaEndpointEnvironments>Development;Staging</DovetailConfigurationSchemaEndpointEnvironments>
+</PropertyGroup>
+```
+
+| Property                                            | Default             | Effect                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DovetailConfigurationSchemaEndpoint`               | off                 | `true` generates a joint that maps the endpoint. Only projects with `OutputType` `Exe` or `WinExe` that reference ASP.NET Core and Joinery.Dovetail.Hosting get it.                                                                                            |
+| `DovetailConfigurationSchemaEndpointEnvironments`   | every environment   | A semicolon-separated list of environment names (`Development;Staging`, compared ignoring case). The endpoint is mapped only when the host environment is one of them.                                                                                         |
+| `DovetailConfigurationSchemaEndpointSourceFallback` | `true` except below | Whether the project’s `obj/` directory is compiled into the application as a place to look for the schema. By default it is, except in publish builds and `ContinuousIntegrationBuild` builds, so a build machine path isn’t shipped. `false` never embeds it. |
+
+The route is `GET /.well-known/dovetail/configuration-schema`:
+
+* It looks for `appsettings.schema.json` in the application’s output directory first, then in the embedded `obj/` fallback directory, which is how it works when run from source with no copy beside the assembly. A published application serves the copy published with it.
+* The response is `application/schema+json` with a strong `ETag` and `Cache-Control: no-cache`. A request with a matching `If-None-Match` gets `304 Not Modified`. The file is re-read when it changes on disk.
+* It answers `404` when neither location has the file.
+
+Point a mapping at the URL, for example `"url": "http://localhost:5000/.well-known/dovetail/configuration-schema"` in `json.schemas`.
+
+To map it yourself, call the extension on the `WebApplication` (or any `IEndpointRouteBuilder`) instead of setting the property. Joinery.Dovetail.Hosting emits it into every ASP.NET Core project that references it, as an internal type. Both arguments are optional, and the method returns `null` when `environments` excludes the current environment:
+
+```c#
+using Joinery.Dovetail.Hosting;
+
+
+app.MapDovetailConfigurationSchema(fallbackDirectory: null, environments: "Development")
+   ?.RequireAuthorization();
+```
+
+Caution
+
+The schema lists every configuration key your application and its libraries accept, including the section names of libraries you may not want to advertise. Unless you restrict it, the endpoint is mapped in every environment, production included, and anyone who can reach the application can read it, with no authentication. Set `DovetailConfigurationSchemaEndpointEnvironments` to the environments that need it (usually `Development`), map it yourself and add authorization, or leave it off.
+
+## Troubleshooting
+
+[Section titled “Troubleshooting”](#troubleshooting)
+
+* **No completion at all.** Build the project: the file is written after compilation. Then check the path in the mapping is relative to the folder VS Code opened, and that the file name matches `appsettings*`.
+* **A key is flagged as unknown.** Check its spelling against the options class. Keys can’t be added to a section that `[DovetailConfiguration]` declares; set `DovetailConfigurationSchemaStrict` to `false` to stop the check.
+* **A section is missing from completion.** The application’s schema only covers libraries it references. Check the library has `[DovetailConfiguration]` on its options type and that the application builds against it.
+* **Quoted numbers are flagged.** `"Timeout": "30"` is an incorrect type to the editor even though the binder accepts it. Write the number without quotes.
