@@ -167,7 +167,7 @@ You can define a joint that only runs for a given <xref:Joinery.Dovetail.HostTyp
 
 The generated `Imports` class sets the host type only when the build specifies one. The `DovetailHostType` MSBuild property (`Live` or `UnitTest`) takes precedence; otherwise test projects (`IsTestProject`) get `UnitTest`. Anywhere else the host type is left unset, and the hosting extensions set it to `Live` if nothing else has.
 
-A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [\[LiveDovetail\]](xref:Joinery.Dovetail.LiveJointAttribute) that registers `IClock` using the expected calendar system, and another [\[UnitTestDovetail\]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock` with a predefined starting date and time.
+A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [\[LiveJoint\]](xref:Joinery.Dovetail.LiveJointAttribute) that registers `IClock` using the expected calendar system, and another [\[UnitTestJoint\]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock` with a predefined starting date and time.
 
 Note
 
@@ -179,33 +179,59 @@ Currently only three host types are defined
 
 Note
 
-There is no attribute for the `DovetailHostType.Undefined`.
+There is no shortcut attribute for `DovetailHostType.Undefined`. A joint without a host type attribute already runs everywhere.
 
-### [\[LiveDovetail\]](xref:Joinery.Dovetail.LiveJointAttribute)
+### [\[LiveJoint\]](xref:Joinery.Dovetail.LiveJointAttribute)
 
-[Section titled “\[LiveDovetail\]”](#livedovetail)
+[Section titled “\[LiveJoint\]”](#livejoint)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `Live`.
 
 ```c#
-[LiveDovetail]
+[LiveJoint]
 public class DovetailA
 {
 }
 ```
 
-### [\[UnitTestDovetail\]](xref:Joinery.Dovetail.UnitTestJointAttribute)
+### [\[UnitTestJoint\]](xref:Joinery.Dovetail.UnitTestJointAttribute)
 
-[Section titled “\[UnitTestDovetail\]”](#unittestdovetail)
+[Section titled “\[UnitTestJoint\]”](#unittestjoint)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `UnitTest`.
 
 ```c#
-[UnitTestDovetail]
+[UnitTestJoint]
 public class DovetailA
 {
 }
 ```
+
+### \[DovetailHostType]
+
+[Section titled “\[DovetailHostType\]”](#dovetailhosttype)
+
+The general form of the two attributes above. It takes the host type the joint applies to, for example `[DovetailHostType(DovetailHostType.Live)]`. It is also the only way to declare `Undefined` explicitly.
+
+### Which attributes are honoured where
+
+[Section titled “Which attributes are honoured where”](#which-attributes-are-honoured-where)
+
+A joint reaches a context by one of two paths, and both honour all three attributes the same way:
+
+| Path                                                                                                                                 | `[LiveJoint]` / `[UnitTestJoint]` | `[DovetailHostType]` |
+| ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- | -------------------- |
+| Runtime reflection: `DovetailContextBuilder.AppendJoint(...)` / `PrependJoint(...)` with a joint instance or `AppendJoint<T>()`      | Honoured                          | Honoured             |
+| Generated metadata: the joints marked `[DovetailExport]`, which the source generator lists in the generated `Exports` class at build | Honoured                          | Honoured             |
+
+On both paths:
+
+* `[LiveJoint]` and `[UnitTestJoint]` are read before `[DovetailHostType]`, so `[LiveJoint]` wins over a `[DovetailHostType]` on the same joint. Declaring both `[LiveJoint]` and `[UnitTestJoint]` on one joint isn’t meaningful, and which of them applies is not specified.
+* The attributes are inherited. A joint that derives from a `[LiveJoint]` class is a live joint too, and the closest declaration wins.
+* A joint that declares nothing has the `Undefined` host type and applies everywhere, apart from the test project default below.
+* A joint applies when its host type is `Undefined` or equals the host type of the context.
+
+The generated path adds one default of its own. In a test project (`IsTestProject`), an exported joint that declares no host type is exported as `UnitTest`. A joint’s own attribute always takes precedence over that default, so a `[LiveJoint]` in a test project stays live-only and `[DovetailHostType(DovetailHostType.Undefined)]` opts a joint out of the default. The runtime reflection path has no such default.
 
 ## Injecting dependencies
 
@@ -332,7 +358,7 @@ public class WarmUpCache : IServiceJoint
 }
 ```
 
-Handlers have to be registered before the host is built. The first registration adds the hosted service that runs them, so there is nothing else to call, and an application that registers no handler gets no hosted service.
+Handlers have to be registered before the host is built. The first registration adds the hosted service that runs them, so there is nothing else to call, and a project that registers no handler gets no hosted service.
 
 ## Handlers of one moment run in parallel
 
@@ -343,6 +369,7 @@ All the handlers registered for a moment are started together and awaited togeth
 * **Don’t depend on the order** the handlers of one moment run in. The moments themselves are ordered by the host, which calls `StartingAsync` on all its hosted lifecycle services, then `StartAsync` on all of them, then `StartedAsync` on all of them (and likewise `StoppingAsync`, `StopAsync` and `StoppedAsync` when it stops). The handlers of a moment have all finished before the host moves on to the next.
 * A **synchronous** handler runs to completion when it is started, so synchronous handlers of one moment, which don’t wait for anything, happen to run one after another. Handlers that `await` overlap.
 * A handler that **throws**, even before its first `await`, fails that step of the host like any hosted service would, and the other handlers of the moment have still been started.
+* The handlers that run in parallel are those of **one project** (see below): a library and the application that uses it each have a hosted service of their own, and the host runs hosted services one after the other (unless `HostOptions.ServicesStartConcurrently` and `ServicesStopConcurrently` say otherwise). The library’s handlers for a moment therefore run before or after the application’s, not alongside them.
 
 ## Where it is available
 
@@ -360,7 +387,18 @@ The methods are emitted by `Joinery.Dovetail.Hosting` into the projects that ref
 
 A .NET MAUI or Blazor WebAssembly project gets none even when `Microsoft.Extensions.Hosting` ends up among its references (another package brought it along, say): methods that compile but never run their handlers would be worse than methods that don’t exist, so calling one is a compile error.
 
-The methods are `internal`, as are all the helpers `Joinery.Dovetail.Hosting` emits, so a library that registers handlers needs to reference `Joinery.Dovetail.Hosting` and the generic host itself. Every project gets its own copy of the methods and of the hosted service, but the registrations they add (`HostLifecycleRegistration`, which is public) are shared, and whichever project registers first adds the one hosted service that runs them all. A library’s handlers therefore run with the application’s, once.
+The methods are `internal`, as are all the helpers `Joinery.Dovetail.Hosting` emits, so a library that registers handlers needs to reference `Joinery.Dovetail.Hosting` and the generic host itself.
+
+## Each project has its own
+
+[Section titled “Each project has its own”](#each-project-has-its-own)
+
+Every project that gets the methods gets its own, self-contained copy of them, of the registration they add and of the hosted service that runs it, all `internal` and `[Embedded]`, so no assembly sees another’s. Nothing is shared between projects:
+
+* A handler registered with a project’s methods is registered with, and run by, that project’s own hosted service. A library and an application that each register handlers end up with two hosted services, each running only its own project’s handlers, once.
+* The “first registration adds the hosted service” rule is per project too. It looks for that project’s own registration type in the service collection, so it neither depends on nor notices another project’s registrations.
+* Projects can’t coordinate on one list of handlers, and there is no single set of handlers that runs in parallel across the library and the application (see above). Handlers that must not run side by side, or in a fixed order, belong in one project, or in a hosted service of their own.
+* That holds for every way of registering: the application builder, the service collection and a joint all go through the methods of the project they are written in.
 
 # Introduction
 
@@ -831,7 +869,7 @@ The generator runs in every project that references a Dovetail package, includin
 
 [Section titled “OpenTelemetry”](#opentelemetry)
 
-`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry’s configuration surface — the top-level `IOpenTelemetryBuilder`, the resource builder, and the tracer, meter and logger provider builders — as ordinary Dovetail [joints](./defining-joints). Any library can contribute an activity source, a meter, a log processor, or a resource attribute without taking a direct dependency on how the host wires up OpenTelemetry.
+`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry’s configuration surface — the top-level `IOpenTelemetryBuilder`, the resource builder, and the tracer, meter and logger provider builders — as ordinary Dovetail [joints](./defining-joints). Any library can contribute an activity source, a meter, a log processor, or a resource attribute without taking a direct dependency on how the host wires up OpenTelemetry. Coming from `LaunchPad.Telemetry`? [Its parity check](./opentelemetry-launchpad-parity) maps each of its conventions to a joint here.
 
 ## Turning it on
 
@@ -916,9 +954,80 @@ public class MyLibraryTracing : ITracerProviderJoint
 
 * The console exporter, the OTLP exporter, or any other exporter package.
 * ASP.NET Core, HttpClient, or other instrumentation packages.
-* Any default sampler, resource attribute, or processor configuration.
+* Any default sampler, resource attribute, or processor configuration of its own. The OpenTelemetry SDK’s default resource still applies, and already has the telemetry SDK attributes and the environment variable detector.
 
 Consumers add exporters and instrumentation the same way they add anything else to a provider: by writing their own `ITracerProviderJoint`/`IMeterProviderBuilderJoint`/`ILoggerProviderBuilderJoint` implementation (or a plain `Configure{Kind}(...)` delegate) that calls the relevant `AddConsoleExporter()`, `AddOtlpExporter()`, `AddAspNetCoreInstrumentation()`, etc. This keeps `Joinery.Dovetail.OpenTelemetry` itself free of exporter dependencies, which also keeps it friendly to trimming/AOT — see [Non-Goals in the OpenTelemetry design doc](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/openspec/changes/add-dovetail-opentelemetry/design.md#goals--non-goals) for the full rationale.
+
+# OpenTelemetry parity with LaunchPad.Telemetry
+
+> Which Dovetail OpenTelemetry joint replaces each LaunchPad.Telemetry convention, how logs reach the logging provider, what the SDK's default resource already contains, and the evidence for each.
+
+# OpenTelemetry parity with LaunchPad.Telemetry
+
+[Section titled “OpenTelemetry parity with LaunchPad.Telemetry”](#opentelemetry-parity-with-launchpadtelemetry)
+
+`Rocket.Surgery.LaunchPad.Telemetry` offered six convention abstractions, a default convention that turned OpenTelemetry on, and a default convention for the resource. `Joinery.Dovetail.OpenTelemetry` (with the joints `Joinery.Dovetail.Hosting` emits) covers all of that, so an application can drop the LaunchPad package. This page is the written check, made against OpenTelemetry SDK 1.20.1, and names the test that shows each row. See [OpenTelemetry](./opentelemetry) for how the joints work.
+
+The one LaunchPad.Telemetry convention that has no equivalent here is the instrumentation convention (HTTP client tracing, and HTTP client, runtime and process metrics). Dovetail’s package ships no instrumentation on purpose, so LaunchPad keeps it as a joint of its own in `LaunchPad.Hosting` ([LaunchPad#3061](https://github.com/RocketSurgeonsGuild/LaunchPad/issues/3061)).
+
+## The six abstractions
+
+[Section titled “The six abstractions”](#the-six-abstractions)
+
+| LaunchPad.Telemetry                                                   | Dovetail                                                                               | Registered with                                 | Shown by                                                                                                                              |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `IOpenTelemetryConvention`, `OpenTelemetryConvention`                 | `IOpenTelemetryJoint`, `OpenTelemetryJointDelegate` (`IOpenTelemetryBuilder`)          | `ConfigureOpenTelemetry`                        | `Base_Joint_Configures_Services_And_Every_Signal`                                                                                     |
+| `IOpenTelemetryAsyncConvention`, `OpenTelemetryAsyncConvention`       | `IOpenTelemetryAsyncJoint`, `OpenTelemetryAsyncJointDelegate` (generated)              | `ConfigureOpenTelemetry` with an async delegate | `Async_Delegate_Is_Awaited_With_The_Cancellation_Token_Given_To_ConfigureDovetail`, `Exported_Async_Joint_Is_Discovered_And_Awaited`  |
+| `IOpenTelemetryLoggingConvention`, `OpenTelemetryLoggingConvention`   | `ILoggerProviderBuilderJoint`, `LoggerProviderJointDelegate` (`LoggerProviderBuilder`) | `ConfigureLoggerProvider`                       | `Exported_Logger_Joint_Is_Discovered_And_Applied`, `Logs_Are_Exported_Through_The_Logging_Provider`                                   |
+| `IOpenTelemetryMetricsConvention`, `OpenTelemetryMetricsConvention`   | `IMeterProviderBuilderJoint`, `MeterProviderJointDelegate` (`MeterProviderBuilder`)    | `ConfigureMeterProvider`                        | `Exported_Meter_Joint_Is_Discovered_And_Applied`                                                                                      |
+| `IOpenTelemetryResourceConvention`, `OpenTelemetryResourceConvention` | `IResourceBuilderJoint`, `ResourceBuilderJointDelegate` (`ResourceBuilder`)            | `ConfigureResourceBuilder`                      | `Exported_Resource_Joint_Is_Discovered_And_Applied_To_Every_Provider`                                                                 |
+| `IOpenTelemetryTracingConvention`, `OpenTelemetryTracingConvention`   | `ITracerProviderJoint`, `TracerProviderJointDelegate` (`TracerProviderBuilder`)        | `ConfigureTracerProvider`                       | `DovetailExport_Annotated_TracerJoint_Is_Auto_Discovered_Without_Manual_Configure`                                                    |
+| `TelemetryConvention` (applies the conventions, adds the logger)      | `DovetailOpenTelemetryJoint` and its siblings, emitted by `Joinery.Dovetail.Hosting`   | nothing: emitted into the application           | `Starting_The_Host_Starts_Traces_And_Metrics_With_The_Resource`, `Starting_The_Web_Application_Starts_Every_Signal_With_The_Resource` |
+| `DefaultTelemetryConvention` (resource defaults)                      | nothing: the SDK’s default resource                                                    | nothing                                         | [Resource defaults](#resource-defaults)                                                                                               |
+
+How the shape differs, none of it a capability:
+
+* A joint receives the `IDovetailContext` where a convention received the context and an `IConfiguration`. The configuration is `context.Configuration` (`Joints_Read_The_Application_Configuration_From_The_Context`).
+* Delegates always take the context: write `(_, builder) => ...` where LaunchPad also had `Action<TBuilder>` overloads.
+* `ConfigureOpenTelemetryLogging`, `ConfigureOpenTelemetryMetrics` and `ConfigureOpenTelemetryTracing` are `ConfigureLoggerProvider`, `ConfigureMeterProvider` and `ConfigureTracerProvider`; the resource one is `ConfigureResourceBuilder`.
+* The base joint types and `ConfigureOpenTelemetry` are in `Joinery.Dovetail.Joints`, the narrower ones in `Joinery.Dovetail.OpenTelemetry.Joints`. Import both.
+* `[ExportConvention]` is `[DovetailExport]`. `ConventionCategory` and `AfterConvention<T>` become the `priority` and `category` parameters, and every OpenTelemetry joint, base or narrow, runs in the one priority order.
+* LaunchPad’s `SerilogTelemetryConvention` (Serilog’s OpenTelemetry sink) belongs to the Serilog package, not this one.
+
+## Logs through the logging provider
+
+[Section titled “Logs through the logging provider”](#logs-through-the-logging-provider)
+
+LaunchPad’s `TelemetryConvention` was also an `ILoggingConvention` that called `ILoggingBuilder.AddOpenTelemetry()`, so the OpenTelemetry provider was always one of the application’s logger providers.
+
+Dovetail adds it when something configures logging. Every `ILoggerProviderBuilderJoint` (and `ConfigureLoggerProvider`) runs inside `IOpenTelemetryBuilder.WithLogging`, which in SDK 1.20.1 does `AddLogging(logging => logging.UseOpenTelemetry(...))`, and so does the `UseOtlpExporter()` call, which enables logging, metrics and tracing together. An application with neither has no log exporter, so it had nothing to export. To have the provider regardless, call `WithLogging()` from any OpenTelemetry joint.
+
+`Logs_Are_Exported_Through_The_Logging_Provider` shows the result: the provider is an `OpenTelemetryLoggerProvider` among the host’s `ILoggerProvider`s, and a warning written through `ILogger<T>` reaches the exporter with its category, level, body and structured state.
+
+## Resource defaults
+
+[Section titled “Resource defaults”](#resource-defaults)
+
+Yes: the SDK’s default resource already holds what LaunchPad’s `DefaultTelemetryConvention` added. `ResourceBuilder.CreateDefault()` is the default resource, `AddTelemetrySdk()` and `AddEnvironmentVariableDetector()`, and every provider starts from it, so a joint only adds to it. Dovetail adds no resource defaults of its own.
+
+* `Default_Resource_Has_The_Telemetry_Sdk_Attributes_On_Every_Signal`: with no resource joint, the tracer, meter and logger providers all carry `telemetry.sdk.name`, `telemetry.sdk.language` and `telemetry.sdk.version`, and `service.name` is `unknown_service:<process>`.
+* `Default_Resource_Has_The_Environment_Variable_Detector` and `Default_Resource_Reads_The_Process_Environment`: `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` set the resource, whether they come from the host’s configuration (the detector reads that first) or from the process environment.
+* `LaunchPads_Default_Resource_Convention_Changes_Nothing`: adding `AddTelemetrySdk().AddEnvironmentVariableDetector()` through a resource joint produces exactly the same attributes on every provider.
+* Blazor WebAssembly’s LaunchPad default only added `AddTelemetrySdk()`. The browser has the same default resource (`Should_Have_The_Default_Resource_On_Every_Provider`); it has no process environment, so the detector only reads configuration.
+
+To name the service, set `OTEL_SERVICE_NAME` or call `AddService(...)` from a resource joint; LaunchPad’s convention only had that call commented out.
+
+## Hosts
+
+[Section titled “Hosts”](#hosts)
+
+| Host               | Shown by                                                                                                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Generic host       | `OpenTelemetryParityTests` and `OpenTelemetryBridgeTests` in `Joinery.Dovetail.OpenTelemetry.Tests`, on .NET 10 and 11                                                                                                    |
+| ASP.NET Core       | `OpenTelemetryAspNetCoreTests` in `Joinery.Dovetail.Hosting.AspNetCore.Tests`: every signal and the resource once the web host starts, the default resource, and on .NET 11 a request traced without tracer configuration |
+| Blazor WebAssembly | `BrowserHostingTests` and `BrowserOpenTelemetryTests` in `Joinery.Dovetail.WebAssembly.Hosting.Tests`: traces, metrics and logs exported in a real browser, with the resource on each provider                            |
+
+The browser tests run the sample’s `net11.0-browser` build behind the Blazor Gateway, so they run on .NET 11 only.
 
 # Source Generation
 
@@ -939,6 +1048,8 @@ Any joint marked with `[assembly: Dovetail(typeof(MyDovetail))]` will automatica
 Tip
 
 This class is partial if you want to add any custom methods to it for consumers.
+
+Each exported joint carries the host type it declares with `[LiveJoint]`, `[UnitTestJoint]` or `[DovetailHostType]`, the same as when a joint is added through reflection at runtime. See [which attributes are honoured where](./defining-joints#which-attributes-are-honoured-where).
 
 # Importing Dovetails
 

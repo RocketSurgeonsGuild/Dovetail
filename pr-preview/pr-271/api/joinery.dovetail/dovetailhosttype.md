@@ -2,7 +2,7 @@
 
 - Kind: `enum`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-271/api/joinery.dovetail.md)
-- Version: `0.3.1-pr.5`
+- Version: `0.3.1-pr.9`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 

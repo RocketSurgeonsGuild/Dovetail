@@ -1,16 +1,11 @@
 # Joinery.Dovetail.Hosting
 
 - Package: `Joinery.Dovetail.Hosting`
-- Version: `0.3.1-pr.5`
+- Version: `0.3.1-pr.9`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Hosting](https://www.nuget.org/packages/Joinery.Dovetail.Hosting)
 
 ## Namespaces
-
-### Joinery.Dovetail.Hosting
-
-- [HostLifecycleMoment](/Dovetail/pr-preview/pr-271/api/joinery.dovetail.hosting/hostlifecyclemoment.md) -- `enum` -- The moments in a host's life at which Dovetail runs the handlers an application registered with `OnHostStarting`, `OnHostStarted`, `OnHostStopping` and `OnHostStopped`. They are the four phases of `Microsoft.Extensions.Hosting.IHostedLifecycleService`, for the hosts that run it (the generic host and ASP.NET Core).
-- [HostLifecycleRegistration](/Dovetail/pr-preview/pr-271/api/joinery.dovetail.hosting/hostlifecycleregistration.md) -- `record` `sealed` -- A handler to run at one [HostLifecycleMoment](/Dovetail/pr-preview/pr-271/api/joinery.dovetail.hosting/hostlifecyclemoment.md), added to the service collection by the `OnHostStarting`, `OnHostStarted`, `OnHostStopping` and `OnHostStopped` extension methods that Joinery.Dovetail.Hosting emits into every project that references the generic host (Microsoft.Extensions.Hosting).
 
 ### Joinery.Dovetail.Joints
 

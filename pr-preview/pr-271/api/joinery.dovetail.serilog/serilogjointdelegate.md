@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/pr-preview/pr-271/api/joinery.dovetail.serilog.md)
-- Version: `0.3.1-pr.5`
+- Version: `0.3.1-pr.9`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
