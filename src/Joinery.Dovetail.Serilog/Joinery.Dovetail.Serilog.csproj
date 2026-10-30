@@ -4,7 +4,7 @@
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
         <PackageDescription>Provides Serilog support for a Rocket Surgery Application</PackageDescription>
         <PackageTags>$(PackageTags);Serilog</PackageTags>
-        <!-- The only reflection is reading the Serilog configuration section (SerilogLoggerRegistration); it is opt-in, guarded and documented. -->
+        <!-- The Serilog configuration section is read with plain IConfiguration calls (SerilogMinimumLevelConfiguration), so there is no reflection to annotate. -->
         <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
     <ItemGroup>
@@ -13,7 +13,6 @@
     <ItemGroup>
         <PackageReference Include="Serilog" />
         <PackageReference Include="Serilog.Extensions.Logging" />
-        <PackageReference Include="Serilog.Settings.Configuration" />
         <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
     </ItemGroup>
 </Project>

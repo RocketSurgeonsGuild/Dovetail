@@ -11,9 +11,10 @@ namespace Joinery.Dovetail.Serilog;
 ///   This joint is automatically registered by the Dovetail generator, so it is not necessary to register this joint manually.
 /// </summary>
 /// <remarks>
-///   Once every Serilog joint has run, the <c>Serilog</c> section of the application's configuration is read (if it has one) and, when the logger is
-///   first resolved, the <c>IConfigureOptions&lt;LoggerConfiguration&gt;</c> and <c>IPostConfigureOptions&lt;LoggerConfiguration&gt;</c> registered in the
-///   services are applied to the logger configuration.
+///   Once every Serilog joint has run, the minimum level and the level overrides in the <c>Serilog:MinimumLevel</c> section of the application's
+///   configuration are applied (sinks and enrichers are configured by the Serilog joints) and, when the logger is first resolved, the
+///   <c>IConfigureOptions&lt;LoggerConfiguration&gt;</c> and <c>IPostConfigureOptions&lt;LoggerConfiguration&gt;</c> registered in the services are
+///   applied to the logger configuration.
 /// </remarks>
 [DovetailExport, ConnectsJoint<ILoggingJoint>, DependsOnJoint<LoggingConnector>]
 public sealed class SerilogJoint : IServiceAsyncJoint

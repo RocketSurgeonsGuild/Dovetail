@@ -7,9 +7,8 @@ using Serilog.Events;
 namespace Joinery.Dovetail.Serilog.Tests;
 
 /// <summary>
-///     A sink that keeps the events it is given, in memory, so a test can look at what a Serilog logger wrote. Sinks are looked up by name,
-///     so that the same one can be reached from code (<c>WriteTo.Capturing("name")</c>) and from the <c>Serilog</c> configuration section
-///     (<c>{ "Name": "Capturing", "Args": { "name": "name" } }</c>).
+///     A sink that keeps the events it is given, in memory, so a test can look at what a Serilog logger wrote. Sinks are looked up by name
+///     (<c>WriteTo.Capturing("name")</c>), so that every test has a sink of its own.
 /// </summary>
 public sealed class CapturingSink : ILogEventSink, IDisposable
 {
@@ -54,7 +53,7 @@ public sealed class CapturingSink : ILogEventSink, IDisposable
 }
 
 /// <summary>
-///     The configuration methods Serilog.Settings.Configuration finds by name in this assembly (it is listed under <c>Using</c>).
+///     The configuration method for the <see cref="CapturingSink" />.
 /// </summary>
 public static class CapturingSinkExtensions
 {
@@ -65,14 +64,5 @@ public static class CapturingSinkExtensions
     {
         ArgumentNullException.ThrowIfNull(sinkConfiguration);
         return sinkConfiguration.Sink(CapturingSink.Named(name), restrictedToMinimumLevel);
-    }
-
-    /// <summary>
-    ///     Adds a <c>Marker</c> property to every event.
-    /// </summary>
-    public static LoggerConfiguration WithMarker(this LoggerEnrichmentConfiguration enrichmentConfiguration, string value)
-    {
-        ArgumentNullException.ThrowIfNull(enrichmentConfiguration);
-        return enrichmentConfiguration.WithProperty("Marker", value);
     }
 }
