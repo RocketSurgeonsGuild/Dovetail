@@ -11,14 +11,6 @@
     Category: Application
   },
   {
-    JointName: Joinery.Dovetail.Serilog.SerilogConfigurationJoint,
-    AssemblyName: Joinery.Dovetail.Serilog,
-    ImplementsJointTypes: [
-      Service
-    ],
-    Category: Application
-  },
-  {
     JointName: Joinery.Dovetail.Serilog.SerilogJoint,
     AssemblyName: Joinery.Dovetail.Serilog,
     ImplementsJointTypes: [

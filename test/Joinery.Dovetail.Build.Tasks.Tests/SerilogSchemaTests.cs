@@ -21,7 +21,7 @@ public class SerilogSchemaTests
 
     /// <summary>The fragments in the Joinery.Dovetail.Serilog assembly, read as the build task reads them.</summary>
     private static IReadOnlyList<ConfigurationSchemaFragment> ReadFragments() =>
-        ConfigurationSchemaFragments.Read([typeof(SerilogConfigurationJoint).Assembly.Location], _ => { });
+        ConfigurationSchemaFragments.Read([typeof(SerilogJoint).Assembly.Location], _ => { });
 
     private static JsonObject ApplicationSchema(bool strict = true, bool includeSchemaStore = false) =>
         SchemaAssert.ShouldBeWellFormed(
