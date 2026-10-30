@@ -19,29 +19,37 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
 
     private const string SchemaStoreDefinition = "SchemaStoreAppSettings";
 
-    private static readonly string[] ModelledKeys = ["MinimumLevel", "Enrich", "Filter", "Properties"];
+    /// <summary>
+    /// The keys of the Serilog section that Joinery.Dovetail.Serilog reads, which are the only ones its schema declares.
+    /// </summary>
+    private static readonly string[] ReadKeys = ["MinimumLevel"];
 
-    private static readonly string[] PermittedKeys = ["Using", "WriteTo", "AuditTo", "Destructure", "LevelSwitches", "FilterSwitches"];
+    /// <summary>
+    /// The other keys of Serilog.Settings.Configuration's format. They are not read, so the merged fragment flags each one.
+    /// </summary>
+    private static readonly string[] UnreadKeys = ["Using", "WriteTo", "AuditTo", "Destructure", "LevelSwitches", "FilterSwitches", "Enrich", "Filter", "Properties"];
 
     private static readonly Regex NamedGroup = new(@"\(\?<[A-Za-z]+>", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// The way a Serilog section is usually written: the detailed MinimumLevel, sinks with arguments, enrichers and properties.
+    /// A Serilog section as Joinery.Dovetail.Serilog reads it: the detailed MinimumLevel, with its overrides.
     /// </summary>
-    private const string RealisticConfiguration = """
+    private const string SupportedConfiguration = """
         {
           "Serilog": {
-            "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.File" ],
-            "MinimumLevel": { "Default": "Information", "Override": { "Microsoft": "Warning", "System": "Warning" } },
-            "WriteTo": [ { "Name": "Console" }, { "Name": "File", "Args": { "path": "Logs/log.txt", "rollingInterval": "Day" } } ],
-            "Enrich": [ "FromLogContext", "WithMachineName", { "Name": "WithProperty", "Args": { "name": "Version", "value": "1.2.3" } } ],
-            "Properties": { "Application": "Sample" }
+            "MinimumLevel": { "Default": "Information", "Override": { "Microsoft": "Warning", "System": "Warning" } }
           }
         }
         """;
 
     /// <summary>
-    /// Each of these breaks one rule of the fragment (and of SchemaStore's schema, which the host schema also applies).
+    /// The short form of MinimumLevel, which is read as well: just a level name.
+    /// </summary>
+    private const string MinimumLevelAsLevelName = """{ "Serilog": { "MinimumLevel": "Debug" } }""";
+
+    /// <summary>
+    /// Each of these breaks one rule of the fragment. A key that is not read is fine for SchemaStore's schema, which the host schema
+    /// also applies, so only the fragment says no to it.
     /// </summary>
     private static readonly (string Name, string Configuration)[] InvalidConfigurations =
     [
@@ -49,8 +57,9 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         ("a numeric default level", """{ "Serilog": { "MinimumLevel": { "Default": 2 } } }"""),
         ("an unknown level", """{ "Serilog": { "MinimumLevel": "Loud" } }"""),
         ("a numeric override", """{ "Serilog": { "MinimumLevel": { "Override": { "Microsoft": 3 } } } }"""),
-        ("an enricher name with a dot", """{ "Serilog": { "Enrich": [ "Some.Dotted.Name" ] } }"""),
-        ("a property that is an object", """{ "Serilog": { "Properties": { "Application": { "Name": "Sample" } } } }"""),
+        ("an enricher, which is not read", """{ "Serilog": { "Enrich": [ "FromLogContext" ] } }"""),
+        ("a sink, which is not read", """{ "Serilog": { "WriteTo": [ { "Name": "Console" } ] } }"""),
+        ("a property, which is not read", """{ "Serilog": { "Properties": { "Application": "Sample" } } }"""),
         ("a misspelled section key", """{ "Serilog": { "MinimumLevl": "Debug" } }"""),
     ];
 
@@ -128,10 +137,7 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         var section = SerilogSection(schema);
         section["$ref"].ShouldNotBeNull();
         var keys = Keys(schema, section);
-        foreach (var key in ModelledKeys.Concat(PermittedKeys))
-        {
-            keys.ShouldContain(key);
-        }
+        keys.ShouldBe(ReadKeys, ignoreOrder: true);
 
         // The fragment's definitions are in the host schema, SchemaStore's next to them, and the host's own section is still there.
         schema["definitions"]!.AsObject().Select(z => z.Key).ShouldContain(SchemaStoreDefinition);
@@ -173,7 +179,7 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
     }
 
     [Test]
-    public async Task TheHostSchemaWithSerilog_AcceptsARealisticConfiguration_AndRejectsBadOnes()
+    public async Task TheHostSchemaWithSerilog_AcceptsASupportedConfiguration_AndRejectsBadOnes()
     {
         using var project = await BuildHost(referenceSerilog: true);
 
@@ -181,13 +187,23 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         var whole = WholeSchema(schema);
         var fragment = FragmentOnly(schema);
 
-        whole.Validate(RealisticConfiguration).ShouldBeEmpty();
-        fragment.Validate(RealisticConfiguration).ShouldBeEmpty();
+        foreach (var configuration in new[] { SupportedConfiguration, MinimumLevelAsLevelName, })
+        {
+            whole.Validate(configuration).ShouldBeEmpty();
+            fragment.Validate(configuration).ShouldBeEmpty();
+        }
+
         foreach (var (name, configuration) in InvalidConfigurations)
         {
             whole.IsValid(configuration).ShouldBeFalse($"{name}, in the host schema");
             // Without SchemaStore's part: the merged fragment is what rejects it.
             fragment.IsValid(configuration).ShouldBeFalse($"{name}, in the merged fragment");
+        }
+
+        // The merge closes the section on the keys it lists, so every key of the wider format is flagged, whatever its value.
+        foreach (var key in UnreadKeys)
+        {
+            fragment.IsValid($$"""{ "Serilog": { "{{key}}": {} } }""").ShouldBeFalse($"{key}, in the merged fragment");
         }
     }
 
