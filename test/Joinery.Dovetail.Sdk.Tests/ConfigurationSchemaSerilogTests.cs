@@ -19,22 +19,33 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
 
     private const string SchemaStoreDefinition = "SchemaStoreAppSettings";
 
+    /// <summary>
+    /// The keys of the Serilog section that Joinery.Dovetail.Serilog reads, which are the only ones its schema declares.
+    /// </summary>
     private static readonly string[] ReadKeys = ["MinimumLevel"];
 
+    /// <summary>
+    /// The other keys of Serilog.Settings.Configuration's format. They are not read, so the merged fragment flags each one.
+    /// </summary>
     private static readonly string[] UnreadKeys = ["Using", "WriteTo", "AuditTo", "Destructure", "LevelSwitches", "FilterSwitches", "Enrich", "Filter", "Properties"];
 
     private static readonly Regex NamedGroup = new(@"\(\?<[A-Za-z]+>", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// The part of a Serilog section that Joinery.Dovetail.Serilog reads: the detailed MinimumLevel, with its overrides.
+    /// A Serilog section as Joinery.Dovetail.Serilog reads it: the detailed MinimumLevel, with its overrides.
     /// </summary>
-    private const string RealisticConfiguration = """
+    private const string SupportedConfiguration = """
         {
           "Serilog": {
             "MinimumLevel": { "Default": "Information", "Override": { "Microsoft": "Warning", "System": "Warning" } }
           }
         }
         """;
+
+    /// <summary>
+    /// The short form of MinimumLevel, which is read as well: just a level name.
+    /// </summary>
+    private const string MinimumLevelAsLevelName = """{ "Serilog": { "MinimumLevel": "Debug" } }""";
 
     /// <summary>
     /// Each of these breaks one rule of the fragment. A key that is not read is fine for SchemaStore's schema, which the host schema
@@ -127,10 +138,6 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         section["$ref"].ShouldNotBeNull();
         var keys = Keys(schema, section);
         keys.ShouldBe(ReadKeys, ignoreOrder: true);
-        foreach (var key in UnreadKeys)
-        {
-            keys.ShouldNotContain(key);
-        }
 
         // The fragment's definitions are in the host schema, SchemaStore's next to them, and the host's own section is still there.
         schema["definitions"]!.AsObject().Select(z => z.Key).ShouldContain(SchemaStoreDefinition);
@@ -172,7 +179,7 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
     }
 
     [Test]
-    public async Task TheHostSchemaWithSerilog_AcceptsARealisticConfiguration_AndRejectsBadOnes()
+    public async Task TheHostSchemaWithSerilog_AcceptsASupportedConfiguration_AndRejectsBadOnes()
     {
         using var project = await BuildHost(referenceSerilog: true);
 
@@ -180,13 +187,23 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         var whole = WholeSchema(schema);
         var fragment = FragmentOnly(schema);
 
-        whole.Validate(RealisticConfiguration).ShouldBeEmpty();
-        fragment.Validate(RealisticConfiguration).ShouldBeEmpty();
+        foreach (var configuration in new[] { SupportedConfiguration, MinimumLevelAsLevelName, })
+        {
+            whole.Validate(configuration).ShouldBeEmpty();
+            fragment.Validate(configuration).ShouldBeEmpty();
+        }
+
         foreach (var (name, configuration) in InvalidConfigurations)
         {
             whole.IsValid(configuration).ShouldBeFalse($"{name}, in the host schema");
             // Without SchemaStore's part: the merged fragment is what rejects it.
             fragment.IsValid(configuration).ShouldBeFalse($"{name}, in the merged fragment");
+        }
+
+        // The merge closes the section on the keys it lists, so every key of the wider format is flagged, whatever its value.
+        foreach (var key in UnreadKeys)
+        {
+            fragment.IsValid($$"""{ "Serilog": { "{{key}}": {} } }""").ShouldBeFalse($"{key}, in the merged fragment");
         }
     }
 
