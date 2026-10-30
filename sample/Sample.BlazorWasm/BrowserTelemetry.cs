@@ -3,6 +3,7 @@ using System.Diagnostics.Metrics;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.OpenTelemetry.Joints;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -37,7 +38,18 @@ public class BrowserMetricsJoint : IMeterProviderBuilderJoint
 }
 
 /// <summary>
-///     Describes the sample in every provider's resource, which both exporters report.
+///     Exports the sample's log records through a batch processor too, which is how the logging provider hands the application's
+///     <c>ILogger</c> output to OpenTelemetry in the browser.
+/// </summary>
+[DovetailExport]
+public class BrowserLoggerJoint : ILoggerProviderBuilderJoint
+{
+    public void Register(IDovetailContext context, LoggerProviderBuilder builder) =>
+        builder.AddProcessor(new BatchLogRecordExportProcessor(new BrowserLogExporter(), scheduledDelayMilliseconds: 100));
+}
+
+/// <summary>
+///     Describes the sample in every provider's resource, which all three exporters report.
 /// </summary>
 [DovetailExport]
 public class BrowserResourceJoint : IResourceBuilderJoint
@@ -51,8 +63,14 @@ public static class BrowserTelemetry
     public const string SourceName = "Sample.BlazorWasm";
     public const string ResourceAttribute = "sample.host";
 
+    /// <summary>
+    ///     The category of the one log record the OpenTelemetry parity page waits for, among everything else the browser logs.
+    /// </summary>
+    public const string LogCategory = "Sample.BlazorWasm.Parity";
+
     private static readonly TaskCompletionSource<string> _exported = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private static readonly TaskCompletionSource<string> _measured = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private static readonly TaskCompletionSource<string> _logged = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public static ActivitySource Source { get; } = new(SourceName);
 
@@ -69,6 +87,14 @@ public static class BrowserTelemetry
     ///     Completes with the first sum of <see cref="Renders" /> the exporter receives and its provider's <see cref="ResourceAttribute" />.
     /// </summary>
     public static Task<string> Measured => _measured.Task;
+
+    /// <summary>
+    ///     Completes with the category, level, body and <c>Name</c> state of the first log record in <see cref="LogCategory" /> the
+    ///     exporter receives and its provider's <see cref="ResourceAttribute" />.
+    /// </summary>
+    public static Task<string> Logged => _logged.Task;
+
+    internal static void MarkLogged(string description, BaseProvider? provider) => _logged.TrySetResult($"{description} from {GetResourceAttribute(provider)}");
 
     internal static void MarkExported(string name, BaseProvider? provider) => _exported.TrySetResult($"{name} from {GetResourceAttribute(provider)}");
 
@@ -105,6 +131,23 @@ internal sealed class BrowserMetricExporter : BaseExporter<Metric>
                     BrowserTelemetry.MarkMeasured(point.GetSumLong(), ParentProvider);
                 }
             }
+        }
+
+        return ExportResult.Success;
+    }
+}
+
+internal sealed class BrowserLogExporter : BaseExporter<LogRecord>
+{
+    public override ExportResult Export(in Batch<LogRecord> batch)
+    {
+        foreach (var record in batch)
+        {
+            if (record.CategoryName != BrowserTelemetry.LogCategory)
+                continue;
+
+            var name = record.Attributes?.FirstOrDefault(attribute => attribute.Key == "Name").Value;
+            BrowserTelemetry.MarkLogged($"{record.CategoryName}|{record.LogLevel}|{record.Body}|{name}", ParentProvider);
         }
 
         return ExportResult.Success;
