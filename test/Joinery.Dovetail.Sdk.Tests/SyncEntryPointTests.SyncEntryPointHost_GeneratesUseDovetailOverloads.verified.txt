@@ -94,7 +94,8 @@
       DovetailHost.HostApplication.g.cs,
       DovetailHost.SyncHost.Sync.g.cs,
       DovetailHost.SyncHost.g.cs,
-      DovetailHosting.DovetailHostApplicationHelpers.g.cs
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostLifecycleHelpers.g.cs
     ],
     OutputFiles: [
       appsettings.schema.json,
