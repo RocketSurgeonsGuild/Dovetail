@@ -55,7 +55,6 @@
     ImplementsJointTypes: [
       Configuration
     ],
-    HostType: UnitTest,
     Category: Application,
     Dependencies: [
       {
@@ -65,7 +64,7 @@
         ImplementsJointTypes: [
           Configuration
         ],
-        HostType: UnitTest,
+        HostType: Live,
         Category: Application
       }
     ]
@@ -85,7 +84,6 @@
     ImplementsJointTypes: [
       Logging
     ],
-    HostType: UnitTest,
     Category: Application
   },
   {
@@ -94,7 +92,6 @@
     ImplementsJointTypes: [
       Logging
     ],
-    HostType: UnitTest,
     Category: Application,
     Dependencies: [
       {
@@ -103,7 +100,6 @@
         ImplementsJointTypes: [
           Logging
         ],
-        HostType: UnitTest,
         Category: Application
       }
     ]
@@ -123,7 +119,7 @@
     ImplementsJointTypes: [
       Configuration
     ],
-    HostType: UnitTest,
+    HostType: Live,
     Category: Application
   },
   {
@@ -132,7 +128,6 @@
     ImplementsJointTypes: [
       Setup
     ],
-    HostType: UnitTest,
     Category: Application
   },
   {
@@ -160,7 +155,6 @@
     ImplementsJointTypes: [
       Service
     ],
-    HostType: UnitTest,
     Category: Application
   },
   {
