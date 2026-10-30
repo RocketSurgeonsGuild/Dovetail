@@ -1,0 +1,7 @@
+﻿{
+  Host: Maui,
+  LifecycleHelperEmitted: false,
+  Helpers: [
+    DovetailMauiHelpers
+  ]
+}

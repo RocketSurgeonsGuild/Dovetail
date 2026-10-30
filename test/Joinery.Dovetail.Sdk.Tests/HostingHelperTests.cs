@@ -19,6 +19,12 @@ public class HostingHelperTests(string targetFramework)
     private const string GenericHost = "DovetailHostApplicationHelpers";
 
     /// <summary>
+    ///     <c>OnHostStarting</c>, <c>OnHostStarted</c>, <c>OnHostStopping</c> and <c>OnHostStopped</c>, for the hosts that run
+    ///     <c>IHostedLifecycleService</c>: the generic host and ASP.NET Core, not .NET MAUI or Blazor WebAssembly.
+    /// </summary>
+    private const string HostLifecycle = "DovetailHostLifecycleHelpers";
+
+    /// <summary>
     ///     <c>context.Environment</c>, which comes with any project referencing Microsoft.Extensions.Hosting.Abstractions (the
     ///     assembly <c>IHostEnvironment</c> lives in) - in practice the generic host, .NET MAUI and Uno Platform, whose helpers
     ///     populate it.
@@ -30,7 +36,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithGenericHost(app));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext]);
     }
 
     /// <summary>
@@ -55,7 +61,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemInclude("FrameworkReference", "Microsoft.AspNetCore.App"));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailConfigurationSchemaEndpointExtensions", GenericHost, HostingContext]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailConfigurationSchemaEndpointExtensions", GenericHost, HostLifecycle, HostingContext]);
     }
 
     [Test]
@@ -87,6 +93,63 @@ public class HostingHelperTests(string targetFramework)
     }
 
     /// <summary>
+    ///     <c>OnHostStarting</c>, <c>OnHostStarted</c>, <c>OnHostStopping</c> and <c>OnHostStopped</c> are only emitted where the host runs
+    ///     <c>IHostedLifecycleService</c>: the generic host and ASP.NET Core, and Uno Platform, whose host is a generic host. .NET MAUI and
+    ///     Blazor WebAssembly don't run it, so they get nothing, even with Microsoft.Extensions.Hosting among their references (the
+    ///     <c>WithGenericHost</c> cases) - methods that compile but never run their handlers would be worse than none. The snapshot
+    ///     lists what each host gets, less <c>context.Environment</c>, which depends on the target framework (both share one snapshot).
+    /// </summary>
+    [Test]
+    [Arguments("GenericHost")]
+    [Arguments("AspNetCore")]
+    [Arguments("Uno")]
+    [Arguments("Maui")]
+    [Arguments("MauiWithGenericHost")]
+    [Arguments("WebAssembly")]
+    [Arguments("WebAssemblyWithGenericHost")]
+    public async Task HostLifecycle_IsEmittedOnlyForTheHostsThatRunIt(string host)
+    {
+        using var project = CreateApplication(
+            app =>
+            {
+                switch (host)
+                {
+                    case "GenericHost":
+                        WithGenericHost(app);
+                        break;
+                    case "AspNetCore":
+                        app.ItemInclude("FrameworkReference", "Microsoft.AspNetCore.App");
+                        break;
+                    case "Uno":
+                        Uno(app);
+                        break;
+                    case "Maui":
+                        WithMaui(app);
+                        break;
+                    case "MauiWithGenericHost":
+                        WithMaui(WithGenericHost(app));
+                        break;
+                    case "WebAssembly":
+                        WebAssembly(app);
+                        break;
+                    case "WebAssemblyWithGenericHost":
+                        WebAssembly(WithGenericHost(app));
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(host), host, null);
+                }
+            }
+        );
+
+        var helpers = ( await BuildAndReadHelpers(project) ).Where(z => z != HostingContext).ToArray();
+
+        // Both target frameworks share one snapshot per host.
+        var settings = new VerifySettings();
+        settings.IgnoreConstructorParameters();
+        await Verify(new { Host = host, LifecycleHelperEmitted = helpers.Contains(HostLifecycle), Helpers = helpers }, settings: settings);
+    }
+
+    /// <summary>
     /// The Uno host's <c>ConfigureDovetail&lt;TShell&gt;</c> entry points navigate with Uno.Extensions.Navigation, so they (and the helper
     /// they call) are only emitted when it is referenced; the Dovetail SDK declares them for every Uno app with Hosting.
     /// </summary>
@@ -109,7 +172,7 @@ public class HostingHelperTests(string targetFramework)
         var helpers = await BuildAndReadHelpers(project);
 
         helpers.ShouldBe(
-            navigation ? [GenericHost, HostingContext, "DovetailUnoHelpers", "DovetailUnoNavigationHelpers"] : [GenericHost, HostingContext, "DovetailUnoHelpers"]
+            navigation ? [GenericHost, HostLifecycle, HostingContext, "DovetailUnoHelpers", "DovetailUnoNavigationHelpers"] : [GenericHost, HostLifecycle, HostingContext, "DovetailUnoHelpers"]
         );
         GeneratedFiles(project, "DovetailHost.Uno.Navigate.g.cs").ShouldBe(navigation ? ["DovetailHost.Uno.Navigate.g.cs"] : []);
     }
@@ -141,7 +204,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithOpenTelemetryHosting(WithDovetailOpenTelemetry(WithGenericHost(app))));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext, "DovetailOpenTelemetryJoint"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryJoint"]);
     }
 
     [Test]
@@ -230,7 +293,7 @@ public class HostingHelperTests(string targetFramework)
         using var project = CreateApplication(app => WithDovetailOpenTelemetry(Uno(app)));
 
         ( await BuildAndReadHelpers(project) ).ShouldBe(
-            [GenericHost, HostingContext, "DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryUnoStartJoint", "DovetailUnoHelpers"]
+            [GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryUnoStartJoint", "DovetailUnoHelpers"]
         );
     }
 
@@ -248,7 +311,7 @@ public class HostingHelperTests(string targetFramework)
         using var project = new SdkTestProject();
         project.AddProject("app/app.csproj", library);
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext]);
     }
 
     /// <summary>
@@ -260,7 +323,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateSdkApplication(app => WithOpenTelemetryHosting(WithGenericHost(app)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext, "DovetailOpenTelemetryJoint"]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryJoint"]);
     }
 
     [Test]
@@ -272,7 +335,7 @@ public class HostingHelperTests(string targetFramework)
                   .ItemPackageReference("OpenTelemetry", Config.CentralPackageVersion("OpenTelemetry", targetFramework))
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostingContext]);
+        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext]);
     }
 
     private ProjectCreator WithGenericHost(ProjectCreator app) =>
@@ -309,6 +372,9 @@ public class HostingHelperTests(string targetFramework)
     /// </summary>
     private string[] WithSharedFrameworkHostingContext(params string[] helpers) =>
         Version.Parse(targetFramework["net".Length..]).Major >= 11 ? [.. helpers.Append(HostingContext).Order(StringComparer.Ordinal)] : helpers;
+
+    private ProjectCreator WithMaui(ProjectCreator app) =>
+        app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework));
 
     private ProjectCreator WebAssembly(ProjectCreator app) =>
         app.ItemPackageReference(
