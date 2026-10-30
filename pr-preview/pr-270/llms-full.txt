@@ -167,7 +167,7 @@ You can define a joint that only runs for a given <xref:Joinery.Dovetail.HostTyp
 
 The generated `Imports` class sets the host type only when the build specifies one. The `DovetailHostType` MSBuild property (`Live` or `UnitTest`) takes precedence; otherwise test projects (`IsTestProject`) get `UnitTest`. Anywhere else the host type is left unset, and the hosting extensions set it to `Live` if nothing else has.
 
-A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [\[LiveDovetail\]](xref:Joinery.Dovetail.LiveJointAttribute) that registers `IClock` using the expected calendar system, and another [\[UnitTestDovetail\]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock` with a predefined starting date and time.
+A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [\[LiveJoint\]](xref:Joinery.Dovetail.LiveJointAttribute) that registers `IClock` using the expected calendar system, and another [\[UnitTestJoint\]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock` with a predefined starting date and time.
 
 Note
 
@@ -179,33 +179,59 @@ Currently only three host types are defined
 
 Note
 
-There is no attribute for the `DovetailHostType.Undefined`.
+There is no shortcut attribute for `DovetailHostType.Undefined`. A joint without a host type attribute already runs everywhere.
 
-### [\[LiveDovetail\]](xref:Joinery.Dovetail.LiveJointAttribute)
+### [\[LiveJoint\]](xref:Joinery.Dovetail.LiveJointAttribute)
 
-[Section titled “\[LiveDovetail\]”](#livedovetail)
+[Section titled “\[LiveJoint\]”](#livejoint)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `Live`.
 
 ```c#
-[LiveDovetail]
+[LiveJoint]
 public class DovetailA
 {
 }
 ```
 
-### [\[UnitTestDovetail\]](xref:Joinery.Dovetail.UnitTestJointAttribute)
+### [\[UnitTestJoint\]](xref:Joinery.Dovetail.UnitTestJointAttribute)
 
-[Section titled “\[UnitTestDovetail\]”](#unittestdovetail)
+[Section titled “\[UnitTestJoint\]”](#unittestjoint)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `UnitTest`.
 
 ```c#
-[UnitTestDovetail]
+[UnitTestJoint]
 public class DovetailA
 {
 }
 ```
+
+### \[DovetailHostType]
+
+[Section titled “\[DovetailHostType\]”](#dovetailhosttype)
+
+The general form of the two attributes above. It takes the host type the joint applies to, for example `[DovetailHostType(DovetailHostType.Live)]`. It is also the only way to declare `Undefined` explicitly.
+
+### Which attributes are honoured where
+
+[Section titled “Which attributes are honoured where”](#which-attributes-are-honoured-where)
+
+A joint reaches a context by one of two paths, and both honour all three attributes the same way:
+
+| Path                                                                                                                                 | `[LiveJoint]` / `[UnitTestJoint]` | `[DovetailHostType]` |
+| ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- | -------------------- |
+| Runtime reflection: `DovetailContextBuilder.AppendJoint(...)` / `PrependJoint(...)` with a joint instance or `AppendJoint<T>()`      | Honoured                          | Honoured             |
+| Generated metadata: the joints marked `[DovetailExport]`, which the source generator lists in the generated `Exports` class at build | Honoured                          | Honoured             |
+
+On both paths:
+
+* `[LiveJoint]` and `[UnitTestJoint]` are read before `[DovetailHostType]`, so `[LiveJoint]` wins over a `[DovetailHostType]` on the same joint. Declaring both `[LiveJoint]` and `[UnitTestJoint]` on one joint isn’t meaningful, and which of them applies is not specified.
+* The attributes are inherited. A joint that derives from a `[LiveJoint]` class is a live joint too, and the closest declaration wins.
+* A joint that declares nothing has the `Undefined` host type and applies everywhere, apart from the test project default below.
+* A joint applies when its host type is `Undefined` or equals the host type of the context.
+
+The generated path adds one default of its own. In a test project (`IsTestProject`), an exported joint that declares no host type is exported as `UnitTest`. A joint’s own attribute always takes precedence over that default, so a `[LiveJoint]` in a test project stays live-only and `[DovetailHostType(DovetailHostType.Undefined)]` opts a joint out of the default. The runtime reflection path has no such default.
 
 ## Injecting dependencies
 
@@ -259,6 +285,120 @@ public class OptionalInjectableDovetail : IServiceJoint
     }
 }
 ```
+
+# Host Lifecycle
+
+> Run code when the host is starting, started, stopping and stopped, without writing a hosted service, from an application builder or a service collection.
+
+# Host Lifecycle
+
+[Section titled “Host Lifecycle”](#host-lifecycle)
+
+A host that runs `IHostedLifecycleService` (the generic host, and so ASP.NET Core) tells its hosted services when it is about to start, has started, is about to stop and has stopped. Most applications only want to run a little code at one of those moments — warm a cache once the host has started, flush a buffer before it stops — and writing a hosted service for that is a lot of ceremony. `Joinery.Dovetail.Hosting` lets you register the code directly:
+
+```c#
+var builder = Host.CreateApplicationBuilder(args);
+
+
+builder
+   .OnHostStarting(provider => Console.WriteLine("Starting"))
+   .OnHostStarted(async provider => await provider.GetRequiredService<CacheWarmer>().WarmUpAsync())
+   .OnHostStopping(async (provider, cancellationToken) => await provider.GetRequiredService<Outbox>().FlushAsync(cancellationToken))
+   .OnHostStopped(provider => Console.WriteLine("Stopped"));
+
+
+using var host = await builder.ConfigureDovetail();
+await host.RunAsync();
+```
+
+An `ASP.NET Core` application does the same on its `WebApplicationBuilder`.
+
+## The methods
+
+[Section titled “The methods”](#the-methods)
+
+There are four, one per moment, and each comes in three forms:
+
+| Method           | Runs                                           | `IHostedLifecycleService` method |
+| ---------------- | ---------------------------------------------- | -------------------------------- |
+| `OnHostStarting` | before the host starts its hosted services     | `StartingAsync`                  |
+| `OnHostStarted`  | after the host has started its hosted services | `StartedAsync`                   |
+| `OnHostStopping` | before the host stops its hosted services      | `StoppingAsync`                  |
+| `OnHostStopped`  | after the host has stopped its hosted services | `StoppedAsync`                   |
+
+| Form         | Handler                                           |
+| ------------ | ------------------------------------------------- |
+| synchronous  | `Action<IServiceProvider>`                        |
+| asynchronous | `Func<IServiceProvider, Task>`                    |
+| cancellable  | `Func<IServiceProvider, CancellationToken, Task>` |
+
+The handler gets the host’s service provider. The cancellable form also gets the cancellation token the host passes to the lifecycle method, which follows the token given to `StartAsync` or `StopAsync`.
+
+## From an application builder or a service collection
+
+[Section titled “From an application builder or a service collection”](#from-an-application-builder-or-a-service-collection)
+
+Every method is an extension of both `IHostApplicationBuilder` (`HostApplicationBuilder`, `WebApplicationBuilder`, …), which returns the builder so the calls chain, and `IServiceCollection`, which returns the service collection. A host built the older way, with an `IHostBuilder`, has no application builder, but it has a service collection:
+
+```c#
+using var host = Host
+                .CreateDefaultBuilder(args)
+                .ConfigureServices(services => services.OnHostStopped(_ => Console.WriteLine("Stopped")))
+                .Build();
+```
+
+A [joint](./defining-joints) registers its handlers the same way, while the application’s services are configured. That is how a library runs code with the host without the application doing anything:
+
+```c#
+[DovetailExport]
+public class WarmUpCache : IServiceJoint
+{
+    public void Register(IDovetailContext context, IServiceCollection services) =>
+        services.OnHostStarted(async (provider, cancellationToken) => await provider.GetRequiredService<ICache>().WarmUpAsync(cancellationToken));
+}
+```
+
+Handlers have to be registered before the host is built. The first registration adds the hosted service that runs them, so there is nothing else to call, and a project that registers no handler gets no hosted service.
+
+## Handlers of one moment run in parallel
+
+[Section titled “Handlers of one moment run in parallel”](#handlers-of-one-moment-run-in-parallel)
+
+All the handlers registered for a moment are started together and awaited together (with `Task.WhenAll`), not one after the other, so one slow handler doesn’t hold up the rest. The host moves on to the next step once every one of them has finished.
+
+* **Don’t depend on the order** the handlers of one moment run in. The moments themselves are ordered by the host, which calls `StartingAsync` on all its hosted lifecycle services, then `StartAsync` on all of them, then `StartedAsync` on all of them (and likewise `StoppingAsync`, `StopAsync` and `StoppedAsync` when it stops). The handlers of a moment have all finished before the host moves on to the next.
+* A **synchronous** handler runs to completion when it is started, so synchronous handlers of one moment, which don’t wait for anything, happen to run one after another. Handlers that `await` overlap.
+* A handler that **throws**, even before its first `await`, fails that step of the host like any hosted service would, and the other handlers of the moment have still been started.
+* The handlers that run in parallel are those of **one project** (see below): a library and the application that uses it each have a hosted service of their own, and the host runs hosted services one after the other (unless `HostOptions.ServicesStartConcurrently` and `ServicesStopConcurrently` say otherwise). The library’s handlers for a moment therefore run before or after the application’s, not alongside them.
+
+## Where it is available
+
+[Section titled “Where it is available”](#where-it-is-available)
+
+The methods are emitted by `Joinery.Dovetail.Hosting` into the projects that reference the generic host (`Microsoft.Extensions.Hosting`), the same way it emits its other helpers, and nothing is emitted where the host doesn’t run `IHostedLifecycleService`:
+
+| Host                                    | Methods                                                                                                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Generic host: workers                   | yes                                                                                                                                            |
+| ASP.NET Core                            | yes                                                                                                                                            |
+| Uno Platform (`Uno.Extensions.Hosting`) | yes: its host is a generic host, so handlers run once the host is started (`NavigateAsync<TShell>()` starts it, `ConfigureDovetail()` doesn’t) |
+| .NET MAUI                               | no                                                                                                                                             |
+| Blazor WebAssembly                      | no                                                                                                                                             |
+
+A .NET MAUI or Blazor WebAssembly project gets none even when `Microsoft.Extensions.Hosting` ends up among its references (another package brought it along, say): methods that compile but never run their handlers would be worse than methods that don’t exist, so calling one is a compile error.
+
+The methods are `internal`, as are all the helpers `Joinery.Dovetail.Hosting` emits, so a library that registers handlers needs to reference `Joinery.Dovetail.Hosting` and the generic host itself.
+
+## Each project has its own
+
+[Section titled “Each project has its own”](#each-project-has-its-own)
+
+Every project that gets the methods gets its own, self-contained copy of them, of the registration they add and of the hosted service that runs it, all `internal` and `[Embedded]`, so no assembly sees another’s. Nothing is shared between projects:
+
+* A handler registered with a project’s methods is registered with, and run by, that project’s own hosted service. A library and an application that each register handlers end up with two hosted services, each running only its own project’s handlers, once.
+* The “first registration adds the hosted service” rule is per project too. It looks for that project’s own registration type in the service collection, so it neither depends on nor notices another project’s registrations.
+* Projects can’t coordinate on one list of handlers, and there is no single set of handlers that runs in parallel across the library and the application (see above). Handlers that must not run side by side, or in a fixed order, belong in one project, or in a hosted service of their own.
+* That holds for every way of registering: the application builder, the service collection and a joint all go through the methods of the project they are written in.
 
 # Introduction
 
@@ -652,21 +792,18 @@ The build target runs after `CoreCompile` and skips design-time builds. It write
 
 [Section titled “Serilog”](#serilog)
 
-`Joinery.Dovetail.Serilog` ships a schema for the `Serilog` section, in the format [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration) reads, so a host that references it gets completion and validation for `Serilog` without any setup. The section is dynamic (sinks, enrichers and their arguments come from other packages), so no options type can describe it and the generator has nothing to emit. `Joinery.Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the pipeline above unchanged: the library’s `ConfigurationSchema.json` is packed at the package root, and a host merges the fragment into its `appsettings.schema.json` like any other.
+`Joinery.Dovetail.Serilog` ships a schema for the `Serilog` section, so a host that references it gets completion and validation for `Serilog` without any setup. The section is read by hand (see [Serilog](./serilog)), so no options type describes it and the generator has nothing to emit. `Joinery.Dovetail.Serilog` carries the same `AssemblyMetadata` fragment as a hand-written attribute instead, and it goes through the pipeline above unchanged: the library’s `ConfigurationSchema.json` is packed at the package root, and a host merges the fragment into its `appsettings.schema.json` like any other.
 
-The fragment follows the rules of the `Serilog` definition in SchemaStore’s `appsettings.json` schema, the one the merged file embeds by default, so the two never disagree about a value. It models these keys:
+The schema describes what `Joinery.Dovetail.Serilog` reads, which is the minimum level and nothing else, because the rest of Serilog.Settings.Configuration’s format needs reflection that is not trimming or Native AOT safe. It models one key:
 
-* **`MinimumLevel`**, as a level name (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`, and `Off` as in SchemaStore’s list; the names are matched exactly) or as an object with `Default`, `Override` (a map from a source such as `Microsoft.AspNetCore` to a level) and `ControlledBy`. In the object form a value may also be a switch reference, a `$` and a name; SchemaStore’s pattern for that is loose enough to accept any plain word too, and the fragment keeps it. A number, or an unknown name in the string form, is flagged.
-* **`Enrich`** and **`Filter`**, as a non-empty list of unique items, a single name, or a map of items by name. An item is a method name (letters, digits and underscores, not starting with a digit, so `Some.Namespace.WithThing` is flagged) or `{ "Name": ..., "Args": { ... } }` with `Name` required. `Name` completes the well-known enrichers and filters and accepts any other method name. `Args` keys must be identifiers and their values are not checked, since their shape belongs to the extension method.
-* **`Properties`**, a map of strings.
-* **`$schema`**, a string.
+* **`MinimumLevel`**, as a level name (`Verbose`, `Debug`, `Information`, `Warning`, `Error` or `Fatal`; the names are matched exactly) or as an object with `Default` and `Override` (a map from a source such as `Microsoft.AspNetCore` to a level). A number, or an unknown name, is flagged.
 
-`Using`, `WriteTo`, `AuditTo`, `Destructure`, `LevelSwitches` and `FilterSwitches` are not modelled by the fragment. They are listed so the strict merged schema keeps accepting them, with a description and no constraint on their value. SchemaStore’s schema, part of the same merged file, still checks them.
+Every other key of the section (`Using`, `WriteTo`, `AuditTo`, `Enrich`, `Filter`, `Destructure`, `Properties`, `LevelSwitches`, `FilterSwitches` and `MinimumLevel`’s `ControlledBy`, or a level switch given as a value) is flagged by the strict merged schema rather than accepted, so that configuration copied from Serilog’s documentation, which would be ignored, does not look as if it were working. The level rules follow the `Serilog` definition in SchemaStore’s `appsettings.json` schema, the one the merged file embeds by default, narrowed to the six levels (SchemaStore also lists `Off`, which Serilog has no level for) and with no switches. Both apply in the merged file, so the fragment is what rejects the keys that are not read.
 
-What differs from SchemaStore’s schema, and why it is harmless:
+What else differs from SchemaStore’s schema, and why it is harmless:
 
 * **Casing.** Configuration keys ignore case, so the fragment, like every Dovetail fragment, accepts any casing of its keys. SchemaStore’s schema lists them case-sensitively, and both apply in the merged file, so `minimumlevel` is flagged by SchemaStore’s half.
-* **Flat keys.** SchemaStore’s schema accepts the flat forms `"WriteTo:Async"` and `"Enrich:0"`, which Serilog reads. The strict merge closes the `Serilog` section with the names it knows, so those are flagged. Use the array or object form, or set `DovetailConfigurationSchemaStrict` to `false`.
+* **Flat keys.** SchemaStore’s schema accepts the flat forms `"WriteTo:Async"` and `"Enrich:0"`, which Serilog reads. They are flagged like the other keys that are not read. Set `DovetailConfigurationSchemaStrict` to `false` to leave the section open.
 
 ### Serving the schema
 
@@ -729,7 +866,7 @@ The generator runs in every project that references a Dovetail package, includin
 
 [Section titled “OpenTelemetry”](#opentelemetry)
 
-`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry’s configuration surface — the top-level `IOpenTelemetryBuilder`, the resource builder, and the tracer, meter and logger provider builders — as ordinary Dovetail [joints](./defining-joints). Any library can contribute an activity source, a meter, a log processor, or a resource attribute without taking a direct dependency on how the host wires up OpenTelemetry.
+`Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry’s configuration surface — the top-level `IOpenTelemetryBuilder`, the resource builder, and the tracer, meter and logger provider builders — as ordinary Dovetail [joints](./defining-joints). Any library can contribute an activity source, a meter, a log processor, or a resource attribute without taking a direct dependency on how the host wires up OpenTelemetry. Coming from `LaunchPad.Telemetry`? [Its parity check](./opentelemetry-launchpad-parity) maps each of its conventions to a joint here.
 
 ## Turning it on
 
@@ -814,13 +951,86 @@ public class MyLibraryTracing : ITracerProviderJoint
 
 * The console exporter, the OTLP exporter, or any other exporter package.
 * ASP.NET Core, HttpClient, or other instrumentation packages.
-* Any default sampler, resource attribute, or processor configuration.
+* Any default sampler, resource attribute, or processor configuration of its own. The OpenTelemetry SDK’s default resource still applies, and already has the telemetry SDK attributes and the environment variable detector.
 
 Consumers add exporters and instrumentation the same way they add anything else to a provider: by writing their own `ITracerProviderJoint`/`IMeterProviderBuilderJoint`/`ILoggerProviderBuilderJoint` implementation (or a plain `Configure{Kind}(...)` delegate) that calls the relevant `AddConsoleExporter()`, `AddOtlpExporter()`, `AddAspNetCoreInstrumentation()`, etc. This keeps `Joinery.Dovetail.OpenTelemetry` itself free of exporter dependencies, which also keeps it friendly to trimming/AOT — see [Non-Goals in the OpenTelemetry design doc](https://github.com/RocketSurgeonsGuild/Dovetail/blob/main/openspec/changes/add-dovetail-opentelemetry/design.md#goals--non-goals) for the full rationale.
 
+# OpenTelemetry parity with LaunchPad.Telemetry
+
+> Which Dovetail OpenTelemetry joint replaces each LaunchPad.Telemetry convention, how logs reach the logging provider, what the SDK's default resource already contains, and the evidence for each.
+
+# OpenTelemetry parity with LaunchPad.Telemetry
+
+[Section titled “OpenTelemetry parity with LaunchPad.Telemetry”](#opentelemetry-parity-with-launchpadtelemetry)
+
+`Rocket.Surgery.LaunchPad.Telemetry` offered six convention abstractions, a default convention that turned OpenTelemetry on, and a default convention for the resource. `Joinery.Dovetail.OpenTelemetry` (with the joints `Joinery.Dovetail.Hosting` emits) covers all of that, so an application can drop the LaunchPad package. This page is the written check, made against OpenTelemetry SDK 1.20.1, and names the test that shows each row. See [OpenTelemetry](./opentelemetry) for how the joints work.
+
+The one LaunchPad.Telemetry convention that has no equivalent here is the instrumentation convention (HTTP client tracing, and HTTP client, runtime and process metrics). Dovetail’s package ships no instrumentation on purpose, so LaunchPad keeps it as a joint of its own in `LaunchPad.Hosting` ([LaunchPad#3061](https://github.com/RocketSurgeonsGuild/LaunchPad/issues/3061)).
+
+## The six abstractions
+
+[Section titled “The six abstractions”](#the-six-abstractions)
+
+| LaunchPad.Telemetry                                                   | Dovetail                                                                               | Registered with                                 | Shown by                                                                                                                              |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `IOpenTelemetryConvention`, `OpenTelemetryConvention`                 | `IOpenTelemetryJoint`, `OpenTelemetryJointDelegate` (`IOpenTelemetryBuilder`)          | `ConfigureOpenTelemetry`                        | `Base_Joint_Configures_Services_And_Every_Signal`                                                                                     |
+| `IOpenTelemetryAsyncConvention`, `OpenTelemetryAsyncConvention`       | `IOpenTelemetryAsyncJoint`, `OpenTelemetryAsyncJointDelegate` (generated)              | `ConfigureOpenTelemetry` with an async delegate | `Async_Delegate_Is_Awaited_With_The_Cancellation_Token_Given_To_ConfigureDovetail`, `Exported_Async_Joint_Is_Discovered_And_Awaited`  |
+| `IOpenTelemetryLoggingConvention`, `OpenTelemetryLoggingConvention`   | `ILoggerProviderBuilderJoint`, `LoggerProviderJointDelegate` (`LoggerProviderBuilder`) | `ConfigureLoggerProvider`                       | `Exported_Logger_Joint_Is_Discovered_And_Applied`, `Logs_Are_Exported_Through_The_Logging_Provider`                                   |
+| `IOpenTelemetryMetricsConvention`, `OpenTelemetryMetricsConvention`   | `IMeterProviderBuilderJoint`, `MeterProviderJointDelegate` (`MeterProviderBuilder`)    | `ConfigureMeterProvider`                        | `Exported_Meter_Joint_Is_Discovered_And_Applied`                                                                                      |
+| `IOpenTelemetryResourceConvention`, `OpenTelemetryResourceConvention` | `IResourceBuilderJoint`, `ResourceBuilderJointDelegate` (`ResourceBuilder`)            | `ConfigureResourceBuilder`                      | `Exported_Resource_Joint_Is_Discovered_And_Applied_To_Every_Provider`                                                                 |
+| `IOpenTelemetryTracingConvention`, `OpenTelemetryTracingConvention`   | `ITracerProviderJoint`, `TracerProviderJointDelegate` (`TracerProviderBuilder`)        | `ConfigureTracerProvider`                       | `DovetailExport_Annotated_TracerJoint_Is_Auto_Discovered_Without_Manual_Configure`                                                    |
+| `TelemetryConvention` (applies the conventions, adds the logger)      | `DovetailOpenTelemetryJoint` and its siblings, emitted by `Joinery.Dovetail.Hosting`   | nothing: emitted into the application           | `Starting_The_Host_Starts_Traces_And_Metrics_With_The_Resource`, `Starting_The_Web_Application_Starts_Every_Signal_With_The_Resource` |
+| `DefaultTelemetryConvention` (resource defaults)                      | nothing: the SDK’s default resource                                                    | nothing                                         | [Resource defaults](#resource-defaults)                                                                                               |
+
+How the shape differs, none of it a capability:
+
+* A joint receives the `IDovetailContext` where a convention received the context and an `IConfiguration`. The configuration is `context.Configuration` (`Joints_Read_The_Application_Configuration_From_The_Context`).
+* Delegates always take the context: write `(_, builder) => ...` where LaunchPad also had `Action<TBuilder>` overloads.
+* `ConfigureOpenTelemetryLogging`, `ConfigureOpenTelemetryMetrics` and `ConfigureOpenTelemetryTracing` are `ConfigureLoggerProvider`, `ConfigureMeterProvider` and `ConfigureTracerProvider`; the resource one is `ConfigureResourceBuilder`.
+* The base joint types and `ConfigureOpenTelemetry` are in `Joinery.Dovetail.Joints`, the narrower ones in `Joinery.Dovetail.OpenTelemetry.Joints`. Import both.
+* `[ExportConvention]` is `[DovetailExport]`. `ConventionCategory` and `AfterConvention<T>` become the `priority` and `category` parameters, and every OpenTelemetry joint, base or narrow, runs in the one priority order.
+* LaunchPad’s `SerilogTelemetryConvention` (Serilog’s OpenTelemetry sink) belongs to the Serilog package, not this one.
+
+## Logs through the logging provider
+
+[Section titled “Logs through the logging provider”](#logs-through-the-logging-provider)
+
+LaunchPad’s `TelemetryConvention` was also an `ILoggingConvention` that called `ILoggingBuilder.AddOpenTelemetry()`, so the OpenTelemetry provider was always one of the application’s logger providers.
+
+Dovetail adds it when something configures logging. Every `ILoggerProviderBuilderJoint` (and `ConfigureLoggerProvider`) runs inside `IOpenTelemetryBuilder.WithLogging`, which in SDK 1.20.1 does `AddLogging(logging => logging.UseOpenTelemetry(...))`, and so does the `UseOtlpExporter()` call, which enables logging, metrics and tracing together. An application with neither has no log exporter, so it had nothing to export. To have the provider regardless, call `WithLogging()` from any OpenTelemetry joint.
+
+`Logs_Are_Exported_Through_The_Logging_Provider` shows the result: the provider is an `OpenTelemetryLoggerProvider` among the host’s `ILoggerProvider`s, and a warning written through `ILogger<T>` reaches the exporter with its category, level, body and structured state.
+
+Log export keeps working when the [Serilog](./serilog) joint is also applied: Serilog’s logger forwards each event to the other logging providers of the container, the OpenTelemetry one included ([the other logging providers](./serilog#the-other-logging-providers)).
+
+## Resource defaults
+
+[Section titled “Resource defaults”](#resource-defaults)
+
+Yes: the SDK’s default resource already holds what LaunchPad’s `DefaultTelemetryConvention` added. `ResourceBuilder.CreateDefault()` is the default resource, `AddTelemetrySdk()` and `AddEnvironmentVariableDetector()`, and every provider starts from it, so a joint only adds to it. Dovetail adds no resource defaults of its own.
+
+* `Default_Resource_Has_The_Telemetry_Sdk_Attributes_On_Every_Signal`: with no resource joint, the tracer, meter and logger providers all carry `telemetry.sdk.name`, `telemetry.sdk.language` and `telemetry.sdk.version`, and `service.name` is `unknown_service:<process>`.
+* `Default_Resource_Has_The_Environment_Variable_Detector` and `Default_Resource_Reads_The_Process_Environment`: `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` set the resource, whether they come from the host’s configuration (the detector reads that first) or from the process environment.
+* `LaunchPads_Default_Resource_Convention_Changes_Nothing`: adding `AddTelemetrySdk().AddEnvironmentVariableDetector()` through a resource joint produces exactly the same attributes on every provider.
+* Blazor WebAssembly’s LaunchPad default only added `AddTelemetrySdk()`. The browser has the same default resource (`Should_Have_The_Default_Resource_On_Every_Provider`); it has no process environment, so the detector only reads configuration.
+
+To name the service, set `OTEL_SERVICE_NAME` or call `AddService(...)` from a resource joint; LaunchPad’s convention only had that call commented out.
+
+## Hosts
+
+[Section titled “Hosts”](#hosts)
+
+| Host               | Shown by                                                                                                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Generic host       | `OpenTelemetryParityTests` and `OpenTelemetryBridgeTests` in `Joinery.Dovetail.OpenTelemetry.Tests`, on .NET 10 and 11                                                                                                    |
+| ASP.NET Core       | `OpenTelemetryAspNetCoreTests` in `Joinery.Dovetail.Hosting.AspNetCore.Tests`: every signal and the resource once the web host starts, the default resource, and on .NET 11 a request traced without tracer configuration |
+| Blazor WebAssembly | `BrowserHostingTests` and `BrowserOpenTelemetryTests` in `Joinery.Dovetail.WebAssembly.Hosting.Tests`: traces, metrics and logs exported in a real browser, with the resource on each provider                            |
+
+The browser tests run the sample’s `net11.0-browser` build behind the Blazor Gateway, so they run on .NET 11 only.
+
 # Serilog
 
-> Serilog integration that builds a Serilog logger from Serilog joints and the application's configuration, and registers it in place of the host's default logging providers.
+> Serilog integration that builds a Serilog logger from Serilog joints and the application's configuration, and registers it in place of the host's default logging providers. Trimming and Native AOT safe.
 
 # Serilog
 
@@ -840,23 +1050,36 @@ Reference `Joinery.Dovetail.Serilog`. Its `SerilogJoint` is exported to the appl
 
 Once every Serilog joint has run, `SerilogJoint`:
 
-1. reads the `Serilog` section of the application’s configuration into the logger configuration, if the configuration has one ([below](#configuration));
-2. removes the logging providers the host adds by default (console, debug, event source and event log — everything that `Microsoft.Extensions.Logging` itself ships) and the default `ILoggerFactory`;
-3. registers the logger, as `Serilog.Core.Logger` and as Serilog’s `ILogger`, and `ILoggerFactory` (a `SerilogLoggerFactory`, which is what backs every `ILogger<T>`), as singletons.
+1. applies the minimum level and the level overrides in the `Serilog:MinimumLevel` section of the application’s configuration to the logger configuration ([below](#configuration));
+2. removes the logging providers the host builders add by default (console, debug, event source and, on Windows, event log: the `ConsoleLoggerProvider`, `DebugLoggerProvider`, `EventSourceLoggerProvider` and `EventLogLoggerProvider` of `Microsoft.Extensions.Logging`) and the default `ILoggerFactory`;
+3. registers the logger, as `Serilog.Core.Logger` and as Serilog’s `ILogger`, and `ILoggerFactory` (a `SerilogLoggerFactory`, which is what backs every `ILogger<T>`), as singletons. The logger also writes to the other logging providers of the container ([below](#the-other-logging-providers)).
 
 So `Serilog.ILogger`, `Microsoft.Extensions.Logging.ILogger<T>` and `ILoggerFactory.CreateLogger(...)` all write to the one logger, once. The container owns it: disposing the host disposes the logger, which flushes and disposes its sinks.
 
 A few consequences of replacing `ILoggerFactory`:
 
-* The `Logging:LogLevel` filters and `builder.Logging.SetMinimumLevel(...)` belong to the factory that was replaced. Use Serilog’s levels, `MinimumLevel` and its `Override` entries, instead.
-* A logging provider that is not one of the defaults (one from another package, say) stays registered, but nothing reads it: events reach it only through a Serilog sink for the same destination, such as `Serilog.Sinks.OpenTelemetry`.
+* The `Logging:LogLevel` filters and `builder.Logging.SetMinimumLevel(...)` belong to the factory that was replaced. Use Serilog’s levels, `Serilog:MinimumLevel` and its `Override` entries, instead.
+* Serilog’s levels decide what every logging provider receives, the other providers included. A provider that used to be given `Debug` events by its own filter gets them only if the `Serilog:MinimumLevel` lets them through.
 * Dovetail does not set the static `Log.Logger`. Resolve the logger from the container.
+
+### The other logging providers
+
+[Section titled “The other logging providers”](#the-other-logging-providers)
+
+Replacing `ILoggerFactory` would leave every other `ILoggerProvider` of the container without events: the default factory is what writes to them. OpenTelemetry’s is one, since its logging joints (`ConfigureLoggerProvider`) add the `OpenTelemetryLoggerProvider` that exports log records, and so is any provider an application or a package registers. So the logger forwards each event it writes to them, the way Serilog.Extensions.Hosting does with `writeToProviders`: a `WriteTo.Providers(...)` sink over a `LoggerProviderCollection`, which the logger factory fills with the container’s `ILoggerProvider`s when it is created. A provider registered at any point before the container is built is included, by a Serilog joint or after it, with the logging builder (`builder.Logging.AddProvider(...)`) or with the services. The events keep their level, category (the `SourceContext`) and exception, and the Serilog properties are the state they are logged with.
+
+Each event is written once to every sink and once to every provider. Two kinds of provider are not written to:
+
+* Serilog’s own `SerilogLoggerProvider`, which would write the event to Serilog again (and, if it wraps this very logger, without end).
+* The default providers that Serilog replaces: exactly the four types named above, matched by their full names. They are removed from the services; one that is registered after the Serilog joint ran stays out of the forwarding too, so that the events are not written to the console twice. Providers that merely share a namespace with them are not defaults and are written to, such as Application Insights’ `ApplicationInsightsLoggerProvider` (`Microsoft.Extensions.Logging.ApplicationInsights`) and the Azure App Service providers (`Microsoft.Extensions.Logging.AzureAppServices`).
+
+The logger factory is created when the container is asked for it, which a host does while it is being built. Until then the other providers are not known: an event written through `Serilog.ILogger` before that reaches the sinks only. The logger disposes the providers it writes to when it is disposed, as the container does, so they are disposed twice, which `Dispose` allows.
 
 ## The Serilog joint
 
 [Section titled “The Serilog joint”](#the-serilog-joint)
 
-`Joinery.Dovetail.Serilog` declares one `<DovetailJoint>`, `Serilog`, for `Serilog.LoggerConfiguration`: `ISerilogJoint`, `ISerilogAsyncJoint`, the `SerilogJointDelegate` and the `ConfigureSerilog(...)` builder method. A joint is handed the context, the service collection and the logger configuration:
+`Joinery.Dovetail.Serilog` declares one `<DovetailJoint>`, `Serilog`, for `Serilog.LoggerConfiguration`: `ISerilogJoint`, `ISerilogAsyncJoint`, the `SerilogJointDelegate` and the `ConfigureSerilog(...)` builder method. A joint is handed the context, the service collection and the logger configuration. Sinks and enrichers are configured here, in code:
 
 ```c#
 using Joinery.Dovetail;
@@ -892,7 +1115,7 @@ var host = await Host
 The logger configuration is built in this order, and what comes later wins where only one value can exist (the minimum level):
 
 1. the Serilog joints, in the executor’s usual priority order;
-2. the `Serilog` section of the configuration;
+2. the `Serilog:MinimumLevel` section of the configuration;
 3. the `IConfigureOptions<LoggerConfiguration>` registered in the services (`services.Configure<LoggerConfiguration>(...)`);
 4. the `IPostConfigureOptions<LoggerConfiguration>` registered in the services (`services.PostConfigure<LoggerConfiguration>(...)`).
 
@@ -908,57 +1131,38 @@ services
 
 [Section titled “Configuration”](#configuration)
 
-The `Serilog` section is read by [Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration), so it controls the minimum level, the enrichers and the sinks the way that package documents:
+The application’s configuration sets the minimum level of the logger and of each source, in the `Serilog:MinimumLevel` section, in the same format as Serilog.Settings.Configuration:
 
 ```json
 {
     "Serilog": {
-        "Using": ["Serilog.Sinks.Console"],
         "MinimumLevel": {
             "Default": "Information",
-            "Override": { "Microsoft": "Warning" }
-        },
-        "Enrich": ["FromLogContext"],
-        "Properties": { "Application": "Sample" },
-        "WriteTo": [{ "Name": "Console" }]
+            "Override": { "Microsoft": "Warning", "Microsoft.Hosting.Lifetime": "Information" }
+        }
     }
 }
 ```
 
-The sinks and enrichers are the application’s own packages (`Serilog.Sinks.Console` above). Changes to the levels of a configuration that reloads are applied while the application runs. `Joinery.Dovetail.Serilog` ships the section’s JSON Schema, which is merged into the application’s [`appsettings.schema.json`](../guides/editor-setup) for editor completion and validation.
+`"MinimumLevel": "Debug"` is the short form of `"Default": "Debug"`. A level is the name of one of Serilog’s levels (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`; casing is ignored), and anything else fails while Dovetail builds the host, with an exception that names the key.
 
-Note
+Levels follow the configuration when it reloads (a file provider with `reloadOnChange`, say). Only the levels that were in the configuration when the application started do: an override that is added later is not picked up, and a level that is removed or not a level any more leaves the level in effect as it is.
 
-Serilog.Settings.Configuration skips a sink, enricher or filter method that it cannot find, and reports it to Serilog’s `SelfLog` rather than throwing. A misspelt name, or one whose package is missing from `Using`, shows up as a logger without it. Turn `SelfLog` on while setting it up: `SelfLog.Enable(Console.Error)`.
+That is all that is read from the `Serilog` section. In particular, **sinks, enrichers, filters and `Using` are not read from configuration**: Serilog.Settings.Configuration finds the methods they name by reflection, which is neither trimming nor Native AOT safe, so `Joinery.Dovetail.Serilog` does not depend on it. A `"WriteTo"` or `"Enrich"` in the section is ignored, and the schema flags it (below). Configure them in a [Serilog joint](#the-serilog-joint) instead, in code.
+
+`Joinery.Dovetail.Serilog` ships a JSON Schema for the section, which is merged into the application’s [`appsettings.schema.json`](../guides/editor-setup) for editor completion and validation. It describes exactly what is read: `MinimumLevel`, as a level name or as an object with `Default` and `Override`. Any other key of the `Serilog` section is flagged, so a `WriteTo` copied from Serilog’s documentation does not look as if it were working.
 
 ## Trimming and Native AOT
 
 [Section titled “Trimming and Native AOT”](#trimming-and-native-aot)
 
-Everything `Joinery.Dovetail.Serilog` does is reflection free except reading the `Serilog` section. Serilog.Settings.Configuration finds the sink, enricher and filter methods that the section names (`"WriteTo": ["Console"]` means `WriteTo.Console(...)`) by reflection, in the assemblies listed under `Using` or, without it, in the packages the application’s `.deps.json` lists whose name contains “Serilog”. It then calls them by reflection, converting their arguments from strings. That package is not annotated for trimming or Native AOT, and its AOT analysis warns (IL3053).
+`Joinery.Dovetail.Serilog` is trimming and Native AOT compatible: the project sets `IsAotCompatible`, builds with the trim and AOT analyzers on without a warning, and has no reflection to annotate or suppress. Reading the configuration uses only `IConfiguration` and enum parsing (`Enum.TryParse<LogEventLevel>`), and the rest is registration of the logger, which is Serilog’s, and of `Microsoft.Extensions.Logging`’s own open generic `ILogger<T>`.
 
-Dovetail therefore reads the section only when the configuration has one. An application that configures its logger in code, with joints and options, has no `Serilog` section and runs none of that reflection. `Joinery.Dovetail.Serilog` is marked `IsAotCompatible`: the one call that reads the section is annotated `RequiresUnreferencedCode` and `RequiresDynamicCode` inside the package, and its warnings are suppressed where that call is guarded by the check for the section. The trim and AOT analyzers of an application that references the package therefore stay quiet whether or not it has a section, and this page is the contract instead.
+Forwarding to the other logging providers is not reflection either: it is Serilog.Extensions.Logging’s `WriteTo.Providers` sink and `SerilogLoggerFactory`, and a type check on the providers.
 
-An application that does have a `Serilog` section has to keep what the section names alive itself and, when it is published as a single file or with Native AOT, has to tell Serilog where to find it, because such an application has no `.deps.json` to discover it from:
+The claim was checked by publishing a generic-host application that references `Joinery.Dovetail.Serilog`, reads `Serilog:MinimumLevel:Default` and `Override` from configuration, configures a sink in a `ConfigureSerilog(...)` joint and registers an `ILoggerProvider` in its services, with `PublishTrimmed` (`TrimMode=full`) and with `PublishAot` (.NET 10, osx-arm64, self-contained). Neither publish reported a trim or AOT warning, and both applications ran: the factory was a `SerilogLoggerFactory`, `ILogger<T>` wrote through the sink and to the provider, the default level and the override applied to both, and no default logging provider was left.
 
-* Root the assemblies that declare the methods the section names, so that the trimmer keeps them. Without it, the trimmer removes an assembly that nothing references, and the application fails at startup, while Dovetail reads the section, with a `FileNotFoundException` for the sink’s assembly:
-
-  ```xml
-  <ItemGroup>
-      <TrimmerRootAssembly Include="Serilog.Sinks.Console" />
-  </ItemGroup>
-  ```
-
-* List those assemblies under `Using`. In a single-file or Native AOT application, discovery from `.deps.json` finds nothing, and Serilog.Settings.Configuration throws an `InvalidOperationException` at startup that says so.
-
-| Application                                              | Trimming                                                  | Single file                | Native AOT                                                                    |
-| -------------------------------------------------------- | --------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
-| No `Serilog` section: the logger is set up in code       | Supported                                                 | Supported                  | Supported, as far as Serilog and the sinks used are                           |
-| `Serilog` section, sink assemblies rooted and in `Using` | Works                                                     | Works                      | Works for what was tried; not guaranteed, because the reader is not annotated |
-| `Serilog` section, sink assemblies not rooted            | Fails at startup: the sink’s assembly is gone             | Fails in the same way      | Fails in the same way                                                         |
-| `Serilog` section, without `Using`                       | Works for a trimmed app that still ships its `.deps.json` | Fails: `Using` is required | Fails: `Using` is required                                                    |
-
-“Works” was tried by publishing an application that reads a section with `MinimumLevel` and its overrides, `Enrich` with `FromLogContext`, `Properties` and the `Console` sink with `outputTemplate` and `restrictedToMinimumLevel` arguments (Serilog 4.4, Serilog.Settings.Configuration 10.0.1, Serilog.Sinks.Console 6.0, .NET 10, `PublishTrimmed`, `PublishSingleFile` and `PublishAot`). A section can name methods and argument types that nothing else in the application uses, so test the section you ship against the published application: what is missing is reported by `SelfLog`, or by an exception at startup. Where the output matters in an AOT application, configure the logger in code and leave the section out.
+What a published application depends on is therefore Serilog and the sinks and enrichers it configures in its joints, which are referenced from code and so are kept by the trimmer and compiled by the AOT compiler like any other code. Check the ones you use: Serilog and its sinks are not Dovetail’s.
 
 # Source Generation
 
@@ -979,6 +1183,8 @@ Any joint marked with `[assembly: Dovetail(typeof(MyDovetail))]` will automatica
 Tip
 
 This class is partial if you want to add any custom methods to it for consumers.
+
+Each exported joint carries the host type it declares with `[LiveJoint]`, `[UnitTestJoint]` or `[DovetailHostType]`, the same as when a joint is added through reflection at runtime. See [which attributes are honoured where](./defining-joints#which-attributes-are-honoured-where).
 
 # Importing Dovetails
 

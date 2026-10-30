@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/pr-preview/pr-270/api/joinery.dovetail.serilog.md)
-- Version: `0.3.1-pr.5`
+- Version: `0.3.1-pr.16`
 - Namespace: `Joinery.Dovetail.Serilog`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
@@ -24,7 +24,7 @@ public sealed class SerilogJoint
 
 ## Remarks
 
-Once every Serilog joint has run, the `Serilog` section of the application's configuration is read (if it has one) and, when the logger is first resolved, the `IConfigureOptions<LoggerConfiguration>` and `IPostConfigureOptions<LoggerConfiguration>` registered in the services are applied to the logger configuration.
+Once every Serilog joint has run, the minimum level and the level overrides in the `Serilog:MinimumLevel` section of the application's configuration are applied (sinks and enrichers are configured by the Serilog joints) and, when the logger is first resolved, the `IConfigureOptions<LoggerConfiguration>` and `IPostConfigureOptions<LoggerConfiguration>` registered in the services are applied to the logger configuration. The logger writes every event to the other `ILoggerProvider` s of the container as well (OpenTelemetry's, say), except Serilog's own and the default providers it replaces.
 
 ## Constructors
 
