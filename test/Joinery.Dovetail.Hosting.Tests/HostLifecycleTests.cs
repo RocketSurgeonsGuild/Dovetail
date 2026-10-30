@@ -270,31 +270,6 @@ public class HostLifecycleTests
         builder.Services.Count(static descriptor => descriptor.ServiceType == typeof(HostLifecycleRegistration)).ShouldBe(0);
     }
 
-    /// <summary>
-    ///     Another assembly's copy of the extension methods adds <see cref="HostLifecycleRegistration" /> too, and the one hosted service
-    ///     whichever copy registered first runs them all.
-    /// </summary>
-    [Test]
-    public async Task RegistrationsAddedByAnotherCopy_RunWithTheSameService()
-    {
-        List<string> moments = [];
-        var builder = Host.CreateApplicationBuilder().OnHostStarted(_ => moments.Add("ours"));
-        builder.Services.AddSingleton(
-            new HostLifecycleRegistration(
-                HostLifecycleMoment.Started,
-                (_, _) =>
-                {
-                    moments.Add("theirs");
-                    return Task.CompletedTask;
-                }
-            )
-        );
-
-        await RunAsync(builder);
-
-        moments.ShouldBe(["ours", "theirs"]);
-    }
-
     private static bool IsHostLifecycleService(ServiceDescriptor descriptor) =>
         descriptor.ServiceType == typeof(IHostedService) && descriptor.ImplementationType == typeof(DovetailHostLifecycleService);
 

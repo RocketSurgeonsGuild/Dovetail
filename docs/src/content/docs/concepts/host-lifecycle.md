@@ -72,7 +72,7 @@ public class WarmUpCache : IServiceJoint
 ```
 
 Handlers have to be registered before the host is built. The first registration adds the hosted service that runs them, so there
-is nothing else to call, and an application that registers no handler gets no hosted service.
+is nothing else to call, and a project that registers no handler gets no hosted service.
 
 ## Handlers of one moment run in parallel
 
@@ -87,6 +87,10 @@ other, so one slow handler doesn't hold up the rest. The host moves on to the ne
   anything, happen to run one after another. Handlers that `await` overlap.
 - A handler that **throws**, even before its first `await`, fails that step of the host like any hosted service would, and the
   other handlers of the moment have still been started.
+- The handlers that run in parallel are those of **one project** (see below): a library and the application that uses it each have
+  a hosted service of their own, and the host runs hosted services one after the other (unless `HostOptions.ServicesStartConcurrently`
+  and `ServicesStopConcurrently` say otherwise). The library's handlers for a moment therefore run before or after the
+  application's, not alongside them.
 
 ## Where it is available
 
@@ -107,6 +111,19 @@ A .NET MAUI or Blazor WebAssembly project gets none even when `Microsoft.Extensi
 don't exist, so calling one is a compile error.
 
 The methods are `internal`, as are all the helpers `Joinery.Dovetail.Hosting` emits, so a library that registers handlers needs to
-reference `Joinery.Dovetail.Hosting` and the generic host itself. Every project gets its own copy of the methods and of the hosted
-service, but the registrations they add (`HostLifecycleRegistration`, which is public) are shared, and whichever project registers
-first adds the one hosted service that runs them all. A library's handlers therefore run with the application's, once.
+reference `Joinery.Dovetail.Hosting` and the generic host itself.
+
+## Each project has its own
+
+Every project that gets the methods gets its own, self-contained copy of them, of the registration they add and of the hosted
+service that runs it, all `internal` and `[Embedded]`, so no assembly sees another's. Nothing is shared between projects:
+
+- A handler registered with a project's methods is registered with, and run by, that project's own hosted service. A library and
+  an application that each register handlers end up with two hosted services, each running only its own project's handlers, once.
+- The "first registration adds the hosted service" rule is per project too. It looks for that project's own registration type in the
+  service collection, so it neither depends on nor notices another project's registrations.
+- Projects can't coordinate on one list of handlers, and there is no single set of handlers that runs in parallel across the library
+  and the application (see above). Handlers that must not run side by side, or in a fixed order, belong in one project, or in a
+  hosted service of their own.
+- That holds for every way of registering: the application builder, the service collection and a joint all go through the methods
+  of the project they are written in.

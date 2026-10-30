@@ -12,11 +12,66 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Joinery.Dovetail.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Joinery.Dovetail;
+
+/// <summary>
+///     The moments in a host's life at which the handlers registered with <c>OnHostStarting</c>, <c>OnHostStarted</c>,
+///     <c>OnHostStopping</c> and <c>OnHostStopped</c> run: the four phases of <see cref="IHostedLifecycleService" />.
+/// </summary>
+[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+internal enum HostLifecycleMoment
+{
+    /// <summary>
+    ///     Before the host starts its hosted services (<see cref="IHostedLifecycleService.StartingAsync" />).
+    /// </summary>
+    Starting,
+
+    /// <summary>
+    ///     After the host started its hosted services (<see cref="IHostedLifecycleService.StartedAsync" />).
+    /// </summary>
+    Started,
+
+    /// <summary>
+    ///     Before the host stops its hosted services (<see cref="IHostedLifecycleService.StoppingAsync" />).
+    /// </summary>
+    Stopping,
+
+    /// <summary>
+    ///     After the host stopped its hosted services (<see cref="IHostedLifecycleService.StoppedAsync" />).
+    /// </summary>
+    Stopped,
+}
+
+/// <summary>
+///     A handler to run at one <see cref="HostLifecycleMoment" />, added to the service collection by the <c>OnHost*</c> extension
+///     methods and run by <see cref="DovetailHostLifecycleService" />.
+/// </summary>
+/// <remarks>
+///     Not marked <c>CompilerGenerated</c>, like <see cref="DovetailHostLifecycleService" /> (see there): both go through the
+///     application's service container.
+/// </remarks>
+[global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), global::Microsoft.CodeAnalysis.EmbeddedAttribute, global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+internal sealed class HostLifecycleRegistration
+{
+    public HostLifecycleRegistration(HostLifecycleMoment moment, Func<IServiceProvider, CancellationToken, Task> handler)
+    {
+        Moment = moment;
+        Handler = handler;
+    }
+
+    /// <summary>
+    ///     The moment the <see cref="Handler" /> runs at.
+    /// </summary>
+    public HostLifecycleMoment Moment { get; }
+
+    /// <summary>
+    ///     The handler. It receives the host's service provider and the cancellation token the host passes to the lifecycle method.
+    /// </summary>
+    public Func<IServiceProvider, CancellationToken, Task> Handler { get; }
+}
 
 /// <summary>
 ///     Registers code to run when the host starts and stops, without writing a hosted service: <c>OnHostStarting</c>,
@@ -31,9 +86,12 @@ namespace Joinery.Dovetail;
 ///         awaited together, in parallel; they are not run one after the other.
 ///     </para>
 ///     <para>
-///         Every project that references the generic host gets its own copy of this class and of the hosted service. The registrations
-///         they add (<see cref="HostLifecycleRegistration" />) are shared, and the first registration to be made, from whichever copy,
-///         adds the one hosted service that runs them all, so a library's handlers run with the application's.
+///         Every project that references the generic host gets its own, self-contained copy of this class, of the registration type
+///         and of the hosted service (all internal and embedded, so no assembly sees another's). A project's handlers are registered
+///         with, and run by, that project's own hosted service: a library and the application that uses it each end up with a hosted
+///         service of their own, and nothing is shared between them. The host runs its hosted services one after the other (unless
+///         <c>HostOptions.ServicesStartConcurrently</c> and <c>ServicesStopConcurrently</c> say otherwise), so the handlers of one
+///         moment run in parallel within a project, and one project's after another's.
 ///     </para>
 /// </remarks>
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), global::Microsoft.CodeAnalysis.EmbeddedAttribute, global::System.Runtime.CompilerServices.CompilerGenerated, global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -396,8 +454,9 @@ internal static class DovetailHostLifecycleExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(handler);
 
-        // Registrations are shared by every copy of this file, and every registration is made together with the hosted service that
-        // runs it, so as long as one exists the service does too, whichever copy added it.
+        // HostLifecycleRegistration is this project's own type, and a registration is always made together with this project's hosted
+        // service, so as long as one exists in the collection the service does too. Another project's copy of this file registers its
+        // own type and its own service, which this check neither sees nor needs to.
         if (!services.Any(static descriptor => descriptor.ServiceType == typeof(HostLifecycleRegistration)))
             services.AddSingleton<IHostedService, DovetailHostLifecycleService>();
 
