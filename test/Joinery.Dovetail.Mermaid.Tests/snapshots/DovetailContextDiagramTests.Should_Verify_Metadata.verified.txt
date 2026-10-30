@@ -11,14 +11,6 @@
     Category: Application
   },
   {
-    JointName: Joinery.Dovetail.Serilog.SerilogConfigurationJoint,
-    AssemblyName: Joinery.Dovetail.Serilog,
-    ImplementsJointTypes: [
-      Service
-    ],
-    Category: Application
-  },
-  {
     JointName: Joinery.Dovetail.Serilog.SerilogJoint,
     AssemblyName: Joinery.Dovetail.Serilog,
     ImplementsJointTypes: [
@@ -63,7 +55,6 @@
     ImplementsJointTypes: [
       Configuration
     ],
-    HostType: UnitTest,
     Category: Application,
     Dependencies: [
       {
@@ -73,7 +64,7 @@
         ImplementsJointTypes: [
           Configuration
         ],
-        HostType: UnitTest,
+        HostType: Live,
         Category: Application
       }
     ]
@@ -93,7 +84,6 @@
     ImplementsJointTypes: [
       Logging
     ],
-    HostType: UnitTest,
     Category: Application
   },
   {
@@ -102,7 +92,6 @@
     ImplementsJointTypes: [
       Logging
     ],
-    HostType: UnitTest,
     Category: Application,
     Dependencies: [
       {
@@ -111,7 +100,6 @@
         ImplementsJointTypes: [
           Logging
         ],
-        HostType: UnitTest,
         Category: Application
       }
     ]
@@ -131,7 +119,7 @@
     ImplementsJointTypes: [
       Configuration
     ],
-    HostType: UnitTest,
+    HostType: Live,
     Category: Application
   },
   {
@@ -140,7 +128,6 @@
     ImplementsJointTypes: [
       Setup
     ],
-    HostType: UnitTest,
     Category: Application
   },
   {
@@ -168,7 +155,6 @@
     ImplementsJointTypes: [
       Service
     ],
-    HostType: UnitTest,
     Category: Application
   },
   {

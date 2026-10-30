@@ -4,6 +4,8 @@
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
         <PackageDescription>Provides Serilog support for a Rocket Surgery Application</PackageDescription>
         <PackageTags>$(PackageTags);Serilog</PackageTags>
+        <!-- The Serilog configuration section is read with plain IConfiguration calls (SerilogMinimumLevelConfiguration), so there is no reflection to annotate. -->
+        <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
     <ItemGroup>
     <DovetailJoint Include="Serilog" Namespace="Joinery.Dovetail.Joints" ProvideServices="true" ParameterType="global::Serilog.LoggerConfiguration" ParameterName="loggerConfiguration" />

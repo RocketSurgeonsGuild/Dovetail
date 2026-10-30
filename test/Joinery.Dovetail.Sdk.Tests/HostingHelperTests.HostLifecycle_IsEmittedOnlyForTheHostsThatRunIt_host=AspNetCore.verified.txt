@@ -1,0 +1,9 @@
+﻿{
+  Host: AspNetCore,
+  LifecycleHelperEmitted: true,
+  Helpers: [
+    DovetailConfigurationSchemaEndpointExtensions,
+    DovetailHostApplicationHelpers,
+    DovetailHostLifecycleHelpers
+  ]
+}

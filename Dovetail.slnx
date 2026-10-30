@@ -127,6 +127,7 @@
     <Project Path="test/Joinery.Dovetail.Stashbox.Tests/Joinery.Dovetail.Stashbox.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Hosting.AspNetCore.Tests/Joinery.Dovetail.Hosting.AspNetCore.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.OpenTelemetry.Tests/Joinery.Dovetail.OpenTelemetry.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Serilog.Tests/Joinery.Dovetail.Serilog.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Hosting.Maui.Tests/Joinery.Dovetail.Hosting.Maui.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Hosting.Tests/Joinery.Dovetail.Hosting.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Hosting.Uno.Tests/Joinery.Dovetail.Hosting.Uno.Tests.csproj" />

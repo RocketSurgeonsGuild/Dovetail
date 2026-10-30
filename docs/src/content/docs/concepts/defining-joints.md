@@ -85,8 +85,8 @@ The generated `Imports` class sets the host type only when the build specifies o
 (`Live` or `UnitTest`) takes precedence; otherwise test projects (`IsTestProject`) get `UnitTest`. Anywhere else the host type
 is left unset, and the hosting extensions set it to `Live` if nothing else has.
 
-A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [[LiveDovetail]](xref:Joinery.Dovetail.LiveJointAttribute) that registers
-`IClock` using the expected calendar system, and another [[UnitTestDovetail]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock`
+A good example of this is designing a system that uses [NodaTime](https://nodatime.org/). You can have a [[LiveJoint]](xref:Joinery.Dovetail.LiveJointAttribute) that registers
+`IClock` using the expected calendar system, and another [[UnitTestJoint]](xref:Joinery.Dovetail.UnitTestJointAttribute) that registers a `FakeClock`
 with a predefined starting date and time.
 
 > [!NOTE]
@@ -97,29 +97,56 @@ with a predefined starting date and time.
 - `UnitTest` - This joint applies to unit tests.
 
 > [!NOTE]
-> There is no attribute for the `DovetailHostType.Undefined`.
+> There is no shortcut attribute for `DovetailHostType.Undefined`. A joint without a host type attribute already runs everywhere.
 
-### [[LiveDovetail]](xref:Joinery.Dovetail.LiveJointAttribute)
+### [[LiveJoint]](xref:Joinery.Dovetail.LiveJointAttribute)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `Live`.
 
 ```c#
-[LiveDovetail]
+[LiveJoint]
 public class DovetailA
 {
 }
 ```
 
-### [[UnitTestDovetail]](xref:Joinery.Dovetail.UnitTestJointAttribute)
+### [[UnitTestJoint]](xref:Joinery.Dovetail.UnitTestJointAttribute)
 
 This attribute ensures a joint that only runs when the `DovetailHostType` is `UnitTest`.
 
 ```c#
-[UnitTestDovetail]
+[UnitTestJoint]
 public class DovetailA
 {
 }
 ```
+
+### [DovetailHostType]
+
+The general form of the two attributes above. It takes the host type the joint applies to, for example
+`[DovetailHostType(DovetailHostType.Live)]`. It is also the only way to declare `Undefined` explicitly.
+
+### Which attributes are honoured where
+
+A joint reaches a context by one of two paths, and both honour all three attributes the same way:
+
+| Path                                                                                                                                 | `[LiveJoint]` / `[UnitTestJoint]` | `[DovetailHostType]` |
+| ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- | -------------------- |
+| Runtime reflection: `DovetailContextBuilder.AppendJoint(...)` / `PrependJoint(...)` with a joint instance or `AppendJoint<T>()`      | Honoured                          | Honoured             |
+| Generated metadata: the joints marked `[DovetailExport]`, which the source generator lists in the generated `Exports` class at build | Honoured                          | Honoured             |
+
+On both paths:
+
+- `[LiveJoint]` and `[UnitTestJoint]` are read before `[DovetailHostType]`, so `[LiveJoint]` wins over a `[DovetailHostType]` on the same joint.
+  Declaring both `[LiveJoint]` and `[UnitTestJoint]` on one joint isn't meaningful, and which of them applies is not specified.
+- The attributes are inherited. A joint that derives from a `[LiveJoint]` class is a live joint too, and the closest declaration wins.
+- A joint that declares nothing has the `Undefined` host type and applies everywhere, apart from the test project default below.
+- A joint applies when its host type is `Undefined` or equals the host type of the context.
+
+The generated path adds one default of its own. In a test project (`IsTestProject`), an exported joint that declares no host
+type is exported as `UnitTest`. A joint's own attribute always takes precedence over that default, so a `[LiveJoint]` in a test
+project stays live-only and `[DovetailHostType(DovetailHostType.Undefined)]` opts a joint out of the default.
+The runtime reflection path has no such default.
 
 ## Injecting dependencies
 

@@ -1,0 +1,56 @@
+@page "/telemetry-parity"
+
+@using Microsoft.Extensions.Logging
+@using OpenTelemetry
+@using OpenTelemetry.Logs
+@using OpenTelemetry.Metrics
+@using OpenTelemetry.Resources
+@using OpenTelemetry.Trace
+@inject IServiceProvider Services
+@inject ILoggerFactory LoggerFactory
+<PageTitle>OpenTelemetry parity</PageTitle>
+
+<h1>OpenTelemetry parity</h1>
+
+<dl>
+    <dt>Log record</dt>
+    <dd id="log">@_log</dd>
+    <dt>Tracing resource</dt>
+    <dd id="resource-tracing">@_tracing</dd>
+    <dt>Metrics resource</dt>
+    <dd id="resource-metrics">@_metrics</dd>
+    <dt>Logging resource</dt>
+    <dd id="resource-logging">@_logging</dd>
+</dl>
+
+@code {
+    private string _log = "waiting";
+    private string _tracing = "waiting";
+    private string _metrics = "waiting";
+    private string _logging = "waiting";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // The application's own ILogger, which the OpenTelemetry logging provider hands to the sample's exporter.
+        LoggerFactory.CreateLogger(BrowserTelemetry.LogCategory).LogWarning("parity {Name}", "browser");
+
+        var logged = await Task.WhenAny(BrowserTelemetry.Logged, Task.Delay(TimeSpan.FromSeconds(10)));
+        _log = logged == BrowserTelemetry.Logged ? $"exported {BrowserTelemetry.Logged.Result}" : "not exported";
+
+        // The resource of each provider: the SDK's default plus the sample's resource joint.
+        _tracing = Describe(Services.GetRequiredService<TracerProvider>());
+        _metrics = Describe(Services.GetRequiredService<MeterProvider>());
+        _logging = Describe(Services.GetRequiredService<LoggerProvider>());
+    }
+
+    private static string Describe(BaseProvider provider) =>
+        string.Join(
+            ';',
+            provider
+               .GetResource()
+               .Attributes
+               .Where(attribute => attribute.Key.StartsWith("telemetry.sdk.", StringComparison.Ordinal) || attribute.Key is "service.name" or BrowserTelemetry.ResourceAttribute)
+               .OrderBy(attribute => attribute.Key, StringComparer.Ordinal)
+               .Select(attribute => $"{attribute.Key}={attribute.Value}")
+        );
+}

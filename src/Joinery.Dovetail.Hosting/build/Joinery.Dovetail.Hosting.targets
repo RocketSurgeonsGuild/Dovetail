@@ -29,6 +29,7 @@
   -->
   <ItemGroup>
     <_DovetailHostingHelper Include="DovetailHostApplicationHelpers" References="Microsoft.Extensions.Hosting" />
+    <_DovetailHostingHelper Include="DovetailHostLifecycleHelpers" References="Microsoft.Extensions.Hosting" />
     <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Maui" />
     <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
     <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
@@ -74,6 +75,17 @@
       <_DovetailHostingWebAssembly>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailWebAssemblyHelpers'))</_DovetailHostingWebAssembly>
       <_DovetailHostingUno>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoHelpers'))</_DovetailHostingUno>
     </PropertyGroup>
+
+    <!--
+        OnHostStarting, OnHostStarted, OnHostStopping and OnHostStopped (DovetailHostLifecycleHelpers) only do anything where the host
+        runs IHostedLifecycleService: the generic host and ASP.NET Core, which is what referencing Microsoft.Extensions.Hosting
+        turns on. .NET MAUI and Blazor WebAssembly don't run it, so they get no helper even when Microsoft.Extensions.Hosting is
+        among their references (another package brought it along, say): methods that compile but never run their handlers would be worse
+        than none.
+    -->
+    <ItemGroup Condition="'$(_DovetailHostingMaui)' == 'true' or '$(_DovetailHostingWebAssembly)' == 'true'">
+      <_DovetailHostingEmittedHelper Remove="DovetailHostLifecycleHelpers" />
+    </ItemGroup>
 
     <!--
         OpenTelemetry, for applications that reference Joinery.Dovetail.OpenTelemetry (the Dovetail SDK adds it when OpenTelemetry is

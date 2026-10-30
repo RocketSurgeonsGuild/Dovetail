@@ -1,0 +1,8 @@
+﻿{
+  Host: GenericHost,
+  LifecycleHelperEmitted: true,
+  Helpers: [
+    DovetailHostApplicationHelpers,
+    DovetailHostLifecycleHelpers
+  ]
+}

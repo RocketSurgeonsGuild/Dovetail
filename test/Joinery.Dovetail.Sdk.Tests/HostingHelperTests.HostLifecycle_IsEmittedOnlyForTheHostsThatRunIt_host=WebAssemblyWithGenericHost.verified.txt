@@ -1,0 +1,9 @@
+﻿{
+  Host: WebAssemblyWithGenericHost,
+  LifecycleHelperEmitted: false,
+  Helpers: [
+    DovetailHostApplicationHelpers,
+    DovetailWebAssemblyContextExtensions,
+    DovetailWebAssemblyHelpers
+  ]
+}

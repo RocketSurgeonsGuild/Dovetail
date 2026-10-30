@@ -15,6 +15,9 @@ Any joint marked with `[assembly: Dovetail(typeof(MyDovetail))]` will automatica
 > [!TIP]
 > This class is partial if you want to add any custom methods to it for consumers.
 
+Each exported joint carries the host type it declares with `[LiveJoint]`, `[UnitTestJoint]` or `[DovetailHostType]`, the same
+as when a joint is added through reflection at runtime. See [which attributes are honoured where](./defining-joints#which-attributes-are-honoured-where).
+
 # Importing Dovetails
 
 The generator creates an internal static partial `Imports` class in the assembly's root namespace. `Imports.Joints` is a
