@@ -5,7 +5,8 @@
 `Joinery.Dovetail.OpenTelemetry` exposes OpenTelemetry's configuration surface — the top-level `IOpenTelemetryBuilder`, the
 resource builder, and the tracer, meter and logger provider builders — as ordinary Dovetail [joints](./defining-joints). Any
 library can contribute an activity source, a meter, a log processor, or a resource attribute without taking a direct dependency on
-how the host wires up OpenTelemetry.
+how the host wires up OpenTelemetry. Coming from `LaunchPad.Telemetry`? [Its parity check](./opentelemetry-launchpad-parity) maps each of
+its conventions to a joint here.
 
 ## Turning it on
 
@@ -99,7 +100,8 @@ particular, it does **not** include:
 
 - The console exporter, the OTLP exporter, or any other exporter package.
 - ASP.NET Core, HttpClient, or other instrumentation packages.
-- Any default sampler, resource attribute, or processor configuration.
+- Any default sampler, resource attribute, or processor configuration of its own. The OpenTelemetry SDK's default resource still
+  applies, and already has the telemetry SDK attributes and the environment variable detector.
 
 Consumers add exporters and instrumentation the same way they add anything else to a provider: by writing their own
 `ITracerProviderJoint`/`IMeterProviderBuilderJoint`/`ILoggerProviderBuilderJoint` implementation (or a plain

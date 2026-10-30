@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/pr-preview/pr-269/api/joinery.dovetail.stashbox.md)
-- Version: `0.3.1-pr.5`
+- Version: `0.3.1-pr.8`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
