@@ -1,6 +1,6 @@
 # Decision: ship host-model templates through a Dovetail extension point
 
-Status: **proposed (2026-10-29), needs maintainer confirmation.** Spike for [#265](https://github.com/RocketSurgeonsGuild/Dovetail/issues/265), part of RocketSurgeonsGuild/LaunchPad#3045. The extension point is implemented in the draft PR so the decision can be judged against working code; reverting it and choosing option B below costs only that PR.
+Status: **accepted (2026-10-30).** Proposed on 2026-10-29 and approved by the owner the next day: option A, and the name and shape of the contract (open question 1 below). Open questions 2 to 5 were not answered individually and do not block this decision. Spike for [#265](https://github.com/RocketSurgeonsGuild/Dovetail/issues/265), part of RocketSurgeonsGuild/LaunchPad#3045. The extension point is implemented in the same PR, so the decision was judged against working code.
 
 ## Question
 
@@ -62,7 +62,7 @@ Nothing observable. It keeps its `_DovetailHostingHelper` list (so a helper adde
 
 ## Open questions for the maintainers
 
-1. Confirm option A, and the name and shape of the contract (`DovetailTemplate`, `DirectReferenceOnly`, `Hosts`, the two hook targets).
+1. **Answered 2026-10-30: approved.** Confirm option A, and the name and shape of the contract (`DovetailTemplate`, `DirectReferenceOnly`, `Hosts`, the two hook targets).
 2. Is `{HostName}`/`{HostType}` enough, or should arbitrary tokens be part of the contract before LaunchPad needs them?
 3. Should `Joinery.Dovetail.Environment.targets` (context extensions, gated on references and C# 14) and the property-driven schema endpoint joint move onto it? Not done here: their gating differs, and this spike keeps hosting's output unchanged.
 4. Should hosting itself later become `DirectReferenceOnly`, now that it can?
