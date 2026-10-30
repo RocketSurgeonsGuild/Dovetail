@@ -19,29 +19,26 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
 
     private const string SchemaStoreDefinition = "SchemaStoreAppSettings";
 
-    private static readonly string[] ModelledKeys = ["MinimumLevel", "Enrich", "Filter", "Properties"];
+    private static readonly string[] ReadKeys = ["MinimumLevel"];
 
-    private static readonly string[] PermittedKeys = ["Using", "WriteTo", "AuditTo", "Destructure", "LevelSwitches", "FilterSwitches"];
+    private static readonly string[] UnreadKeys = ["Using", "WriteTo", "AuditTo", "Destructure", "LevelSwitches", "FilterSwitches", "Enrich", "Filter", "Properties"];
 
     private static readonly Regex NamedGroup = new(@"\(\?<[A-Za-z]+>", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// The way a Serilog section is usually written: the detailed MinimumLevel, sinks with arguments, enrichers and properties.
+    /// The part of a Serilog section that Joinery.Dovetail.Serilog reads: the detailed MinimumLevel, with its overrides.
     /// </summary>
     private const string RealisticConfiguration = """
         {
           "Serilog": {
-            "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.File" ],
-            "MinimumLevel": { "Default": "Information", "Override": { "Microsoft": "Warning", "System": "Warning" } },
-            "WriteTo": [ { "Name": "Console" }, { "Name": "File", "Args": { "path": "Logs/log.txt", "rollingInterval": "Day" } } ],
-            "Enrich": [ "FromLogContext", "WithMachineName", { "Name": "WithProperty", "Args": { "name": "Version", "value": "1.2.3" } } ],
-            "Properties": { "Application": "Sample" }
+            "MinimumLevel": { "Default": "Information", "Override": { "Microsoft": "Warning", "System": "Warning" } }
           }
         }
         """;
 
     /// <summary>
-    /// Each of these breaks one rule of the fragment (and of SchemaStore's schema, which the host schema also applies).
+    /// Each of these breaks one rule of the fragment. A key that is not read is fine for SchemaStore's schema, which the host schema
+    /// also applies, so only the fragment says no to it.
     /// </summary>
     private static readonly (string Name, string Configuration)[] InvalidConfigurations =
     [
@@ -49,8 +46,9 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         ("a numeric default level", """{ "Serilog": { "MinimumLevel": { "Default": 2 } } }"""),
         ("an unknown level", """{ "Serilog": { "MinimumLevel": "Loud" } }"""),
         ("a numeric override", """{ "Serilog": { "MinimumLevel": { "Override": { "Microsoft": 3 } } } }"""),
-        ("an enricher name with a dot", """{ "Serilog": { "Enrich": [ "Some.Dotted.Name" ] } }"""),
-        ("a property that is an object", """{ "Serilog": { "Properties": { "Application": { "Name": "Sample" } } } }"""),
+        ("an enricher, which is not read", """{ "Serilog": { "Enrich": [ "FromLogContext" ] } }"""),
+        ("a sink, which is not read", """{ "Serilog": { "WriteTo": [ { "Name": "Console" } ] } }"""),
+        ("a property, which is not read", """{ "Serilog": { "Properties": { "Application": "Sample" } } }"""),
         ("a misspelled section key", """{ "Serilog": { "MinimumLevl": "Debug" } }"""),
     ];
 
@@ -128,9 +126,10 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         var section = SerilogSection(schema);
         section["$ref"].ShouldNotBeNull();
         var keys = Keys(schema, section);
-        foreach (var key in ModelledKeys.Concat(PermittedKeys))
+        keys.ShouldBe(ReadKeys, ignoreOrder: true);
+        foreach (var key in UnreadKeys)
         {
-            keys.ShouldContain(key);
+            keys.ShouldNotContain(key);
         }
 
         // The fragment's definitions are in the host schema, SchemaStore's next to them, and the host's own section is still there.
