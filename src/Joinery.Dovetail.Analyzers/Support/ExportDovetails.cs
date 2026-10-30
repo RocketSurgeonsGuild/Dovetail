@@ -60,20 +60,13 @@ internal static class ExportDovetails
 
             var createDovetail = NewDovetailOrActivate(convention);
 
-            var attributes = convention.GetAttributes();
-            var hostType = _hostTypeUndefined;
+            // What the joint declares wins; only a joint that declares nothing takes the project's default.
+            var hostType = GetDeclaredHostType(convention) ?? ( msBuildConfig.IsTestProject ? _hostTypeUnitTestHost : _hostTypeUndefined );
             ExpressionSyntax conventionCategory = MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 IdentifierName("DovetailCategory"),
                 IdentifierName("Application")
             );
-            foreach (var attributeData in attributes)
-            {
-                if (msBuildConfig.IsTestProject)
-                {
-                    hostType = _hostTypeUnitTestHost;
-                }
-            }
 
             var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
             foreach (var (location, descriptor) in issues)
@@ -186,6 +179,56 @@ internal static class ExportDovetails
             cu.NormalizeWhitespace().SyntaxTree.GetRoot().GetText(Encoding.UTF8)
         );
     }
+
+    /// <summary>
+    ///     The host type the joint declares, or <see langword="null" /> when it declares none. This mirrors what
+    ///     <c>DovetailContextBuilder</c> reads from the joint's type at runtime: <c>[LiveJoint]</c> and <c>[UnitTestJoint]</c> first,
+    ///     then <c>[DovetailHostType]</c>. All of them are inherited, so the attributes on base classes count, and the
+    ///     nearest declaration wins.
+    /// </summary>
+    private static MemberAccessExpressionSyntax? GetDeclaredHostType(INamedTypeSymbol joint)
+    {
+        var attributes = new List<AttributeData>();
+        for (var type = joint; type is not null; type = type.BaseType)
+        {
+            attributes.AddRange(type.GetAttributes());
+        }
+
+        foreach (var attribute in attributes)
+        {
+            switch (attribute.AttributeClass?.ToDisplayString())
+            {
+                case LiveJointAttributeName:
+                    return HostTypeExpression("Live");
+                case UnitTestJointAttributeName:
+                    return HostTypeExpression("UnitTest");
+                default:
+                    break;
+            }
+        }
+
+        foreach (var attribute in attributes)
+        {
+            if (attribute.AttributeClass?.ToDisplayString() != DovetailHostTypeAttributeName) continue;
+            if (attribute.ConstructorArguments is not [{ Kind: TypedConstantKind.Enum, Type: INamedTypeSymbol enumType, Value: { } value }]) continue;
+
+            // The generator doesn't reference Dovetail, so find the member the constructor argument names in the enum itself.
+            var member = enumType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(z => z.HasConstantValue && Equals(z.ConstantValue, value));
+            if (member is not null) return HostTypeExpression(member.Name);
+        }
+
+        return null;
+    }
+
+    private static MemberAccessExpressionSyntax HostTypeExpression(string name) => MemberAccessExpression(
+        SyntaxKind.SimpleMemberAccessExpression,
+        IdentifierName("DovetailHostType"),
+        IdentifierName(name)
+    );
+
+    private const string LiveJointAttributeName = "Joinery.Dovetail.Attributes.LiveJointAttribute";
+    private const string UnitTestJointAttributeName = "Joinery.Dovetail.Attributes.UnitTestJointAttribute";
+    private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
 
     private static ExpressionSyntax NewDovetailOrActivate(INamedTypeSymbol convention)
     {
