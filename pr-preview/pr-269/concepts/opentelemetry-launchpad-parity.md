@@ -52,6 +52,9 @@ had nothing to export. To have the provider regardless, call `WithLogging()` fro
 `ILoggerProvider`s, and a warning written through `ILogger<T>` reaches the exporter with its category, level, body and structured
 state.
 
+Log export keeps working when the [Serilog](./serilog) joint is also applied: Serilog's logger forwards each event to the other logging
+providers of the container, the OpenTelemetry one included ([the other logging providers](./serilog#the-other-logging-providers)).
+
 ## Resource defaults
 
 Yes: the SDK's default resource already holds what LaunchPad's `DefaultTelemetryConvention` added. `ResourceBuilder.CreateDefault()`

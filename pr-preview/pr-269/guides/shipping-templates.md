@@ -90,7 +90,8 @@ to them, or remove from them, after `DovetailResolveTemplates` and before `Dovet
 ```
 
 `Joinery.Dovetail.Hosting` does this to choose which of its OpenTelemetry joints a host gets, depending on which helpers were
-emitted.
+emitted, and to leave the host lifecycle helper out of hosts that don't run it. Removing is `<DovetailEmittedTemplate Remove="MyJoint" />`:
+only these items are written, so a copy of the list that a package keeps for itself is not enough.
 
 ## Test it
 

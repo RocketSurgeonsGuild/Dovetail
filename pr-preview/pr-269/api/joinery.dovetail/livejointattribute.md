@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-269/api/joinery.dovetail.md)
-- Version: `0.3.1-pr.8`
+- Version: `0.3.1-pr.12`
 - Namespace: `Joinery.Dovetail.Attributes`
 - Target framework: `net10.0`
 - Inherits: `Attribute`
