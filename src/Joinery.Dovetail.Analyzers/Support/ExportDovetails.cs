@@ -189,7 +189,7 @@ internal static class ExportDovetails
     private static MemberAccessExpressionSyntax? GetDeclaredHostType(INamedTypeSymbol joint)
     {
         var attributes = new List<AttributeData>();
-        for (INamedTypeSymbol? type = joint; type is not null; type = type.BaseType)
+        for (var type = joint; type is not null; type = type.BaseType)
         {
             attributes.AddRange(type.GetAttributes());
         }
@@ -202,6 +202,8 @@ internal static class ExportDovetails
                     return HostTypeExpression("Live");
                 case UnitTestJointAttributeName:
                     return HostTypeExpression("UnitTest");
+                default:
+                    break;
             }
         }
 
