@@ -25,7 +25,8 @@ Once every Serilog joint has run, `SerilogJoint`:
 2. removes the logging providers the host adds by default (console, debug, event source and event log — everything that
    `Microsoft.Extensions.Logging` itself ships) and the default `ILoggerFactory`;
 3. registers the logger, as `Serilog.Core.Logger` and as Serilog's `ILogger`, and `ILoggerFactory` (a
-   `SerilogLoggerFactory`, which is what backs every `ILogger<T>`), as singletons.
+   `SerilogLoggerFactory`, which is what backs every `ILogger<T>`), as singletons. The logger also writes to the other logging
+   providers of the container ([below](#the-other-logging-providers)).
 
 So `Serilog.ILogger`, `Microsoft.Extensions.Logging.ILogger<T>` and `ILoggerFactory.CreateLogger(...)` all write to the one
 logger, once. The container owns it: disposing the host disposes the logger, which flushes and disposes its sinks.
@@ -34,9 +35,31 @@ A few consequences of replacing `ILoggerFactory`:
 
 - The `Logging:LogLevel` filters and `builder.Logging.SetMinimumLevel(...)` belong to the factory that was replaced. Use
   Serilog's levels, `Serilog:MinimumLevel` and its `Override` entries, instead.
-- A logging provider that is not one of the defaults (one from another package, say) stays registered, but nothing reads it:
-  events reach it only through a Serilog sink for the same destination, such as `Serilog.Sinks.OpenTelemetry`.
+- Serilog's levels decide what every logging provider receives, the other providers included. A provider that used to be
+  given `Debug` events by its own filter gets them only if the `Serilog:MinimumLevel` lets them through.
 - Dovetail does not set the static `Log.Logger`. Resolve the logger from the container.
+
+### The other logging providers
+
+Replacing `ILoggerFactory` would leave every other `ILoggerProvider` of the container without events: the default factory is what
+writes to them. OpenTelemetry's is one, since its logging joints (`ConfigureLoggerProvider`) add the `OpenTelemetryLoggerProvider`
+that exports log records, and so is any provider an application or a package registers. So the logger forwards each event it writes
+to them, the way Serilog.Extensions.Hosting does with `writeToProviders`: a `WriteTo.Providers(...)` sink over a
+`LoggerProviderCollection`, which the logger factory fills with the container's `ILoggerProvider`s when it is created. A provider
+registered at any point before the container is built is included, by a Serilog joint or after it, with the logging builder
+(`builder.Logging.AddProvider(...)`) or with the services. The events keep their level, category (the `SourceContext`) and exception, and
+the Serilog properties are the state they are logged with.
+
+Each event is written once to every sink and once to every provider. Two kinds of provider are not written to:
+
+- Serilog's own `SerilogLoggerProvider`, which would write the event to Serilog again (and, if it wraps this very logger, without end).
+- The default providers that Serilog replaces, which are the ones in the `Microsoft.Extensions.Logging` namespaces (console, debug,
+  event source, event log). They are removed from the services; one that is registered after the Serilog joint ran stays out of the
+  forwarding too, so that the events are not written to the console twice.
+
+The logger factory is created when the container is asked for it, which a host does while it is being built. Until then the other
+providers are not known: an event written through `Serilog.ILogger` before that reaches the sinks only. The logger disposes the providers it writes to when it is disposed, as the container does, so they are disposed twice, which
+`Dispose` allows.
 
 ## The Serilog joint
 
@@ -128,11 +151,15 @@ analyzers on without a warning, and has no reflection to annotate or suppress. R
 and enum parsing (`Enum.TryParse<LogEventLevel>`), and the rest is registration of the logger, which is Serilog's, and of
 `Microsoft.Extensions.Logging`'s own open generic `ILogger<T>`.
 
+Forwarding to the other logging providers is not reflection either: it is Serilog.Extensions.Logging's `WriteTo.Providers` sink and
+`SerilogLoggerFactory`, and a type check on the providers.
+
 The claim was checked by publishing a generic-host application that references `Joinery.Dovetail.Serilog`, reads
-`Serilog:MinimumLevel:Default` and `Override` from configuration and configures a sink in a `ConfigureSerilog(...)` joint, with
-`PublishTrimmed` (`TrimMode=full`) and with `PublishAot` (.NET 10, osx-arm64, self-contained). Neither publish reported a trim or AOT
-warning, and both applications ran: the factory was a `SerilogLoggerFactory`, `ILogger<T>` wrote through the sink, the default level
-and the override applied, and no default logging provider was left.
+`Serilog:MinimumLevel:Default` and `Override` from configuration, configures a sink in a `ConfigureSerilog(...)` joint and registers an
+`ILoggerProvider` in its services, with `PublishTrimmed` (`TrimMode=full`) and with `PublishAot` (.NET 10, osx-arm64,
+self-contained). Neither publish reported a trim or AOT warning, and both applications ran: the factory was a `SerilogLoggerFactory`,
+`ILogger<T>` wrote through the sink and to the provider, the default level and the override applied to both, and no default logging
+provider was left.
 
 What a published application depends on is therefore Serilog and the sinks and enrichers it configures in its joints, which are
 referenced from code and so are kept by the trimmer and compiled by the AOT compiler like any other code. Check the ones you use:

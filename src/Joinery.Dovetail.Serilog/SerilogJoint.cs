@@ -14,7 +14,8 @@ namespace Joinery.Dovetail.Serilog;
 ///   Once every Serilog joint has run, the minimum level and the level overrides in the <c>Serilog:MinimumLevel</c> section of the application's
 ///   configuration are applied (sinks and enrichers are configured by the Serilog joints) and, when the logger is first resolved, the
 ///   <c>IConfigureOptions&lt;LoggerConfiguration&gt;</c> and <c>IPostConfigureOptions&lt;LoggerConfiguration&gt;</c> registered in the services are
-///   applied to the logger configuration.
+///   applied to the logger configuration. The logger writes every event to the other <c>ILoggerProvider</c>s of the container as well (OpenTelemetry's, say),
+///   except Serilog's own and the default providers it replaces.
 /// </remarks>
 [DovetailExport, ConnectsJoint<ILoggingJoint>, DependsOnJoint<LoggingConnector>]
 public sealed class SerilogJoint : IServiceAsyncJoint

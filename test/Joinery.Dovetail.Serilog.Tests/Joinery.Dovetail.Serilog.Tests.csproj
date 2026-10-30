@@ -8,6 +8,11 @@
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Serilog\Joinery.Dovetail.Serilog.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
+
+        <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+        <!-- A generic-host application turns OpenTelemetry on with it (DovetailOpenTelemetryJoint, emitted by Joinery.Dovetail.Hosting). -->
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
 
         <DovetailHost
             Include="HostApplication"

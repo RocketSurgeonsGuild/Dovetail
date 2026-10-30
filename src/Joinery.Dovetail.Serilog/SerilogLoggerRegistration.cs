@@ -13,7 +13,8 @@ namespace Joinery.Dovetail.Serilog;
 /// <summary>
 ///     Turns the <see cref="LoggerConfiguration" /> that the Serilog joints have configured into the application's logging: the
 ///     <see cref="SerilogLogger" />, Serilog's <see cref="SerilogILogger" />, the <see cref="ILoggerFactory" /> (and with it every
-///     <see cref="ILogger{TCategoryName}" />) are registered, and replace the providers the host adds by default.
+///     <see cref="ILogger{TCategoryName}" />) are registered, and replace the providers the host adds by default. The providers that are
+///     registered besides those (OpenTelemetry's, say) are written to by the logger, so they keep receiving events.
 /// </summary>
 internal static class SerilogLoggerRegistration
 {
@@ -29,6 +30,8 @@ internal static class SerilogLoggerRegistration
     /// <remarks>
     ///     The logger is created the first time it is asked for, so that the <see cref="IConfigureOptions{TOptions}" /> and
     ///     <see cref="IPostConfigureOptions{TOptions}" /> registered for <see cref="LoggerConfiguration" /> can use the built service provider.
+    ///     The logger writes to a <see cref="LoggerProviderCollection" /> as well, which the logger factory fills with the
+    ///     <see cref="ILoggerProvider" />s of the container when it is created, so the providers registered after this ran are included.
     /// </remarks>
     public static void Register(IDovetailContext context, IServiceCollection services, LoggerConfiguration loggerConfiguration)
     {
@@ -45,6 +48,10 @@ internal static class SerilogLoggerRegistration
             services.AddSingleton(_ => minimumLevels);
         }
 
+        // The other providers receive every event the logger writes: the logger factory adds them to this collection once the container can be asked.
+        LoggerProviderCollection loggerProviders = new();
+        loggerConfiguration.WriteTo.Providers(loggerProviders);
+
         // AddLogging makes sure ILogger<T> is registered even when the host didn't, then the default providers and factory give way to Serilog's.
         services.AddLogging();
         RemoveDefaultLoggerProviders(services);
@@ -55,8 +62,37 @@ internal static class SerilogLoggerRegistration
         // The container owns the logger and disposes it, which flushes the sinks, so the factory must not dispose it a second time.
         services.AddSingleton(provider => CreateLogger(provider, loggerConfiguration));
         services.AddSingleton<SerilogILogger>(provider => provider.GetRequiredService<SerilogLogger>());
-        services.AddSingleton<ILoggerFactory>(provider => new SerilogLoggerFactory(provider.GetRequiredService<SerilogLogger>(), dispose: false));
+        services.AddSingleton<ILoggerFactory>(provider => CreateLoggerFactory(provider, loggerProviders));
     }
+
+    /// <summary>
+    ///     Creates the factory over the logger, and adds the providers of the container to the collection that the logger writes to.
+    /// </summary>
+    /// <remarks>
+    ///     The container owns the providers and disposes them. The logger disposes the collection, and so the providers, with its sinks as well, so a
+    ///     provider can be disposed twice, which <see cref="IDisposable" /> allows. A provider that needs the logger factory itself to be created
+    ///     can't be forwarded to: that is a cycle, which the container reports.
+    /// </remarks>
+    private static SerilogLoggerFactory CreateLoggerFactory(IServiceProvider services, LoggerProviderCollection loggerProviders)
+    {
+        // The container owns the logger and disposes it, which flushes the sinks, so the factory must not dispose it a second time.
+        SerilogLoggerFactory factory = new(services.GetRequiredService<SerilogLogger>(), dispose: false, loggerProviders);
+        foreach (var loggerProvider in services.GetServices<ILoggerProvider>())
+        {
+            if (IsForwardedTo(loggerProvider))
+            {
+                factory.AddProvider(loggerProvider);
+            }
+        }
+
+        return factory;
+    }
+
+    /// <summary>
+    ///     Whether events are forwarded to the provider. Not to Serilog's own provider (the logger would write to itself, without end), and not to
+    ///     the default providers, which Serilog replaces, in case one is registered after they were removed.
+    /// </summary>
+    private static bool IsForwardedTo(ILoggerProvider loggerProvider) => loggerProvider is not SerilogLoggerProvider && !IsDefaultLoggerProvider(loggerProvider.GetType());
 
     /// <summary>
     ///     Applies the <see cref="IConfigureOptions{TOptions}" /> and then the <see cref="IPostConfigureOptions{TOptions}" /> of the default
@@ -100,7 +136,8 @@ internal static class SerilogLoggerRegistration
     }
 
     private static bool IsDefaultLoggerProvider(ServiceDescriptor descriptor) =>
-        descriptor.ServiceType == typeof(ILoggerProvider)
-     && ( descriptor.IsKeyedService ? descriptor.KeyedImplementationType : descriptor.ImplementationType )?.FullName is { } name
-     && name.StartsWith(DefaultProviderNamespacePrefix, StringComparison.Ordinal);
+        descriptor.ServiceType == typeof(ILoggerProvider) && IsDefaultLoggerProvider(descriptor.IsKeyedService ? descriptor.KeyedImplementationType : descriptor.ImplementationType);
+
+    private static bool IsDefaultLoggerProvider(Type? providerType) =>
+        providerType?.FullName is { } name && name.StartsWith(DefaultProviderNamespacePrefix, StringComparison.Ordinal);
 }
