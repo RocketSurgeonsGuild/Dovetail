@@ -1,0 +1,8 @@
+﻿{
+  Host: WebAssembly,
+  LifecycleHelperEmitted: false,
+  Helpers: [
+    DovetailWebAssemblyContextExtensions,
+    DovetailWebAssemblyHelpers
+  ]
+}
