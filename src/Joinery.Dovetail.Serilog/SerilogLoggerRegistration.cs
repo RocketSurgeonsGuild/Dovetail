@@ -19,9 +19,17 @@ namespace Joinery.Dovetail.Serilog;
 internal static class SerilogLoggerRegistration
 {
     /// <summary>
-    ///     The namespace the logging providers that ship with Microsoft.Extensions.Logging (console, debug, event source, event log, ...) live in.
+    ///     The full names of the logging providers that the host builders register by default and that Serilog replaces: the console, debug, event
+    ///     source and (on Windows) event log providers of Microsoft.Extensions.Logging. Names rather than types, so the package needs none of the
+    ///     packages that hold them. Other providers in the same namespaces (Application Insights', Azure App Service's) are not among them.
     /// </summary>
-    private const string DefaultProviderNamespacePrefix = "Microsoft.Extensions.Logging.";
+    private static readonly HashSet<string> DefaultProviderTypeNames =
+    [
+        "Microsoft.Extensions.Logging.Console.ConsoleLoggerProvider",
+        "Microsoft.Extensions.Logging.Debug.DebugLoggerProvider",
+        "Microsoft.Extensions.Logging.EventSource.EventSourceLoggerProvider",
+        "Microsoft.Extensions.Logging.EventLog.EventLogLoggerProvider",
+    ];
 
     /// <summary>
     ///     Reads the minimum levels of the <c>Serilog</c> configuration section into <paramref name="loggerConfiguration" />, drops the default
@@ -124,7 +132,7 @@ internal static class SerilogLoggerRegistration
     }
 
     /// <summary>
-    ///     Removes the providers that <c>Microsoft.Extensions.Logging</c> ships and the host registers by default. The factory is replaced
+    ///     Removes the providers that the host registers by default (<see cref="DefaultProviderTypeNames" />). The factory is replaced
     ///     as well, so nothing would read them, but leaving them registered would have them show up as providers that are still there.
     /// </summary>
     private static void RemoveDefaultLoggerProviders(IServiceCollection services)
@@ -138,6 +146,5 @@ internal static class SerilogLoggerRegistration
     private static bool IsDefaultLoggerProvider(ServiceDescriptor descriptor) =>
         descriptor.ServiceType == typeof(ILoggerProvider) && IsDefaultLoggerProvider(descriptor.IsKeyedService ? descriptor.KeyedImplementationType : descriptor.ImplementationType);
 
-    private static bool IsDefaultLoggerProvider(Type? providerType) =>
-        providerType?.FullName is { } name && name.StartsWith(DefaultProviderNamespacePrefix, StringComparison.Ordinal);
+    private static bool IsDefaultLoggerProvider(Type? providerType) => providerType?.FullName is { } name && DefaultProviderTypeNames.Contains(name);
 }

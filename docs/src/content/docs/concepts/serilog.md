@@ -22,8 +22,9 @@ Once every Serilog joint has run, `SerilogJoint`:
 
 1. applies the minimum level and the level overrides in the `Serilog:MinimumLevel` section of the application's configuration
    to the logger configuration ([below](#configuration));
-2. removes the logging providers the host adds by default (console, debug, event source and event log — everything that
-   `Microsoft.Extensions.Logging` itself ships) and the default `ILoggerFactory`;
+2. removes the logging providers the host builders add by default (console, debug, event source and, on Windows, event log: the
+   `ConsoleLoggerProvider`, `DebugLoggerProvider`, `EventSourceLoggerProvider` and `EventLogLoggerProvider` of
+   `Microsoft.Extensions.Logging`) and the default `ILoggerFactory`;
 3. registers the logger, as `Serilog.Core.Logger` and as Serilog's `ILogger`, and `ILoggerFactory` (a
    `SerilogLoggerFactory`, which is what backs every `ILogger<T>`), as singletons. The logger also writes to the other logging
    providers of the container ([below](#the-other-logging-providers)).
@@ -53,9 +54,11 @@ the Serilog properties are the state they are logged with.
 Each event is written once to every sink and once to every provider. Two kinds of provider are not written to:
 
 - Serilog's own `SerilogLoggerProvider`, which would write the event to Serilog again (and, if it wraps this very logger, without end).
-- The default providers that Serilog replaces, which are the ones in the `Microsoft.Extensions.Logging` namespaces (console, debug,
-  event source, event log). They are removed from the services; one that is registered after the Serilog joint ran stays out of the
-  forwarding too, so that the events are not written to the console twice.
+- The default providers that Serilog replaces: exactly the four types named above, matched by their full names. They are removed from
+  the services; one that is registered after the Serilog joint ran stays out of the forwarding too, so that the events are not written
+  to the console twice. Providers that merely share a namespace with them are not defaults and are written to, such as Application
+  Insights' `ApplicationInsightsLoggerProvider` (`Microsoft.Extensions.Logging.ApplicationInsights`) and the Azure App Service
+  providers (`Microsoft.Extensions.Logging.AzureAppServices`).
 
 The logger factory is created when the container is asked for it, which a host does while it is being built. Until then the other
 providers are not known: an event written through `Serilog.ILogger` before that reaches the sinks only. The logger disposes the providers it writes to when it is disposed, as the container does, so they are disposed twice, which

@@ -129,14 +129,30 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
     [Test]
     public async Task A_Default_Provider_Registered_After_The_Serilog_Joint_Is_Not_Written_To()
     {
-        FakeDefaultProvider defaultProvider = new();
+        var defaultProvider = FakeProviders.NewDefaultProvider();
         CapturingProvider provider = new();
         using var host = await BuildAsync(configure: rb => rb.Set(new LateProviders(defaultProvider, provider)));
 
         host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        defaultProvider.Entries.ShouldBeEmpty("the providers that Microsoft.Extensions.Logging ships are replaced by Serilog, not written to besides it");
+        defaultProvider.Entries.ShouldBeEmpty("the default providers are replaced by Serilog, not written to besides it");
         provider.Entries.ShouldHaveSingleItem();
+    }
+
+    [Test]
+    public async Task A_Provider_That_Is_Not_A_Default_One_Is_Written_To_Whatever_Its_Namespace()
+    {
+        // Application Insights' and Azure App Service's providers live in Microsoft.Extensions.Logging.* namespaces too, and are not replaced.
+        FakeNamespacedProvider provider = new();
+        var builder = Host.CreateApplicationBuilder();
+        builder.Services.AddSingleton<ILoggerProvider>(provider);
+        var late = new LateProviders(new FakeNamespacedProvider());
+        using var host = await builder.ConfigureDovetail(rb => rb.Set(late));
+
+        host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
+
+        provider.Entries.Select(entry => entry.Message).ShouldBe(["Hello",], "registered before the Serilog joint, so it was not removed");
+        ( (CapturingProvider)late.Providers.Single() ).Entries.Select(entry => entry.Message).ShouldBe(["Hello",], "registered after it");
     }
 
     [Test]
