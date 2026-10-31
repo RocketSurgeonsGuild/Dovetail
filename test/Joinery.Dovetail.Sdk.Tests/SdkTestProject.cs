@@ -406,6 +406,34 @@ public sealed class SdkTestProject : IDisposable
     }
 
     /// <summary>
+    /// Publishes the project at <paramref name="relativePath"/> with <c>dotnet publish</c> (plus <paramref name="arguments"/>, say
+    /// <c>-p:PublishAot=true</c>), runs the executable it produced, and returns what that wrote to standard output: for behaviour
+    /// that has to hold in the published application, such as under trimming and Native AOT, where nothing is loaded by reflection.
+    /// The publish's binary log is left for <see cref="Warnings"/>.
+    /// </summary>
+    public async Task<string> PublishAndRun(string relativePath, string arguments = "")
+    {
+        var projectDirectory = Path.Combine(Directory, relativePath);
+        await RunDotnet($"publish -bl {arguments}", projectDirectory);
+
+        var executableName = Path.GetFileName(relativePath) + ( OperatingSystem.IsWindows() ? ".exe" : "" );
+        var executable = System.IO.Directory.EnumerateFiles(Path.Combine(projectDirectory, "bin"), executableName, SearchOption.AllDirectories)
+                               .Single(z => Path.GetFileName(Path.GetDirectoryName(z)) == "publish");
+        var psi = new ProcessStartInfo(executable)
+        {
+            WorkingDirectory = Path.GetDirectoryName(executable)!,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        using var proc = Process.Start(psi)!;
+        var stdout = await proc.StandardOutput.ReadToEndAsync();
+        var stderr = await proc.StandardError.ReadToEndAsync();
+        await proc.WaitForExitAsync();
+        return proc.ExitCode == 0 ? stdout : throw new TUnitException($"{executableName} failed for {relativePath}:\n{stdout}\n{stderr}");
+    }
+
+    /// <summary>
     /// Runs <c>dotnet build</c> (plus <paramref name="arguments"/>) for the project at <paramref name="relativePath"/> and returns
     /// the build's binary log, for behaviour that only shows across builds (incrementality, stale outputs).
     /// </summary>

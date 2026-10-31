@@ -42,7 +42,9 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                                        provider.Right,
                                        // Unset (no Dovetail targets, e.g. a hand-wired analyzer) keeps the historical behavior of doing both.
                                        provider.Left.Left.GlobalOptions.GetBuildProperty<bool?>("ImportDovetailAssembly", x => bool.TryParse(x, out var v) ? v : null) ?? true,
-                                       provider.Left.Left.GlobalOptions.GetBuildProperty<bool?>("ExportDovetailAssembly", x => bool.TryParse(x, out var v) ? v : null) ?? true
+                                       provider.Left.Left.GlobalOptions.GetBuildProperty<bool?>("ExportDovetailAssembly", x => bool.TryParse(x, out var v) ? v : null) ?? true,
+                                       // Read the way Specular's own generator reads it, so Dovetail only names a SpecularProvider that Specular emits.
+                                       provider.Left.Left.GlobalOptions.GetBuildProperty<bool?>("SpecularEmitProvider", x => bool.TryParse(x, out var v) ? v : null) ?? true
                                    )
                             )
                            .WithTrackingName("dovetail:msbuild");
