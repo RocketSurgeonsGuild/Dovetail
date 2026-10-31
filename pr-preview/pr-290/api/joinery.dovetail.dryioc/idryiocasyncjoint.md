@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.DryIoc](/Dovetail/pr-preview/pr-290/api/joinery.dovetail.dryioc.md)
-- Version: `0.3.2-pr.4`
+- Version: `0.3.2-pr.7`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`

@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Configuration.Yaml](/Dovetail/pr-preview/pr-290/api/joinery.dovetail.configuration.yaml.md)
-- Version: `0.3.2-pr.4`
+- Version: `0.3.2-pr.7`
 - Namespace: `Joinery.Dovetail.Configuration.Yaml`
 - Target framework: `net10.0`
 - Inherits: `FileConfigurationSource`

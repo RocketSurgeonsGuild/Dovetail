@@ -173,6 +173,36 @@ type is exported as `UnitTest`. A joint's own attribute always takes precedence 
 project stays live-only and `[DovetailHostType(DovetailHostType.Undefined)]` opts a joint out of the default.
 The runtime reflection path has no such default.
 
+## Dovetail Category
+
+Every joint belongs to a category, a `DovetailCategory`, which is part of the joint's metadata. A joint declares its category with
+`[DovetailCategory]`. The attribute takes a string: `DovetailCategory.Application` and `DovetailCategory.Core` are constants for the two
+well-known categories, and any other string is a category of its own.
+
+```c#
+[DovetailExport]
+[DovetailCategory(DovetailCategory.Core)]
+public class CoreTimeJoint : IServiceJoint
+{
+    public void Register(IDovetailContext context, IServiceCollection services)
+    {
+        //...
+    }
+}
+```
+
+A joint reaches a context by one of two paths, and both give it the same category:
+
+- A joint that declares none is in the `Application` category.
+- A joint that declares `[DovetailCategory(X)]` is in category `X`, whether it is added at runtime with `AppendJoint(...)` / `PrependJoint(...)`
+  or exported with `[DovetailExport]`. The generated `Exports` class writes the category into each joint's metadata as plain C#, the constant
+  for `Application` and `Core` and a string literal for any other, so the exported joint above is described with category `Core`. Nothing is
+  reflected on, and a joint that takes constructor parameters (created by a factory) gets its category the same way.
+- The attribute is inherited. A joint that derives from a `[DovetailCategory]` class is in that category too, and the closest declaration wins.
+  A `[DovetailCategory]` on an interface the joint implements doesn't count, because looking up an attribute on a type reads its base classes
+  and not its interfaces.
+- The category is independent of the host type above; a joint can declare both.
+
 ## Injecting dependencies
 
 By default joints are a simple class that can be created using `Activator.CreateInstance` however the goal of joints was to allow "bootstrap time"
