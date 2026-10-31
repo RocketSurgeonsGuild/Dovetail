@@ -8,6 +8,10 @@
     them is what turns its helper on. The joints that turn OpenTelemetry on for the application's host are emitted the same way
     (see _DovetailResolveHostingHelpers), so the package depends on nothing but Joinery.Dovetail.
 
+    This is Joinery.Dovetail's template extension point (Joinery.Dovetail.Templates.targets) with this package as a user: each helper
+    is a <DovetailTemplate> that Joinery.Dovetail resolves against the project's references and writes, and the OpenTelemetry joints
+    are added to the DovetailEmittedTemplate items it resolved.
+
     context.Environment and context.WebAssemblyHostEnvironment are emitted by Joinery.Dovetail itself
     (Joinery.Dovetail.Environment.targets), whenever Microsoft.Extensions.Hosting.Abstractions or
     Microsoft.AspNetCore.Components.WebAssembly is referenced - independent of whether this package is referenced too, so a
@@ -32,14 +36,23 @@
     <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
     <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
   </ItemGroup>
+  <ItemGroup>
+    <DovetailTemplate
+      Include="@(_DovetailHostingHelper)"
+      File="$(MSBuildThisFileDirectory)%(Identity).cs.template"
+      Package="Joinery.Dovetail.Hosting"
+      OutputPrefix="DovetailHosting"
+    />
+  </ItemGroup>
 
   <!--
-      Right after the references resolve (the project and package analyzers are known by then too): well before CoreCompile and
-      WinUI's XamlPreCompile, which compiles the project's C# in a first pass for MAUI and Uno Windows heads, and before the
-      DovetailHost targets in Joinery.Dovetail.Hosts.targets evaluate their conditions, so _DovetailHostingGateHosts can still
-      remove hosts.
+      Right after Joinery.Dovetail resolves its templates, which is right after the references resolve (the project and package
+      analyzers are known by then too): well before CoreCompile and WinUI's XamlPreCompile, which compiles the project's C# in a first
+      pass for MAUI and Uno Windows heads, and before the DovetailHost targets in Joinery.Dovetail.Hosts.targets evaluate their
+      conditions, so _DovetailHostingGateHosts can still remove hosts. Before Joinery.Dovetail writes them, so the OpenTelemetry
+      joints chosen below are written with the helpers.
   -->
-  <Target Name="_DovetailResolveHostingHelpers" AfterTargets="ResolveAssemblyReferences">
+  <Target Name="_DovetailResolveHostingHelpers" AfterTargets="DovetailResolveTemplates" BeforeTargets="DovetailGenerateTemplates">
     <ItemGroup>
       <_DovetailHostingReference Include="@(ReferencePath->'%(Filename)')" />
     </ItemGroup>
@@ -51,11 +64,9 @@
       <_DovetailHostingReferenced>@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'Joinery.Dovetail.Hosting'))</_DovetailHostingReferenced>
       <_DovetailHostingReferenced Condition="@(Analyzer->AnyHaveMetadataValue('Filename', 'Joinery.Dovetail.Analyzers')) != 'true'">false</_DovetailHostingReferenced>
     </PropertyGroup>
-    <ItemGroup Condition="'$(_DovetailHostingReferenced)' == 'true'">
-      <_DovetailHostingRequirement Include="%(_DovetailHostingHelper.References)" Helper="%(_DovetailHostingHelper.Identity)" />
-      <_DovetailHostingMissingRequirement Include="@(_DovetailHostingRequirement)" Exclude="@(_DovetailHostingReference)" />
-      <_DovetailHostingSkippedHelper Include="@(_DovetailHostingMissingRequirement->'%(Helper)')" />
-      <_DovetailHostingEmittedHelper Include="@(_DovetailHostingHelper)" Exclude="@(_DovetailHostingSkippedHelper)" />
+    <!-- The helpers Joinery.Dovetail resolved for this package: it is referenced, and so is every assembly the helper needs. -->
+    <ItemGroup>
+      <_DovetailHostingEmittedHelper Include="@(DovetailEmittedTemplate)" Condition="'%(DovetailEmittedTemplate.Package)' == 'Joinery.Dovetail.Hosting'" />
     </ItemGroup>
     <PropertyGroup>
       <_DovetailHostingUnoNavigation>@(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailUnoNavigationHelpers'))</_DovetailHostingUnoNavigation>
@@ -71,9 +82,12 @@
         turns on. .NET MAUI and Blazor WebAssembly don't run it, so they get no helper even when Microsoft.Extensions.Hosting is
         among their references (another package brought it along, say): methods that compile but never run their handlers would be worse
         than none.
+        What is written is the DovetailEmittedTemplate items, so the helper has to leave those too (_DovetailHostingEmittedHelper is
+        only this package's copy of them, which the host gating below reads).
     -->
     <ItemGroup Condition="'$(_DovetailHostingMaui)' == 'true' or '$(_DovetailHostingWebAssembly)' == 'true'">
       <_DovetailHostingEmittedHelper Remove="DovetailHostLifecycleHelpers" />
+      <DovetailEmittedTemplate Remove="DovetailHostLifecycleHelpers" />
     </ItemGroup>
 
     <!--
@@ -100,55 +114,44 @@
       <_DovetailHostingOtherHost>false</_DovetailHostingOtherHost>
       <_DovetailHostingOtherHost Condition="'$(_DovetailHostingMaui)' == 'true' or '$(_DovetailHostingWebAssembly)' == 'true' or '$(_DovetailHostingUno)' == 'true'">true</_DovetailHostingOtherHost>
     </PropertyGroup>
+    <!-- Added to the templates Joinery.Dovetail resolved, so they are written with the helpers above. -->
     <ItemGroup Condition="'$(_DovetailHostingOpenTelemetry)' == 'true'">
-      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryJoint" Condition="'$(_DovetailHostingOpenTelemetryHosting)' == 'true'" />
-      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryServicesJoint" Condition="'$(_DovetailHostingOpenTelemetryHosting)' != 'true' and '$(_DovetailHostingOtherHost)' == 'true'" />
-      <_DovetailHostingEmittedHelper Include="DovetailOpenTelemetryHostingMissing" Condition="'$(_DovetailHostingOpenTelemetryHosting)' != 'true' and '$(_DovetailHostingOtherHost)' != 'true' and '$(_DovetailHostingGenericHost)' == 'true'" />
-      <_DovetailHostingEmittedHelper
+      <DovetailEmittedTemplate
+        Include="DovetailOpenTelemetryJoint"
+        Condition="'$(_DovetailHostingOpenTelemetryHosting)' == 'true'"
+        File="$(MSBuildThisFileDirectory)DovetailOpenTelemetryJoint.cs.template"
+        OutputPrefix="DovetailHosting" />
+      <DovetailEmittedTemplate
+        Include="DovetailOpenTelemetryServicesJoint"
+        Condition="'$(_DovetailHostingOpenTelemetryHosting)' != 'true' and '$(_DovetailHostingOtherHost)' == 'true'"
+        File="$(MSBuildThisFileDirectory)DovetailOpenTelemetryServicesJoint.cs.template"
+        OutputPrefix="DovetailHosting" />
+      <DovetailEmittedTemplate
+        Include="DovetailOpenTelemetryHostingMissing"
+        Condition="'$(_DovetailHostingOpenTelemetryHosting)' != 'true' and '$(_DovetailHostingOtherHost)' != 'true' and '$(_DovetailHostingGenericHost)' == 'true'"
+        File="$(MSBuildThisFileDirectory)DovetailOpenTelemetryHostingMissing.cs.template"
+        OutputPrefix="DovetailHosting" />
+      <DovetailEmittedTemplate
         Include="DovetailOpenTelemetryMauiStartJoint"
         Condition="'$(_DovetailHostingMaui)' == 'true'"
-        Template="DovetailOpenTelemetryStartJoint"
+        File="$(MSBuildThisFileDirectory)DovetailOpenTelemetryStartJoint.cs.template"
+        OutputPrefix="DovetailHosting"
         HostName="Maui"
         HostType="global::Microsoft.Maui.Hosting.MauiApp" />
-      <_DovetailHostingEmittedHelper
+      <DovetailEmittedTemplate
         Include="DovetailOpenTelemetryWebAssemblyStartJoint"
         Condition="'$(_DovetailHostingWebAssembly)' == 'true'"
-        Template="DovetailOpenTelemetryStartJoint"
+        File="$(MSBuildThisFileDirectory)DovetailOpenTelemetryStartJoint.cs.template"
+        OutputPrefix="DovetailHosting"
         HostName="WebAssembly"
         HostType="global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost" />
-      <_DovetailHostingEmittedHelper
+      <DovetailEmittedTemplate
         Include="DovetailOpenTelemetryUnoStartJoint"
         Condition="'$(_DovetailHostingUno)' == 'true'"
-        Template="DovetailOpenTelemetryStartJoint"
+        File="$(MSBuildThisFileDirectory)DovetailOpenTelemetryStartJoint.cs.template"
+        OutputPrefix="DovetailHosting"
         HostName="Uno"
         HostType="global::Microsoft.Extensions.Hosting.IHost" />
-    </ItemGroup>
-  </Target>
-
-  <!--
-      Batched once per emitted helper via Outputs. Hooked after the resolution rather than depending on it: a target's condition is
-      evaluated before its DependsOnTargets run, and the condition needs the resolved helpers. A helper emitted once per host names its
-      shared template in Template metadata, and the template's {HostName} and {HostType} come from the metadata of the same names.
-  -->
-  <Target Name="_DovetailGenerateHostingHelpers"
-          AfterTargets="_DovetailResolveHostingHelpers"
-          Condition="'@(_DovetailHostingEmittedHelper)' != ''"
-          Outputs="%(_DovetailHostingEmittedHelper.Identity)">
-    <PropertyGroup>
-      <_DovetailHostingHelperTemplate>%(_DovetailHostingEmittedHelper.Template)</_DovetailHostingHelperTemplate>
-      <_DovetailHostingHelperTemplate Condition="'$(_DovetailHostingHelperTemplate)' == ''">%(_DovetailHostingEmittedHelper.Identity)</_DovetailHostingHelperTemplate>
-      <_DovetailHostingHelperContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)$(_DovetailHostingHelperTemplate).cs.template'))</_DovetailHostingHelperContent>
-      <_DovetailHostingHelperContent Condition="'%(_DovetailHostingEmittedHelper.HostType)' != ''">$(_DovetailHostingHelperContent.Replace('{HostName}', '%(_DovetailHostingEmittedHelper.HostName)').Replace('{HostType}', '%(_DovetailHostingEmittedHelper.HostType)'))</_DovetailHostingHelperContent>
-      <_DovetailHostingHelperOutputFile>$(IntermediateOutputPath)DovetailHosting.%(_DovetailHostingEmittedHelper.Identity).g.cs</_DovetailHostingHelperOutputFile>
-    </PropertyGroup>
-    <WriteLinesToFile
-      File="$(_DovetailHostingHelperOutputFile)"
-      Lines="$([MSBuild]::Escape($(_DovetailHostingHelperContent)))"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
-    <ItemGroup>
-      <Compile Include="$(_DovetailHostingHelperOutputFile)" />
-      <FileWrites Include="$(_DovetailHostingHelperOutputFile)" />
     </ItemGroup>
   </Target>
 

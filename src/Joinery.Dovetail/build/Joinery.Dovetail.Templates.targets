@@ -1,0 +1,146 @@
+<Project>
+  <!--
+    Joinery.Dovetail.Templates.targets
+    The supported way for a package to ship C# source as *.cs.template files and have it written into the projects that should get
+    it, the same way Joinery.Dovetail.Hosting ships its helpers and joints. A package declares a <DovetailTemplate> item from its
+    build/buildTransitive targets; this file decides, once the project's references are resolved, which of the declared templates
+    the project gets, writes each of those to the intermediate directory and adds it to the compilation. Nothing needs to be
+    compiled against, so the shipping package depends on none of the assemblies its templates use: referencing them is what turns
+    a template on.
+
+    DovetailTemplate item (Include is the template's name, unique across packages; it names the generated file):
+      File                - Required. Full path of the template, usually $(MSBuildThisFileDirectory)Name.cs.template. Templates must
+                            not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to
+                            forward slashes on Linux and macOS.
+      Package             - The id of the package that ships the template. The template is only emitted into a project that
+                            references it: the package's assembly (named after the package) is among the resolved references,
+                            or, with DirectReferenceOnly, the project declares a reference to it itself.
+      DirectReferenceOnly - 'true' limits the template to projects with a direct reference to Package: a PackageReference to it, or a
+                            ProjectReference to a project named after it. A project that only gets the package transitively (its
+                            build assets flow there) gets nothing. Requires Package.
+      References          - Semicolon-separated assembly names (file names without extension) that must all be among the resolved
+                            references.
+      Hosts               - Semicolon-separated DovetailHost names, at least one of which the project must declare: the host model,
+                            as Joinery.Dovetail.Sdk detects it (HostApplication, WebApplication, WebAssembly, Maui, Uno). These are
+                            the hosts declared when the templates resolve, before a package narrows them.
+      HostName, HostType  - Replace {HostName} and {HostType} in the template (when HostType is set), so one template can be
+                            emitted once per host model under different names.
+      OutputPrefix        - Prefix of the generated file name, Prefix.Name.g.cs (default: DovetailTemplate).
+
+    Every gate has to pass. A project that doesn't run the Dovetail source generator gets no templates, since they are meant to be
+    joints and [Embedded] helpers it defines or discovers.
+
+    The templates that passed are the DovetailEmittedTemplate items (all the metadata above carried over). A target that needs a
+    decision the metadata can't express adds to or removes from them between DovetailResolveTemplates and
+    DovetailGenerateTemplates (AfterTargets="DovetailResolveTemplates" BeforeTargets="DovetailGenerateTemplates"), as
+    Joinery.Dovetail.Hosting does to choose its OpenTelemetry joints.
+  -->
+  <PropertyGroup>
+    <_DovetailTemplatesTargetsImported>true</_DovetailTemplatesTargetsImported>
+  </PropertyGroup>
+
+  <!-- DovetailTemplate item metadata schema -->
+  <ItemDefinitionGroup>
+    <DovetailTemplate>
+      <File></File>
+      <Package></Package>
+      <DirectReferenceOnly></DirectReferenceOnly>
+      <References></References>
+      <Hosts></Hosts>
+      <HostName></HostName>
+      <HostType></HostType>
+      <OutputPrefix></OutputPrefix>
+    </DovetailTemplate>
+  </ItemDefinitionGroup>
+
+  <!--
+      Right after the references resolve (the project and package analyzers are known by then too): well before CoreCompile and
+      WinUI's XamlPreCompile, which compiles the project's C# in a first pass for MAUI and Uno Windows heads, and before the
+      DovetailHost targets in Joinery.Dovetail.Hosts.targets evaluate their conditions, so a package can still remove hosts.
+  -->
+  <Target Name="DovetailResolveTemplates" AfterTargets="ResolveAssemblyReferences" Condition="'@(DovetailTemplate)' != ''">
+    <Error Condition="'%(DovetailTemplate.File)' == ''" Text="Dovetail: the template '%(DovetailTemplate.Identity)' has no File." />
+    <Error
+      Condition="'%(DovetailTemplate.DirectReferenceOnly)' == 'true' and '%(DovetailTemplate.Package)' == ''"
+      Text="Dovetail: the template '%(DovetailTemplate.Identity)' is DirectReferenceOnly, so it needs the Package it is direct to."
+    />
+    <ItemGroup>
+      <_DovetailTemplateReference Include="@(ReferencePath->'%(Filename)')" />
+      <!--
+          A direct reference is one the project declares itself; the Dovetail SDK's implicit package references count. The .NET SDK also
+          lists the project references of the projects it references as ProjectReference items, with the NuGetPackageId of the
+          project's package; those are transitive.
+      -->
+      <_DovetailTemplateDirectReference Include="@(PackageReference->'%(Identity)')" />
+      <_DovetailTemplateDirectReference Include="@(ProjectReference->'%(Filename)')" Condition="'%(ProjectReference.NuGetPackageId)' == ''" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_DovetailTemplateGenerator>@(Analyzer->AnyHaveMetadataValue('Filename', 'Joinery.Dovetail.Analyzers'))</_DovetailTemplateGenerator>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DovetailTemplateGenerator)' == 'true'">
+      <!-- References: every one is referenced. -->
+      <_DovetailTemplateRequirement Include="%(DovetailTemplate.References)" Template="%(DovetailTemplate.Identity)" />
+      <_DovetailTemplateMissingRequirement Include="@(_DovetailTemplateRequirement)" Exclude="@(_DovetailTemplateReference)" />
+      <_DovetailTemplateSkipped Include="@(_DovetailTemplateMissingRequirement->'%(Template)')" />
+
+      <!-- Package: referenced, or with DirectReferenceOnly referenced by the project itself. -->
+      <_DovetailTemplatePackage
+        Include="%(DovetailTemplate.Package)"
+        Template="%(DovetailTemplate.Identity)"
+        Condition="'%(DovetailTemplate.DirectReferenceOnly)' != 'true'"
+      />
+      <_DovetailTemplateMissingPackage Include="@(_DovetailTemplatePackage)" Exclude="@(_DovetailTemplateReference)" />
+      <_DovetailTemplateDirectPackage
+        Include="%(DovetailTemplate.Package)"
+        Template="%(DovetailTemplate.Identity)"
+        Condition="'%(DovetailTemplate.DirectReferenceOnly)' == 'true'"
+      />
+      <_DovetailTemplateIndirectPackage Include="@(_DovetailTemplateDirectPackage)" Exclude="@(_DovetailTemplateDirectReference)" />
+      <_DovetailTemplateSkipped Include="@(_DovetailTemplateMissingPackage->'%(Template)')" />
+      <_DovetailTemplateSkipped Include="@(_DovetailTemplateIndirectPackage->'%(Template)')" />
+
+      <!-- Hosts: at least one is declared. -->
+      <_DovetailTemplateHost Include="%(DovetailTemplate.Hosts)" Template="%(DovetailTemplate.Identity)" />
+      <_DovetailTemplateUndeclaredHost Include="@(_DovetailTemplateHost)" Exclude="@(DovetailHost)" />
+      <_DovetailTemplateDeclaredHost Include="@(_DovetailTemplateHost)" Exclude="@(_DovetailTemplateUndeclaredHost)" />
+      <_DovetailTemplateHostGated Include="@(_DovetailTemplateHost->'%(Template)')" />
+      <_DovetailTemplateHostSatisfied Include="@(_DovetailTemplateDeclaredHost->'%(Template)')" />
+      <_DovetailTemplateSkipped Include="@(_DovetailTemplateHostGated)" Exclude="@(_DovetailTemplateHostSatisfied)" />
+
+      <DovetailEmittedTemplate Include="@(DovetailTemplate)" Exclude="@(_DovetailTemplateSkipped)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+      Batched once per emitted template via Outputs. Hooked after the resolution rather than depending on it: a target's condition is
+      evaluated before its DependsOnTargets run, and the condition needs the resolved templates.
+  -->
+  <Target
+    Name="DovetailGenerateTemplates"
+    AfterTargets="DovetailResolveTemplates"
+    Condition="'@(DovetailEmittedTemplate)' != ''"
+    Outputs="%(DovetailEmittedTemplate.Identity)"
+  >
+    <Error
+      Condition="!Exists('%(DovetailEmittedTemplate.File)')"
+      Text="Dovetail: the template '%(DovetailEmittedTemplate.Identity)' names a file that doesn't exist: '%(DovetailEmittedTemplate.File)'."
+    />
+    <PropertyGroup>
+      <_DovetailTemplateContent>$([System.IO.File]::ReadAllText('%(DovetailEmittedTemplate.File)'))</_DovetailTemplateContent>
+      <_DovetailTemplateContent Condition="'%(DovetailEmittedTemplate.HostType)' != ''">$(_DovetailTemplateContent.Replace('{HostName}', '%(DovetailEmittedTemplate.HostName)').Replace('{HostType}', '%(DovetailEmittedTemplate.HostType)'))</_DovetailTemplateContent>
+      <_DovetailTemplatePrefix>%(DovetailEmittedTemplate.OutputPrefix)</_DovetailTemplatePrefix>
+      <_DovetailTemplatePrefix Condition="'$(_DovetailTemplatePrefix)' == ''">DovetailTemplate</_DovetailTemplatePrefix>
+      <_DovetailTemplateOutputFile>$(IntermediateOutputPath)$(_DovetailTemplatePrefix).%(DovetailEmittedTemplate.Identity).g.cs</_DovetailTemplateOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailTemplateOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailTemplateContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+    />
+    <ItemGroup>
+      <Compile Include="$(_DovetailTemplateOutputFile)" />
+      <FileWrites Include="$(_DovetailTemplateOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>
