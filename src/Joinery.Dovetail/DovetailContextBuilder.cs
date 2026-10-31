@@ -49,7 +49,7 @@ public sealed class DovetailContextBuilder
     {
         Properties = new DovetailDictionary(properties ?? new PropertiesDictionary());
         _conventions = new();
-        _conventions.Append(conventions);
+        _conventions.Append(Bind(conventions));
         Categories = ImmutableHashSet.CreateRange(DovetailCategory.ValueComparer, categories);
     }
 
@@ -70,7 +70,7 @@ public sealed class DovetailContextBuilder
     /// <returns>IDovetailScanner.</returns>
     public DovetailContextBuilder AppendJoint(params IEnumerable<IDovetailJointMetadata> conventions)
     {
-        _conventions.Append(conventions);
+        _conventions.Append(Bind(conventions));
         return this;
     }
 
@@ -81,7 +81,7 @@ public sealed class DovetailContextBuilder
     /// <returns><see cref="DovetailContextBuilder" />.</returns>
     public DovetailContextBuilder PrependJoint(params IEnumerable<IDovetailJointMetadata> conventions)
     {
-        _conventions.Prepend(conventions);
+        _conventions.Prepend(Bind(conventions));
         return this;
     }
 
@@ -151,6 +151,21 @@ public sealed class DovetailContextBuilder
         var set = types.ToHashSet();
         _conventions.Remove(a => set.Contains(a.Joint.GetType()));
         return this;
+    }
+
+    /// <summary>
+    ///     Hands joints that are created on demand the properties of this builder, which is where their constructor parameters
+    ///     come from. Anything set on the builder before the joint is first read is seen, whenever the metadata arrived.
+    /// </summary>
+    private IDovetailJointMetadata[] Bind(IEnumerable<IDovetailJointMetadata> conventions)
+    {
+        var metadata = conventions.ToArray();
+        foreach (var item in metadata)
+        {
+            if (item is DovetailJointMetadata deferred) deferred.Bind(Properties);
+        }
+
+        return metadata;
     }
 
     private static IDovetailJointMetadata FromDovetail(IDovetailJoint part)

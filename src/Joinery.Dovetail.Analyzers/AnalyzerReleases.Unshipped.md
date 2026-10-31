@@ -13,3 +13,4 @@ DT0013 | Dovetail | Warning | DT0013: an annotation (e.g. a regular expression o
 DT0014 | Dovetail | Warning | DT0014: the generator failed while describing a configuration type; the type gets no schema, the rest of the build is unaffected
 DT0015 | Dovetail | Error | DT0015: an options type is configured by both a [DovetailConfiguration] class attribute and an [assembly: DovetailConfiguration<T>]; the class declaration is used
 DT0016 | Dovetail | Error | DT0016: a type is reached from [DovetailConfiguration] sections of different KeyStyles, so the generated binder can't read the right keys for both; the later declaration is ignored
+DT0017 | Dovetail | Error | DT0017: a joint has constructors but none that is public or internal, so the generated code can't create it; the joint is left out of the exports

@@ -166,8 +166,8 @@ Any type defined in the context is injectable into any defined joint. This can b
 - allow consumers to provide configuration to your joint
 - allow joints to communicate or share common state
 
-Under the covers the [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties) implements `IServiceProvider`
-and we simply activate joints using `ActivatorUtilities.CreateInstance`.
+Under the covers the [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties) implements `IServiceProvider`,
+and a joint's constructor parameters are resolved from it.
 
 > [!NOTE]
 > All dependencies must be registered into the builder, as activation happens while <xref:Joinery.Dovetail.IDovetailContext> is built.
@@ -201,4 +201,52 @@ public class OptionalInjectableDovetail : IServiceJoint
         }
     }
 }
+```
+
+### How constructor parameters are resolved
+
+A joint takes its constructor parameters from the properties of the <xref:Joinery.Dovetail.DovetailContextBuilder> that holds it, in the same way
+whether the joint is added with `AppendJoint<T>()` or exported with `[DovetailExport]`:
+
+- **By type.** Each parameter is looked up under its declared type, exactly: a value stored with `Set<IClock>(clock)` satisfies an `IClock`
+  parameter and not a `SystemClock` one, and the other way round. `?` on a reference type changes nothing, so `IInjectData?` and
+  `IInjectData` find the same value. A nullable value type is looked up as itself: an `int?` parameter is found under `int?`, not `int`.
+- **Optional parameters fall back to their default.** A parameter with a default value (`IInjectData? joint = null`, `int retries = 3`) gets that
+  default when the properties hold nothing of its type.
+- **Required parameters must be there.** A parameter without a default whose type is missing makes creating the context throw an
+  `InvalidOperationException`. For an exported joint its message names the missing type, the parameter and the joint. When the context has two or
+  more joints it orders them with a comparer, and .NET wraps whatever a comparer throws, so the exception you catch is an
+  `InvalidOperationException` that says "Failed to compare two elements in the array." and the one that names the missing type is its `InnerException`.
+  With a single joint the exception is not wrapped.
+- **At the point the joint is created, not before.** The joint is created the first time something needs it, which is while
+  <xref:Joinery.Dovetail.IDovetailContext> is built, so anything you `Set` on the builder up to that point is seen, including after the joint was
+  added. Values stored later, for example by another joint while it runs, are too late. `ExceptJoint(Type)` needs the joints too, so it creates
+  them when it is called. With two or more joints they are created while the context orders them, before their host types are applied, so a missing
+  required value can fail the context even for a joint that would not have applied.
+- **One constructor.** An exported joint is created by calling one constructor that is public or internal (`protected internal` counts, the
+  generated code lives in the same assembly). A joint with more than one of those is the `DT0001` error. A joint that has constructors but none of
+  those, for example a single `private` or `protected` one, is the `DT0017` error: it is reported at build time and left out of the exports. Private and
+  protected constructors, and a static constructor, are not counted for `DT0001`.
+
+For an exported joint the generator writes this lookup into the `Exports` class as plain C#: the exported method itself takes no parameters, and
+each joint with constructor parameters is described by a factory that the context builder runs against its properties. Nothing is reflected on, so it is
+trimming and AOT safe. A joint without constructor parameters is created directly. The same factory is used if you read the `Joint` of that metadata
+before any builder has it, with the difference that there are no properties then: optional parameters get their defaults and a required one throws.
+(Joints you add with `AppendJoint<T>()` are created with `ActivatorUtilities`, which does use reflection.)
+
+```c#
+// LaunchPad: a joint that tunes itself from options the host may or may not provide.
+[DovetailExport]
+public class TimeJoint(PrimitiveOptions? options = null) : IServiceJoint
+{
+    private readonly PrimitiveOptions _options = options ?? new PrimitiveOptions();
+
+    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    {
+        //...
+    }
+}
+
+// With this set on the DovetailContextBuilder, TimeJoint gets this instance; without it, TimeJoint gets null and uses its own default.
+builder.Set(new PrimitiveOptions { /* ... */ });
 ```

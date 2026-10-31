@@ -46,9 +46,18 @@ internal static class ExportDovetails
 
         foreach (var convention in conventions)
         {
-            if (convention.Constructors.Length > 1)
+            // Only the constructors the generated code can call count: a private one is there for something else to use.
+            var callableConstructors = convention.InstanceConstructors.Where(CanBeCalled).ToArray();
+            if (callableConstructors.Length > 1)
             {
                 context.ReportDiagnostic(Diagnostic.Create(Diagnostics.DovetailHasToManyConstructors, convention.Locations.FirstOrDefault()));
+                continue;
+            }
+
+            // Left out of the exports like any other joint that is reported, so nothing else fails to compile because of it.
+            if (callableConstructors.Length == 0 && convention.InstanceConstructors.Length > 0)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.DovetailHasNoCallableConstructor, convention.Locations.FirstOrDefault(), convention.ToDisplayString()));
                 continue;
             }
 
@@ -58,7 +67,7 @@ internal static class ExportDovetails
                 continue;
             }
 
-            var createDovetail = NewDovetailOrActivate(convention);
+            var createDovetail = NewDovetail(convention, callableConstructors.SingleOrDefault());
 
             // What the joint declares wins; only a joint that declares nothing takes the project's default.
             var hostType = GetDeclaredHostType(convention) ?? ( msBuildConfig.IsTestProject ? _hostTypeUnitTestHost : _hostTypeUndefined );
@@ -76,17 +85,15 @@ internal static class ExportDovetails
 
             dependencyGraph.Add((convention, edges));
 
-            ExpressionSyntax withDependencies = ObjectCreationExpression(IdentifierName("DovetailJointMetadata"))
-               .WithArgumentList(
-                    ArgumentList(
-                        SeparatedList(
-                            new[]
-                            {
-                                Argument(createDovetail), Argument(hostType), Argument(conventionCategory),
-                            }
-                        )
+            var metadataArguments = ArgumentList(SeparatedList(new[] { Argument(createDovetail), Argument(hostType), Argument(conventionCategory), }));
+            // A joint that needs its constructor parameters resolved is a factory, which has its own entry point rather than a
+            // constructor overload; see DovetailJointMetadata.
+            ExpressionSyntax withDependencies = createDovetail is LambdaExpressionSyntax
+                ? InvocationExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailJointMetadata"), IdentifierName("FromFactory"))
                     )
-                );
+                   .WithArgumentList(metadataArguments)
+                : ObjectCreationExpression(IdentifierName("DovetailJointMetadata")).WithArgumentList(metadataArguments);
 
             foreach (var edge in edges)
             {
@@ -119,6 +126,9 @@ internal static class ExportDovetails
                 )
             );
         }
+
+        // Every joint may have been left out, and an iterator without a yield is not a valid method.
+        if (helperClassBody.Statements.Count == 0) helperClassBody = helperClassBody.AddStatements(YieldStatement(SyntaxKind.YieldBreakStatement));
 
         foreach (var (joint, cycle) in DovetailDependencyParser.DetectCycles(dependencyGraph.ToImmutable()))
         {
@@ -230,48 +240,84 @@ internal static class ExportDovetails
     private const string UnitTestJointAttributeName = "Joinery.Dovetail.Attributes.UnitTestJointAttribute";
     private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
 
-    private static ExpressionSyntax NewDovetailOrActivate(INamedTypeSymbol convention)
+    /// <summary>
+    ///     The expression that gives <c>DovetailJointMetadata</c> its joint. A joint that needs nothing is created right there. A
+    ///     joint with constructor parameters is handed over as a factory instead: the exported method has no parameters and no
+    ///     context to read from, so the parameters are resolved when the context builder that ends up holding the metadata creates
+    ///     the joint, from its properties (see <c>DovetailJointMetadata</c>).
+    /// </summary>
+    private static ExpressionSyntax NewDovetail(INamedTypeSymbol convention, IMethodSymbol? constructor)
     {
-        if (convention.Constructors.Length is 0) return ObjectCreationExpression(ParseName(convention.ToDisplayString()));
+        var typeName = convention.ToDisplayString();
+        // A joint with no constructor to find (a struct that declares none) or none that takes anything is created right here.
+        if (constructor is not { Parameters.Length: > 0 }) return ObjectCreationExpression(ParseName(typeName), ArgumentList(), null);
 
-        if (convention.Constructors.Count(z => z.DeclaredAccessibility is Accessibility.Internal or Accessibility.Public) == 1)
+        var arguments = constructor.Parameters.Select(parameter => ResolveParameter(typeName, parameter));
+        return ParseExpression($"static {JointFactoryParameter} => new {typeName}({string.Join(", ", arguments)})");
+    }
+
+    /// <summary>
+    ///     Whether the generated code, which lives in the exporting assembly, can call the constructor. That is every instance
+    ///     constructor that is public or internal, and <c>protected internal</c> is internal to this assembly too.
+    /// </summary>
+    private static bool CanBeCalled(IMethodSymbol constructor) =>
+        constructor.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedOrInternal;
+
+    /// <summary>The name of the <c>IServiceProvider</c> the joint factory receives, which is the context builder's properties.</summary>
+    private const string JointFactoryParameter = "services";
+
+    /// <summary>
+    ///     Takes a constructor argument from the properties by the parameter's type, the way
+    ///     <c>ActivatorUtilities.CreateInstance</c> does for a joint added with <c>AppendJoint&lt;T&gt;()</c>: the parameter's default
+    ///     value when there is no such property and the parameter has one, otherwise an <see cref="InvalidOperationException" />.
+    /// </summary>
+    private static string ResolveParameter(string jointName, IParameterSymbol parameter)
+    {
+        // Looked up by the type as declared. For a nullable value type that is Nullable<T>, which is what Set<int?>() stores it under.
+        var parameterType = parameter.Type.WithNullableAnnotation(NullableAnnotation.None);
+        var isNullableValueType = parameterType is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T };
+        // Spelled out because the formatter that lays out the generated file puts a space between the ? and a ) that follows it.
+        var type = isNullableValueType && parameterType is INamedTypeSymbol { TypeArguments: [var underlying] }
+            ? $"System.Nullable<{underlying.ToDisplayString()}>"
+            : parameterType.ToDisplayString();
+
+        // GetService<T>() returns null for a missing value, which is what the fallbacks below key on. For a value type that can't hold
+        // null it would return default(T), which can't be told apart from a value that was set to it, and `?? throw` doesn't compile
+        // on it. Those are read as a Nullable<T> instead: the same cast GetService<T>() makes, with a nullable result.
+        var lookup = parameterType.IsValueType && !isNullableValueType
+            ? $"(System.Nullable<{type}>){JointFactoryParameter}.GetService(typeof({type}))"
+            : $"Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<{type}>({JointFactoryParameter})";
+
+        if (!parameter.HasExplicitDefaultValue)
         {
-            var constructor = convention.Constructors.First(z => z.DeclaredAccessibility is Accessibility.Internal or Accessibility.Public);
-            var arguments = ArgumentList();
-            foreach (var parameter in constructor.Parameters)
-            {
-                arguments = arguments.AddArguments(
-                    Argument(
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("builder"), IdentifierName("Properties")),
-                                GenericName(Identifier("GetService"))
-                                   .WithTypeArgumentList(
-                                        TypeArgumentList(
-                                            SingletonSeparatedList<TypeSyntax>(
-                                                ParseName(parameter.Type.WithNullableAnnotation(NullableAnnotation.None).ToDisplayString())
-                                            )
-                                        )
-                                    )
-                            )
-                        )
-                    )
-                );
-            }
-
-            return ObjectCreationExpression(ParseName(convention.ToDisplayString()), arguments, null);
+            var message = $"Unable to resolve a value of type '{parameterType.ToDisplayString()}' for parameter '{parameter.Name}' of joint '{jointName}' from the Dovetail context. "
+              + "Set it on the context builder before the joint is created, or give the parameter a default value.";
+            return $"{lookup} ?? throw new System.InvalidOperationException({SymbolDisplay.FormatLiteral(message, quote: true)})";
         }
 
-        return InvocationExpression(
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    IdentifierName("ActivatorUtilities"),
-                    GenericName(Identifier("CreateInstance"))
-                       .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList<TypeSyntax>(ParseName(convention.ToDisplayString()))))
-                )
-            )
-           .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(IdentifierName("builder")))));
+        // A missing value is already null, which is the default of a reference type or a nullable value type.
+        var defaultValue = DefaultValue(parameter, parameterType, type);
+        return defaultValue == "null" ? lookup : $"{lookup} ?? {defaultValue}";
+    }
+
+    /// <summary>
+    ///     The default value the parameter declares, as an expression typed by the parameter and not by the literal, so the numeric
+    ///     literals are cast to it.
+    /// </summary>
+    private static string DefaultValue(IParameterSymbol parameter, ITypeSymbol parameterType, string type)
+    {
+        return parameter.ExplicitDefaultValue switch
+        {
+            string text => SymbolDisplay.FormatLiteral(text, quote: true),
+            bool flag => flag ? "true" : "false",
+            char character => $"({type}){SymbolDisplay.FormatLiteral(character, quote: true)}",
+            sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal =>
+                $"({type}){SymbolDisplay.FormatPrimitive(parameter.ExplicitDefaultValue, quoteStrings: false, useHexadecimalNumbers: false)}",
+            // null, and anything the generator has no literal for, is the type's default: null for a reference type or a nullable
+            // value type, default for any other value type.
+            _ when parameterType.IsValueType && parameterType.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T => "default",
+            _ => "null",
+        };
     }
 
     private static readonly ExpressionSyntax _hostTypeUndefined = MemberAccessExpression(

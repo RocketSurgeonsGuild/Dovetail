@@ -445,5 +445,5 @@ MyLibrary/
 | `DT0016` | Error    | A type is bound with more than one key style. The later declaration is reported and produces nothing; use the same `KeyStyle`, or give the shared type `[ConfigurationKeyName]`. |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one
-indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under
+indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` and `DT0017` are described under
 [Source Generation](./source-generation).

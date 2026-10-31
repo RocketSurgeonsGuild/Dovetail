@@ -18,6 +18,10 @@ Any joint marked with `[assembly: Dovetail(typeof(MyDovetail))]` will automatica
 Each exported joint carries the host type it declares with `[LiveJoint]`, `[UnitTestJoint]` or `[DovetailHostType]`, the same
 as when a joint is added through reflection at runtime. See [which attributes are honoured where](./defining-joints#which-attributes-are-honoured-where).
 
+A joint with constructor parameters is exported as a factory, because the exported method has no context to read from: the context builder
+that holds the metadata creates the joint from its properties, and an optional parameter falls back to its default. See
+[how constructor parameters are resolved](./defining-joints#how-constructor-parameters-are-resolved).
+
 # Importing Dovetails
 
 The generator creates an internal static partial `Imports` class in the assembly's root namespace. `Imports.Joints` is a
@@ -49,7 +53,7 @@ Set either property in a project file to override its default.
 
 The generator runs in every project that references a Dovetail package, including projects that only reference one
 indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint
-with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
+with more than one constructor, and `DT0017`, the error for a joint with no constructor it can be created with) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
 generates nothing and reports warning `DT0006` instead.
 
 ## Specular's provider

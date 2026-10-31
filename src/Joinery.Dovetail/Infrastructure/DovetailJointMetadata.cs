@@ -9,6 +9,9 @@ namespace Joinery.Dovetail.Infrastructure;
 public sealed class DovetailJointMetadata : IDovetailJointMetadata
 {
     private readonly List<IDovetailDependency> _dependencies = [];
+    private readonly Func<IServiceProvider, IDovetailJoint>? _factory;
+    private IServiceProvider? _services;
+    private IDovetailJoint? _joint;
 
     /// <summary>
     ///     The default constructor
@@ -17,7 +20,7 @@ public sealed class DovetailJointMetadata : IDovetailJointMetadata
     /// <param name="hostType">The host type the convention applies to.</param>
     public DovetailJointMetadata(IDovetailJoint joint, DovetailHostType hostType)
     {
-        Joint = joint;
+        _joint = joint;
         HostType = hostType;
         Category = DovetailCategory.Application;
     }
@@ -30,9 +33,53 @@ public sealed class DovetailJointMetadata : IDovetailJointMetadata
     /// <param name="category">The category the convention belongs to.</param>
     public DovetailJointMetadata(IDovetailJoint joint, DovetailHostType hostType, DovetailCategory category)
     {
-        Joint = joint;
+        _joint = joint;
         HostType = hostType;
         Category = category;
+    }
+
+    // Not a public constructor overload on purpose. Every generated `new DovetailJointMetadata(joint, ...)` goes through overload
+    // resolution, which would then have to bind IServiceProvider, a System.ComponentModel type, in every compilation that exports a
+    // joint, whether or not that joint takes parameters. Where the System.ComponentModel that Joinery.Dovetail was built against
+    // differs from the one the compilation references (a library built for one target framework and used on a newer runtime),
+    // that surfaces as a CS1701 warning in code that has nothing to do with it.
+    private DovetailJointMetadata(Func<IServiceProvider, IDovetailJoint> factory, DovetailHostType hostType, DovetailCategory category)
+    {
+        _factory = factory;
+        HostType = hostType;
+        Category = category;
+    }
+
+    /// <summary>
+    ///     Describes a joint that is created the first time <see cref="Joint" /> is read, rather than up front.
+    /// </summary>
+    /// <remarks>
+    ///     This is how the code generated for an exported joint with constructor parameters creates it: the factory resolves each
+    ///     parameter from the properties of the <see cref="DovetailContextBuilder" /> the metadata was given to, so a value set on the
+    ///     builder after the metadata was created is still seen. A parameter with a default value falls back to it when the
+    ///     properties hold nothing of that type, and a parameter without one makes the factory throw
+    ///     <see cref="InvalidOperationException" />. Read before a builder has the metadata, <see cref="Joint" /> resolves
+    ///     against empty properties. The joint is created once.
+    /// </remarks>
+    /// <param name="factory">Creates the joint from the properties of the context builder.</param>
+    /// <param name="hostType">The host type the convention applies to.</param>
+    /// <param name="category">The category the convention belongs to.</param>
+    /// <returns>The metadata of the joint <paramref name="factory" /> creates.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="factory" /> is <see langword="null" />.</exception>
+    public static DovetailJointMetadata FromFactory(Func<IServiceProvider, IDovetailJoint> factory, DovetailHostType hostType, DovetailCategory category)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        return new(factory, hostType, category);
+    }
+
+    /// <summary>
+    ///     Gives a deferred joint the properties of the builder that now holds it. A joint that is already created keeps the
+    ///     values it was created with.
+    /// </summary>
+    /// <param name="services">The properties of the context builder.</param>
+    internal void Bind(IServiceProvider services)
+    {
+        if (_joint is null) _services = services;
     }
 
     /// <summary>
@@ -48,7 +95,7 @@ public sealed class DovetailJointMetadata : IDovetailJointMetadata
     }
 
     /// <inheritdoc />
-    public IDovetailJoint Joint { get; }
+    public IDovetailJoint Joint => _joint ??= _factory!(_services ?? EmptyServiceProvider.Instance);
 
     /// <summary>
     ///     The dependencies
@@ -73,6 +120,13 @@ public sealed class DovetailJointMetadata : IDovetailJointMetadata
 
     /// <inheritdoc />
     public override int GetHashCode() => Joint.GetHashCode();
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public static EmptyServiceProvider Instance { get; } = new();
+
+        public object? GetService(Type serviceType) => null;
+    }
 }
 
 /// <summary>
