@@ -35,3 +35,6 @@ tags:
     aspire:
         label: Aspire
         description: .NET Aspire integration.
+    msbuild:
+        label: MSBuild
+        description: MSBuild items, properties and targets that Dovetail reads.

@@ -71,6 +71,12 @@ export default defineConfig({
                             items: [{ autogenerate: { directory: "concepts" } }],
                         },
                         {
+                            label: "Reference",
+                            link: "/reference/",
+                            icon: "document",
+                            items: [{ autogenerate: { directory: "reference" } }],
+                        },
+                        {
                             label: "API Reference",
                             link: "/api/",
                             icon: "code-branch",

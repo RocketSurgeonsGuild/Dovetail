@@ -7,6 +7,14 @@ description: How to create and register your own joints, including ordering and 
 
 As stated previously joints are nothing more than a class that implements <xref:Joinery.Dovetail.Infrastructure.IDovetailJoint>.
 
+## Declaring a new kind of joint
+
+Everything below is about writing joints for kinds that already exist, such as `IServiceJoint` or `ISerilogJoint`. A package or application
+adds a new kind, a typed extension point other code can contribute to, with a single `<DovetailJoint>` item in its project file; the build
+generates the interface, the delegates and the `Apply` and `DovetailContextBuilder` methods for it. The
+[`DovetailJoint` reference](../../reference/dovetail-joint/) lists everything the item accepts. The entry points that run the joints come from a
+[`DovetailHost`](../../reference/dovetail-host/) item, which the SDK declares for most projects.
+
 ## Implementing Multiple Dovetail Joints
 
 A defined joint can implement as many joints as you want. Configuration, Services, Command Line, Custom Dovetail Joints can all be handled by one joint.
