@@ -99,8 +99,8 @@
     <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="7.3.6" />
   </ItemGroup>
   <ItemGroup Label="Uno.Extensions 8.x" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
-    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="8.0.0-dev.150" />
-    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="8.0.0-dev.150" />
+    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="8.0.0-dev.155" />
+    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="8.0.0-dev.155" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
     <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.120" />
