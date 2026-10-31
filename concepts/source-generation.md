@@ -47,3 +47,41 @@ The generator runs in every project that references a Dovetail package, includin
 indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint
 with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
 generates nothing and reports warning `DT0006` instead.
+
+## Specular's provider
+
+An application that references [Specular](https://www.nuget.org/packages/Specular) doesn't set its provider by hand. Specular generates
+an internal `SpecularProvider` into each project that emits one, and the generated `Imports` seeds that provider into the context
+builder it creates, so a joint reads it with `context.Get<ISpecularProvider>()`. Scanning through it covers the assemblies the
+application references, including the joints of libraries that don't generate a provider of their own (`SpecularEmitProvider` set to
+`false`) and so keep receiving the application's through the context.
+
+```csharp
+public sealed class PluginJoint : ISetupJoint
+{
+    public void Register(IDovetailContext context)
+    {
+        var provider = context.Get<ISpecularProvider>()!;
+        var plugins = provider.GetTypes(z => z.FromAssemblyOf<IPlugin>().GetTypes(f => f.AssignableTo<IPlugin>()));
+    }
+}
+```
+
+Dovetail has no dependency on Specular, so the seeding is generated code that exists only where Specular does:
+
+- The generator adds it when the project's compilation references the assembly that defines `Specular.ISpecularProvider` and the
+  `SpecularEmitProvider` MSBuild property isn't `false`, the two things Specular's own generator looks at before it generates a
+  `SpecularProvider`. It can't look for `SpecularProvider` itself: a generator doesn't see what another one adds.
+- In every other project nothing is generated and no diagnostic is raised.
+- A provider you set yourself wins. The generated code only adds the provider when the context doesn't hold one, so
+  `builder.ConfigureDovetail(b => b.Set<ISpecularProvider>(provider))`, or a provider passed in with the properties, is never
+  overwritten.
+- Set `SpecularEmitProvider` to `false` for a project that references Specular without generating a provider (say it excludes
+  Specular's analyzers) and Dovetail stops naming one. Otherwise the build fails with CS0103 for `SpecularProvider`.
+
+### Native AOT and trimming
+
+The seeding adds no reflection: it is a generic call to `AddIfMissing<ISpecularProvider>` with the value of a static property, both of
+which the trimmer and the AOT compiler can follow. Specular generates `SpecularProvider` without reflection as well. The
+Joinery.Dovetail.Sdk.Tests publish an application that uses it trimmed and with Native AOT, without trim or AOT warnings, and the
+published application starts with the provider in its context and scans across assemblies.

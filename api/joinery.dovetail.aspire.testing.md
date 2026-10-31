@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Aspire.Testing
 
 - Package: `Joinery.Dovetail.Aspire.Testing`
-- Version: `0.3.1-beta.13`
+- Version: `0.3.1-beta.14`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Aspire.Testing](https://www.nuget.org/packages/Joinery.Dovetail.Aspire.Testing)
 
