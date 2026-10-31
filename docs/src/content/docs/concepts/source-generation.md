@@ -18,6 +18,10 @@ Any joint marked with `[assembly: Dovetail(typeof(MyDovetail))]` will automatica
 Each exported joint carries the host type it declares with `[LiveJoint]`, `[UnitTestJoint]` or `[DovetailHostType]`, the same
 as when a joint is added through reflection at runtime. See [which attributes are honoured where](./defining-joints#which-attributes-are-honoured-where).
 
+A joint with constructor parameters is exported as a factory, because the exported method has no context to read from: the context builder
+that holds the metadata creates the joint from its properties, and an optional parameter falls back to its default. See
+[how constructor parameters are resolved](./defining-joints#how-constructor-parameters-are-resolved).
+
 # Importing Dovetails
 
 The generator creates an internal static partial `Imports` class in the assembly's root namespace. `Imports.Joints` is a

@@ -230,48 +230,83 @@ internal static class ExportDovetails
     private const string UnitTestJointAttributeName = "Joinery.Dovetail.Attributes.UnitTestJointAttribute";
     private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
 
+    /// <summary>
+    ///     The expression that gives <c>DovetailJointMetadata</c> its joint. A joint that needs nothing is created right there. A
+    ///     joint with constructor parameters is handed over as a factory instead: the exported method has no parameters and no
+    ///     context to read from, so the parameters are resolved when the context builder that ends up holding the metadata creates
+    ///     the joint, from its properties (see <c>DovetailJointMetadata</c>).
+    /// </summary>
     private static ExpressionSyntax NewDovetailOrActivate(INamedTypeSymbol convention)
     {
-        if (convention.Constructors.Length is 0) return ObjectCreationExpression(ParseName(convention.ToDisplayString()));
+        var typeName = convention.ToDisplayString();
+        // A struct that declares no constructor has none to find.
+        if (convention.Constructors.Length is 0) return ObjectCreationExpression(ParseName(typeName), ArgumentList(), null);
 
         if (convention.Constructors.Count(z => z.DeclaredAccessibility is Accessibility.Internal or Accessibility.Public) == 1)
         {
             var constructor = convention.Constructors.First(z => z.DeclaredAccessibility is Accessibility.Internal or Accessibility.Public);
-            var arguments = ArgumentList();
-            foreach (var parameter in constructor.Parameters)
-            {
-                arguments = arguments.AddArguments(
-                    Argument(
-                        InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("builder"), IdentifierName("Properties")),
-                                GenericName(Identifier("GetService"))
-                                   .WithTypeArgumentList(
-                                        TypeArgumentList(
-                                            SingletonSeparatedList<TypeSyntax>(
-                                                ParseName(parameter.Type.WithNullableAnnotation(NullableAnnotation.None).ToDisplayString())
-                                            )
-                                        )
-                                    )
-                            )
-                        )
-                    )
-                );
-            }
+            if (constructor.Parameters.Length == 0) return ObjectCreationExpression(ParseName(typeName), ArgumentList(), null);
 
-            return ObjectCreationExpression(ParseName(convention.ToDisplayString()), arguments, null);
+            var arguments = constructor.Parameters.Select((parameter, index) => ResolveParameter(typeName, parameter, index));
+            return ParseExpression($"static {JointFactoryParameter} => new {typeName}({string.Join(", ", arguments)})");
         }
 
-        return InvocationExpression(
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    IdentifierName("ActivatorUtilities"),
-                    GenericName(Identifier("CreateInstance"))
-                       .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList<TypeSyntax>(ParseName(convention.ToDisplayString()))))
-                )
-            )
-           .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(IdentifierName("builder")))));
+        return ParseExpression($"static {JointFactoryParameter} => ActivatorUtilities.CreateInstance<{typeName}>({JointFactoryParameter})");
+    }
+
+    /// <summary>The name of the <c>IServiceProvider</c> the joint factory receives, which is the context builder's properties.</summary>
+    private const string JointFactoryParameter = "services";
+
+    /// <summary>
+    ///     Takes a constructor argument from the properties by the parameter's type, the way
+    ///     <c>ActivatorUtilities.CreateInstance</c> does for a joint added with <c>AppendJoint&lt;T&gt;()</c>: the parameter's default
+    ///     value when there is no such property and the parameter has one, otherwise an <see cref="InvalidOperationException" />.
+    /// </summary>
+    private static string ResolveParameter(string jointName, IParameterSymbol parameter, int index)
+    {
+        // Looked up by the type as declared, which for a nullable value type is Nullable<T> (that is what Set<int?>() stores
+        // it under); the value itself is a boxed T, so that is what gets matched.
+        var parameterType = parameter.Type.WithNullableAnnotation(NullableAnnotation.None);
+        var valueType = parameterType is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T, TypeArguments: [var underlying] }
+            ? underlying
+            : parameterType;
+        var variable = $"value{index}";
+        // Spelled out because the formatter that lays out the generated file puts a space between the ? and a ) that follows it.
+        var typeText = SymbolEqualityComparer.Default.Equals(valueType, parameterType) ? parameterType.ToDisplayString() : $"System.Nullable<{valueType.ToDisplayString()}>";
+
+        string fallback;
+        if (parameter.HasExplicitDefaultValue)
+        {
+            fallback = DefaultValue(parameter, parameterType, typeText);
+        }
+        else
+        {
+            var message = $"Unable to resolve a value of type '{parameterType.ToDisplayString()}' for parameter '{parameter.Name}' of joint '{jointName}' from the Dovetail context. "
+              + "Set it on the context builder before the joint is created, or give the parameter a default value.";
+            fallback = $"throw new System.InvalidOperationException({SymbolDisplay.FormatLiteral(message, quote: true)})";
+        }
+
+        return $"{JointFactoryParameter}.GetService(typeof({typeText})) is {valueType.ToDisplayString()} {variable} ? {variable} : {fallback}";
+    }
+
+    /// <summary>
+    ///     The default value the parameter declares, as an expression typed by the parameter and not by the literal
+    ///     (<c>cond ? aByte : 3</c> is an <c>int</c>).
+    /// </summary>
+    private static string DefaultValue(IParameterSymbol parameter, ITypeSymbol parameterType, string type)
+    {
+        return parameter.ExplicitDefaultValue switch
+        {
+            string text => SymbolDisplay.FormatLiteral(text, quote: true),
+            bool flag => flag ? "true" : "false",
+            char character => $"({type}){SymbolDisplay.FormatLiteral(character, quote: true)}",
+            sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal =>
+                $"({type}){SymbolDisplay.FormatPrimitive(parameter.ExplicitDefaultValue, quoteStrings: false, useHexadecimalNumbers: false)}",
+            // null, and anything the generator has no literal for, is the type's default: null for a reference type or a nullable
+            // value type (which the conditional is then typed by the parameter), default for any other value type.
+            _ when parameterType.IsValueType && parameterType.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T => "default",
+            _ => "null",
+        };
     }
 
     private static readonly ExpressionSyntax _hostTypeUndefined = MemberAccessExpression(
