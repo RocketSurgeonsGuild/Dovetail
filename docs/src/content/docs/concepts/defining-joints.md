@@ -22,10 +22,30 @@ A defined joint can implement as many joints as you want. Configuration, Service
 ```c#
 public class MultipleDovetail : IServiceJoint, IConfigurationJoint
 {
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services) { }
-    public void Register(IDovetailContext context, IConfiguration configuration, IConfigurationBuilder builder) { }
+    public void Register(IDovetailContext context, IServiceCollection services) { }
+    public void Register(IDovetailContext context, IConfigurationBuilder builder) { }
 }
 ```
+
+### What `Register` takes
+
+The build generates each joint interface from its [`<DovetailJoint>`](../../reference/dovetail-joint/) declaration, so what `Register` takes
+depends on the kind: the context first, then whatever the kind hands over.
+
+| Kind          | Interface                  | `Register`                                                          |
+| ------------- | -------------------------- | ------------------------------------------------------------------- |
+| Setup         | `ISetupJoint`              | `Register(IDovetailContext context)`                                |
+| Service       | `IServiceJoint`            | `Register(IDovetailContext context, IServiceCollection services)`   |
+| Configuration | `IConfigurationJoint`      | `Register(IDovetailContext context, IConfigurationBuilder builder)` |
+| Logging       | `ILoggingJoint`            | `Register(IDovetailContext context, ILoggingBuilder builder)`       |
+| Host created  | `IHostCreatedJoint<THost>` | `Register(IDovetailContext context, THost host)`                    |
+
+Every kind has an async twin, such as `IServiceAsyncJoint`, whose `Register` returns a `ValueTask` and takes a trailing
+`CancellationToken cancellationToken = default`.
+
+None of Dovetail's own kinds hands over an `IConfiguration`. A joint that needs the configuration reads `context.Configuration`. A kind that
+is declared with `ProvideConfiguration="true"` does get an `IConfiguration configuration` parameter, after the context; the
+[`DovetailJoint` reference](../../reference/dovetail-joint/#the-parameter-lists) lists every parameter a kind can have, in the order they come in.
 
 ## Dovetail Ordering
 
@@ -181,7 +201,7 @@ public class InjectableDovetail : IServiceJoint
 
     public InjectableDovetail(IInjectData joint) => _joint = joint;
 
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    public void Register(IDovetailContext context, IServiceCollection services)
     {
         //...
     }
@@ -193,7 +213,7 @@ public class OptionalInjectableDovetail : IServiceJoint
 
     public OptionalInjectableDovetail(IInjectData? joint = null) => _joint = joint;
 
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    public void Register(IDovetailContext context, IServiceCollection services)
     {
         if (_joint is { })
         {
@@ -241,12 +261,15 @@ public class TimeJoint(PrimitiveOptions? options = null) : IServiceJoint
 {
     private readonly PrimitiveOptions _options = options ?? new PrimitiveOptions();
 
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    public void Register(IDovetailContext context, IServiceCollection services)
     {
         //...
     }
 }
+```
 
-// With this set on the DovetailContextBuilder, TimeJoint gets this instance; without it, TimeJoint gets null and uses its own default.
+With this set on the `DovetailContextBuilder`, `TimeJoint` gets this instance; without it, `TimeJoint` gets null and uses its own default:
+
+```c#
 builder.Set(new PrimitiveOptions { /* ... */ });
 ```
