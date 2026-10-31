@@ -185,9 +185,12 @@ well-known categories, and any other string is a category of its own.
 ```c#
 [DovetailExport]
 [DovetailCategory(DovetailCategory.Core)]
-public class TimeJoint : IServiceJoint
+public class CoreTimeJoint : IServiceJoint
 {
-    //...
+    public void Register(IDovetailContext context, IServiceCollection services)
+    {
+        //...
+    }
 }
 ```
 
