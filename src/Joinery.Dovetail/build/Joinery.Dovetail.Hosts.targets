@@ -1,25 +1,33 @@
 <Project>
   <!--
-        Dovetail.Abstractions.Host.targets
-        Expands DovetailHost.cs.template once per declared <DovetailHost> item and adds the
-        result to the compilation. Replaces the generator-based part stamping — no source
-        generator is required for part interfaces/delegates.
+    Joinery.Dovetail.Hosts.targets
+    Expands DovetailHost.cs.template once per declared <DovetailHost> item and adds the result to the compilation, plus
+    DovetailHostSync.cs.template and DovetailHostNavigate.cs.template for the two internal flags below. No source generator
+    is involved. docs/src/content/docs/reference/dovetail-host.md documents every value below with examples; keep the two in
+    step (test/Joinery.Dovetail.Sdk.Tests/DovetailItemReferenceTests.cs fails when the metadata they list differ from what
+    this file reads).
 
-        DovetailHost metadata:
-          Namespace             — namespace for the generated types (default: Dovetail)
-          HostBuilderType       - The type of the host builder
-          HostBuilderName       - The name of the host builder
-          HostType              - The type of the host
-          SyncEntryPoint       - Internal: 'true' also emits blocking UseDovetail overloads (from
-                                  DovetailHostSync.cs.template) for hosts whose bootstrap method
-                                  can't be async. Only the SDK's MAUI detection sets it.
-          NavigateEntryPoint    - Internal: 'true' also emits ConfigureDovetail<TShell> overloads (from
-                                  DovetailHostNavigate.cs.template) that navigate to a shell instead of
-                                  building (Uno.Extensions.Navigation). Only the SDK's Uno detection sets it.
+    DovetailHost metadata (the item's Include is the host's name; HostBuilderType and HostType have no default):
+      Namespace             — namespace for the generated class (default: $(RootNamespace))
+      HostBuilderType       — the type of the host builder the ConfigureDovetail methods extend, written as given
+      HostType              — the type of the host those methods return (in a ValueTask), written as given
+      HostBuilderName       — the name of the host builder. Read and passed to the template, which does not use it, so it
+                              changes nothing today; the SDK's host detection sets it to builder
+      HelperName            — the static class whose Configure method the generated code calls, written as given
+                              (default: Dovetail{Identity}Helpers)
+      BuildExpression       — the arguments spliced into that call after the builder, leading comma included
+                              (default: , static b => b.Build())
+      HasBuildExpression    — 'false' calls Configure without the BuildExpression, even one set explicitly (default: true)
+      SyncEntryPoint        — Internal: 'true' also emits blocking UseDovetail overloads (from DovetailHostSync.cs.template)
+                              for hosts whose bootstrap method can't be async. Only the SDK's MAUI detection sets it.
+      NavigateEntryPoint    — Internal: 'true' also emits ConfigureDovetail<TShell> overloads (from DovetailHostNavigate.cs.template)
+                              that navigate to a shell instead of building (Uno.Extensions.Navigation). Only the SDK's Uno
+                              detection sets it, and Joinery.Dovetail.Hosting turns it off again when the project doesn't
+                              reference Uno.Extensions.Navigation.
 
-        Each part generates: The extension methods for the given hostbuilder type, for bootstrapping
-          and will wire in Dovetail.
-    -->
+    Each host generates, in the namespace above, the internal static partial class GeneratedDovetail{Host}Extensions: the
+    ConfigureDovetail extension methods for the host builder type (and for a Task of it), which bootstrap the host and wire Dovetail in.
+  -->
   <PropertyGroup>
     <_DovetailHostsTargetsImported>true</_DovetailHostsTargetsImported>
     <_DovetailHostTemplateFile>$(MSBuildThisFileDirectory)DovetailHost.cs.template</_DovetailHostTemplateFile>

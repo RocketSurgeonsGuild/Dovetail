@@ -48,7 +48,8 @@ Pack both files, under `build/` (imported by NuGet into projects that reference 
 | `HostName`, `HostType` | When `HostType` is set, `{HostName}` and `{HostType}` in the template are replaced, so one template can be declared once per host model under different names.                                          |
 | `OutputPrefix`         | The generated file is `<prefix>.<name>.g.cs`; the default prefix is `DovetailTemplate`.                                                                                                                 |
 
-Every gate you set has to pass. A project that doesn't run the Dovetail source generator gets no templates.
+Every gate you set has to pass. A project that doesn't run the Dovetail source generator gets no templates. The
+[`DovetailTemplate` reference](/reference/dovetail-template/) lists the defaults, the errors and the generated file names.
 
 ## Direct references only
 

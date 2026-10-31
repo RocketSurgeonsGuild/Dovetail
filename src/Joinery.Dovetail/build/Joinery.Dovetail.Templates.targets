@@ -30,6 +30,9 @@
     Every gate has to pass. A project that doesn't run the Dovetail source generator gets no templates, since they are meant to be
     joints and [Embedded] helpers it defines or discovers.
 
+    docs/src/content/docs/reference/dovetail-template.md documents every value above with examples; keep the two in step
+    (test/Joinery.Dovetail.Sdk.Tests/DovetailItemDocumentationTests.cs fails when the metadata they list differ from what this file reads).
+
     The templates that passed are the DovetailEmittedTemplate items (all the metadata above carried over). A target that needs a
     decision the metadata can't express adds to or removes from them between DovetailResolveTemplates and
     DovetailGenerateTemplates (AfterTargets="DovetailResolveTemplates" BeforeTargets="DovetailGenerateTemplates"), as

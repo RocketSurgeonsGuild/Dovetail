@@ -1,38 +1,41 @@
 <Project>
   <!--
-    Dovetail.Abstractions.Joint.targets
-    Expands DovetailJoint.cs.template once per declared <DovetailJoint> item and adds the
-    result to the compilation. Replaces the generator-based part stamping — no source
-    generator is required for part interfaces/delegates.
+    Joinery.Dovetail.Joints.targets
+    Expands DovetailJoint.cs.template, and DovetailJointAsync.cs.template unless IsAsync is 'false', once per declared
+    <DovetailJoint> item and adds the results to the compilation. No source generator is involved.
+    docs/src/content/docs/reference/dovetail-joint.md documents every value below with examples; keep the two in step
+    (test/Joinery.Dovetail.Sdk.Tests/DovetailItemReferenceTests.cs fails when the metadata they list differ from what this file reads).
 
-    DovetailJoint metadata:
-      Namespace             — namespace for the generated types (default: Dovetail)
-      ProvideConfiguration  — adds an IConfiguration parameter (default: false)
-      ProvideServices       — adds an IServiceCollection parameter (default: false)
-      ParameterType         — optional trailing parameter type (unprefixed, e.g. Serilog.LoggerConfiguration)
-      ParameterName         — name for the trailing parameter (default: parameter)
+    DovetailJoint metadata (the item's Include is the joint's name):
+      Namespace             — namespace for the generated types (default: $(RootNamespace).Joints)
+      ProvideConfiguration  — 'true' adds an IConfiguration parameter, handed context.Configuration (default: false)
+      ProvideServices       — 'true' adds an IServiceCollection parameter (default: false)
+      ParameterType         — optional trailing parameter type. It is written into the generated code exactly as given and nothing is
+                              added in front of it, so write it fully qualified: global::Serilog.LoggerConfiguration
+      ParameterName         — name for the trailing parameter (default: parameter; ignored without ParameterType)
       BuilderMethodName     — override for the generated DovetailContextBuilder extension method name
                               (default: Configure{Identity})
-      GenericParameter      — type parameter name that makes the part generic (e.g. TBuilder).
-                              ParameterType may reference it (e.g. ParameterType="TBuilder"), in which
-                              case it is not global::-prefixed.
-      GenericConstraint     — unprefixed constraint type for the parameter
-                              (e.g. Microsoft.Extensions.Hosting.IHostApplicationBuilder)
-      GenericVariance       — variance modifier used on the interface/delegate declarations (default: in)
+      GenericParameter      — type parameter name that makes the joint generic (e.g. TBuilder).
+                              ParameterType may be that name (ParameterType="TBuilder"), which is never global::-prefixed.
+      GenericConstraint     — constraint for the type parameter, written as given
+                              (e.g. global::Microsoft.Extensions.Hosting.IHostApplicationBuilder; ignored without GenericParameter)
+      GenericVariance       — variance modifier used on the interface/delegate declarations (default: in; ignored without
+                              GenericParameter). Only 'in' compiles: the type parameter is only ever an input of Register.
+      IsAsync               — 'false' leaves out the async interface, delegate and builder method and makes Apply{Identity}
+                              return void (default: true)
+      ReturnFirstArgument   — 'true' makes Apply{Identity} return the IDovetailContext after the joints ran. Only compiles for a
+                              joint whose subject is the context itself (no ParameterType, no ProvideServices).
 
-    Generic parts expand the template placeholders {GenericParam} (declaration, e.g. &lt;in TBuilder&gt;),
-    {GenericArg} (usage, e.g. &lt;TBuilder&gt;) and {GenericConstraint} (e.g. where TBuilder : IHostApplicationBuilder);
-    all three are empty for non-generic parts.
+    Generic joints expand the template placeholders {GenericParam} (declaration, e.g. <in TBuilder>),
+    {GenericArg} (usage, e.g. <TBuilder>) and {GenericConstraint} (e.g. where TBuilder : IHostApplicationBuilder);
+    all three are empty for non-generic joints.
 
-    Each part generates: I{Joint}Joint / {Joint}Joint / I{Joint}AsyncJoint / {Joint}AsyncJoint with a
-    Register method, plus a {Joint}JointExtensions.ApplyDovetailsAsync extension whose subject
-    is the custom parameter (if any), otherwise the service collection, otherwise the context.
-
-    Every part except the bare-context one (i.e. the one whose subject is the IDovetailContext
-    itself, which cannot access context.Configuration from Dovetail.Abstractions) also gets a
-    Configure{Joint}-style set of DovetailContextBuilder builder-method overloads generated
-    automatically — no opt-in flag required.
--->
+    Each joint generates, in the namespace above: I{Joint}Joint and {Joint}JointDelegate, plus I{Joint}AsyncJoint and
+    {Joint}AsyncJointDelegate unless IsAsync is 'false', each with a Register method; a {Joint}JointExtensions.Apply{Joint}
+    extension whose subject is the custom parameter (if any), otherwise the service collection (with ProvideServices),
+    otherwise the context; and, for every joint (the bare-context ones included), a {Joint}HostBuilderExtensions class with a
+    DovetailContextBuilder method (Configure{Joint} unless BuilderMethodName says otherwise) for each delegate.
+  -->
   <PropertyGroup>
     <_DovetailJointTargetsImported>true</_DovetailJointTargetsImported>
     <_DovetailJointTemplateFile>$(MSBuildThisFileDirectory)DovetailJoint.cs.template</_DovetailJointTemplateFile>
