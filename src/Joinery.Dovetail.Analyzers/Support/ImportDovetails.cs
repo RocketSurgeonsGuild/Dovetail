@@ -50,14 +50,14 @@ internal static class ImportDovetails
                                .WithVariables(
                                     SingletonSeparatedList(
                                         VariableDeclarator(Identifier(request.BuildConfig.ImportConfiguration.MethodName))
-                                           .WithInitializer(EqualsValueClause(IdentifierName("CreateDovetailContextBuilder")))
+                                           .WithInitializer(EqualsValueClause(IdentifierName(ContextBuilderFactoryName)))
                                     )
                                 )
                         )
                        .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword))),
                     // The parameterless factory delegate assigned to ImportHelpers.Rivets. It seeds a builder to
                     // resolve any convention dependencies, then materializes the final builder from the imported parts.
-                    MethodDeclaration(IdentifierName("DovetailContextBuilder"), Identifier("CreateDovetailContextBuilder"))
+                    MethodDeclaration(IdentifierName("DovetailContextBuilder"), Identifier(ContextBuilderFactoryName))
                        .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.StaticKeyword)))
                        .WithParameterList(ParameterList([
                         // new dictionary<object, object>
@@ -113,6 +113,13 @@ internal static class ImportDovetails
                        .WithLeadingTrivia(GetXmlSummary("The Dovetail parts imported into this assembly"))
                 )
                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
+
+        // An application that references Specular gets its provider in the context without setting it by hand.
+        var seedsSpecularProvider = SpecularProviderSeed.IsAvailable(request.Compilation, request.BuildConfig.SpecularEmitsProvider);
+        if (seedsSpecularProvider)
+        {
+            importsClass = SpecularProviderSeed.Seed(importsClass);
+        }
 
         if (request.BuildConfig.IsTestProject || request.BuildConfig.AssignExternal)
         {
@@ -193,6 +200,8 @@ internal static class ImportDovetails
                     : [.. members]
             );
 
+        if (seedsSpecularProvider) cu = SpecularProviderSeed.AllowNameConflict(cu);
+
         context.AddSource(
             "Imported_Assembly_Dovetails.g.cs",
             cu.NormalizeWhitespace().SyntaxTree.GetRoot().GetText(Encoding.UTF8)
@@ -218,6 +227,9 @@ internal static class ImportDovetails
             return block;
         }
     }
+
+    /// <summary>The name of the generated method that creates the context builder.</summary>
+    internal const string ContextBuilderFactoryName = "CreateDovetailContextBuilder";
 
     /// <summary>The <c>DovetailHostType</c> values a build may pin; anything else (e.g. <c>Undefined</c>) leaves it to the host.</summary>
     private static readonly string[] PinnableHostTypes = ["Live", "UnitTest"];

@@ -11,7 +11,9 @@ internal record MsBuildConfig
     DovetailConfigurationData ExportConfiguration,
     DovetailConfigurationData ImportConfiguration,
     bool ImportAssembly = true,
-    bool ExportAssembly = true
+    bool ExportAssembly = true,
+    // Specular's own SpecularEmitProvider, which it reads as a boolean that defaults to true: false means no generated SpecularProvider.
+    bool SpecularEmitsProvider = true
 )
 {
     public DovetailConfigurationData ImportConfiguration { get; init; } = ImportConfiguration with { Namespace = ImportConfiguration.Namespace is "" ? RootNamespace : ImportConfiguration.Namespace };
