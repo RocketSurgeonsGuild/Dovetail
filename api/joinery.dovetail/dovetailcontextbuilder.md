@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.3.2-beta.2`
+- Version: `0.3.2-beta.4`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
@@ -21,7 +21,7 @@ public sealed class DovetailContextBuilder
 
 ## Properties
 
-- [Categories](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder/properties.md#categories) : `ImmutableHashSet<DovetailCategory>` `get` -- The categories of the convention context
+- [Categories](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder/properties.md#categories) : `ImmutableHashSet<DovetailCategory>` `get` -- The categories of joints the context loads.
 
 ## Methods
 

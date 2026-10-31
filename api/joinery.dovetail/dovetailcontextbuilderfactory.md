@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.3.2-beta.2`
+- Version: `0.3.2-beta.4`
 - Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
@@ -22,7 +22,7 @@ public sealed delegate Joinery.Dovetail.DovetailContextBuilder DovetailContextBu
 ## Delegate Parameters
 
 - `properties` (`IDictionary<object, object>`) `nullable` `optional` -- The properties to initialize the context builder with.
-- `categories` ([IEnumerable<DovetailCategory>](/Dovetail/api/joinery.dovetail/dovetailcategory.md)) `nullable` `optional` -- The categories to initialize the context builder with.
+- `categories` ([IEnumerable<DovetailCategory>](/Dovetail/api/joinery.dovetail/dovetailcategory.md)) `nullable` `optional` -- The categories of joints the context loads besides the `Core` joints, which are always loaded. `null` or an empty set loads the `Application` joints as well.
 
 ## Constructors
 

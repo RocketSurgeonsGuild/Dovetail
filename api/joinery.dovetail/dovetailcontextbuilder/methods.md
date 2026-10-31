@@ -122,7 +122,7 @@ public sealed class DovetailContextBuilder
 - `hostType` ([DovetailHostType](/Dovetail/api/joinery.dovetail/dovetailhosttype.md))
   The host type the resulting context should be scoped to.
 - `categories` ([IEnumerable<DovetailCategory>](/Dovetail/api/joinery.dovetail/dovetailcategory.md))
-  The categories the resulting context should be scoped to.
+  The categories of joints the resulting context loads besides the `Core` joints, which are always loaded. An empty set loads the `Application` joints as well.
 
 ## Returns
 
@@ -158,7 +158,7 @@ public sealed class DovetailContextBuilder
 - `properties` (`IDictionary<object, object>`)
   The initial set of properties to populate the context with.
 - `categories` ([IEnumerable<DovetailCategory>](/Dovetail/api/joinery.dovetail/dovetailcategory.md))
-  The categories the resulting context should be scoped to.
+  The categories of joints the resulting context loads besides the `Core` joints, which are always loaded. An empty set loads the `Application` joints as well.
 
 ## Returns
 

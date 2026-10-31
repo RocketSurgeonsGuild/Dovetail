@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.3.2-beta.2`
+- Version: `0.3.2-beta.4`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
@@ -21,7 +21,7 @@ public sealed class DovetailCategory
 
 ## Remarks
 
-This is used to load limited sets of conventions based on categories provided.
+A set of categories given to [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md) chooses which joints the context loads: the joints of those categories and the [DovetailCategory.Core](/Dovetail/api/joinery.dovetail/dovetailcategory/fields.md#core) joints, which are always loaded. An empty set loads the [DovetailCategory.Application](/Dovetail/api/joinery.dovetail/dovetailcategory/fields.md#application) joints and the [DovetailCategory.Core](/Dovetail/api/joinery.dovetail/dovetailcategory/fields.md#core) joints.
 
 ## Constructors
 

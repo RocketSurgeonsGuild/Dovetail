@@ -52,6 +52,24 @@ The assemblies used during scanning can be added by using an AppDomain, Dependen
 
 A context can be created from a <xref:Joinery.Dovetail.DovetailContextBuilder> by using [DovetailContext.From](xref:Joinery.Dovetail.DovetailContext#Joinery_Dovetail_DovetailContext_From_Dovetail_DovetailContextBuilder_).
 
+## Categories
+
+[Section titled “Categories”](#categories)
+
+Every joint has a category. `DovetailCategory.Core` is for infrastructure joints (serializers, logging), and `DovetailCategory.Application` is the default for everything else.
+
+`DovetailContextBuilder.Create(joints, properties, categories)` takes a set of categories as well, and **the context loads the joints whose category is in that set, plus the `Core` joints, which are always loaded**. An empty set loads the `Application` joints and the `Core` joints, which is what the generated `Imports.Joints()` and `DovetailContextBuilder.Create()` pass when you give them no categories. A joint in any other category is loaded only when you name its category.
+
+| `categories`                                            | Joints in the context                                                             |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `[]`                                                    | The `Application` and the `Core` joints                                           |
+| `[DovetailCategory.Core]`                               | Only the `Core` joints                                                            |
+| `[DovetailCategory.Application]`                        | The `Application` and the `Core` joints                                           |
+| `[DovetailCategory.Core, DovetailCategory.Application]` | The `Application` and the `Core` joints                                           |
+| `["Reporting"]`                                         | The joints in `Reporting` and the `Core` joints, but not the `Application` joints |
+
+The set is available as `Categories` on the builder and on the context. It is the set that is loaded: the set you passed in with `Core` added, or `Application` and `Core` when you passed none.
+
 ## Using the context
 
 [Section titled “Using the context”](#using-the-context)
@@ -61,7 +79,6 @@ Once the context is created you can use the context to find out all sorts of inf
 Useful properties:
 
 * [`AssemblyProvider`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_AssemblyProvider) - The type provider can be used to get a list of assemblies
-* [`Logger`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_Logger) - This is a diagnostic logger that can be used for logging details. If a logger is provided to the builder it will be used here.
 * [`Properties`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_Properties) - Contains all the properties provided to the builder. This implements `IServiceProvider` and can be used with \`ActivatorExtensions
 
 Useful methods / extension methods:
@@ -96,10 +113,28 @@ A defined joint can implement as many joints as you want. Configuration, Service
 ```c#
 public class MultipleDovetail : IServiceJoint, IConfigurationJoint
 {
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services) { }
-    public void Register(IDovetailContext context, IConfiguration configuration, IConfigurationBuilder builder) { }
+    public void Register(IDovetailContext context, IServiceCollection services) { }
+    public void Register(IDovetailContext context, IConfigurationBuilder builder) { }
 }
 ```
+
+### What `Register` takes
+
+[Section titled “What Register takes”](#what-register-takes)
+
+The build generates each joint interface from its [`<DovetailJoint>`](../../reference/dovetail-joint/) declaration, so what `Register` takes depends on the kind: the context first, then whatever the kind hands over.
+
+| Kind          | Interface                  | `Register`                                                          |
+| ------------- | -------------------------- | ------------------------------------------------------------------- |
+| Setup         | `ISetupJoint`              | `Register(IDovetailContext context)`                                |
+| Service       | `IServiceJoint`            | `Register(IDovetailContext context, IServiceCollection services)`   |
+| Configuration | `IConfigurationJoint`      | `Register(IDovetailContext context, IConfigurationBuilder builder)` |
+| Logging       | `ILoggingJoint`            | `Register(IDovetailContext context, ILoggingBuilder builder)`       |
+| Host created  | `IHostCreatedJoint<THost>` | `Register(IDovetailContext context, THost host)`                    |
+
+Every kind has an async twin, such as `IServiceAsyncJoint`, whose `Register` returns a `ValueTask` and takes a trailing `CancellationToken cancellationToken = default`.
+
+None of Dovetail’s own kinds hands over an `IConfiguration`. A joint that needs the configuration reads `context.Configuration`. A kind that is declared with `ProvideConfiguration="true"` does get an `IConfiguration configuration` parameter, after the context; the [`DovetailJoint` reference](../../reference/dovetail-joint/#the-parameter-lists) lists every parameter a kind can have, in the order they come in.
 
 ## Dovetail Ordering
 
@@ -248,9 +283,12 @@ Every joint belongs to a category, a `DovetailCategory`, which is part of the jo
 ```c#
 [DovetailExport]
 [DovetailCategory(DovetailCategory.Core)]
-public class TimeJoint : IServiceJoint
+public class CoreTimeJoint : IServiceJoint
 {
-    //...
+    public void Register(IDovetailContext context, IServiceCollection services)
+    {
+        //...
+    }
 }
 ```
 
@@ -289,7 +327,7 @@ public class InjectableDovetail : IServiceJoint
     public InjectableDovetail(IInjectData joint) => _joint = joint;
 
 
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    public void Register(IDovetailContext context, IServiceCollection services)
     {
         //...
     }
@@ -304,7 +342,7 @@ public class OptionalInjectableDovetail : IServiceJoint
     public OptionalInjectableDovetail(IInjectData? joint = null) => _joint = joint;
 
 
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    public void Register(IDovetailContext context, IServiceCollection services)
     {
         if (_joint is { })
         {
@@ -336,14 +374,16 @@ public class TimeJoint(PrimitiveOptions? options = null) : IServiceJoint
     private readonly PrimitiveOptions _options = options ?? new PrimitiveOptions();
 
 
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    public void Register(IDovetailContext context, IServiceCollection services)
     {
         //...
     }
 }
+```
 
+With this set on the `DovetailContextBuilder`, `TimeJoint` gets this instance; without it, `TimeJoint` gets null and uses its own default:
 
-// With this set on the DovetailContextBuilder, TimeJoint gets this instance; without it, TimeJoint gets null and uses its own default.
+```c#
 builder.Set(new PrimitiveOptions { /* ... */ });
 ```
 
@@ -986,6 +1026,7 @@ Since they’re all OpenTelemetry joints, they run together in the executor’s 
 A library adds a `System.Diagnostics.ActivitySource` to tracing by implementing `ITracerProviderJoint` and marking the class `[DovetailExport]`, the same pattern used for any other discovered Dovetail joint:
 
 ```c#
+using System.Diagnostics;
 using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.OpenTelemetry.Joints;
@@ -1350,11 +1391,31 @@ There is <xref:Joinery.Dovetail.WebAssembly.Hosting.TestWebAssemblyHost> for Web
 
 [Section titled “Logging”](#logging)
 
-Some unit testing frameworks have the ability to capture log output for a given test, this can be handy for helping identify any problems. If you provide a `ILogger` or a `ILoggerFactory` into the <xref:Joinery.Dovetail.DovetailContextBuilder> or <xref:Joinery.Dovetail.IDovetailContext> it will be used during the joint scanning process and spit out diagnostic logs that may be useful.
+Some unit testing frameworks have the ability to capture log output for a given test, this can be handy for helping identify any problems.
+
+Dovetail itself does not log while it scans and applies joints. <xref:Joinery.Dovetail.DovetailContextBuilder> and <xref:Joinery.Dovetail.IDovetailContext> take no `ILogger` or `ILoggerFactory`, and nothing in the packages looks for one, so a logger given to either produces no diagnostic output about the scan. What a test can capture is what your own code logs, including your joints.
 
 Tip
 
 With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `AutoFakeTest<TestRecord>`): its Serilog logger writes to the test’s output.
+
+The builder is a bag of properties, so the test can put its logger there for a joint to find:
+
+```c#
+// In the test, where Logger is the test's Serilog logger.
+builder.Set(Logger);
+```
+
+```c#
+// In the joint under test.
+public class AuditJoint : IServiceJoint
+{
+    public void Register(IDovetailContext context, IServiceCollection services) =>
+        context.Get<Serilog.ILogger>()?.Information("Registering the audit services");
+}
+```
+
+A joint can also take the logger as a constructor parameter, as described in [Injecting dependencies](../defining-joints/#injecting-dependencies). In an application, as opposed to a test, the sinks and enrichers of the logger are configured by the [Serilog joint](../serilog/#the-serilog-joint).
 
 # Getting Started
 

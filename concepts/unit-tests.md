@@ -23,8 +23,30 @@ The <xref:Joinery.Dovetail.Hosting.TestHost> can be used to create a `IHostBuild
 
 ## Logging
 
-Some unit testing frameworks have the ability to capture log output for a given test, this can be handy for helping identify any problems. If you provide a `ILogger` or a `ILoggerFactory` into the
-<xref:Joinery.Dovetail.DovetailContextBuilder> or <xref:Joinery.Dovetail.IDovetailContext> it will be used during the joint scanning process and spit out diagnostic logs that may be useful.
+Some unit testing frameworks have the ability to capture log output for a given test, this can be handy for helping identify any problems.
+
+Dovetail itself does not log while it scans and applies joints. <xref:Joinery.Dovetail.DovetailContextBuilder> and <xref:Joinery.Dovetail.IDovetailContext>
+take no `ILogger` or `ILoggerFactory`, and nothing in the packages looks for one, so a logger given to either produces no diagnostic output about the
+scan. What a test can capture is what your own code logs, including your joints.
 
 > [!TIP]
 > With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `AutoFakeTest<TestRecord>`): its Serilog logger writes to the test's output.
+
+The builder is a bag of properties, so the test can put its logger there for a joint to find:
+
+```c#
+// In the test, where Logger is the test's Serilog logger.
+builder.Set(Logger);
+```
+
+```c#
+// In the joint under test.
+public class AuditJoint : IServiceJoint
+{
+    public void Register(IDovetailContext context, IServiceCollection services) =>
+        context.Get<Serilog.ILogger>()?.Information("Registering the audit services");
+}
+```
+
+A joint can also take the logger as a constructor parameter, as described in [Injecting dependencies](../defining-joints/#injecting-dependencies).
+In an application, as opposed to a test, the sinks and enrichers of the logger are configured by the [Serilog joint](../serilog/#the-serilog-joint).

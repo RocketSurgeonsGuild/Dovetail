@@ -19,6 +19,27 @@ You can add joints manually, you can add them via attribute scanning, you can di
 
 A context can be created from a <xref:Joinery.Dovetail.DovetailContextBuilder> by using [DovetailContext.From](xref:Joinery.Dovetail.DovetailContext#Joinery_Dovetail_DovetailContext_From_Dovetail_DovetailContextBuilder_).
 
+## Categories
+
+Every joint has a category. `DovetailCategory.Core` is for infrastructure joints (serializers, logging), and
+`DovetailCategory.Application` is the default for everything else.
+
+`DovetailContextBuilder.Create(joints, properties, categories)` takes a set of categories as well, and **the context loads the
+joints whose category is in that set, plus the `Core` joints, which are always loaded**. An empty set loads the `Application`
+joints and the `Core` joints, which is what the generated `Imports.Joints()` and `DovetailContextBuilder.Create()` pass when you
+give them no categories. A joint in any other category is loaded only when you name its category.
+
+| `categories`                                            | Joints in the context                                                             |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `[]`                                                    | The `Application` and the `Core` joints                                           |
+| `[DovetailCategory.Core]`                               | Only the `Core` joints                                                            |
+| `[DovetailCategory.Application]`                        | The `Application` and the `Core` joints                                           |
+| `[DovetailCategory.Core, DovetailCategory.Application]` | The `Application` and the `Core` joints                                           |
+| `["Reporting"]`                                         | The joints in `Reporting` and the `Core` joints, but not the `Application` joints |
+
+The set is available as `Categories` on the builder and on the context. It is the set that is loaded: the set you passed in with
+`Core` added, or `Application` and `Core` when you passed none.
+
 ## Using the context
 
 Once the context is created you can use the context to find out all sorts of information.
@@ -26,7 +47,6 @@ Once the context is created you can use the context to find out all sorts of inf
 Useful properties:
 
 - [`AssemblyProvider`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_AssemblyProvider) - The type provider can be used to get a list of assemblies
-- [`Logger`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_Logger) - This is a diagnostic logger that can be used for logging details. If a logger is provided to the builder it will be used here.
 - [`Properties`](xref:Joinery.Dovetail.IDovetailContext#Joinery_Dovetail_DovetailContext_Properties) - Contains all the properties provided to the builder. This implements `IServiceProvider` and can be used with `ActivatorExtensions
 
 Useful methods / extension methods:
