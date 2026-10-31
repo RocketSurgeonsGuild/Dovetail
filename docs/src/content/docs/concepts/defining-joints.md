@@ -206,18 +206,25 @@ whether the joint is added with `AppendJoint<T>()` or exported with `[DovetailEx
 - **Optional parameters fall back to their default.** A parameter with a default value (`IInjectData? joint = null`, `int retries = 3`) gets that
   default when the properties hold nothing of its type.
 - **Required parameters must be there.** A parameter without a default whose type is missing makes creating the context throw an
-  `InvalidOperationException` that names the missing type and the joint.
+  `InvalidOperationException`. For an exported joint its message names the missing type, the parameter and the joint. When the context has two or
+  more joints it orders them with a comparer, and .NET wraps whatever a comparer throws, so the exception you catch is an
+  `InvalidOperationException` that says "Failed to compare two elements in the array." and the one that names the missing type is its `InnerException`.
+  With a single joint the exception is not wrapped.
 - **At the point the joint is created, not before.** The joint is created the first time something needs it, which is while
   <xref:Joinery.Dovetail.IDovetailContext> is built, so anything you `Set` on the builder up to that point is seen, including after the joint was
   added. Values stored later, for example by another joint while it runs, are too late. `ExceptJoint(Type)` needs the joints too, so it creates
-  them when it is called. The joints are created while the context orders them, before their host types are applied, so a missing required value can fail
-  the context even for a joint that would not have applied.
-- **One constructor.** An exported joint has a single constructor; a second one is the `DT0001` error.
+  them when it is called. With two or more joints they are created while the context orders them, before their host types are applied, so a missing
+  required value can fail the context even for a joint that would not have applied.
+- **One constructor.** An exported joint is created by calling one constructor that is public or internal (`protected internal` counts, the
+  generated code lives in the same assembly). A joint with more than one of those is the `DT0001` error. A joint that has constructors but none of
+  those, for example a single `private` or `protected` one, is the `DT0017` error: it is reported at build time and left out of the exports. Private and
+  protected constructors, and a static constructor, are not counted for `DT0001`.
 
 For an exported joint the generator writes this lookup into the `Exports` class as plain C#: the exported method itself takes no parameters, and
 each joint with constructor parameters is described by a factory that the context builder runs against its properties. Nothing is reflected on, so it is
 trimming and AOT safe. A joint without constructor parameters is created directly. The same factory is used if you read the `Joint` of that metadata
 before any builder has it, with the difference that there are no properties then: optional parameters get their defaults and a required one throws.
+(Joints you add with `AppendJoint<T>()` are created with `ActivatorUtilities`, which does use reflection.)
 
 ```c#
 // LaunchPad: a joint that tunes itself from options the host may or may not provide.

@@ -93,6 +93,38 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
     }
 
     [Test]
+    public async Task With_Several_Joints_The_Failure_For_A_Required_Parameter_Is_The_Inner_Exception_Of_The_One_From_Ordering_Them()
+    {
+        // With more than one joint the context orders them with a comparer, which reads their Joint, and Array.Sort wraps whatever
+        // the comparer throws. The exception that names the type, the parameter and the joint is the inner one.
+        var result = await Generate(
+            """
+            [DovetailExport]
+            public class Needy : ConstructedJoint
+            {
+                public Needy(IWidget widget) : base(widget, null, "label", 0, WidgetMode.Slow, null) { }
+            }
+
+            [DovetailExport]
+            public class Plain : ConstructedJoint
+            {
+                public Plain() : base(null, null, "label", 0, WidgetMode.Slow, null) { }
+            }
+            """
+        );
+
+        var builder = DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []);
+        var create = () => builder.CreateAsync(TestContext.CancellationToken).AsTask();
+
+        var exception = await create.ShouldThrowAsync<InvalidOperationException>();
+        exception.Message.ShouldNotContain(typeof(IWidget).FullName!);
+        var inner = exception.InnerException.ShouldBeOfType<InvalidOperationException>();
+        inner.Message.ShouldContain(typeof(IWidget).FullName!);
+        inner.Message.ShouldContain("widget");
+        inner.Message.ShouldContain("Sample.Needy");
+    }
+
+    [Test]
     public async Task A_Joint_Read_Outside_A_Context_Builder_Uses_Defaults_And_Fails_For_Required_Parameters()
     {
         var onlyOptional = await Generate(
@@ -163,19 +195,98 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
     }
 
     [Test]
-    public async Task A_Joint_With_A_Constructor_That_Is_Not_Public_Compiles()
+    [Arguments("protected")]
+    [Arguments("private")]
+    [Arguments("private protected")]
+    public async Task A_Joint_Whose_Only_Constructor_Cannot_Be_Called_Is_Reported_And_Left_Out(string modifier)
+    {
+        var result = await Generate(
+            $$"""
+              [DovetailExport]
+              public class Constructed : ConstructedJoint
+              {
+                  {{modifier}} Constructed() : base(null, null, "label", 0, WidgetMode.Slow, null) { }
+              }
+              """
+        );
+
+        // Reported once, on the joint, and nothing else: the joint is left out of the exports instead of generating code that
+        // can't compile, and an exports class with no joint left in it is still valid.
+        var diagnostic = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe("DT0017");
+        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Error);
+        diagnostic.GetMessage().ShouldBe("Joint 'Sample.Constructed' has no public or internal constructor, so it cannot be created");
+        var location = diagnostic.Location;
+        location.IsInSource.ShouldBeTrue();
+        location.SourceTree!.GetText().ToString(location.SourceSpan).ShouldBe("Constructed");
+        location.SourceTree.GetText().Lines[location.GetLineSpan().StartLinePosition.Line].ToString().Trim().ShouldBe("public class Constructed : ConstructedJoint");
+
+        CompileErrors(result).Where(z => z.Id != "DT0017").ShouldBeEmpty();
+        ExportedSource(result).ShouldNotContain("Constructed");
+    }
+
+    [Test]
+    [Arguments("public", "private")]
+    [Arguments("internal", "protected")]
+    [Arguments("protected internal", "private protected")]
+    public async Task A_Constructor_It_Can_Be_Created_With_Next_To_One_It_Cannot_Is_Not_Reported(string callable, string uncallable)
+    {
+        var result = await Generate(
+            $$"""
+              [DovetailExport]
+              public class Constructed : ConstructedJoint
+              {
+                  {{callable}} Constructed(WidgetOptions? options = null) : base(null, options, "label", 0, WidgetMode.Slow, null) { }
+                  {{uncallable}} Constructed(int other) : base(null, null, "label", other, WidgetMode.Slow, null) { }
+              }
+              """
+        );
+
+        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
+        CompileErrors(result).ShouldBeEmpty();
+        var options = new WidgetOptions();
+        var joint = await CreateJoint(DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []).Set(options));
+        joint.Arguments[1].ShouldBeSameAs(options);
+    }
+
+    [Test]
+    public async Task A_Static_Constructor_Does_Not_Count_As_A_Second_Constructor()
     {
         var result = await Generate(
             """
             [DovetailExport]
             public class Constructed : ConstructedJoint
             {
-                protected Constructed() : base(null, null, "label", 0, WidgetMode.Slow, null) { }
+                static Constructed() { }
+
+                public Constructed() : base(null, null, "label", 0, WidgetMode.Slow, null) { }
             }
             """
         );
 
+        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
         CompileErrors(result).ShouldBeEmpty();
+        Rivet(result).Single().Joint.ShouldBeOfType(result.Assembly!.GetType("Sample.Constructed")!);
+    }
+
+    [Test]
+    [Arguments("public", "internal")]
+    [Arguments("internal", "protected internal")]
+    public async Task Two_Constructors_It_Can_Be_Created_With_Are_Still_Reported_As_DT0001(string first, string second)
+    {
+        var result = await Generate(
+            $$"""
+              [DovetailExport]
+              public class Constructed : ConstructedJoint
+              {
+                  {{first}} Constructed() : base(null, null, "label", 0, WidgetMode.Slow, null) { }
+                  {{second}} Constructed(int other) : base(null, null, "label", other, WidgetMode.Slow, null) { }
+              }
+              """
+        );
+
+        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldHaveSingleItem().Id.ShouldBe("DT0001");
+        CompileErrors(result).Where(z => z.Id != "DT0001").ShouldBeEmpty();
     }
 
     private async Task<GeneratorTestResults> Generate(string declarations) =>

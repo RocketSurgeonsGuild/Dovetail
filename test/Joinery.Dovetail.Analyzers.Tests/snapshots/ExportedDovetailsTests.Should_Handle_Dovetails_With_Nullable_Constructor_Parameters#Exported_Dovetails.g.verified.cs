@@ -22,7 +22,7 @@ public static partial class Exports
     /// </summary>
     public static IEnumerable<IDovetailJointMetadata> Rivet()
     {
-        yield return new DovetailJointMetadata(static services => new Rocket.Surgery.LaunchPad.Mapping.AutoMapperDovetail(services.GetService(typeof(Rocket.Surgery.LaunchPad.Mapping.AutoMapperOptions))is Rocket.Surgery.LaunchPad.Mapping.AutoMapperOptions value0 ? value0 : null), DovetailHostType.Undefined, DovetailCategory.Application);
+        yield return new DovetailJointMetadata(static services => new Rocket.Surgery.LaunchPad.Mapping.AutoMapperDovetail(Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<Rocket.Surgery.LaunchPad.Mapping.AutoMapperOptions>(services)), DovetailHostType.Undefined, DovetailCategory.Application);
     }
 }
 #pragma warning restore CA1002, CA1034, CA1822, CS0105, CS1573, CS8602, CS8603, CS8618, CS8669

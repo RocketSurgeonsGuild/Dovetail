@@ -53,5 +53,5 @@ Set either property in a project file to override its default.
 
 The generator runs in every project that references a Dovetail package, including projects that only reference one
 indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint
-with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
+with more than one constructor, and `DT0017`, the error for a joint with no constructor it can be created with) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
 generates nothing and reports warning `DT0006` instead.

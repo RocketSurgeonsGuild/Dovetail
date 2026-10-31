@@ -13,6 +13,15 @@ internal static class Diagnostics
         true
     );
 
+    public static readonly DiagnosticDescriptor DovetailHasNoCallableConstructor = new(
+        "DT0017",
+        "Joint has no constructor it can be created with",
+        "Joint '{0}' has no public or internal constructor, so it cannot be created",
+        "Dovetail",
+        DiagnosticSeverity.Error,
+        true
+    );
+
     public static readonly DiagnosticDescriptor DovetailCannotBeGeneric = new(
         "DT0002",
         "Joint cannot be generic",
