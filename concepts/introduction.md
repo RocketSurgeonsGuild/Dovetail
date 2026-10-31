@@ -85,3 +85,7 @@ Creating your own joints is fairly easily, and can be done by using existing joi
 
 > [!TIP]
 > More information can be found [here](../guides/custom-joints.md)
+
+A package or application that wants to add a new kind of joint declares it with a `<DovetailJoint>` item, and a project the SDK does not
+recognise declares its host with a `<DovetailHost>` item. Both are listed, with every value they accept, in the
+[reference](../../reference/): [DovetailJoint](../../reference/dovetail-joint/) and [DovetailHost](../../reference/dovetail-host/).

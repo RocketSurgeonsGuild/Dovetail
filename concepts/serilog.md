@@ -62,7 +62,7 @@ providers are not known: an event written through `Serilog.ILogger` before that 
 
 ## The Serilog joint
 
-`Joinery.Dovetail.Serilog` declares one `<DovetailJoint>`, `Serilog`, for `Serilog.LoggerConfiguration`: `ISerilogJoint`,
+`Joinery.Dovetail.Serilog` declares one [`<DovetailJoint>`](../../reference/dovetail-joint/), `Serilog`, for `Serilog.LoggerConfiguration`: `ISerilogJoint`,
 `ISerilogAsyncJoint`, the `SerilogJointDelegate` and the `ConfigureSerilog(...)` builder method. A joint is handed the
 context, the service collection and the logger configuration. Sinks and enrichers are configured here, in code:
 

@@ -81,6 +81,12 @@ Useful methods / extension methods:
 
 As stated previously joints are nothing more than a class that implements <xref:Joinery.Dovetail.Infrastructure.IDovetailJoint>.
 
+## Declaring a new kind of joint
+
+[Section titled “Declaring a new kind of joint”](#declaring-a-new-kind-of-joint)
+
+Everything below is about writing joints for kinds that already exist, such as `IServiceJoint` or `ISerilogJoint`. A package or application adds a new kind, a typed extension point other code can contribute to, with a single `<DovetailJoint>` item in its project file; the build generates the interface, the delegates and the `Apply` and `DovetailContextBuilder` methods for it. The [`DovetailJoint` reference](../../reference/dovetail-joint/) lists everything the item accepts. The entry points that run the joints come from a [`DovetailHost`](../../reference/dovetail-host/) item, which the SDK declares for most projects.
+
 ## Implementing Multiple Dovetail Joints
 
 [Section titled “Implementing Multiple Dovetail Joints”](#implementing-multiple-dovetail-joints)
@@ -244,7 +250,7 @@ Any type defined in the context is injectable into any defined joint. This can b
 * allow consumers to provide configuration to your joint
 * allow joints to communicate or share common state
 
-Under the covers the [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties) implements `IServiceProvider` and we simply activate joints using `ActivatorUtilities.CreateInstance`.
+Under the covers the [`Properties`](xref:Joinery.Dovetail.DovetailContextBuilder#Joinery_Dovetail_DovetailContextBuilder_Properties) implements `IServiceProvider`, and a joint’s constructor parameters are resolved from it.
 
 Note
 
@@ -284,6 +290,39 @@ public class OptionalInjectableDovetail : IServiceJoint
         }
     }
 }
+```
+
+### How constructor parameters are resolved
+
+[Section titled “How constructor parameters are resolved”](#how-constructor-parameters-are-resolved)
+
+A joint takes its constructor parameters from the properties of the <xref:Joinery.Dovetail.DovetailContextBuilder> that holds it, in the same way whether the joint is added with `AppendJoint<T>()` or exported with `[DovetailExport]`:
+
+* **By type.** Each parameter is looked up under its declared type, exactly: a value stored with `Set<IClock>(clock)` satisfies an `IClock` parameter and not a `SystemClock` one, and the other way round. `?` on a reference type changes nothing, so `IInjectData?` and `IInjectData` find the same value. A nullable value type is looked up as itself: an `int?` parameter is found under `int?`, not `int`.
+* **Optional parameters fall back to their default.** A parameter with a default value (`IInjectData? joint = null`, `int retries = 3`) gets that default when the properties hold nothing of its type.
+* **Required parameters must be there.** A parameter without a default whose type is missing makes creating the context throw an `InvalidOperationException`. For an exported joint its message names the missing type, the parameter and the joint. When the context has two or more joints it orders them with a comparer, and .NET wraps whatever a comparer throws, so the exception you catch is an `InvalidOperationException` that says “Failed to compare two elements in the array.” and the one that names the missing type is its `InnerException`. With a single joint the exception is not wrapped.
+* **At the point the joint is created, not before.** The joint is created the first time something needs it, which is while <xref:Joinery.Dovetail.IDovetailContext> is built, so anything you `Set` on the builder up to that point is seen, including after the joint was added. Values stored later, for example by another joint while it runs, are too late. `ExceptJoint(Type)` needs the joints too, so it creates them when it is called. With two or more joints they are created while the context orders them, before their host types are applied, so a missing required value can fail the context even for a joint that would not have applied.
+* **One constructor.** An exported joint is created by calling one constructor that is public or internal (`protected internal` counts, the generated code lives in the same assembly). A joint with more than one of those is the `DT0001` error. A joint that has constructors but none of those, for example a single `private` or `protected` one, is the `DT0017` error: it is reported at build time and left out of the exports. Private and protected constructors, and a static constructor, are not counted for `DT0001`.
+
+For an exported joint the generator writes this lookup into the `Exports` class as plain C#: the exported method itself takes no parameters, and each joint with constructor parameters is described by a factory that the context builder runs against its properties. Nothing is reflected on, so it is trimming and AOT safe. A joint without constructor parameters is created directly. The same factory is used if you read the `Joint` of that metadata before any builder has it, with the difference that there are no properties then: optional parameters get their defaults and a required one throws. (Joints you add with `AppendJoint<T>()` are created with `ActivatorUtilities`, which does use reflection.)
+
+```c#
+// LaunchPad: a joint that tunes itself from options the host may or may not provide.
+[DovetailExport]
+public class TimeJoint(PrimitiveOptions? options = null) : IServiceJoint
+{
+    private readonly PrimitiveOptions _options = options ?? new PrimitiveOptions();
+
+
+    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    {
+        //...
+    }
+}
+
+
+// With this set on the DovetailContextBuilder, TimeJoint gets this instance; without it, TimeJoint gets null and uses its own default.
+builder.Set(new PrimitiveOptions { /* ... */ });
 ```
 
 # Host Lifecycle
@@ -492,6 +531,8 @@ Creating your own joints is fairly easily, and can be done by using existing joi
 Tip
 
 More information can be found [here](../guides/custom-joints.md)
+
+A package or application that wants to add a new kind of joint declares it with a `<DovetailJoint>` item, and a project the SDK does not recognise declares its host with a `<DovetailHost>` item. Both are listed, with every value they accept, in the [reference](../../reference/): [DovetailJoint](../../reference/dovetail-joint/) and [DovetailHost](../../reference/dovetail-host/).
 
 # Managed Configuration
 
@@ -856,7 +897,7 @@ MyLibrary/
 | `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                             |
 | `DT0016` | Error    | A type is bound with more than one key style. The later declaration is reported and produces nothing; use the same `KeyStyle`, or give the shared type `[ConfigurationKeyName]`. |
 
-The generator runs in every project that references a Dovetail package, including those that only reference one indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` are described under [Source Generation](./source-generation).
+The generator runs in every project that references a Dovetail package, including those that only reference one indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` and `DT0017` are described under [Source Generation](./source-generation).
 
 # OpenTelemetry
 
@@ -904,7 +945,7 @@ var host = await Host
 
 [Section titled “The joints”](#the-joints)
 
-`Joinery.Dovetail.OpenTelemetry` declares one `<DovetailJoint>`, `OpenTelemetry`, for `OpenTelemetry.IOpenTelemetryBuilder`: `IOpenTelemetryJoint`, its `OpenTelemetryJointDelegate`, the `ConfigureOpenTelemetry(...)` builder method and the `ApplyOpenTelemetry` extension that the emitted joint calls. Narrower interfaces derive from `IOpenTelemetryJoint`, each for one of OpenTelemetry’s builders:
+`Joinery.Dovetail.OpenTelemetry` declares one [`<DovetailJoint>`](../../reference/dovetail-joint/), `OpenTelemetry`, for `OpenTelemetry.IOpenTelemetryBuilder`: `IOpenTelemetryJoint`, its `OpenTelemetryJointDelegate`, the `ConfigureOpenTelemetry(...)` builder method and the `ApplyOpenTelemetry` extension that the emitted joint calls. Narrower interfaces derive from `IOpenTelemetryJoint`, each for one of OpenTelemetry’s builders:
 
 | Joint interface               | Builder                                      | `DovetailContextBuilder` method |
 | ----------------------------- | -------------------------------------------- | ------------------------------- |
@@ -1079,7 +1120,7 @@ The logger factory is created when the container is asked for it, which a host d
 
 [Section titled “The Serilog joint”](#the-serilog-joint)
 
-`Joinery.Dovetail.Serilog` declares one `<DovetailJoint>`, `Serilog`, for `Serilog.LoggerConfiguration`: `ISerilogJoint`, `ISerilogAsyncJoint`, the `SerilogJointDelegate` and the `ConfigureSerilog(...)` builder method. A joint is handed the context, the service collection and the logger configuration. Sinks and enrichers are configured here, in code:
+`Joinery.Dovetail.Serilog` declares one [`<DovetailJoint>`](../../reference/dovetail-joint/), `Serilog`, for `Serilog.LoggerConfiguration`: `ISerilogJoint`, `ISerilogAsyncJoint`, the `SerilogJointDelegate` and the `ConfigureSerilog(...)` builder method. A joint is handed the context, the service collection and the logger configuration. Sinks and enrichers are configured here, in code:
 
 ```c#
 using Joinery.Dovetail;
@@ -1186,6 +1227,8 @@ This class is partial if you want to add any custom methods to it for consumers.
 
 Each exported joint carries the host type it declares with `[LiveJoint]`, `[UnitTestJoint]` or `[DovetailHostType]`, the same as when a joint is added through reflection at runtime. See [which attributes are honoured where](./defining-joints#which-attributes-are-honoured-where).
 
+A joint with constructor parameters is exported as a factory, because the exported method has no context to read from: the context builder that holds the metadata creates the joint from its properties, and an optional parameter falls back to its default. See [how constructor parameters are resolved](./defining-joints#how-constructor-parameters-are-resolved).
+
 # Importing Dovetails
 
 [Section titled “Importing Dovetails”](#importing-dovetails)
@@ -1217,7 +1260,7 @@ Joinery.Dovetail.Sdk sets both as part of its host detection. Projects that don�
 
 Set either property in a project file to override its default.
 
-The generator runs in every project that references a Dovetail package, including projects that only reference one indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint with more than one constructor) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it generates nothing and reports warning `DT0006` instead.
+The generator runs in every project that references a Dovetail package, including projects that only reference one indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint with more than one constructor, and `DT0017`, the error for a joint with no constructor it can be created with) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it generates nothing and reports warning `DT0006` instead.
 
 ## Specular’s provider
 
@@ -1563,7 +1606,7 @@ Pack both files, under `build/` (imported by NuGet into projects that reference 
 | `HostName`, `HostType` | When `HostType` is set, `{HostName}` and `{HostType}` in the template are replaced, so one template can be declared once per host model under different names.                                          |
 | `OutputPrefix`         | The generated file is `<prefix>.<name>.g.cs`; the default prefix is `DovetailTemplate`.                                                                                                                 |
 
-Every gate you set has to pass. A project that doesn’t run the Dovetail source generator gets no templates.
+Every gate you set has to pass. A project that doesn’t run the Dovetail source generator gets no templates. The [`DovetailTemplate` reference](../../reference/dovetail-template/) lists the defaults, the errors and the generated file names.
 
 ## Direct references only
 
@@ -1610,3 +1653,708 @@ The templates that pass their gates are the `DovetailEmittedTemplate` items, wit
 [Section titled “Test it”](#test-it)
 
 The Dovetail SDK tests show how to prove a template’s gates: pack a package that ships the template, reference it from a project that declares the reference and from one that only receives it transitively, build, and read which `DovetailTemplate.*.g.cs` files landed in each project’s `obj/` (`test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs`).
+
+# Reference
+
+> Every value the Dovetail MSBuild items accept, what each one changes in the generated code, and where to find that code.
+
+Dovetail is extended through MSBuild items. You declare one in a project file, and the build writes the C# for it into `obj/` before the compiler runs. MSBuild targets expand the items, not the Roslyn source generator, so there is nothing to configure and nothing to call at run time. These pages list every metadata value an item reads, with its default, so you do not have to read the `.targets` files.
+
+[DovetailJoint](./dovetail-joint/)Declare a joint kind: a typed extension point other code can contribute to.
+
+[DovetailHost](./dovetail-host/)Declare the ConfigureDovetail entry points for a host builder.
+
+[DovetailTemplate](./dovetail-template/)Ship C# source from a package and have it written into only the projects that should get it.
+
+For how to write the joints these items produce, and how Dovetail orders and runs them, see [Defining Dovetails](../concepts/defining-joints/).
+
+# DovetailHost
+
+> The DovetailHost MSBuild item declares the ConfigureDovetail entry points for one host builder type. Which hosts the SDK declares for you, every metadata value and its default, and what is generated.
+
+# DovetailHost
+
+[Section titled “DovetailHost”](#dovetailhost)
+
+A `DovetailHost` item declares the **entry points of one host**: the `ConfigureDovetail` extension methods on its builder type. Calling one creates the Dovetail context, runs every joint the application imports, and builds the host.
+
+```c#
+var host = await Host.CreateApplicationBuilder(args).ConfigureDovetail();
+```
+
+The item is expanded by MSBuild targets, not by the Roslyn source generator: the C# is written to `obj/` before the compiler runs, so you can open it in your IDE like any other source file.
+
+## Who declares one, and when
+
+[Section titled “Who declares one, and when”](#who-declares-one-and-when)
+
+In most projects, nobody: `Joinery.Dovetail.Sdk` looks at the project and declares the host for you. You declare your own when the SDK does not, which is one of:
+
+* the project does not use `Joinery.Dovetail.Sdk` but references `Joinery.Dovetail`. `sample/Sample`, the benchmarks and most test projects declare their host by hand;
+* the host is one the SDK does not detect. Aspire’s `IDistributedApplicationBuilder` is declared by hand in `test/Joinery.Dovetail.Aspire.Tests`; the SDK has that case commented out.
+
+Do not declare a host the SDK already did. A second host on the same builder type makes `ConfigureDovetail` ambiguous (see [common mistakes](#common-mistakes)) and gives you two copies of the entry points.
+
+### The hosts the SDK declares
+
+[Section titled “The hosts the SDK declares”](#the-hosts-the-sdk-declares)
+
+`Joinery.Dovetail.Sdk` declares at most one host, the first of these that matches the project (`Joinery.Dovetail.HostDetection.targets`). A library matches none, and gets no entry points. Each also adds the `Joinery.Dovetail.Hosting` package, which emits the helpers the entry points call.
+
+| Host name         | The project is                                                  | `HostBuilderType`                                                            | `HostType`                                                            | Helper                                     |
+| ----------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------ |
+| `Maui`            | `UseMaui` and an `Exe` or `WinExe`                              | `Microsoft.Maui.Hosting.MauiAppBuilder`                                      | `Microsoft.Maui.Hosting.MauiApp`                                      | `DovetailMauiHelpers`                      |
+| `Uno`             | an Uno.Sdk application whose `UnoFeatures` include `Hosting`    | `Uno.Extensions.Hosting.IApplicationBuilder`                                 | `Microsoft.Extensions.Hosting.IHost`                                  | `DovetailUnoHelpers`                       |
+| `WebAssembly`     | a Blazor WebAssembly or `Microsoft.NET.Sdk.WebAssembly` project | `Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder` | `Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost` | `DovetailWebAssemblyHelpers` (the default) |
+| `WebApplication`  | a `Microsoft.NET.Sdk.Web` or `Microsoft.NET.Sdk.Razor` project  | `Microsoft.AspNetCore.Builder.WebApplicationBuilder`                         | `Microsoft.AspNetCore.Builder.WebApplication`                         | `DovetailHostApplicationHelpers`           |
+| `HostApplication` | a `Microsoft.NET.Sdk.Worker` project, or any other `Exe`        | `Microsoft.Extensions.Hosting.HostApplicationBuilder`                        | `Microsoft.Extensions.Hosting.IHost`                                  | `DovetailHostApplicationHelpers`           |
+
+An Uno application without `Hosting` has no host and gets a build warning. MAUI is matched first, because a MAUI application is also an `Exe`.
+
+## Declaring a host
+
+[Section titled “Declaring a host”](#declaring-a-host)
+
+The item’s `Include` is the host’s name. It becomes part of the generated class and file names, and, unless you set `HelperName`, of the name of the helper the code calls, so it has to be a valid C# identifier and it must be unique in the project.
+
+```xml
+<!-- test/Joinery.Dovetail.Hosting.Tests/Joinery.Dovetail.Hosting.Tests.csproj -->
+<DovetailHost
+    Include="HostApplication"
+    HostBuilderType="Microsoft.Extensions.Hosting.HostApplicationBuilder"
+    HostBuilderName="builder"
+    HostType="Microsoft.Extensions.Hosting.IHost"
+/>
+```
+
+`HostBuilderType` and `HostType` are all a host needs, and the project needs a helper of the default name (`HostApplication` is named for the one `Joinery.Dovetail.Hosting` emits for the generic host).
+
+## Metadata
+
+[Section titled “Metadata”](#metadata)
+
+Metadata is optional unless stated. A name the item does not read is ignored without a warning, so a misspelling falls back to the default. Types are written into the generated code exactly as you give them, so write them with `global::`, as the SDK does for builder types. Boolean values are compared with `true` ignoring case; any other non-empty value counts as false.
+
+| Metadata             | Default                   | What it changes                                                                                                                                                                                                                                                       |
+| -------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Namespace`          | `$(RootNamespace)`        | The namespace of the generated class, and so the namespace a caller imports for `ConfigureDovetail`.                                                                                                                                                                  |
+| `HostBuilderType`    | none; required            | The type the `ConfigureDovetail` extension methods extend (and `Task` of it). Written into every signature.                                                                                                                                                           |
+| `HostType`           | none; required            | The type the methods return, inside a `ValueTask<>`.                                                                                                                                                                                                                  |
+| `HostBuilderName`    | empty                     | Read and handed to the template, which has no use for it. It changes nothing in the generated code today; the SDK sets it to `builder`.                                                                                                                               |
+| `HelperName`         | `Dovetail{Name}Helpers`   | The static class whose `Configure` method the generated code calls, written as given. `Joinery.Dovetail.Hosting` emits `DovetailHostApplicationHelpers`, `DovetailMauiHelpers`, `DovetailUnoHelpers` and `DovetailWebAssemblyHelpers`; any other host brings its own. |
+| `BuildExpression`    | `, static b => b.Build()` | The arguments spliced into that call right after `builder`, so it begins with a comma. The default is the delegate that builds the host. MAUI and Uno add their application assembly.                                                                                 |
+| `HasBuildExpression` | `true`                    | `false` calls `Configure` without the `BuildExpression`, even one you set, for helpers that build the host themselves.                                                                                                                                                |
+| `SyncEntryPoint`     | empty (false)             | Internal, for the MAUI host model. `true` also emits blocking `UseDovetail` overloads.                                                                                                                                                                                |
+| `NavigateEntryPoint` | empty (false)             | Internal, for the Uno host model. `true` also emits `ConfigureDovetail<TShell>` overloads that navigate.                                                                                                                                                              |
+
+### Internal metadata
+
+[Section titled “Internal metadata”](#internal-metadata)
+
+`SyncEntryPoint` and `NavigateEntryPoint` exist for the MAUI and Uno host models. The SDK’s MAUI and Uno detection sets them, and the repository’s MAUI and Uno samples and tests set them by hand. They are documented so the generated files make sense, not as a supported way to extend a host: leave them alone on a host of your own.
+
+* `SyncEntryPoint="true"` adds `UseDovetail` (from `DovetailHostSync.cs.template`) next to `ConfigureDovetail`, for hosts whose bootstrap method cannot be async (`MauiProgram.CreateMauiApp`). It blocks on `ConfigureDovetail`, which is safe only because Dovetail never resumes on the calling thread’s context: joints must not post back to the UI thread during startup.
+* `NavigateEntryPoint="true"` adds `ConfigureDovetail<TShell>` (from `DovetailHostNavigate.cs.template`), for Uno.Extensions.Navigation applications that start with `NavigateAsync<TShell>()` instead of `Build()`. `Joinery.Dovetail.Hosting` sets it back to `false` when the project does not reference `Uno.Extensions.Navigation`.
+
+## What is generated
+
+[Section titled “What is generated”](#what-is-generated)
+
+Each host is written to `$(IntermediateOutputPath)`, which is `obj/<Configuration>/<TargetFramework>/`, as ordinary `Compile` items:
+
+| File                                | Contents                                                                                                                                           |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DovetailHost.{Name}.g.cs`          | The `ConfigureDovetail` entry points.                                                                                                              |
+| `DovetailHost.{Name}.Sync.g.cs`     | The `UseDovetail` entry points. Only with `SyncEntryPoint`.                                                                                        |
+| `DovetailHost.{Name}.Navigate.g.cs` | The `ConfigureDovetail<TShell>` entry points. Only with `NavigateEntryPoint`.                                                                      |
+| `DovetailContextBuilder.g.cs`       | `DovetailContextBuilder.Create()`, once for the project as soon as it declares any host: a builder populated with the joints the assembly imports. |
+
+All of them are in `Namespace`, in `internal static partial class GeneratedDovetail{Name}Extensions`. They are internal, so each assembly that hosts an application declares its own, and a test project that hosts one needs its own `DovetailHost` too.
+
+`ConfigureDovetail` has the same five forms on the builder and on a `Task` of it (so a builder you are still awaiting can be chained), each returning `ValueTask<{HostType}>`:
+
+```c#
+ConfigureDovetail(this {HostBuilderType} builder, CancellationToken cancellationToken = default)
+ConfigureDovetail(this {HostBuilderType} builder, Action<DovetailContextBuilder> action, CancellationToken cancellationToken = default)
+ConfigureDovetail(this {HostBuilderType} builder, Func<DovetailContextBuilder, ValueTask> action, CancellationToken cancellationToken = default)
+ConfigureDovetail(this {HostBuilderType} builder, Func<DovetailContextBuilder, CancellationToken, ValueTask> action, CancellationToken cancellationToken = default)
+ConfigureDovetail(this {HostBuilderType} builder, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken = default)
+```
+
+Every one ends in the same call, which is where `HelperName`, `BuildExpression` and `HasBuildExpression` apply:
+
+```c#
+return await {HelperName}.Configure(builder{BuildExpression}, contextBuilder, cancellationToken);
+```
+
+`UseDovetail` has the same forms on the builder only and returns the `{HostType}` itself. `ConfigureDovetail<TShell>` has them on the builder only, with `where TShell : Microsoft.UI.Xaml.UIElement, new()`.
+
+## Examples
+
+[Section titled “Examples”](#examples)
+
+### A host the SDK declares
+
+[Section titled “A host the SDK declares”](#a-host-the-sdk-declares)
+
+For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp` (`src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets`):
+
+```xml
+<DovetailHost Include="Maui"
+              HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder"
+              HostBuilderName="builder"
+              HostType="global::Microsoft.Maui.Hosting.MauiApp"
+              HelperName="global::Joinery.Dovetail.DovetailMauiHelpers"
+              BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly"
+              SyncEntryPoint="true" />
+```
+
+The generated call is `await global::Joinery.Dovetail.DovetailMauiHelpers.Configure(builder, static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly, contextBuilder, cancellationToken)`. The Uno declaration has the same shape with `DovetailUnoHelpers` and `NavigateEntryPoint="true"` in place of `SyncEntryPoint`. The other three set only the three types, and a `HelperName` for `WebApplication` and `HostApplication`.
+
+### A project without the SDK
+
+[Section titled “A project without the SDK”](#a-project-without-the-sdk)
+
+`sample/Sample` references `Joinery.Dovetail.Hosting` directly and declares the generic host itself:
+
+```xml
+<!-- sample/Sample/Sample.csproj -->
+<DovetailHost
+    Include="HostApplication"
+    HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder"
+    HostBuilderName="builder"
+    HostType="global::Microsoft.Extensions.Hosting.IHost"
+    HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"
+/>
+```
+
+sample/Sample/Program.cs
+
+```c#
+await builder
+     .ConfigureDovetail(z => z.ConfigureCommandLine(configurator => configurator.AddCommand<Dump>("dump")))
+     .RunConsoleAppAsync();
+```
+
+### A host of your own: Aspire
+
+[Section titled “A host of your own: Aspire”](#a-host-of-your-own-aspire)
+
+The Aspire helper builds the host itself, so its `Configure` takes no build delegate, and its tests declare the host with `HasBuildExpression="false"`. The helper is `DovetailDistributedApplicationHelpers`, which is the default for a host named `DistributedApplication`, so there is no `HelperName`:
+
+```xml
+<!-- test/Joinery.Dovetail.Aspire.Tests/Joinery.Dovetail.Aspire.Tests.csproj -->
+<DovetailHost
+    Include="DistributedApplication"
+    Namespace="Joinery.Dovetail.Joints"
+    HostBuilderType="global::Aspire.Hosting.IDistributedApplicationBuilder"
+    HostBuilderName="builder"
+    HostType="global::Aspire.Hosting.DistributedApplication"
+    HasBuildExpression="false"
+/>
+```
+
+src/Joinery.Dovetail.Aspire/RocketDistributedApplicationExtensions.cs
+
+```c#
+public static async ValueTask<DistributedApplication> Configure(
+    IDistributedApplicationBuilder builder,
+    DovetailContextBuilder contextBuilder,
+    CancellationToken cancellationToken
+)
+```
+
+### Your own helper
+
+[Section titled “Your own helper”](#your-own-helper)
+
+When nothing ships a helper for your builder, write one with the shape the call expects. The three declarations below are compiled by `test/Joinery.Dovetail.Sdk.Tests/DovetailItemReferenceTests.cs`, together with these helpers:
+
+```xml
+<DovetailHost Include="Mine" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" />
+<DovetailHost Include="Custom" Namespace="Hosts.Custom" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::worker.CustomHelper" HostBuilderName="ignored" BuildExpression=", static b => b.Build(), &quot;extra&quot;" />
+<DovetailHost Include="NoBuild" Namespace="Hosts.NoBuild" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::worker.NoBuildHelper" HasBuildExpression="false" BuildExpression=", static b => b.Build()" />
+```
+
+```c#
+internal static class DovetailMineHelpers // the default HelperName of a host named Mine
+{
+    public static ValueTask<IHost> Configure(HostApplicationBuilder builder, Func<HostApplicationBuilder, IHost> build, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken)
+        => ValueTask.FromResult(build(builder));
+}
+
+
+internal static class CustomHelper // BuildExpression adds the string between the delegate and the context builder
+{
+    public static ValueTask<IHost> Configure(HostApplicationBuilder builder, Func<HostApplicationBuilder, IHost> build, string extra, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken)
+        => ValueTask.FromResult(build(builder));
+}
+
+
+internal static class NoBuildHelper // HasBuildExpression="false" drops the delegate, although BuildExpression is set
+{
+    public static ValueTask<IHost> Configure(HostApplicationBuilder builder, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken)
+        => ValueTask.FromResult(builder.Build());
+}
+```
+
+`Mine` generates `GeneratedDovetailMineExtensions` in `$(RootNamespace)`, and the other two use a namespace each, so their `ConfigureDovetail` methods do not collide.
+
+## Common mistakes
+
+[Section titled “Common mistakes”](#common-mistakes)
+
+* **A host with no `HelperName` needs a class named `Dovetail{Name}Helpers`.** A host named `Orphan` calls `DovetailOrphanHelpers.Configure`, and the build fails with CS0103 in the generated file unless you wrote that class or named another with `HelperName`. The default fits the hosts `Joinery.Dovetail.Hosting` emits helpers for (`HostApplication`, `Maui`, `Uno`, `WebAssembly`) and Aspire’s `DistributedApplication`; for any other name, set `HelperName`.
+* **Two hosts on the same builder type in the same namespace make `ConfigureDovetail` ambiguous** (CS0121). An application built with the SDK already has `HostApplication` in `$(RootNamespace)`, so a second host on `HostApplicationBuilder` needs a `Namespace` of its own, and the caller imports only the one it wants.
+* **`HostBuilderType` and `HostType` have no default.** A host that sets neither generates a file that is not valid C# (CS1001).
+* **`BuildExpression` is spliced in as text.** It goes straight after `builder`, so it starts with a comma, and the `Configure` method it calls must take exactly those arguments. `HasBuildExpression="false"` removes it, including a `BuildExpression` you set.
+* **`HostBuilderName` changes nothing.** The template does not use it today.
+* **Types are written as given.** `HostBuilderType`, `HostType` and `HelperName` go into the generated code unchanged, so a bare name is looked up from `Namespace` outwards, as in any C# file. Use `global::` as the SDK does.
+* **`SyncEntryPoint` and `NavigateEntryPoint` belong to the MAUI and Uno host models.** `NavigateEntryPoint` emits calls to `{HelperName}.Navigate<TShell>`, which only `DovetailUnoHelpers` has; leave both alone on a host of your own.
+* **A misspelled metadata name is ignored.** The default applies, with no warning.
+* **When `Joinery.Dovetail.Hosting` is referenced, a host whose framework is missing is dropped.** If the helper a host names is one of the package’s but the project does not reference the framework it compiles against (a `Microsoft.NET.Sdk.WebAssembly` app without Blazor, say), the host is removed from the build, with a message at normal verbosity, and `ConfigureDovetail` does not exist for it.
+
+## See also
+
+[Section titled “See also”](#see-also)
+
+* [DovetailJoint](../dovetail-joint/): the joint kinds that `ConfigureDovetail` runs.
+* [DovetailTemplate](../dovetail-template/): how `Joinery.Dovetail.Hosting` ships the helpers a host calls, and gates them on the host’s framework.
+* [Host Lifecycle](../../concepts/host-lifecycle/): code that runs as the host starts and stops.
+* [Defining Dovetails](../../concepts/defining-joints/): the host type a joint can be filtered by.
+
+# DovetailJoint
+
+> The DovetailJoint MSBuild item declares a joint kind, a typed extension point, and the build generates its interfaces, delegates, Apply method and DovetailContextBuilder method. Every metadata value, its default, and what it generates.
+
+# DovetailJoint
+
+[Section titled “DovetailJoint”](#dovetailjoint)
+
+A `DovetailJoint` item declares a **joint kind**: a typed extension point that other code can contribute to without knowing who applies it. One line in a project file becomes a joint interface, its async twin, the delegates for both, an `Apply` extension that runs every joint of the kind, and a method on `DovetailContextBuilder` that registers a delegate. Dovetail’s own joints (`ISetupJoint`, `IServiceJoint`, `ILoggingJoint`, `IConfigurationJoint`, `IHostCreatedJoint<THost>`) are declared this way, and so are those of [Serilog](../../concepts/serilog/), [OpenTelemetry](../../concepts/opentelemetry/) and Aspire.
+
+The item is expanded by MSBuild targets, not by the Roslyn source generator: the C# is written to `obj/` before the compiler runs, so you can open it in your IDE like any other source file.
+
+## Who declares one, and when
+
+[Section titled “Who declares one, and when”](#who-declares-one-and-when)
+
+A package or application that owns something other code should be able to configure declares a joint kind for it. Serilog’s package declares `Serilog` for `LoggerConfiguration`, so any library can add a sink; `Sample.Core` declares `DatabaseConfigurator` for its own `IDatabaseConfigurator`, so other assemblies can add tables and views.
+
+Declare one when:
+
+* you hand an object to other code at one point in startup (a builder, a configuration object) and want every library to be able to contribute to it without referencing your application or each other;
+* you are prepared to call `Apply{Name}` yourself at that point. A joint kind does not run by itself: `SerilogJoint` calls `loggerConfiguration.ApplySerilog(...)` once it has created the `LoggerConfiguration`.
+
+Do not declare one when:
+
+* you only want to run code at startup. Implement an existing joint such as `IServiceJoint` or `ILoggingJoint` instead, as described in [Defining Dovetails](../../concepts/defining-joints/);
+* Dovetail or one of its packages already declares a joint for the type you have: `Joinery.Dovetail` covers `IServiceCollection`, `IConfigurationBuilder` and `ILoggingBuilder`, and `Joinery.Dovetail.Hosting` covers the host builders.
+
+The item is read by the targets that ship in `Joinery.Dovetail`, so the project that declares it must reference that package (`Joinery.Dovetail.Sdk` adds the reference for you). The generated types are `public`, so anything that references your project sees them as ordinary API.
+
+## Declaring a joint
+
+[Section titled “Declaring a joint”](#declaring-a-joint)
+
+The item’s `Include` is the joint’s name. It becomes part of every generated type name, and of the generated file names, so it has to be a valid C# identifier, and it must be unique in the project.
+
+```xml
+<!-- src/Joinery.Dovetail/Joinery.Dovetail.csproj -->
+<DovetailJoint Include="Setup" Namespace="Joinery.Dovetail.Joints" />
+```
+
+That is the smallest useful declaration: a joint that is handed only the `IDovetailContext`. Everything else is metadata.
+
+## Metadata
+
+[Section titled “Metadata”](#metadata)
+
+Metadata is optional unless stated. A name the item does not read is ignored without a warning, so a misspelling falls back to the default (`NMAmespace` leaves `Namespace` at its default). Boolean values are compared with `true` ignoring case; any other non-empty value counts as false.
+
+| Metadata               | Default                                 | What it changes                                                                                                                                                                                                                                                 |
+| ---------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Namespace`            | `$(RootNamespace).Joints`               | The namespace of every generated type, and so the namespace consumers import. Joints of one package usually share one, as `Joinery.Dovetail.Joints` does.                                                                                                       |
+| `ProvideConfiguration` | empty (false)                           | `true` adds an `IConfiguration configuration` parameter to `Register`, after the context. The value passed is `context.Configuration`; `Apply{Name}` takes no configuration parameter.                                                                          |
+| `ProvideServices`      | empty (false)                           | `true` adds an `IServiceCollection services` parameter to `Register`, after the configuration if there is one. With no `ParameterType` it is also the subject of `Apply{Name}`.                                                                                 |
+| `ParameterType`        | empty                                   | The type of one more `Register` parameter, the last one. It becomes the subject of `Apply{Name}`. Written into the generated code exactly as given; see [common mistakes](#common-mistakes).                                                                    |
+| `ParameterName`        | `parameter` when `ParameterType` is set | The name of that parameter, as it appears in `Register` and in `Apply{Name}`. Ignored without `ParameterType`.                                                                                                                                                  |
+| `BuilderMethodName`    | `Configure{Name}`                       | The name of the extension method on `DovetailContextBuilder` that registers a delegate. `Service` is declared with `BuilderMethodName="ConfigureServices"`.                                                                                                     |
+| `GenericParameter`     | empty                                   | A type parameter name that makes the joint generic: `I{Name}Joint<in T>`, `Apply{Name}<T>`, `Configure{Name}<T>`. `ParameterType` may be this name, and then the parameter is typed `T`.                                                                        |
+| `GenericConstraint`    | empty                                   | The constraint of that type parameter: `where T : {GenericConstraint}`. Written as given. Ignored without `GenericParameter`.                                                                                                                                   |
+| `GenericVariance`      | `in` when `GenericParameter` is set     | The variance modifier on the type parameter of the generated interfaces and delegates. Ignored without `GenericParameter`. When `ParameterType` is the type parameter, only `in` compiles; see [common mistakes](#common-mistakes).                             |
+| `IsAsync`              | `true`                                  | `false` generates only the synchronous joint. No `I{Name}AsyncJoint`, `{Name}AsyncJointDelegate` or async `Configure{Name}` overload, no `DovetailJointAsync.{Name}.g.cs`, and `Apply{Name}` returns `void` instead of `ValueTask`.                             |
+| `ReturnFirstArgument`  | empty (false)                           | `true` makes `Apply{Name}` return `ValueTask<IDovetailContext>`, the context after the joints ran. It compiles only for a joint whose subject is the context itself: no `ParameterType` and no `ProvideServices`. With `IsAsync` false the result is discarded. |
+
+### The parameter lists
+
+[Section titled “The parameter lists”](#the-parameter-lists)
+
+`Register` takes, in this order, only the parameters that apply:
+
+1. `IDovetailContext context`, always;
+2. `IConfiguration configuration`, with `ProvideConfiguration`;
+3. `IServiceCollection services`, with `ProvideServices`;
+4. `{ParameterType} {ParameterName}`, with `ParameterType`;
+5. `CancellationToken cancellationToken = default`, in the async twin only.
+
+`Apply{Name}` is an extension method. Its subject (the `this` parameter) is the `ParameterType` if there is one, otherwise the service collection if `ProvideServices` is set, otherwise the context. After the subject come the context (unless it is the subject), the service collection (if `ProvideServices` and `ParameterType` are both set) and, last, a `CancellationToken cancellationToken = default`.
+
+## What is generated
+
+[Section titled “What is generated”](#what-is-generated)
+
+Each joint is written to `$(IntermediateOutputPath)`, which is `obj/<Configuration>/<TargetFramework>/`, as ordinary `Compile` items:
+
+| File                             | Contents                                                                                                        |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `DovetailJoint.{Name}.g.cs`      | `I{Name}Joint`, its delegate, `Apply{Name}` and the `Configure{Name}` method for the delegate.                  |
+| `DovetailJointAsync.{Name}.g.cs` | `I{Name}AsyncJoint`, its delegate and the `Configure{Name}` method for it. Not written when `IsAsync` is false. |
+
+Everything is declared in `Namespace`:
+
+| Type                          | What it is                                                                                                                                                                                                                                                           |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `I{Name}Joint`                | The interface a contributor implements: `void Register(...)`. Mark the class `[DovetailExport]` so it is discovered; see [Defining Dovetails](../../concepts/defining-joints/).                                                                                      |
+| `{Name}JointDelegate`         | A delegate with the same parameters, for registering a lambda.                                                                                                                                                                                                       |
+| `I{Name}AsyncJoint`           | The async twin: `ValueTask Register(..., CancellationToken cancellationToken = default)`.                                                                                                                                                                            |
+| `{Name}AsyncJointDelegate`    | The async delegate.                                                                                                                                                                                                                                                  |
+| `{Name}JointExtensions`       | A static partial class holding `Apply{Name}`, which runs every registered `I{Name}Joint` and `I{Name}AsyncJoint` through the executor.                                                                                                                               |
+| `{Name}HostBuilderExtensions` | A static partial class with an `extension(DovetailContextBuilder)` block: `Configure{Name}(delegate, priority = 0, category = null, hostType = Undefined)`, once for each delegate type. Generated for every joint, including the ones whose subject is the context. |
+
+The interfaces derive from `IDovetailJoint` and, like the delegates, carry `[JointName("{Name}")]`.
+
+For the Serilog declaration [below](#a-joint-with-a-parameter-services-and-its-own-namespace), the build writes this (abridged from `obj/Debug/net10.0/DovetailJoint.Serilog.g.cs`, which also holds the attributes, the XML comments and the method bodies):
+
+```c#
+namespace Joinery.Dovetail.Joints;
+
+
+public interface ISerilogJoint : global::Joinery.Dovetail.Infrastructure.IDovetailJoint
+{
+    void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::Serilog.LoggerConfiguration loggerConfiguration);
+}
+
+
+public delegate void SerilogJointDelegate(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::Serilog.LoggerConfiguration loggerConfiguration);
+
+
+public static partial class SerilogJointExtensions
+{
+    public static global::System.Threading.Tasks.ValueTask ApplySerilog(this global::Serilog.LoggerConfiguration loggerConfiguration, global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Threading.CancellationToken cancellationToken = default);
+}
+
+
+public static partial class SerilogHostBuilderExtensions
+{
+    extension(DovetailContextBuilder container)
+    {
+        public global::Joinery.Dovetail.DovetailContextBuilder ConfigureSerilog(SerilogJointDelegate @delegate, int priority = 0, DovetailCategory? category = null, DovetailHostType hostType = DovetailHostType.Undefined, [CallerArgumentExpression(nameof(@delegate))] string? expression = null);
+    }
+}
+```
+
+## Examples
+
+[Section titled “Examples”](#examples)
+
+### Minimal
+
+[Section titled “Minimal”](#minimal)
+
+The `Setup` declaration [above](#declaring-a-joint) generates `ISetupJoint`, `SetupJointDelegate`, `ISetupAsyncJoint`, `SetupAsyncJointDelegate`, `SetupJointExtensions.ApplySetup(this IDovetailContext context, CancellationToken cancellationToken = default)` and `ConfigureSetup(...)`, all in `Joinery.Dovetail.Joints`.
+
+### Leaving out `Namespace`
+
+[Section titled “Leaving out Namespace”](#leaving-out-namespace)
+
+Left out, `Namespace` is `$(RootNamespace).Joints`. This project sets `RootNamespace` to `Joinery.Dovetail`, so the joint’s types are in `Joinery.Dovetail.Joints`:
+
+```xml
+<!-- src/Joinery.Dovetail.Aspire/Joinery.Dovetail.Aspire.csproj -->
+<DovetailJoint Include="DistributedApplicationBuilder" ParameterType="global::Aspire.Hosting.IDistributedApplicationBuilder" ParameterName="builder" />
+```
+
+### A joint with a parameter, services and its own namespace
+
+[Section titled “A joint with a parameter, services and its own namespace”](#a-joint-with-a-parameter-services-and-its-own-namespace)
+
+`Joinery.Dovetail.Serilog` hands every Serilog joint the context, the service collection and the logger configuration:
+
+```xml
+<!-- src/Joinery.Dovetail.Serilog/Joinery.Dovetail.Serilog.csproj -->
+<DovetailJoint Include="Serilog" Namespace="Joinery.Dovetail.Joints" ProvideServices="true" ParameterType="global::Serilog.LoggerConfiguration" ParameterName="loggerConfiguration" />
+```
+
+The package applies the kind once it has built the `LoggerConfiguration` (`src/Joinery.Dovetail.Serilog/SerilogJoint.cs`):
+
+```c#
+var loggerConfiguration = new global::Serilog.LoggerConfiguration();
+await loggerConfiguration.ApplySerilog(context, services, cancellationToken).ConfigureAwait(false);
+```
+
+and anyone contributes by implementing `ISerilogJoint` or calling `ConfigureSerilog`, as shown in [Serilog](../../concepts/serilog/#the-serilog-joint).
+
+### A joint in an application
+
+[Section titled “A joint in an application”](#a-joint-in-an-application)
+
+`Sample.Core` declares a joint kind for the object it hands to other assemblies, and applies it from a joint of its own:
+
+```xml
+<!-- sample/Sample.Core/Sample.Core.csproj -->
+<DovetailJoint Include="DatabaseConfigurator" Namespace="Joinery.Dovetail.Joints" ParameterType="Sample.Core.Databases.IDatabaseConfigurator" ParameterName="builder" />
+```
+
+sample/Sample.Core/Databases/DatabaseServiceDovetail.cs
+
+```c#
+[DovetailExport]
+public class DatabaseServiceJoint : IServiceAsyncJoint
+{
+    public async ValueTask Register(IDovetailContext context, IServiceCollection services, CancellationToken cancellationToken = default)
+    {
+        var configurator = new DatabaseConfigurator();
+        await configurator.ApplyDatabaseConfigurator(context, cancellationToken: cancellationToken);
+    }
+}
+```
+
+### A generic joint
+
+[Section titled “A generic joint”](#a-generic-joint)
+
+`Joinery.Dovetail.Hosting` declares one joint for every host builder. `ParameterType` is the generic parameter, and, with no `GenericVariance`, the interface is contravariant, so `IHostApplicationJoint<IHostApplicationBuilder>` runs for every host whose builder is one:
+
+```xml
+<!-- src/Joinery.Dovetail.Hosting/Joinery.Dovetail.Hosting.csproj -->
+<DovetailJoint
+    Include="HostApplication"
+    Namespace="Joinery.Dovetail.Joints"
+    GenericParameter="TBuilder"
+    ParameterType="TBuilder"
+    ParameterName="builder"
+/>
+```
+
+`Joinery.Dovetail` uses the same shape for `HostCreated`, with `GenericParameter="THost"`.
+
+### The rarely needed values
+
+[Section titled “The rarely needed values”](#the-rarely-needed-values)
+
+Nothing in `src/` or `sample/` sets `ProvideConfiguration`, `GenericConstraint`, `IsAsync` or `ReturnFirstArgument`, so these declarations are compiled, and the signatures they generate checked, by `test/Joinery.Dovetail.Sdk.Tests/DovetailItemReferenceTests.cs` (it declares exactly these items):
+
+```xml
+<DovetailJoint Include="Minimal" />
+<DovetailJoint Include="Wired" ProvideConfiguration="true" ProvideServices="true" />
+<DovetailJoint Include="Builder" Namespace="Custom.Joints" ProvideServices="true" ParameterType="global::Microsoft.Extensions.Logging.ILoggingBuilder" ParameterName="builder" BuilderMethodName="ConfigureTheBuilder" />
+<DovetailJoint Include="Generic" GenericParameter="TBuilder" GenericConstraint="global::Microsoft.Extensions.Hosting.IHostApplicationBuilder" ParameterType="TBuilder" ParameterName="builder" />
+<DovetailJoint Include="Covariant" GenericParameter="T" GenericVariance="out" />
+<DovetailJoint Include="SyncOnly" IsAsync="false" />
+<DovetailJoint Include="Chained" ReturnFirstArgument="true" />
+<DovetailJoint Include="ChainedSync" ReturnFirstArgument="true" IsAsync="false" />
+<DovetailJoint Include="Unprefixed" ParameterType="Microsoft.Extensions.Logging.ILoggingBuilder" ParameterName="builder" />
+<DovetailJoint Include="Ignored" ParameterName="thing" GenericConstraint="class" GenericVariance="out" NMAmespace="Custom.Typo" />
+<DovetailJoint Include="Shouting" IsAsync="False" ProvideServices="TRUE" />
+<DovetailJoint Include="NotTrue" IsAsync="no" />
+```
+
+* `Minimal` is handed only the context, and its types are in `worker.Joints` (the test project’s `RootNamespace` is `worker`).
+* `Wired` registers `Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)`, and its `ApplyWired` is an extension on `IServiceCollection`.
+* `Builder` is applied with `logging.ApplyBuilder(context, services)` and registered with `ConfigureTheBuilder(...)`.
+* `Generic` declares `IGenericJoint<in TBuilder> where TBuilder : IHostApplicationBuilder`.
+* `Covariant` has a type parameter that `Register` does not take, so `out` compiles, and an `ICovariantJoint<string>` is an `ICovariantJoint<object>`.
+* `SyncOnly` has no async twin, and `context.ApplySyncOnly()` returns `void` but still takes a `CancellationToken`.
+* `Chained.ApplyChained` returns the context. `ChainedSync` has no async twin and `ApplyChainedSync` returns `void`: the context the executor returns is discarded.
+* `Unprefixed` is written into the generated code as `Microsoft.Extensions.Logging.ILoggingBuilder`, with nothing in front of it.
+* `Ignored` generates the same code as `Minimal`: `ParameterName` without a `ParameterType`, `GenericConstraint` and `GenericVariance` without a `GenericParameter`, and the misspelled `NMAmespace` all do nothing, so its types are in `worker.Joints`.
+* `Shouting` and `NotTrue` are synchronous: `False` and `no` are not `true`. `Shouting` also takes the service collection, because `TRUE` is `true` in any case.
+
+## Common mistakes
+
+[Section titled “Common mistakes”](#common-mistakes)
+
+* **`ParameterType` and `GenericConstraint` are written exactly as you give them.** Dovetail puts nothing in front of them, so write the type fully qualified with `global::`, as every package in this repository does: `global::Serilog.LoggerConfiguration`. A bare `Serilog.LoggerConfiguration` compiles too, until a namespace that encloses the generated code has a member called `Serilog`, which then captures the name. A project that declares `Custom.Microsoft` does that to a bare `Microsoft.Extensions.Logging.ILoggingBuilder` in a joint in `Custom.Joints`, and the build fails with CS0234.
+* **A generic joint’s `ParameterType` may be its `GenericParameter`**, and then must be written bare, as `TBuilder`: a `global::` in front of it names a type in the global namespace, not the type parameter.
+* **`GenericVariance="out"` does not compile when the type parameter is the `ParameterType`** (CS1961): it is an input of `Register`, so a covariant one is invalid, and `in`, the default, is the only value that compiles. With a `GenericParameter` and no `ParameterType`, `Register` does not take the type parameter, and `out` compiles.
+* **`ReturnFirstArgument` only suits a joint whose subject is the context.** With a `ParameterType` or `ProvideServices` the generated `Apply{Name}` tries to return the `IDovetailContext` as a `ValueTask<ILoggingBuilder>` (or whatever the subject is), which fails with CS0029.
+* **`ParameterName` without a `ParameterType`, and `GenericConstraint` or `GenericVariance` without a `GenericParameter`, do nothing.** The metadata is ignored, with no warning.
+* **A misspelled metadata name is ignored too.** `src/Joinery.Dovetail.Aspire.Testing` writes `NMAmespace`, so its namespace is the default, which happens to be the one it meant.
+* **`IsAsync="false"` leaves contributors no way to do async work for the kind**, since there is no `I{Name}AsyncJoint` to implement. `Apply{Name}` still takes a `CancellationToken`, which the synchronous call ignores.
+* **The name is part of every generated file and type name**, so declare each joint once.
+
+## See also
+
+[Section titled “See also”](#see-also)
+
+* [Defining Dovetails](../../concepts/defining-joints/): implementing, ordering and filtering the joints of a kind.
+* [DovetailHost](../dovetail-host/): the entry points that run the joints.
+* [Serilog](../../concepts/serilog/) and [OpenTelemetry](../../concepts/opentelemetry/): two packages built on joint kinds.
+
+# DovetailTemplate
+
+> The DovetailTemplate MSBuild item ships C# source from a package and has Dovetail write it into only the projects that should get it. Every metadata value, its default, the gates, and where the generated file lands.
+
+# DovetailTemplate
+
+[Section titled “DovetailTemplate”](#dovetailtemplate)
+
+A `DovetailTemplate` item names a `*.cs.template` file that a package ships and says which projects should get a copy. When the project’s references have resolved, Dovetail checks every template’s gates, writes the ones that pass to `obj/` and adds them to the compilation. Nothing needs to be compiled against, so the shipping package depends on none of the assemblies its templates use: referencing them is what turns a template on.
+
+This page lists what the item accepts. [Shipping templates](../../guides/shipping-templates/) is the guide to using it: how to write a template, how to pack the targets that declare it, and how to test the gates.
+
+The item is expanded by MSBuild targets (`Joinery.Dovetail.Templates.targets`), not by the Roslyn source generator.
+
+## Who declares one, and when
+
+[Section titled “Who declares one, and when”](#who-declares-one-and-when)
+
+A package that wants to put C# into the projects that use it declares its templates from its `build/` or `buildTransitive/` targets. `Joinery.Dovetail.Hosting` is the main user: its ASP.NET Core, MAUI, Uno and Blazor WebAssembly helpers and its OpenTelemetry joints are all templates, which is why that package has no dependency on any of those frameworks. A solution can declare templates in a `Directory.Build.targets` to the same effect.
+
+Declare one when the code you ship has to be compiled into the consumer, because it uses types the consumer references and you do not. Do not declare one when ordinary compiled code will do: a library the consumer references is simpler, and a template is only worth it for what needs to be gated on the project.
+
+A project that does not run the Dovetail source generator (`Joinery.Dovetail.Analyzers`) gets no templates, however they are gated, since a template is meant to hold joints and `[Embedded]` helpers that the generator discovers.
+
+## Declaring a template
+
+[Section titled “Declaring a template”](#declaring-a-template)
+
+The item’s `Include` is the template’s name. It names the generated file, so it has to be unique across every package a project references.
+
+```xml
+<!-- a package's declaration, built by test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs -->
+<DovetailTemplate Include="Plain" File="$(MSBuildThisFileDirectory)Plain.cs.template" Package="DovetailTemplateShipper" />
+```
+
+`File` is the only metadata that is required. Leave out `Package`, `References` and `Hosts` and the template goes into every project that runs the generator.
+
+## Metadata
+
+[Section titled “Metadata”](#metadata)
+
+Metadata is optional unless stated. A name the item does not read is ignored without a warning, so a misspelling falls back to the default. Every gate you set has to pass; a gate you leave out does not restrict anything. Boolean values are compared with `true` ignoring case; any other non-empty value counts as false.
+
+| Metadata              | Default            | What it changes                                                                                                                                                                                                                                                                                                      |
+| --------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `File`                | none; required     | The full path of the template, usually `$(MSBuildThisFileDirectory)Name.cs.template`. A template without one, or whose file does not exist, fails the build. It must not contain backslashes: MSBuild rewrites them to forward slashes on Linux and macOS when the file is written.                                  |
+| `Package`             | empty              | The id of the package that ships the template. The template is only written into a project that references it: the package’s assembly, which is named after the package, is among the project’s resolved references (or, with `DirectReferenceOnly`, the project declares the reference itself).                     |
+| `DirectReferenceOnly` | empty (false)      | `true` limits the template to projects with a direct reference to `Package`: a `PackageReference` to it (the ones the Dovetail SDK adds count), or a `ProjectReference` to a project named after it. A project that only gets the package transitively gets nothing. Requires `Package`; without it the build fails. |
+| `References`          | empty              | Semicolon-separated assembly names (file names without extension). Every one has to be among the project’s resolved references.                                                                                                                                                                                      |
+| `Hosts`               | empty              | Semicolon-separated `DovetailHost` names, at least one of which the project has to declare: the host model, as `Joinery.Dovetail.Sdk` detects it (`HostApplication`, `WebApplication`, `WebAssembly`, `Maui`, `Uno`). These are the hosts declared when the templates resolve, before a package narrows them.        |
+| `HostName`            | empty              | Replaces `{HostName}` in the template, but only when `HostType` is set too.                                                                                                                                                                                                                                          |
+| `HostType`            | empty              | Replaces `{HostType}` in the template, and switches the `{HostName}` replacement on. Together they let one template be emitted once per host model under different names.                                                                                                                                            |
+| `OutputPrefix`        | `DovetailTemplate` | The prefix of the generated file name, `<prefix>.<name>.g.cs`.                                                                                                                                                                                                                                                       |
+
+The gates are applied together, and a template that fails any of them is not written. They are read once the project’s references have resolved, which is right after `ResolveAssemblyReferences` and before the compiler runs.
+
+## What is generated
+
+[Section titled “What is generated”](#what-is-generated)
+
+Each template that passes is written to `$(IntermediateOutputPath)`, which is `obj/<Configuration>/<TargetFramework>/`, as an ordinary `Compile` item:
+
+| File                   | Contents                                                                                                                                              |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<prefix>.<name>.g.cs` | The template’s text, with `{HostName}` and `{HostType}` replaced when `HostType` is set. The prefix is `OutputPrefix`, `DovetailTemplate` by default. |
+
+The item adds no namespace, type or method of its own: the template is the C#. For `Joinery.Dovetail.Hosting`, which sets `OutputPrefix="DovetailHosting"`, a generic-host application gets `obj/Debug/net10.0/DovetailHosting.DovetailHostApplicationHelpers.g.cs`.
+
+The templates that passed are the `DovetailEmittedTemplate` items, with the metadata above carried over. A target can add to them or remove from them between `DovetailResolveTemplates` and `DovetailGenerateTemplates`; the guide shows how.
+
+## Examples
+
+[Section titled “Examples”](#examples)
+
+### Minimal
+
+[Section titled “Minimal”](#minimal)
+
+The declaration above is the one the extension-point tests build. They pack a package that ships it, reference it from projects that declare the reference themselves and from one that only receives it transitively, and read which `DovetailTemplate.*.g.cs` files land in each `obj/`.
+
+### A package that ships many
+
+[Section titled “A package that ships many”](#a-package-that-ships-many)
+
+`Joinery.Dovetail.Hosting` lists its helpers with the assemblies each needs, then declares every one as a template for the package:
+
+```xml
+<!-- src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets (verbatim) -->
+  <ItemGroup>
+    <_DovetailHostingHelper Include="DovetailHostApplicationHelpers" References="Microsoft.Extensions.Hosting" />
+    <_DovetailHostingHelper Include="DovetailHostLifecycleHelpers" References="Microsoft.Extensions.Hosting" />
+    <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Maui" />
+    <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
+    <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
+    <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
+    <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <DovetailTemplate
+      Include="@(_DovetailHostingHelper)"
+      File="$(MSBuildThisFileDirectory)%(Identity).cs.template"
+      Package="Joinery.Dovetail.Hosting"
+      OutputPrefix="DovetailHosting"
+    />
+  </ItemGroup>
+```
+
+`References` carries over from `_DovetailHostingHelper` to each template, so a project gets `DovetailMauiHelpers` only when it references `Microsoft.Maui`.
+
+### One template for several hosts
+
+[Section titled “One template for several hosts”](#one-template-for-several-hosts)
+
+The OpenTelemetry start joint is one template emitted once per host model, which is what `HostName` and `HostType` are for. The package adds the instances to `DovetailEmittedTemplate` itself, because which of them a host needs depends on helpers that have already been resolved:
+
+```xml
+<!-- src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets: one of the items of an ItemGroup, verbatim apart from the indentation -->
+<DovetailEmittedTemplate
+  Include="DovetailOpenTelemetryMauiStartJoint"
+  Condition="'$(_DovetailHostingMaui)' == 'true'"
+  File="$(MSBuildThisFileDirectory)DovetailOpenTelemetryStartJoint.cs.template"
+  OutputPrefix="DovetailHosting"
+  HostName="Maui"
+  HostType="global::Microsoft.Maui.Hosting.MauiApp" />
+```
+
+### The gates, built
+
+[Section titled “The gates, built”](#the-gates-built)
+
+`test/Joinery.Dovetail.Sdk.Tests/DovetailItemReferenceTests.cs` builds a project that declares the following, and checks which files land in `obj/` (the project is a generic-host application that references `Microsoft.Extensions.Hosting`; its templates are `Plain.cs.template`, and so on):
+
+```xml
+<DovetailTemplate Include="Plain" File="$(MSBuildThisFileDirectory)Plain.cs.template" />
+<DovetailTemplate Include="Prefixed" File="$(MSBuildThisFileDirectory)Prefixed.cs.template" OutputPrefix="Contoso" />
+<DovetailTemplate Include="Referenced" File="$(MSBuildThisFileDirectory)Referenced.cs.template" References="Microsoft.Extensions.Hosting" />
+<DovetailTemplate Include="MissingReference" File="$(MSBuildThisFileDirectory)MissingReference.cs.template" References="Microsoft.Extensions.Hosting;Not.Referenced.Anywhere" />
+<DovetailTemplate Include="ForThisHost" File="$(MSBuildThisFileDirectory)ForThisHost.cs.template" Hosts="Maui;HostApplication" />
+<DovetailTemplate Include="ForOtherHosts" File="$(MSBuildThisFileDirectory)ForOtherHosts.cs.template" Hosts="Maui;Uno" />
+<DovetailTemplate Include="PerHost" File="$(MSBuildThisFileDirectory)PerHost.cs.template" HostName="Mine" HostType="global::System.Object" />
+<DovetailTemplate Include="NameOnly" File="$(MSBuildThisFileDirectory)NameOnly.cs.template" HostName="Mine" />
+```
+
+`Plain`, `Referenced`, `ForThisHost`, `PerHost` and `NameOnly` are written, `Prefixed` as `Contoso.Prefixed.g.cs`; `MissingReference` and `ForOtherHosts` are not. In `PerHost` `{HostName}` and `{HostType}` are replaced; in `NameOnly` the text `{HostName}` is left as it is.
+
+## Common mistakes
+
+[Section titled “Common mistakes”](#common-mistakes)
+
+* **`Include` is the file name, so it has to be unique across packages.** Two templates with one name write one file.
+* **`File` has to be a full path.** Use `$(MSBuildThisFileDirectory)`, which is the directory of the targets file that declares the item. A missing `File` fails the build with `the template '<name>' has no File`, and a path that does not exist with `names a file that doesn't exist`.
+* **`DirectReferenceOnly` without `Package` fails the build** (`is DirectReferenceOnly, so it needs the Package it is direct to`).
+* **`Package` is matched against an assembly name.** It is the package’s id, and it has to be the name of the package’s assembly as well, since that is what the project’s resolved references are searched for.
+* **`HostName` alone does nothing.** `{HostName}` is replaced only when `HostType` is set; set both.
+* **`Hosts` names are `DovetailHost` names.** Each is matched, by name, against the `DovetailHost` items declared when the templates resolve, which are the ones `Joinery.Dovetail.Sdk` detected (`HostApplication`, `WebApplication`, `WebAssembly`, `Maui`, `Uno`) plus any you declared. See [DovetailHost](../dovetail-host/).
+* **A transitive reference declares your items but gets no file under `DirectReferenceOnly`.** Its `buildTransitive/` targets still run, so the `DovetailTemplate` items are there; the gate is what leaves the file out.
+* **A misspelled metadata name is ignored.** The default applies, with no warning.
+* **Templates do not reach projects that skip the generator.** A project without `Joinery.Dovetail.Analyzers` gets none.
+
+## See also
+
+[Section titled “See also”](#see-also)
+
+* [Shipping templates](../../guides/shipping-templates/): the guide to writing, packing and testing templates.
+* [DovetailHost](../dovetail-host/): the hosts that `Hosts` refers to, and the helpers `Joinery.Dovetail.Hosting` ships as templates.
+* [DovetailJoint](../dovetail-joint/): the joint kinds a template can declare joints of.

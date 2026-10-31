@@ -53,7 +53,7 @@ var host = await Host
 
 ## The joints
 
-`Joinery.Dovetail.OpenTelemetry` declares one `<DovetailJoint>`, `OpenTelemetry`, for `OpenTelemetry.IOpenTelemetryBuilder`:
+`Joinery.Dovetail.OpenTelemetry` declares one [`<DovetailJoint>`](../../reference/dovetail-joint/), `OpenTelemetry`, for `OpenTelemetry.IOpenTelemetryBuilder`:
 `IOpenTelemetryJoint`, its `OpenTelemetryJointDelegate`, the `ConfigureOpenTelemetry(...)` builder method and the
 `ApplyOpenTelemetry` extension that the emitted joint calls. Narrower interfaces derive from `IOpenTelemetryJoint`, each for one
 of OpenTelemetry's builders:

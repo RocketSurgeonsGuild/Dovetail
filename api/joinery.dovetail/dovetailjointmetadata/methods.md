@@ -3,9 +3,54 @@
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
 - Type: [DovetailJointMetadata](/Dovetail/api/joinery.dovetail/dovetailjointmetadata.md)
 - Kind: `Methods`
-- Members: `2`
+- Members: `3`
 
 Container for conventions
+
+<a id="fromfactory"></a>
+<a id="fromfactory-func-iserviceprovider-idovetailjoint-dovetailhosttype-dovetailcategory"></a>
+
+## FromFactory(Func<IServiceProvider, IDovetailJoint>, DovetailHostType, DovetailCategory)
+
+- Name: `FromFactory(Func<IServiceProvider, IDovetailJoint>, DovetailHostType, DovetailCategory)`
+- Modifiers: `static`
+- Returns: [DovetailJointMetadata](/Dovetail/api/joinery.dovetail/dovetailjointmetadata.md)
+
+Describes a joint that is created the first time [DovetailJointMetadata.Joint](/Dovetail/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) is read, rather than up front.
+
+```csharp
+public sealed class DovetailJointMetadata
+{
+    public static DovetailJointMetadata FromFactory(
+        Func<IServiceProvider, IDovetailJoint> factory,
+        DovetailHostType hostType,
+        DovetailCategory category)
+    {
+        // ...
+    }
+}
+```
+
+## Parameters
+
+- `factory` (`Func<IServiceProvider, IDovetailJoint>`)
+  Creates the joint from the properties of the context builder.
+- `hostType` ([DovetailHostType](/Dovetail/api/joinery.dovetail/dovetailhosttype.md))
+  The host type the convention applies to.
+- `category` ([DovetailCategory](/Dovetail/api/joinery.dovetail/dovetailcategory.md))
+  The category the convention belongs to.
+
+## Returns
+
+[DovetailJointMetadata](/Dovetail/api/joinery.dovetail/dovetailjointmetadata.md) -- The metadata of the joint `factory` creates.
+
+## Exceptions
+
+- `ArgumentNullException` -- `factory` is `null`.
+
+## Remarks
+
+This is how the code generated for an exported joint with constructor parameters creates it: the factory resolves each parameter from the properties of the [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md) the metadata was given to, so a value set on the builder after the metadata was created is still seen. A parameter with a default value falls back to it when the properties hold nothing of that type, and a parameter without one makes the factory throw `InvalidOperationException`. Read before a builder has the metadata, [DovetailJointMetadata.Joint](/Dovetail/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) resolves against empty properties. The joint is created once.
 
 <a id="gethashcode"></a>
 

@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.3.1-beta.14`
+- Version: `0.3.1`
 - Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Implements: [IDovetailJointMetadata](/Dovetail/api/joinery.dovetail/idovetailjointmetadata.md)
@@ -35,5 +35,6 @@ public sealed class DovetailJointMetadata
 
 ## Methods
 
+- [FromFactory(Func<IServiceProvider, IDovetailJoint>, DovetailHostType, DovetailCategory)](/Dovetail/api/joinery.dovetail/dovetailjointmetadata/methods.md#fromfactory-func-iserviceprovider-idovetailjoint-dovetailhosttype-dovetailcategory) : [DovetailJointMetadata](/Dovetail/api/joinery.dovetail/dovetailjointmetadata.md) `static` -- Describes a joint that is created the first time [DovetailJointMetadata.Joint](/Dovetail/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) is read, rather than up front.
 - [GetHashCode](/Dovetail/api/joinery.dovetail/dovetailjointmetadata/methods.md#gethashcode) : `int` -- Serves as the default hash function.
 - [WithDependency(DependencyDirection, Type)](/Dovetail/api/joinery.dovetail/dovetailjointmetadata/methods.md#withdependency-dependencydirection-type) : [DovetailJointMetadata](/Dovetail/api/joinery.dovetail/dovetailjointmetadata.md) -- Adds a new dependency to the list
