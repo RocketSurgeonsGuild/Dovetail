@@ -6,7 +6,8 @@ namespace Joinery.Dovetail;
 ///     The category of a given convention
 /// </summary>
 /// <remarks>
-///     This is used to load limited sets of conventions based on categories provided.
+///     A set of categories given to <see cref="DovetailContextBuilder" /> limits the context to the joints of those categories;
+///     an empty set loads every joint.
 /// </remarks>
 [DebuggerDisplay("{_value}")]
 public sealed class DovetailCategory(string name)

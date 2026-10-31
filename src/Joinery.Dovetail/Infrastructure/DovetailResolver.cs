@@ -13,7 +13,7 @@ internal static class DovetailResolver
     public static ImmutableList<IDovetailJointMetadata> ResolveMetadata(ImmutableHashSet<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
     {
         IEnumerable<IDovetailJointMetadata> c = contributions.Order(Comparer<IDovetailJointMetadata>.Create((x, y) => x.Joint.Priority.CompareTo(y.Joint.Priority))); ;
-        if (categories.Any()) c = c.Where(z => !categories.Contains(z.Category));
+        if (categories.Any()) c = c.Where(z => categories.Contains(z.Category));
 
         var r = c.ToImmutableList();
         if (!r.Any(z => z.Dependencies.Count > 0)) return r;

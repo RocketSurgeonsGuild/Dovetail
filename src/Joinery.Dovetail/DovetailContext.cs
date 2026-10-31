@@ -26,8 +26,9 @@ public sealed class DovetailContext : IDovetailContext
     }
 
     /// <summary>
-    ///     The categories of the convention context
+    ///     The categories the context is limited to.
     /// </summary>
+    /// <remarks>Only the joints whose category is in this set are loaded, and an empty set loads every joint.</remarks>
     public ImmutableHashSet<DovetailCategory> Categories { get; set; }
 
     /// <summary>

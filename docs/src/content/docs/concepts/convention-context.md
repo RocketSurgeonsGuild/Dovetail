@@ -22,6 +22,24 @@ You can add joints manually, you can add them via attribute scanning, you can di
 
 A context can be created from a <xref:Joinery.Dovetail.DovetailContextBuilder> by using [DovetailContext.From](xref:Joinery.Dovetail.DovetailContext#Joinery_Dovetail_DovetailContext_From_Dovetail_DovetailContextBuilder_).
 
+## Categories
+
+Every joint has a category. `DovetailCategory.Core` is for infrastructure joints (serializers, logging), and
+`DovetailCategory.Application` is the default for everything else.
+
+`DovetailContextBuilder.Create(joints, properties, categories)` takes a set of categories as well, and **the context is limited
+to the joints whose category is in that set**. An empty set loads every joint, which is what the generated `Imports.Joints()` and
+`DovetailContextBuilder.Create()` pass when you give them no categories.
+
+| `categories`                                            | Joints in the context                                  |
+| ------------------------------------------------------- | ------------------------------------------------------ |
+| `[]`                                                    | Every joint                                            |
+| `[DovetailCategory.Core]`                               | Only the `Core` joints                                 |
+| `[DovetailCategory.Core, DovetailCategory.Application]` | The `Core` and the `Application` joints                |
+| `["Reporting"]`                                         | Only the joints in `Reporting`, none if there are none |
+
+The set is available as `Categories` on the builder and on the context. It is the set you passed in.
+
 ## Using the context
 
 Once the context is created you can use the context to find out all sorts of information.

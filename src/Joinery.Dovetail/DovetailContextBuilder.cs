@@ -22,7 +22,10 @@ public sealed class DovetailContextBuilder
     /// <param name="conventions">The joints to seed the builder with.</param>
     /// <param name="properties">The initial set of properties to populate the context with.</param>
     /// <param name="hostType">The host type the resulting context should be scoped to.</param>
-    /// <param name="categories">The categories the resulting context should be scoped to.</param>
+    /// <param name="categories">
+    ///     The categories the resulting context is limited to. Only the joints whose category is in this set are loaded, and an empty
+    ///     set loads every joint.
+    /// </param>
     /// <returns>A new <see cref="DovetailContextBuilder" />.</returns>
     public static DovetailContextBuilder Create(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType properties, DovetailHostType hostType, IEnumerable<DovetailCategory> categories) =>
         Create(conventions, properties, categories).Set(hostType);
@@ -32,7 +35,10 @@ public sealed class DovetailContextBuilder
     /// </summary>
     /// <param name="conventions">The joints to seed the builder with.</param>
     /// <param name="properties">The initial set of properties to populate the context with.</param>
-    /// <param name="categories">The categories the resulting context should be scoped to.</param>
+    /// <param name="categories">
+    ///     The categories the resulting context is limited to. Only the joints whose category is in this set are loaded, and an empty
+    ///     set loads every joint.
+    /// </param>
     /// <returns>A new <see cref="DovetailContextBuilder" />.</returns>
     public static DovetailContextBuilder Create(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType properties, IEnumerable<DovetailCategory> categories) =>
         new(conventions, properties, categories);
@@ -44,7 +50,10 @@ public sealed class DovetailContextBuilder
     /// </summary>
     /// <param name="conventions">The joints to seed the builder with.</param>
     /// <param name="properties">The initial set of properties to populate the context with.</param>
-    /// <param name="categories">The categories the resulting context should be scoped to.</param>
+    /// <param name="categories">
+    ///     The categories the resulting context is limited to. Only the joints whose category is in this set are loaded, and an empty
+    ///     set loads every joint.
+    /// </param>
     private DovetailContextBuilder(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType? properties, IEnumerable<DovetailCategory> categories)
     {
         Properties = new DovetailDictionary(properties ?? new PropertiesDictionary());
@@ -54,8 +63,12 @@ public sealed class DovetailContextBuilder
     }
 
     /// <summary>
-    ///     The categories of the convention context
+    ///     The categories the context is limited to, as given to <c>Create</c>.
     /// </summary>
+    /// <remarks>
+    ///     Only the joints whose category is in this set are loaded, and an empty set loads every joint. A set that names only
+    ///     categories no joint has loads no joint.
+    /// </remarks>
     public ImmutableHashSet<DovetailCategory> Categories { get; }
 
     internal IDovetailDictionary Properties { get; }

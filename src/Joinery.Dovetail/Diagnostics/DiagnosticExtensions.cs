@@ -81,6 +81,7 @@ metadata?.Assembly.GetName().Name ?? dependency.Type.Assembly.GetName().Name!,
         /// <summary>
         ///   Renders the resolved joints of the context as a Mermaid flowchart diagram.
         /// </summary>
+        /// <param name="categories">The categories of joints to include. An empty set includes every joint.</param>
         /// <returns></returns>
         public IEnumerable<DovetailDiagnosticMetadataJoint> GetDiagnosticMetadata(params IEnumerable<DovetailCategory> categories) =>
         DovetailResolver.ResolveMetadata([.. categories], builder.Metadata)
@@ -93,6 +94,7 @@ metadata?.Assembly.GetName().Name ?? dependency.Type.Assembly.GetName().Name!,
         /// <summary>
         ///   Renders the resolved joints of the context as a Mermaid flowchart diagram.
         /// </summary>
+        /// <param name="categories">The categories of joints to include. An empty set includes every joint.</param>
         /// <returns></returns>
         public IEnumerable<DovetailDiagnosticMetadataJoint> GetDiagnosticMetadata(params IEnumerable<DovetailCategory> categories) =>
         DovetailResolver.ResolveMetadata([.. categories], builder.Metadata)
