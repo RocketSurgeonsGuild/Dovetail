@@ -15,7 +15,7 @@ Builder that can be used to create a context.
 - Modifiers: `get`
 - Returns: `ImmutableHashSet<DovetailCategory>`
 
-The categories the context is limited to, as given to `Create`.
+The categories of joints the context loads.
 
 ```csharp
 public ImmutableHashSet<DovetailCategory> Categories { get; }
@@ -23,4 +23,4 @@ public ImmutableHashSet<DovetailCategory> Categories { get; }
 
 ## Remarks
 
-Only the joints whose category is in this set are loaded, and an empty set loads every joint. A set that names only categories no joint has loads no joint.
+The `Core` joints are always loaded, and when no category was given to `Create` the `Application` joints are loaded as well, so this always holds `Core`, and `Application` too in that case. A joint in any other category is loaded only when its category was given.

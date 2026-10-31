@@ -87,9 +87,10 @@ however you can implement your own <a href="xref:Joinery.Dovetail.IDovetailConte
 <div class="sl-heading-wrapper level-h2"><h2 id="categories">Categories</h2><a class="sl-anchor-link" href="#categories"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Categories”</span></a></div>
 <p>Every joint has a category. <code dir="auto">DovetailCategory.Core</code> is for infrastructure joints (serializers, logging), and
 <code dir="auto">DovetailCategory.Application</code> is the default for everything else.</p>
-<p><code dir="auto">DovetailContextBuilder.Create(joints, properties, categories)</code> takes a set of categories as well, and <strong>the context is limited
-to the joints whose category is in that set</strong>. An empty set loads every joint, which is what the generated <code dir="auto">Imports.Joints()</code> and
-<code dir="auto">DovetailContextBuilder.Create()</code> pass when you give them no categories.</p>
+<p><code dir="auto">DovetailContextBuilder.Create(joints, properties, categories)</code> takes a set of categories as well, and <strong>the context loads the
+joints whose category is in that set, plus the <code dir="auto">Core</code> joints, which are always loaded</strong>. An empty set loads the <code dir="auto">Application</code>
+joints and the <code dir="auto">Core</code> joints, which is what the generated <code dir="auto">Imports.Joints()</code> and <code dir="auto">DovetailContextBuilder.Create()</code> pass when you
+give them no categories. A joint in any other category is loaded only when you name its category.</p>
 
 
 
@@ -115,8 +116,13 @@ to the joints whose category is in that set</strong>. An empty set loads every j
 
 
 
-<table><thead><tr><th><code dir="auto">categories</code></th><th>Joints in the context</th></tr></thead><tbody><tr><td><code dir="auto">[]</code></td><td>Every joint</td></tr><tr><td><code dir="auto">[DovetailCategory.Core]</code></td><td>Only the <code dir="auto">Core</code> joints</td></tr><tr><td><code dir="auto">[DovetailCategory.Core, DovetailCategory.Application]</code></td><td>The <code dir="auto">Core</code> and the <code dir="auto">Application</code> joints</td></tr><tr><td><code dir="auto">["Reporting"]</code></td><td>Only the joints in <code dir="auto">Reporting</code>, none if there are none</td></tr></tbody></table>
-<p>The set is available as <code dir="auto">Categories</code> on the builder and on the context. It is the set you passed in.</p>
+
+
+
+
+<table><thead><tr><th><code dir="auto">categories</code></th><th>Joints in the context</th></tr></thead><tbody><tr><td><code dir="auto">[]</code></td><td>The <code dir="auto">Application</code> and the <code dir="auto">Core</code> joints</td></tr><tr><td><code dir="auto">[DovetailCategory.Core]</code></td><td>Only the <code dir="auto">Core</code> joints</td></tr><tr><td><code dir="auto">[DovetailCategory.Application]</code></td><td>The <code dir="auto">Application</code> and the <code dir="auto">Core</code> joints</td></tr><tr><td><code dir="auto">[DovetailCategory.Core, DovetailCategory.Application]</code></td><td>The <code dir="auto">Application</code> and the <code dir="auto">Core</code> joints</td></tr><tr><td><code dir="auto">["Reporting"]</code></td><td>The joints in <code dir="auto">Reporting</code> and the <code dir="auto">Core</code> joints, but not the <code dir="auto">Application</code> joints</td></tr></tbody></table>
+<p>The set is available as <code dir="auto">Categories</code> on the builder and on the context. It is the set that is loaded: the set you passed in with
+<code dir="auto">Core</code> added, or <code dir="auto">Application</code> and <code dir="auto">Core</code> when you passed none.</p>
 <div class="sl-heading-wrapper level-h2"><h2 id="using-the-context">Using the context</h2><a class="sl-anchor-link" href="#using-the-context"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Using the context”</span></a></div>
 <p>Once the context is created you can use the context to find out all sorts of information.</p>
 <p>Useful properties:</p>

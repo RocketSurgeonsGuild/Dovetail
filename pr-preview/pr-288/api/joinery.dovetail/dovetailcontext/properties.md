@@ -15,7 +15,7 @@ Base convention context that allows for stashing items in index keys Implements 
 - Modifiers: `get; set`
 - Returns: `ImmutableHashSet<DovetailCategory>`
 
-The categories the context is limited to.
+The categories of joints the context loads.
 
 ```csharp
 public ImmutableHashSet<DovetailCategory> Categories { get; set; }
@@ -23,7 +23,7 @@ public ImmutableHashSet<DovetailCategory> Categories { get; set; }
 
 ## Remarks
 
-Only the joints whose category is in this set are loaded, and an empty set loads every joint.
+The `Core` joints are always loaded, and when no category was given the `Application` joints are loaded as well, so this always holds `Core`, and `Application` too in that case. A joint in any other category is loaded only when its category was given.
 
 <a id="hosttype"></a>
 

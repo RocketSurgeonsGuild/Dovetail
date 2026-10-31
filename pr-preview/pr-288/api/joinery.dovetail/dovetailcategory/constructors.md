@@ -33,4 +33,4 @@ public sealed class DovetailCategory
 
 ## Remarks
 
-A set of categories given to [DovetailContextBuilder](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcontextbuilder.md) limits the context to the joints of those categories; an empty set loads every joint.
+A set of categories given to [DovetailContextBuilder](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcontextbuilder.md) chooses which joints the context loads: the joints of those categories and the [DovetailCategory.Core](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcategory/fields.md#core) joints, which are always loaded. An empty set loads the [DovetailCategory.Application](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcategory/fields.md#application) joints and the [DovetailCategory.Core](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcategory/fields.md#core) joints.

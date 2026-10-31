@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-288/api/joinery.dovetail.md)
-- Version: `0.3.2-pr.3`
+- Version: `0.3.2-pr.4`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 - Implements: [IDovetailContext](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/idovetailcontext.md)
@@ -23,7 +23,7 @@ public sealed class DovetailContext
 
 ## Properties
 
-- [Categories](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcontext/properties.md#categories) : `ImmutableHashSet<DovetailCategory>` `get; set` -- The categories the context is limited to.
+- [Categories](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcontext/properties.md#categories) : `ImmutableHashSet<DovetailCategory>` `get; set` -- The categories of joints the context loads.
 - [HostType](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcontext/properties.md#hosttype) : [DovetailHostType](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailhosttype.md) `get` -- The host type
 - [Joints](/Dovetail/pr-preview/pr-288/api/joinery.dovetail/dovetailcontext/properties.md#joints) : `ImmutableList<IDovetailJoint>` `get` -- Get the conventions from the context
 

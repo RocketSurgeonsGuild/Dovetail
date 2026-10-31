@@ -29,7 +29,7 @@ public virtual Assembly Assembly { get; }
 - Modifiers: `abstract` `get`
 - Returns: `ImmutableHashSet<DovetailCategory>`
 
-The categories the context is limited to.
+The categories of joints the context loads.
 
 ```csharp
 public abstract ImmutableHashSet<DovetailCategory> Categories { get; }
@@ -37,7 +37,7 @@ public abstract ImmutableHashSet<DovetailCategory> Categories { get; }
 
 ## Remarks
 
-Only the joints whose category is in this set are loaded, and an empty set loads every joint.
+The `Core` joints are always loaded, and when no category was given the `Application` joints are loaded as well, so this always holds `Core`, and `Application` too in that case. A joint in any other category is loaded only when its category was given.
 
 <a id="hosttype"></a>
 
