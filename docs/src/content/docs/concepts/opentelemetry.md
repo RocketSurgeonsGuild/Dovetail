@@ -80,6 +80,7 @@ A library adds a `System.Diagnostics.ActivitySource` to tracing by implementing 
 `[DovetailExport]`, the same pattern used for any other discovered Dovetail joint:
 
 ```c#
+using System.Diagnostics;
 using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.OpenTelemetry.Joints;
