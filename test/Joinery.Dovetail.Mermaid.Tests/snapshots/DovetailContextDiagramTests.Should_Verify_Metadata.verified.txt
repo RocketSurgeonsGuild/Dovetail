@@ -76,7 +76,7 @@
       Service
     ],
     HostType: UnitTest,
-    Category: Application
+    Category: Core
   },
   {
     JointName: Joinery.Dovetail.Mermaid.Tests.MyLoggingJoint,
