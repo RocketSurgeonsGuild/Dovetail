@@ -26,9 +26,13 @@ public sealed class DovetailContext : IDovetailContext
     }
 
     /// <summary>
-    ///     The categories the context is limited to.
+    ///     The categories of joints the context loads.
     /// </summary>
-    /// <remarks>Only the joints whose category is in this set are loaded, and an empty set loads every joint.</remarks>
+    /// <remarks>
+    ///     The <c>Core</c> joints are always loaded, and when no category was given the <c>Application</c> joints are loaded as well,
+    ///     so this always holds <c>Core</c>, and <c>Application</c> too in that case. A joint in any other category is loaded only
+    ///     when its category was given.
+    /// </remarks>
     public ImmutableHashSet<DovetailCategory> Categories { get; set; }
 
     /// <summary>
@@ -48,7 +52,7 @@ public sealed class DovetailContext : IDovetailContext
 
     internal DovetailContext(IEnumerable<IDovetailJointMetadata> jointsMetadata, IDovetailDictionary properties, IEnumerable<DovetailCategory> categories)
     {
-        Categories = categories.ToImmutableHashSet(DovetailCategory.ValueComparer);
+        Categories = DovetailResolver.LoadedCategories(categories);
         Metadata = [.. jointsMetadata];
         _properties = properties;
         _properties.AddIfMissing(DovetailHostType.Undefined);

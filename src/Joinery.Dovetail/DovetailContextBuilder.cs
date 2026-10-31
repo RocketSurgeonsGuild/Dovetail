@@ -23,8 +23,8 @@ public sealed class DovetailContextBuilder
     /// <param name="properties">The initial set of properties to populate the context with.</param>
     /// <param name="hostType">The host type the resulting context should be scoped to.</param>
     /// <param name="categories">
-    ///     The categories the resulting context is limited to. Only the joints whose category is in this set are loaded, and an empty
-    ///     set loads every joint.
+    ///     The categories of joints the resulting context loads besides the <c>Core</c> joints, which are always loaded. An empty set
+    ///     loads the <c>Application</c> joints as well.
     /// </param>
     /// <returns>A new <see cref="DovetailContextBuilder" />.</returns>
     public static DovetailContextBuilder Create(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType properties, DovetailHostType hostType, IEnumerable<DovetailCategory> categories) =>
@@ -36,8 +36,8 @@ public sealed class DovetailContextBuilder
     /// <param name="conventions">The joints to seed the builder with.</param>
     /// <param name="properties">The initial set of properties to populate the context with.</param>
     /// <param name="categories">
-    ///     The categories the resulting context is limited to. Only the joints whose category is in this set are loaded, and an empty
-    ///     set loads every joint.
+    ///     The categories of joints the resulting context loads besides the <c>Core</c> joints, which are always loaded. An empty set
+    ///     loads the <c>Application</c> joints as well.
     /// </param>
     /// <returns>A new <see cref="DovetailContextBuilder" />.</returns>
     public static DovetailContextBuilder Create(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType properties, IEnumerable<DovetailCategory> categories) =>
@@ -51,23 +51,24 @@ public sealed class DovetailContextBuilder
     /// <param name="conventions">The joints to seed the builder with.</param>
     /// <param name="properties">The initial set of properties to populate the context with.</param>
     /// <param name="categories">
-    ///     The categories the resulting context is limited to. Only the joints whose category is in this set are loaded, and an empty
-    ///     set loads every joint.
+    ///     The categories of joints the resulting context loads besides the <c>Core</c> joints, which are always loaded. An empty set
+    ///     loads the <c>Application</c> joints as well.
     /// </param>
     private DovetailContextBuilder(IEnumerable<IDovetailJointMetadata> conventions, PropertiesType? properties, IEnumerable<DovetailCategory> categories)
     {
         Properties = new DovetailDictionary(properties ?? new PropertiesDictionary());
         _conventions = new();
         _conventions.Append(Bind(conventions));
-        Categories = ImmutableHashSet.CreateRange(DovetailCategory.ValueComparer, categories);
+        Categories = DovetailResolver.LoadedCategories(categories);
     }
 
     /// <summary>
-    ///     The categories the context is limited to, as given to <c>Create</c>.
+    ///     The categories of joints the context loads.
     /// </summary>
     /// <remarks>
-    ///     Only the joints whose category is in this set are loaded, and an empty set loads every joint. A set that names only
-    ///     categories no joint has loads no joint.
+    ///     The <c>Core</c> joints are always loaded, and when no category was given to <c>Create</c> the <c>Application</c> joints are
+    ///     loaded as well, so this always holds <c>Core</c>, and <c>Application</c> too in that case. A joint in any other category is
+    ///     loaded only when its category was given.
     /// </remarks>
     public ImmutableHashSet<DovetailCategory> Categories { get; }
 

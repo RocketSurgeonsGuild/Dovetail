@@ -27,18 +27,21 @@ A context can be created from a <xref:Joinery.Dovetail.DovetailContextBuilder> b
 Every joint has a category. `DovetailCategory.Core` is for infrastructure joints (serializers, logging), and
 `DovetailCategory.Application` is the default for everything else.
 
-`DovetailContextBuilder.Create(joints, properties, categories)` takes a set of categories as well, and **the context is limited
-to the joints whose category is in that set**. An empty set loads every joint, which is what the generated `Imports.Joints()` and
-`DovetailContextBuilder.Create()` pass when you give them no categories.
+`DovetailContextBuilder.Create(joints, properties, categories)` takes a set of categories as well, and **the context loads the
+joints whose category is in that set, plus the `Core` joints, which are always loaded**. An empty set loads the `Application`
+joints and the `Core` joints, which is what the generated `Imports.Joints()` and `DovetailContextBuilder.Create()` pass when you
+give them no categories. A joint in any other category is loaded only when you name its category.
 
-| `categories`                                            | Joints in the context                                  |
-| ------------------------------------------------------- | ------------------------------------------------------ |
-| `[]`                                                    | Every joint                                            |
-| `[DovetailCategory.Core]`                               | Only the `Core` joints                                 |
-| `[DovetailCategory.Core, DovetailCategory.Application]` | The `Core` and the `Application` joints                |
-| `["Reporting"]`                                         | Only the joints in `Reporting`, none if there are none |
+| `categories`                                            | Joints in the context                                                             |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `[]`                                                    | The `Application` and the `Core` joints                                           |
+| `[DovetailCategory.Core]`                               | Only the `Core` joints                                                            |
+| `[DovetailCategory.Application]`                        | The `Application` and the `Core` joints                                           |
+| `[DovetailCategory.Core, DovetailCategory.Application]` | The `Application` and the `Core` joints                                           |
+| `["Reporting"]`                                         | The joints in `Reporting` and the `Core` joints, but not the `Application` joints |
 
-The set is available as `Categories` on the builder and on the context. It is the set you passed in.
+The set is available as `Categories` on the builder and on the context. It is the set that is loaded: the set you passed in with
+`Core` added, or `Application` and `Core` when you passed none.
 
 ## Using the context
 
