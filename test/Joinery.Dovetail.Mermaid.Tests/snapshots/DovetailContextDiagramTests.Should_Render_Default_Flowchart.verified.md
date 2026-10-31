@@ -22,7 +22,7 @@ flowchart TB
     id14["`**Joinery.Dovetail.Infrastructure.LoggingConnector**<br/>Category: **Application**`"]
     end
     subgraph sub16 [Joinery.Dovetail.Mermaid.Tests]
-    id17["`**Joinery.Dovetail.Mermaid.Tests.CoreCategoryJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
+    id17["`**Joinery.Dovetail.Mermaid.Tests.CoreCategoryJoint**<br/>HostType: **UnitTest**<br/>Category: **Core**`"]
     id18["`**Joinery.Dovetail.Mermaid.Tests.FirstLoggingBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
     id19["`**Joinery.Dovetail.Mermaid.Tests.SecondLoggingBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]
     id20["`**Joinery.Dovetail.Mermaid.Tests.SpecificStepBridgeJoint**<br/>HostType: **UnitTest**<br/>Category: **Application**`"]

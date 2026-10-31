@@ -31,9 +31,7 @@ internal static class ExportDovetails
                                     {
                                         Argument(ObjectCreationExpression(IdentifierName(ConfigurationOptionsEmitter.JointClassName)).WithArgumentList(ArgumentList())),
                                         Argument(_hostTypeUndefined),
-                                        Argument(
-                                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailCategory"), IdentifierName("Application"))
-                                        ),
+                                        Argument(_categoryApplication),
                                     }
                                 )
                             )
@@ -71,11 +69,7 @@ internal static class ExportDovetails
 
             // What the joint declares wins; only a joint that declares nothing takes the project's default.
             var hostType = GetDeclaredHostType(convention) ?? ( msBuildConfig.IsTestProject ? _hostTypeUnitTestHost : _hostTypeUndefined );
-            ExpressionSyntax conventionCategory = MemberAccessExpression(
-                SyntaxKind.SimpleMemberAccessExpression,
-                IdentifierName("DovetailCategory"),
-                IdentifierName("Application")
-            );
+            var conventionCategory = GetDeclaredCategory(convention);
 
             var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
             foreach (var (location, descriptor) in issues)
@@ -236,6 +230,44 @@ internal static class ExportDovetails
         IdentifierName(name)
     );
 
+    /// <summary>
+    ///     The category the joint declares with <c>[DovetailCategory]</c>, or <c>Application</c> when it declares none. This mirrors
+    ///     what <c>DovetailContextBuilder</c> reads from the joint's type at runtime: the attribute is inherited from base classes (not
+    ///     from interfaces, which attribute lookup on a type never reads) and the nearest declaration wins.
+    /// </summary>
+    private static ExpressionSyntax GetDeclaredCategory(INamedTypeSymbol joint)
+    {
+        for (var type = joint; type is not null; type = type.BaseType)
+        {
+            foreach (var attribute in type.GetAttributes())
+            {
+                if (attribute.AttributeClass?.ToDisplayString() != DovetailCategoryAttributeName) continue;
+
+                // The constructor takes a string, which the compiler has already folded to its value, whether it was written as
+                // a literal, a constant such as DovetailCategory.Core or an expression of constants. An attribute that has no usable
+                // value (null, or an argument that doesn't bind) declares nothing.
+                if (attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Primitive, Value: string category }]) return CategoryExpression(category);
+            }
+        }
+
+        return _categoryApplication;
+    }
+
+    /// <summary>
+    ///     The category as the generated code spells it. <c>DovetailCategory</c> converts implicitly from the string the attribute
+    ///     takes, so a category without a constant of its own is written as its string literal. The well-known ones use their
+    ///     constants, which is how a joint without the attribute has always been written.
+    /// </summary>
+    private static ExpressionSyntax CategoryExpression(string category) => category switch
+    {
+        ApplicationCategory => _categoryApplication,
+        CoreCategory => _categoryCore,
+        _ => LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(category)),
+    };
+
+    private const string ApplicationCategory = "Application";
+    private const string CoreCategory = "Core";
+    private const string DovetailCategoryAttributeName = "Joinery.Dovetail.Attributes.DovetailCategoryAttribute";
     private const string LiveJointAttributeName = "Joinery.Dovetail.Attributes.LiveJointAttribute";
     private const string UnitTestJointAttributeName = "Joinery.Dovetail.Attributes.UnitTestJointAttribute";
     private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
@@ -319,6 +351,17 @@ internal static class ExportDovetails
             _ => "null",
         };
     }
+
+    private static readonly ExpressionSyntax _categoryApplication = MemberAccessExpression(
+        SyntaxKind.SimpleMemberAccessExpression,
+        IdentifierName("DovetailCategory"),
+        IdentifierName(ApplicationCategory)
+    );
+    private static readonly ExpressionSyntax _categoryCore = MemberAccessExpression(
+        SyntaxKind.SimpleMemberAccessExpression,
+        IdentifierName("DovetailCategory"),
+        IdentifierName(CoreCategory)
+    );
 
     private static readonly ExpressionSyntax _hostTypeUndefined = MemberAccessExpression(
         SyntaxKind.SimpleMemberAccessExpression,
