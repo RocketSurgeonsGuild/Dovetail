@@ -1,7 +1,7 @@
 ---
 title: DovetailHost
 description: The DovetailHost MSBuild item declares the ConfigureDovetail entry points for one host builder type. Which hosts the SDK declares for you, every metadata value and its default, and what is generated.
-tags: [hosting, source-generator]
+tags: [hosting, msbuild]
 ---
 
 # DovetailHost
@@ -79,13 +79,14 @@ values are compared with `true` ignoring case; any other non-empty value counts 
 | `HelperName`         | `Dovetail{Name}Helpers`   | The static class whose `Configure` method the generated code calls, written as given. `Joinery.Dovetail.Hosting` emits `DovetailHostApplicationHelpers`, `DovetailMauiHelpers`, `DovetailUnoHelpers` and `DovetailWebAssemblyHelpers`; any other host brings its own. |
 | `BuildExpression`    | `, static b => b.Build()` | The arguments spliced into that call right after `builder`, so it begins with a comma. The default is the delegate that builds the host. MAUI and Uno add their application assembly.                                                                                 |
 | `HasBuildExpression` | `true`                    | `false` calls `Configure` without the `BuildExpression`, even one you set, for helpers that build the host themselves.                                                                                                                                                |
-| `SyncEntryPoint`     | empty (false)             | Internal. `true` also emits blocking `UseDovetail` overloads. Only the SDK's MAUI detection sets it.                                                                                                                                                                  |
-| `NavigateEntryPoint` | empty (false)             | Internal. `true` also emits `ConfigureDovetail<TShell>` overloads that navigate. Only the SDK's Uno detection sets it.                                                                                                                                                |
+| `SyncEntryPoint`     | empty (false)             | Internal, for the MAUI host model. `true` also emits blocking `UseDovetail` overloads.                                                                                                                                                                                |
+| `NavigateEntryPoint` | empty (false)             | Internal, for the Uno host model. `true` also emits `ConfigureDovetail<TShell>` overloads that navigate.                                                                                                                                                              |
 
 ### Internal metadata
 
-`SyncEntryPoint` and `NavigateEntryPoint` are set by the SDK's MAUI and Uno detection. They are documented so the generated files make
-sense, not as a supported way to extend a host.
+`SyncEntryPoint` and `NavigateEntryPoint` exist for the MAUI and Uno host models. The SDK's MAUI and Uno detection sets them, and the
+repository's MAUI and Uno samples and tests set them by hand. They are documented so the generated files make sense, not as a supported
+way to extend a host: leave them alone on a host of your own.
 
 - `SyncEntryPoint="true"` adds `UseDovetail` (from `DovetailHostSync.cs.template`) next to `ConfigureDovetail`, for hosts whose bootstrap
   method cannot be async (`MauiProgram.CreateMauiApp`). It blocks on `ConfigureDovetail`, which is safe only because Dovetail never
@@ -205,8 +206,8 @@ When nothing ships a helper for your builder, write one with the shape the call 
 
 ```xml
 <DovetailHost Include="Mine" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" />
-<DovetailHost Include="Custom" Namespace="Hosts.Custom" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::worker.CustomHelper" BuildExpression=", static b => b.Build(), &quot;extra&quot;" />
-<DovetailHost Include="NoBuild" Namespace="Hosts.NoBuild" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::worker.NoBuildHelper" HasBuildExpression="false" />
+<DovetailHost Include="Custom" Namespace="Hosts.Custom" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::worker.CustomHelper" HostBuilderName="ignored" BuildExpression=", static b => b.Build(), &quot;extra&quot;" />
+<DovetailHost Include="NoBuild" Namespace="Hosts.NoBuild" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::worker.NoBuildHelper" HasBuildExpression="false" BuildExpression=", static b => b.Build()" />
 ```
 
 ```c#
@@ -222,7 +223,7 @@ internal static class CustomHelper // BuildExpression adds the string between th
         => ValueTask.FromResult(build(builder));
 }
 
-internal static class NoBuildHelper // HasBuildExpression="false" drops the delegate
+internal static class NoBuildHelper // HasBuildExpression="false" drops the delegate, although BuildExpression is set
 {
     public static ValueTask<IHost> Configure(HostApplicationBuilder builder, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken)
         => ValueTask.FromResult(builder.Build());
@@ -241,14 +242,14 @@ internal static class NoBuildHelper // HasBuildExpression="false" drops the dele
 - **Two hosts on the same builder type in the same namespace make `ConfigureDovetail` ambiguous** (CS0121). An application built with
   the SDK already has `HostApplication` in `$(RootNamespace)`, so a second host on `HostApplicationBuilder` needs a `Namespace` of its
   own, and the caller imports only the one it wants.
-- **`HostBuilderType` and `HostType` have no default.** Leave one out and the generated file is not valid C# (CS1001).
+- **`HostBuilderType` and `HostType` have no default.** A host that sets neither generates a file that is not valid C# (CS1001).
 - **`BuildExpression` is spliced in as text.** It goes straight after `builder`, so it starts with a comma, and the `Configure` method it
   calls must take exactly those arguments. `HasBuildExpression="false"` removes it, including a `BuildExpression` you set.
 - **`HostBuilderName` changes nothing.** The template does not use it today.
-- **Types are written as given.** `HostBuilderType`, `HostType` and `HelperName` go into the generated code unchanged, so use
-  `global::` as the SDK does; a bare name can be captured by a namespace of your project with the same first name.
-- **`SyncEntryPoint` and `NavigateEntryPoint` are the SDK's.** `NavigateEntryPoint` emits calls to `{HelperName}.Navigate<TShell>`, which only
-  `DovetailUnoHelpers` has; leave both alone on a host of your own.
+- **Types are written as given.** `HostBuilderType`, `HostType` and `HelperName` go into the generated code unchanged, so a bare name
+  is looked up from `Namespace` outwards, as in any C# file. Use `global::` as the SDK does.
+- **`SyncEntryPoint` and `NavigateEntryPoint` belong to the MAUI and Uno host models.** `NavigateEntryPoint` emits calls to
+  `{HelperName}.Navigate<TShell>`, which only `DovetailUnoHelpers` has; leave both alone on a host of your own.
 - **A misspelled metadata name is ignored.** The default applies, with no warning.
 - **When `Joinery.Dovetail.Hosting` is referenced, a host whose framework is missing is dropped.** If the helper a host names is one of
   the package's but the project does not reference the framework it compiles against (a `Microsoft.NET.Sdk.WebAssembly` app
@@ -257,7 +258,7 @@ internal static class NoBuildHelper // HasBuildExpression="false" drops the dele
 
 ## See also
 
-- [DovetailJoint](/reference/dovetail-joint/): the joint kinds that `ConfigureDovetail` runs.
-- [DovetailTemplate](/reference/dovetail-template/): how `Joinery.Dovetail.Hosting` ships the helpers a host calls, and gates them on the host's framework.
-- [Host Lifecycle](/concepts/host-lifecycle/): code that runs as the host starts and stops.
-- [Defining Dovetails](/concepts/defining-joints/): the host type a joint can be filtered by.
+- [DovetailJoint](../dovetail-joint/): the joint kinds that `ConfigureDovetail` runs.
+- [DovetailTemplate](../dovetail-template/): how `Joinery.Dovetail.Hosting` ships the helpers a host calls, and gates them on the host's framework.
+- [Host Lifecycle](../../concepts/host-lifecycle/): code that runs as the host starts and stops.
+- [Defining Dovetails](../../concepts/defining-joints/): the host type a joint can be filtered by.

@@ -41,8 +41,10 @@ public class DovetailItemReferenceTests(string targetFramework)
     }
 
     /// <summary>
-    /// One joint per row of the <c>DovetailJoint</c> table that no real project exercises. <c>Probe</c> calls every generated type and method
-    /// with the parameter lists the page states; if the targets generated anything else this project would not compile.
+    /// One joint per row of the <c>DovetailJoint</c> table that no real project exercises, and the cases the page says do nothing or count as
+    /// false. <c>Probe</c> calls every generated type and method with the parameter lists the page states; if the targets generated anything
+    /// else this project would not compile. What a call cannot show (a type that is not generated, code that is not written) is read from
+    /// the generated files.
     /// </summary>
     [Test]
     public async Task DovetailJoint_Metadata_ShapesTheGeneratedJoint()
@@ -64,11 +66,29 @@ public class DovetailItemReferenceTests(string targetFramework)
                 "BuilderMethodName",
                 "ConfigureTheBuilder"
             ),
-            J("Generic", "GenericParameter", "TBuilder", "GenericConstraint", "global::Microsoft.Extensions.Hosting.IHostApplicationBuilder", "ParameterType", "TBuilder", "ParameterName", "builder"),
+            J(
+                "Generic",
+                "GenericParameter",
+                "TBuilder",
+                "GenericConstraint",
+                "global::Microsoft.Extensions.Hosting.IHostApplicationBuilder",
+                "ParameterType",
+                "TBuilder",
+                "ParameterName",
+                "builder"
+            ),
+            // A type parameter that Register does not take can be covariant.
+            J("Covariant", "GenericParameter", "T", "GenericVariance", "out"),
             J("SyncOnly", "IsAsync", "false"),
             J("Chained", "ReturnFirstArgument", "true"),
+            J("ChainedSync", "ReturnFirstArgument", "true", "IsAsync", "false"),
             // Written as given: this one is not prefixed with global:: in the generated code, and still compiles.
-            J("Unprefixed", "ParameterType", "Microsoft.Extensions.Logging.ILoggingBuilder", "ParameterName", "builder")
+            J("Unprefixed", "ParameterType", "Microsoft.Extensions.Logging.ILoggingBuilder", "ParameterName", "builder"),
+            // None of these metadata does anything without the one it goes with, and NMAmespace is not a name the targets read.
+            J("Ignored", "ParameterName", "thing", "GenericConstraint", "class", "GenericVariance", "out", "NMAmespace", "Custom.Typo"),
+            // MSBuild compares ignoring case: TRUE is true, and False and no are not.
+            J("Shouting", "IsAsync", "False", "ProvideServices", "TRUE"),
+            J("NotTrue", "IsAsync", "no")
         );
         project.AddFile(
             "worker/Probe.cs",
@@ -122,52 +142,118 @@ public class DovetailItemReferenceTests(string targetFramework)
                     DovetailContextBuilder.Create().ConfigureGeneric<HostApplicationBuilder>(static (IDovetailContext c, HostApplicationBuilder b) => { });
                 }
 
-                // ApplySyncOnly returns void, and there is no ISyncOnlyAsyncJoint.
+                // GenericVariance="out": an ICovariantJoint<string> is an ICovariantJoint<object>.
+                public static async Task Covariant(IDovetailContext context)
+                {
+                    await context.ApplyCovariant<string>();
+                    ICovariantJoint<string> joint = null!;
+                    ICovariantJoint<object> wider = joint;
+                }
+
+                // ApplySyncOnly returns void and still takes a CancellationToken, and there is no ISyncOnlyAsyncJoint.
                 public static void SyncOnly(IDovetailContext context)
                 {
-                    context.ApplySyncOnly();
+                    context.ApplySyncOnly(CancellationToken.None);
                     ISyncOnlyJoint joint = null!;
                     DovetailContextBuilder.Create().ConfigureSyncOnly(static (IDovetailContext c) => { });
                 }
 
                 public static async Task<IDovetailContext> Chained(IDovetailContext context) => await context.ApplyChained();
 
+                // Returns void: the generated code drops the context the executor returns.
+                public static void ChainedSync(IDovetailContext context) => context.ApplyChainedSync();
+
                 public static async Task Unprefixed(IDovetailContext context, ILoggingBuilder logging) => await logging.ApplyUnprefixed(context);
+
+                // In worker.Joints, with the context for its only parameter, whatever else it says.
+                public static async Task Ignored(IDovetailContext context)
+                {
+                    await context.ApplyIgnored();
+                    IIgnoredJoint joint = null!;
+                    IIgnoredAsyncJoint asyncJoint = null!;
+                }
+
+                public static void Shouting(IDovetailContext context, IServiceCollection services)
+                {
+                    services.ApplyShouting(context);
+                    IShoutingJoint joint = null!;
+                }
+
+                public static void NotTrue(IDovetailContext context) => context.ApplyNotTrue();
             }
             """
         );
 
         await project.BuildProject("worker");
 
-        var objDirectory = $"worker/obj/Debug/{targetFramework}";
-        File.Exists(Path.Combine(project.Directory, objDirectory, "DovetailJoint.SyncOnly.g.cs")).ShouldBeTrue();
-        File.Exists(Path.Combine(project.Directory, objDirectory, "DovetailJointAsync.SyncOnly.g.cs")).ShouldBeFalse("IsAsync=false leaves out the async file");
-        File.Exists(Path.Combine(project.Directory, objDirectory, "DovetailJointAsync.Minimal.g.cs")).ShouldBeTrue();
+        var objDirectory = Path.Combine(project.Directory, "worker", "obj", "Debug", targetFramework);
+        foreach (var asynchronous in new[] { "Minimal", "Wired", "Builder", "Generic", "Covariant", "Chained", "Unprefixed", "Ignored" })
+        {
+            File.Exists(Path.Combine(objDirectory, $"DovetailJointAsync.{asynchronous}.g.cs")).ShouldBeTrue($"{asynchronous} is asynchronous");
+        }
 
-        var unprefixed = project.ReadFile($"{objDirectory}/DovetailJoint.Unprefixed.g.cs");
+        foreach (var synchronous in new[] { "SyncOnly", "ChainedSync", "Shouting", "NotTrue" })
+        {
+            File.Exists(Path.Combine(objDirectory, $"DovetailJoint.{synchronous}.g.cs")).ShouldBeTrue($"{synchronous} has its joint");
+            File.Exists(Path.Combine(objDirectory, $"DovetailJointAsync.{synchronous}.g.cs")).ShouldBeFalse($"{synchronous} is not asynchronous: IsAsync is not true");
+        }
+
+        var unprefixed = File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Unprefixed.g.cs"));
         unprefixed.ShouldContain("(global::Joinery.Dovetail.IDovetailContext context, Microsoft.Extensions.Logging.ILoggingBuilder builder);");
         unprefixed.ShouldNotContain("global::Microsoft.Extensions.Logging.ILoggingBuilder");
 
-        project.ReadFile($"{objDirectory}/DovetailJoint.Minimal.g.cs").ShouldContain("namespace worker.Joints;");
-        project.ReadFile($"{objDirectory}/DovetailJoint.Builder.g.cs").ShouldContain("namespace Custom.Joints;");
+        var chainedSync = File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.ChainedSync.g.cs"));
+        chainedSync.ShouldContain("public static void ApplyChainedSync(");
+        chainedSync.ShouldContain("RegisterJointsWithContext(context, ");
+        chainedSync.ShouldNotContain("return global::Joinery.Dovetail.DovetailContextExtensions");
+
+        var ignored = File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Ignored.g.cs"));
+        ignored.ShouldContain("namespace worker.Joints;");
+        ignored.ShouldNotContain(" thing");
+        ignored.ShouldNotContain("where ");
+
+        File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Minimal.g.cs")).ShouldContain("namespace worker.Joints;");
+        File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Builder.g.cs")).ShouldContain("namespace Custom.Joints;");
     }
 
     /// <summary>
     /// The three hosts differ in what the <c>DovetailHost</c> table calls defaults: <c>Mine</c> sets nothing but the two required types
     /// (so its namespace is $(RootNamespace), its helper is <c>DovetailMineHelpers</c> and it builds with the default expression),
-    /// <c>Custom</c> splices more arguments into the call, and <c>NoBuild</c> leaves the expression out. Each helper is the project's own.
+    /// <c>Custom</c> splices more arguments into the call (and sets a <c>HostBuilderName</c>, which changes nothing), and <c>NoBuild</c>
+    /// sets an expression and then switches it off. Each helper is the project's own.
     /// </summary>
     [Test]
     public async Task DovetailHost_Metadata_ShapesTheGeneratedEntryPoints()
     {
         using var project = CreateProject(
             H("Mine"),
-            H("Custom", "Namespace", "Hosts.Custom", "HelperName", "global::worker.CustomHelper", "BuildExpression", ", static b => b.Build(), \"extra\""),
-            H("NoBuild", "Namespace", "Hosts.NoBuild", "HelperName", "global::worker.NoBuildHelper", "HasBuildExpression", "false", "BuildExpression", ", static b => b.Build()")
+            H(
+                "Custom",
+                "Namespace",
+                "Hosts.Custom",
+                "HelperName",
+                "global::worker.CustomHelper",
+                "HostBuilderName",
+                "ignored",
+                "BuildExpression",
+                ", static b => b.Build(), \"extra\""
+            ),
+            H(
+                "NoBuild",
+                "Namespace",
+                "Hosts.NoBuild",
+                "HelperName",
+                "global::worker.NoBuildHelper",
+                "HasBuildExpression",
+                "false",
+                "BuildExpression",
+                ", static b => b.Build()"
+            )
         );
         project.AddFile(
             "worker/Helpers.cs",
             """
+            using System;
             using System.Threading;
             using System.Threading.Tasks;
             using Joinery.Dovetail;
@@ -177,14 +263,23 @@ public class DovetailItemReferenceTests(string targetFramework)
 
             internal static class DovetailMineHelpers
             {
-                public static ValueTask<IHost> Configure(HostApplicationBuilder builder, System.Func<HostApplicationBuilder, IHost> build, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken)
-                    => ValueTask.FromResult(build(builder));
+                public static ValueTask<IHost> Configure(
+                    HostApplicationBuilder builder,
+                    Func<HostApplicationBuilder, IHost> build,
+                    DovetailContextBuilder contextBuilder,
+                    CancellationToken cancellationToken
+                ) => ValueTask.FromResult(build(builder));
             }
 
             internal static class CustomHelper
             {
-                public static ValueTask<IHost> Configure(HostApplicationBuilder builder, System.Func<HostApplicationBuilder, IHost> build, string extra, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken)
-                    => ValueTask.FromResult(build(builder));
+                public static ValueTask<IHost> Configure(
+                    HostApplicationBuilder builder,
+                    Func<HostApplicationBuilder, IHost> build,
+                    string extra,
+                    DovetailContextBuilder contextBuilder,
+                    CancellationToken cancellationToken
+                ) => ValueTask.FromResult(build(builder));
             }
 
             internal static class NoBuildHelper
@@ -208,19 +303,24 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         await project.BuildProject("worker");
 
-        var objDirectory = $"worker/obj/Debug/{targetFramework}";
-        var mine = project.ReadFile($"{objDirectory}/DovetailHost.Mine.g.cs");
+        var objDirectory = Path.Combine(project.Directory, "worker", "obj", "Debug", targetFramework);
+        var mine = File.ReadAllText(Path.Combine(objDirectory, "DovetailHost.Mine.g.cs"));
         mine.ShouldContain("namespace worker;");
         mine.ShouldContain("return await DovetailMineHelpers.Configure(builder, static b => b.Build(), contextBuilder, cancellationToken);");
         mine.ShouldContain("internal static partial class GeneratedDovetailMineExtensions");
-        project.ReadFile($"{objDirectory}/DovetailHost.Custom.g.cs").ShouldContain("namespace Hosts.Custom;");
-        project.ReadFile($"{objDirectory}/DovetailHost.Custom.g.cs").ShouldContain("return await global::worker.CustomHelper.Configure(builder, static b => b.Build(), \"extra\", contextBuilder, cancellationToken);");
-        project.ReadFile($"{objDirectory}/DovetailHost.NoBuild.g.cs").ShouldContain("return await global::worker.NoBuildHelper.Configure(builder, contextBuilder, cancellationToken);");
+
+        var custom = File.ReadAllText(Path.Combine(objDirectory, "DovetailHost.Custom.g.cs"));
+        custom.ShouldContain("namespace Hosts.Custom;");
+        custom.ShouldContain("return await global::worker.CustomHelper.Configure(builder, static b => b.Build(), \"extra\", contextBuilder, cancellationToken);");
+        custom.ShouldNotContain("ignored");
+
+        File.ReadAllText(Path.Combine(objDirectory, "DovetailHost.NoBuild.g.cs"))
+            .ShouldContain("return await global::worker.NoBuildHelper.Configure(builder, contextBuilder, cancellationToken);");
 
         // One DovetailContextBuilder.Create(), however many hosts there are.
-        File.Exists(Path.Combine(project.Directory, objDirectory, "DovetailContextBuilder.g.cs")).ShouldBeTrue();
-        File.Exists(Path.Combine(project.Directory, objDirectory, "DovetailHost.Mine.Sync.g.cs")).ShouldBeFalse("SyncEntryPoint is not set");
-        File.Exists(Path.Combine(project.Directory, objDirectory, "DovetailHost.Mine.Navigate.g.cs")).ShouldBeFalse("NavigateEntryPoint is not set");
+        File.Exists(Path.Combine(objDirectory, "DovetailContextBuilder.g.cs")).ShouldBeTrue();
+        File.Exists(Path.Combine(objDirectory, "DovetailHost.Mine.Sync.g.cs")).ShouldBeFalse("SyncEntryPoint is not set");
+        File.Exists(Path.Combine(objDirectory, "DovetailHost.Mine.Navigate.g.cs")).ShouldBeFalse("NavigateEntryPoint is not set");
     }
 
     /// <summary>
@@ -356,7 +456,10 @@ public class DovetailItemReferenceTests(string targetFramework)
         foreach (var name in names)
         {
             // The placeholders are in a comment, so the file compiles whether or not they are replaced.
-            project.AddFile($"worker/{name}.cs.template", $"namespace worker.Emitted;{Environment.NewLine}internal static class {name} {{ }}{Environment.NewLine}// {{HostName}} {{HostType}}{Environment.NewLine}");
+            project.AddFile(
+                $"worker/{name}.cs.template",
+                $"namespace worker.Emitted;{Environment.NewLine}internal static class {name} {{ }}{Environment.NewLine}// {{HostName}} {{HostType}}{Environment.NewLine}"
+            );
         }
 
         await project.BuildProject("worker");

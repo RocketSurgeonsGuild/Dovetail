@@ -1,7 +1,7 @@
 ---
 title: DovetailJoint
 description: The DovetailJoint MSBuild item declares a joint kind, a typed extension point, and the build generates its interfaces, delegates, Apply method and DovetailContextBuilder method. Every metadata value, its default, and what it generates.
-tags: [source-generator]
+tags: [msbuild]
 ---
 
 # DovetailJoint
@@ -10,7 +10,7 @@ A `DovetailJoint` item declares a **joint kind**: a typed extension point that o
 applies it. One line in a project file becomes a joint interface, its async twin, the delegates for both, an `Apply` extension
 that runs every joint of the kind, and a method on `DovetailContextBuilder` that registers a delegate. Dovetail's own joints
 (`ISetupJoint`, `IServiceJoint`, `ILoggingJoint`, `IConfigurationJoint`, `IHostCreatedJoint<THost>`) are declared this way, and so are
-those of [Serilog](/concepts/serilog/), [OpenTelemetry](/concepts/opentelemetry/) and Aspire.
+those of [Serilog](../../concepts/serilog/), [OpenTelemetry](../../concepts/opentelemetry/) and Aspire.
 
 The item is expanded by MSBuild targets, not by the Roslyn source generator: the C# is written to `obj/` before the compiler
 runs, so you can open it in your IDE like any other source file.
@@ -31,7 +31,7 @@ Declare one when:
 Do not declare one when:
 
 - you only want to run code at startup. Implement an existing joint such as `IServiceJoint` or `ILoggingJoint` instead, as described
-  in [Defining Dovetails](/concepts/defining-joints/);
+  in [Defining Dovetails](../../concepts/defining-joints/);
 - Dovetail or one of its packages already declares a joint for the type you have: `Joinery.Dovetail` covers `IServiceCollection`,
   `IConfigurationBuilder` and `ILoggingBuilder`, and `Joinery.Dovetail.Hosting` covers the host builders.
 
@@ -67,7 +67,7 @@ non-empty value counts as false.
 | `BuilderMethodName`    | `Configure{Name}`                       | The name of the extension method on `DovetailContextBuilder` that registers a delegate. `Service` is declared with `BuilderMethodName="ConfigureServices"`.                                                                                                     |
 | `GenericParameter`     | empty                                   | A type parameter name that makes the joint generic: `I{Name}Joint<in T>`, `Apply{Name}<T>`, `Configure{Name}<T>`. `ParameterType` may be this name, and then the parameter is typed `T`.                                                                        |
 | `GenericConstraint`    | empty                                   | The constraint of that type parameter: `where T : {GenericConstraint}`. Written as given. Ignored without `GenericParameter`.                                                                                                                                   |
-| `GenericVariance`      | `in` when `GenericParameter` is set     | The variance modifier on the type parameter of the generated interfaces and delegates. Ignored without `GenericParameter`. Only `in` compiles; see [common mistakes](#common-mistakes).                                                                         |
+| `GenericVariance`      | `in` when `GenericParameter` is set     | The variance modifier on the type parameter of the generated interfaces and delegates. Ignored without `GenericParameter`. When `ParameterType` is the type parameter, only `in` compiles; see [common mistakes](#common-mistakes).                             |
 | `IsAsync`              | `true`                                  | `false` generates only the synchronous joint. No `I{Name}AsyncJoint`, `{Name}AsyncJointDelegate` or async `Configure{Name}` overload, no `DovetailJointAsync.{Name}.g.cs`, and `Apply{Name}` returns `void` instead of `ValueTask`.                             |
 | `ReturnFirstArgument`  | empty (false)                           | `true` makes `Apply{Name}` return `ValueTask<IDovetailContext>`, the context after the joints ran. It compiles only for a joint whose subject is the context itself: no `ParameterType` and no `ProvideServices`. With `IsAsync` false the result is discarded. |
 
@@ -99,7 +99,7 @@ Everything is declared in `Namespace`:
 
 | Type                          | What it is                                                                                                                                                                                                                                                           |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `I{Name}Joint`                | The interface a contributor implements: `void Register(...)`. Mark the class `[DovetailExport]` so it is discovered; see [Defining Dovetails](/concepts/defining-joints/).                                                                                           |
+| `I{Name}Joint`                | The interface a contributor implements: `void Register(...)`. Mark the class `[DovetailExport]` so it is discovered; see [Defining Dovetails](../../concepts/defining-joints/).                                                                                      |
 | `{Name}JointDelegate`         | A delegate with the same parameters, for registering a lambda.                                                                                                                                                                                                       |
 | `I{Name}AsyncJoint`           | The async twin: `ValueTask Register(..., CancellationToken cancellationToken = default)`.                                                                                                                                                                            |
 | `{Name}AsyncJointDelegate`    | The async delegate.                                                                                                                                                                                                                                                  |
@@ -138,10 +138,14 @@ public static partial class SerilogHostBuilderExtensions
 
 ### Minimal
 
-`Setup` above generates `ISetupJoint`, `SetupJointDelegate`, `ISetupAsyncJoint`, `SetupAsyncJointDelegate`,
-`SetupJointExtensions.ApplySetup(this IDovetailContext context, CancellationToken cancellationToken = default)` and
-`ConfigureSetup(...)`, all in `Joinery.Dovetail.Joints`. Left out, `Namespace` is `$(RootNamespace).Joints`, which is
-`Joinery.Dovetail.Joints` for the project below because it sets `RootNamespace` to `Joinery.Dovetail`:
+The `Setup` declaration [above](#declaring-a-joint) generates `ISetupJoint`, `SetupJointDelegate`, `ISetupAsyncJoint`,
+`SetupAsyncJointDelegate`, `SetupJointExtensions.ApplySetup(this IDovetailContext context, CancellationToken cancellationToken = default)`
+and `ConfigureSetup(...)`, all in `Joinery.Dovetail.Joints`.
+
+### Leaving out `Namespace`
+
+Left out, `Namespace` is `$(RootNamespace).Joints`. This project sets `RootNamespace` to `Joinery.Dovetail`, so the joint's types are
+in `Joinery.Dovetail.Joints`:
 
 ```xml
 <!-- src/Joinery.Dovetail.Aspire/Joinery.Dovetail.Aspire.csproj -->
@@ -164,7 +168,7 @@ var loggerConfiguration = new global::Serilog.LoggerConfiguration();
 await loggerConfiguration.ApplySerilog(context, services, cancellationToken).ConfigureAwait(false);
 ```
 
-and anyone contributes by implementing `ISerilogJoint` or calling `ConfigureSerilog`, as shown in [Serilog](/concepts/serilog/#the-serilog-joint).
+and anyone contributes by implementing `ISerilogJoint` or calling `ConfigureSerilog`, as shown in [Serilog](../../concepts/serilog/#the-serilog-joint).
 
 ### A joint in an application
 
@@ -210,32 +214,51 @@ public class DatabaseServiceJoint : IServiceAsyncJoint
 
 Nothing in `src/` or `sample/` sets `ProvideConfiguration`, `GenericConstraint`, `IsAsync` or `ReturnFirstArgument`, so these
 declarations are compiled, and the signatures they generate checked, by
-`test/Joinery.Dovetail.Sdk.Tests/DovetailItemReferenceTests.cs`:
+`test/Joinery.Dovetail.Sdk.Tests/DovetailItemReferenceTests.cs` (it declares exactly these items):
 
 ```xml
+<DovetailJoint Include="Minimal" />
 <DovetailJoint Include="Wired" ProvideConfiguration="true" ProvideServices="true" />
 <DovetailJoint Include="Builder" Namespace="Custom.Joints" ProvideServices="true" ParameterType="global::Microsoft.Extensions.Logging.ILoggingBuilder" ParameterName="builder" BuilderMethodName="ConfigureTheBuilder" />
 <DovetailJoint Include="Generic" GenericParameter="TBuilder" GenericConstraint="global::Microsoft.Extensions.Hosting.IHostApplicationBuilder" ParameterType="TBuilder" ParameterName="builder" />
+<DovetailJoint Include="Covariant" GenericParameter="T" GenericVariance="out" />
 <DovetailJoint Include="SyncOnly" IsAsync="false" />
 <DovetailJoint Include="Chained" ReturnFirstArgument="true" />
+<DovetailJoint Include="ChainedSync" ReturnFirstArgument="true" IsAsync="false" />
+<DovetailJoint Include="Unprefixed" ParameterType="Microsoft.Extensions.Logging.ILoggingBuilder" ParameterName="builder" />
+<DovetailJoint Include="Ignored" ParameterName="thing" GenericConstraint="class" GenericVariance="out" NMAmespace="Custom.Typo" />
+<DovetailJoint Include="Shouting" IsAsync="False" ProvideServices="TRUE" />
+<DovetailJoint Include="NotTrue" IsAsync="no" />
 ```
 
-`Wired` registers `Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)`, and its
-`ApplyWired` is an extension on `IServiceCollection`. `Builder` is applied with `logging.ApplyBuilder(context, services)` and
-registered with `ConfigureTheBuilder(...)`. `Generic` declares `IGenericJoint<in TBuilder> where TBuilder : IHostApplicationBuilder`.
-`SyncOnly` has no async twin and `context.ApplySyncOnly()` returns `void`. `Chained.ApplyChained` returns the context.
+- `Minimal` is handed only the context, and its types are in `worker.Joints` (the test project's `RootNamespace` is `worker`).
+- `Wired` registers `Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)`, and its
+  `ApplyWired` is an extension on `IServiceCollection`.
+- `Builder` is applied with `logging.ApplyBuilder(context, services)` and registered with `ConfigureTheBuilder(...)`.
+- `Generic` declares `IGenericJoint<in TBuilder> where TBuilder : IHostApplicationBuilder`.
+- `Covariant` has a type parameter that `Register` does not take, so `out` compiles, and an `ICovariantJoint<string>` is an
+  `ICovariantJoint<object>`.
+- `SyncOnly` has no async twin, and `context.ApplySyncOnly()` returns `void` but still takes a `CancellationToken`.
+- `Chained.ApplyChained` returns the context. `ChainedSync` has no async twin and `ApplyChainedSync` returns `void`: the context the
+  executor returns is discarded.
+- `Unprefixed` is written into the generated code as `Microsoft.Extensions.Logging.ILoggingBuilder`, with nothing in front of it.
+- `Ignored` generates the same code as `Minimal`: `ParameterName` without a `ParameterType`, `GenericConstraint` and `GenericVariance`
+  without a `GenericParameter`, and the misspelled `NMAmespace` all do nothing, so its types are in `worker.Joints`.
+- `Shouting` and `NotTrue` are synchronous: `False` and `no` are not `true`. `Shouting` also takes the service collection, because
+  `TRUE` is `true` in any case.
 
 ## Common mistakes
 
 - **`ParameterType` and `GenericConstraint` are written exactly as you give them.** Dovetail puts nothing in front of them, so
   write the type fully qualified with `global::`, as every package in this repository does:
   `global::Serilog.LoggerConfiguration`. A bare `Serilog.LoggerConfiguration` compiles too, until a namespace that encloses the
-  generated code has a member called `Serilog`, which then captures the name: `Joinery.Dovetail.Serilog` does that to a joint declared
-  in `Joinery.Dovetail.Joints`, and the build fails with CS0234.
-- **A generic joint's `ParameterType` may be its `GenericParameter`**, and then must be written bare, as `TBuilder`. Prefixing the
-  type parameter with `global::` does not compile.
-- **`GenericVariance="out"` does not compile** (CS1961): the type parameter is only ever an input of `Register`, so a covariant
-  one is invalid. `in`, the default, is the only value that compiles.
+  generated code has a member called `Serilog`, which then captures the name. A project that declares `Custom.Microsoft` does that to a
+  bare `Microsoft.Extensions.Logging.ILoggingBuilder` in a joint in `Custom.Joints`, and the build fails with CS0234.
+- **A generic joint's `ParameterType` may be its `GenericParameter`**, and then must be written bare, as `TBuilder`: a `global::`
+  in front of it names a type in the global namespace, not the type parameter.
+- **`GenericVariance="out"` does not compile when the type parameter is the `ParameterType`** (CS1961): it is an input of `Register`,
+  so a covariant one is invalid, and `in`, the default, is the only value that compiles. With a `GenericParameter` and no
+  `ParameterType`, `Register` does not take the type parameter, and `out` compiles.
 - **`ReturnFirstArgument` only suits a joint whose subject is the context.** With a `ParameterType` or `ProvideServices` the
   generated `Apply{Name}` tries to return the `IDovetailContext` as a `ValueTask<ILoggingBuilder>` (or whatever the subject is),
   which fails with CS0029.
@@ -249,6 +272,6 @@ registered with `ConfigureTheBuilder(...)`. `Generic` declares `IGenericJoint<in
 
 ## See also
 
-- [Defining Dovetails](/concepts/defining-joints/): implementing, ordering and filtering the joints of a kind.
-- [DovetailHost](/reference/dovetail-host/): the entry points that run the joints.
-- [Serilog](/concepts/serilog/) and [OpenTelemetry](/concepts/opentelemetry/): two packages built on joint kinds.
+- [Defining Dovetails](../../concepts/defining-joints/): implementing, ordering and filtering the joints of a kind.
+- [DovetailHost](../dovetail-host/): the entry points that run the joints.
+- [Serilog](../../concepts/serilog/) and [OpenTelemetry](../../concepts/opentelemetry/): two packages built on joint kinds.

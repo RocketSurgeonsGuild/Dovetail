@@ -1,7 +1,7 @@
 ---
 title: DovetailTemplate
 description: The DovetailTemplate MSBuild item ships C# source from a package and has Dovetail write it into only the projects that should get it. Every metadata value, its default, the gates, and where the generated file lands.
-tags: [hosting, source-generator]
+tags: [hosting, msbuild]
 ---
 
 # DovetailTemplate
@@ -11,7 +11,7 @@ project's references have resolved, Dovetail checks every template's gates, writ
 compilation. Nothing needs to be compiled against, so the shipping package depends on none of the assemblies its templates use:
 referencing them is what turns a template on.
 
-This page lists what the item accepts. [Shipping templates](/guides/shipping-templates/) is the guide to using it: how to
+This page lists what the item accepts. [Shipping templates](../../guides/shipping-templates/) is the guide to using it: how to
 write a template, how to pack the targets that declare it, and how to test the gates.
 
 The item is expanded by MSBuild targets (`Joinery.Dovetail.Templates.targets`), not by the Roslyn source generator.
@@ -91,24 +91,27 @@ each `obj/`.
 `Joinery.Dovetail.Hosting` lists its helpers with the assemblies each needs, then declares every one as a template for the package:
 
 ```xml
-<!-- src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets -->
-<ItemGroup>
-  <_DovetailHostingHelper Include="DovetailHostApplicationHelpers" References="Microsoft.Extensions.Hosting" />
-  <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Maui" />
-  <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
-  <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
-</ItemGroup>
-<ItemGroup>
-  <DovetailTemplate
-    Include="@(_DovetailHostingHelper)"
-    File="$(MSBuildThisFileDirectory)%(Identity).cs.template"
-    Package="Joinery.Dovetail.Hosting"
-    OutputPrefix="DovetailHosting"
-  />
-</ItemGroup>
+<!-- src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets (verbatim) -->
+  <ItemGroup>
+    <_DovetailHostingHelper Include="DovetailHostApplicationHelpers" References="Microsoft.Extensions.Hosting" />
+    <_DovetailHostingHelper Include="DovetailHostLifecycleHelpers" References="Microsoft.Extensions.Hosting" />
+    <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Maui" />
+    <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
+    <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
+    <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
+    <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <DovetailTemplate
+      Include="@(_DovetailHostingHelper)"
+      File="$(MSBuildThisFileDirectory)%(Identity).cs.template"
+      Package="Joinery.Dovetail.Hosting"
+      OutputPrefix="DovetailHosting"
+    />
+  </ItemGroup>
 ```
 
-(Abridged: the real list also has the host lifecycle, Uno navigation and ASP.NET Core schema endpoint helpers.) `References` carries over from
+`References` carries over from
 `_DovetailHostingHelper` to each template, so a project gets `DovetailMauiHelpers` only when it references `Microsoft.Maui`.
 
 ### One template for several hosts
@@ -118,7 +121,7 @@ package adds the instances to `DovetailEmittedTemplate` itself, because which of
 already been resolved:
 
 ```xml
-<!-- src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets -->
+<!-- src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets: one of the items of an ItemGroup, verbatim apart from the indentation -->
 <DovetailEmittedTemplate
   Include="DovetailOpenTelemetryMauiStartJoint"
   Condition="'$(_DovetailHostingMaui)' == 'true'"
@@ -157,8 +160,9 @@ and `ForOtherHosts` are not. In `PerHost` `{HostName}` and `{HostType}` are repl
 - **`Package` is matched against an assembly name.** It is the package's id, and it has to be the name of the package's assembly as
   well, since that is what the project's resolved references are searched for.
 - **`HostName` alone does nothing.** `{HostName}` is replaced only when `HostType` is set; set both.
-- **`Hosts` names are the SDK's, not yours.** They are matched against the `DovetailHost` items declared when the templates resolve,
-  so a host you declare yourself under another name does not satisfy `Hosts="HostApplication"`. See [DovetailHost](/reference/dovetail-host/).
+- **`Hosts` names are `DovetailHost` names.** Each is matched, by name, against the `DovetailHost` items declared when the templates
+  resolve, which are the ones `Joinery.Dovetail.Sdk` detected (`HostApplication`, `WebApplication`, `WebAssembly`, `Maui`, `Uno`) plus
+  any you declared. See [DovetailHost](../dovetail-host/).
 - **A transitive reference declares your items but gets no file under `DirectReferenceOnly`.** Its `buildTransitive/` targets
   still run, so the `DovetailTemplate` items are there; the gate is what leaves the file out.
 - **A misspelled metadata name is ignored.** The default applies, with no warning.
@@ -166,6 +170,6 @@ and `ForOtherHosts` are not. In `PerHost` `{HostName}` and `{HostType}` are repl
 
 ## See also
 
-- [Shipping templates](/guides/shipping-templates/): the guide to writing, packing and testing templates.
-- [DovetailHost](/reference/dovetail-host/): the hosts that `Hosts` refers to, and the helpers `Joinery.Dovetail.Hosting` ships as templates.
-- [DovetailJoint](/reference/dovetail-joint/): the joint kinds a template can declare joints of.
+- [Shipping templates](../../guides/shipping-templates/): the guide to writing, packing and testing templates.
+- [DovetailHost](../dovetail-host/): the hosts that `Hosts` refers to, and the helpers `Joinery.Dovetail.Hosting` ships as templates.
+- [DovetailJoint](../dovetail-joint/): the joint kinds a template can declare joints of.

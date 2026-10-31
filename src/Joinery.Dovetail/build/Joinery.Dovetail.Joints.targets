@@ -20,7 +20,8 @@
       GenericConstraint     — constraint for the type parameter, written as given
                               (e.g. global::Microsoft.Extensions.Hosting.IHostApplicationBuilder; ignored without GenericParameter)
       GenericVariance       — variance modifier used on the interface/delegate declarations (default: in; ignored without
-                              GenericParameter). Only 'in' compiles: the type parameter is only ever an input of Register.
+                              GenericParameter). When ParameterType is the type parameter it is an input of Register, so only
+                              'in' compiles; 'out' compiles only for a joint whose Register does not take the type parameter.
       IsAsync               — 'false' leaves out the async interface, delegate and builder method and makes Apply{Identity}
                               return void (default: true)
       ReturnFirstArgument   — 'true' makes Apply{Identity} return the IDovetailContext after the joints ran. Only compiles for a
@@ -78,7 +79,7 @@
       <DovetailJoint>
         <_ExtContextParam Condition="'%(DovetailJoint._SubjectName)' != 'context'">, global::Joinery.Dovetail.IDovetailContext context</_ExtContextParam>
         <_ExtServicesParam Condition="'%(DovetailJoint.ProvideServices)' == 'true' and '%(DovetailJoint.ParameterType)' != ''">, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services</_ExtServicesParam>
-        <!-- Builder methods are generated for every part except the bare-context one -->
+        <!-- Builder methods are generated for every joint, the bare-context ones included: the switch below is not used any more -->
         <!-- <_HasBuilderMethods Condition="'%(DovetailJoint._SubjectName)' == 'context'">false</_HasBuilderMethods>
         <_HasBuilderMethods Condition="'%(DovetailJoint._SubjectName)' != 'context'">true</_HasBuilderMethods> -->
         <_BuilderMethodName Condition="'%(DovetailJoint.BuilderMethodName)' == ''">Configure%(DovetailJoint.Identity)</_BuilderMethodName>
