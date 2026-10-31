@@ -85,17 +85,15 @@ internal static class ExportDovetails
 
             dependencyGraph.Add((convention, edges));
 
-            ExpressionSyntax withDependencies = ObjectCreationExpression(IdentifierName("DovetailJointMetadata"))
-               .WithArgumentList(
-                    ArgumentList(
-                        SeparatedList(
-                            new[]
-                            {
-                                Argument(createDovetail), Argument(hostType), Argument(conventionCategory),
-                            }
-                        )
+            var metadataArguments = ArgumentList(SeparatedList(new[] { Argument(createDovetail), Argument(hostType), Argument(conventionCategory), }));
+            // A joint that needs its constructor parameters resolved is a factory, which has its own entry point rather than a
+            // constructor overload; see DovetailJointMetadata.
+            ExpressionSyntax withDependencies = createDovetail is LambdaExpressionSyntax
+                ? InvocationExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailJointMetadata"), IdentifierName("FromFactory"))
                     )
-                );
+                   .WithArgumentList(metadataArguments)
+                : ObjectCreationExpression(IdentifierName("DovetailJointMetadata")).WithArgumentList(metadataArguments);
 
             foreach (var edge in edges)
             {

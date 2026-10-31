@@ -15,7 +15,7 @@ public class DovetailJointMetadataTests
     public void Does_Not_Create_The_Joint_Until_It_Is_Read_And_Creates_It_Once()
     {
         var created = 0;
-        var metadata = new DovetailJointMetadata(
+        var metadata = DovetailJointMetadata.FromFactory(
             _ =>
             {
                 created++;
@@ -78,7 +78,7 @@ public class DovetailJointMetadataTests
     [Test]
     public void Fails_Each_Time_It_Is_Read_When_The_Factory_Throws()
     {
-        var metadata = new DovetailJointMetadata(_ => throw new InvalidOperationException("nothing to create it from"), DovetailHostType.Undefined, DovetailCategory.Application);
+        var metadata = DovetailJointMetadata.FromFactory(_ => throw new InvalidOperationException("nothing to create it from"), DovetailHostType.Undefined, DovetailCategory.Application);
 
         Should.Throw<InvalidOperationException>(() => metadata.Joint);
         Should.Throw<InvalidOperationException>(() => metadata.Joint);
@@ -86,9 +86,9 @@ public class DovetailJointMetadataTests
 
     [Test]
     public void Requires_A_Factory() =>
-        Should.Throw<ArgumentNullException>(() => new DovetailJointMetadata((Func<IServiceProvider, IDovetailJoint>)null!, DovetailHostType.Undefined, DovetailCategory.Application));
+        Should.Throw<ArgumentNullException>(() => DovetailJointMetadata.FromFactory(null!, DovetailHostType.Undefined, DovetailCategory.Application));
 
-    private static DovetailJointMetadata Describe() => new(
+    private static DovetailJointMetadata Describe() => DovetailJointMetadata.FromFactory(
         services => new FactoryJoint(services.GetService(typeof(string)) as string ?? "default"),
         DovetailHostType.Undefined,
         DovetailCategory.Application
