@@ -1,0 +1,24 @@
+# DistributedApplicationTestingJointExtensions
+
+- Kind: `class`
+- Package: [Joinery.Dovetail.Aspire.Testing](/Dovetail/v0.3.1/api/joinery.dovetail.aspire.testing.md)
+- Version: `0.3.1`
+- Namespace: `Joinery.Dovetail.Testing.Joints`
+- Target framework: `net10.0`
+
+Extension methods for applying DistributedApplicationTesting parts.
+
+## Definition
+
+```csharp
+namespace Joinery.Dovetail.Testing.Joints;
+
+public static class DistributedApplicationTestingJointExtensions
+{
+    // ...
+}
+```
+
+## Methods
+
+- [ApplyDistributedApplicationTesting(IDistributedApplicationTestingBuilder, IDovetailContext, CancellationToken)](/Dovetail/v0.3.1/api/joinery.dovetail.aspire.testing/distributedapplicationtestingjointextensions/methods.md#applydistributedapplicationtesting-idistributedapplicationtestingbuilder-idovetailcontext-cancellationtoken) : `ValueTask` `extension` -- Applies the registered DistributedApplicationTesting parts.
