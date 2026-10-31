@@ -5,15 +5,29 @@ namespace Joinery.Dovetail.Infrastructure;
 internal static class DovetailResolver
 {
 
-    public static ImmutableList<IDovetailJoint> Resolve(DovetailHostType hostType, ImmutableHashSet<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
+    public static ImmutableList<IDovetailJoint> Resolve(DovetailHostType hostType, IEnumerable<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
         => [.. ResolveMetadata(categories, contributions)
           .Where(cod => cod.HostType == DovetailHostType.Undefined || cod.HostType == hostType)
           .Select(z => z.Joint)];
 
-    public static ImmutableList<IDovetailJointMetadata> ResolveMetadata(ImmutableHashSet<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
+    /// <summary>
+    ///     The categories a context loads for the categories it was given: the <c>Core</c> joints are always loaded, and when no
+    ///     category is given the <c>Application</c> joints are loaded as well. Applying it to its own result changes nothing.
+    /// </summary>
+    public static ImmutableHashSet<DovetailCategory> LoadedCategories(IEnumerable<DovetailCategory> categories)
     {
-        IEnumerable<IDovetailJointMetadata> c = contributions.Order(Comparer<IDovetailJointMetadata>.Create((x, y) => x.Joint.Priority.CompareTo(y.Joint.Priority))); ;
-        if (categories.Any()) c = c.Where(z => !categories.Contains(z.Category));
+        var loaded = categories.ToImmutableHashSet(DovetailCategory.ValueComparer);
+        return loaded.IsEmpty
+            ? loaded.Add(DovetailCategory.Application).Add(DovetailCategory.Core)
+            : loaded.Add(DovetailCategory.Core);
+    }
+
+    public static ImmutableList<IDovetailJointMetadata> ResolveMetadata(IEnumerable<DovetailCategory> categories, IEnumerable<IDovetailJointMetadata> contributions)
+    {
+        var loaded = LoadedCategories(categories);
+        var c = contributions
+               .Order(Comparer<IDovetailJointMetadata>.Create((x, y) => x.Joint.Priority.CompareTo(y.Joint.Priority)))
+               .Where(z => loaded.Contains(z.Category));
 
         var r = c.ToImmutableList();
         if (!r.Any(z => z.Dependencies.Count > 0)) return r;

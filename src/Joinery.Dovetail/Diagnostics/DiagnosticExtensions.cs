@@ -81,9 +81,10 @@ metadata?.Assembly.GetName().Name ?? dependency.Type.Assembly.GetName().Name!,
         /// <summary>
         ///   Renders the resolved joints of the context as a Mermaid flowchart diagram.
         /// </summary>
+        /// <param name="categories">The categories of joints to include besides the <c>Core</c> joints, which are always included. An empty set includes the <c>Application</c> joints as well.</param>
         /// <returns></returns>
         public IEnumerable<DovetailDiagnosticMetadataJoint> GetDiagnosticMetadata(params IEnumerable<DovetailCategory> categories) =>
-        DovetailResolver.ResolveMetadata([.. categories], builder.Metadata)
+        DovetailResolver.ResolveMetadata(categories, builder.Metadata)
         .Select(item => Create(builder.Metadata, item))
         .ToImmutableList();
     }
@@ -93,9 +94,10 @@ metadata?.Assembly.GetName().Name ?? dependency.Type.Assembly.GetName().Name!,
         /// <summary>
         ///   Renders the resolved joints of the context as a Mermaid flowchart diagram.
         /// </summary>
+        /// <param name="categories">The categories of joints to include besides the <c>Core</c> joints, which are always included. An empty set includes the <c>Application</c> joints as well.</param>
         /// <returns></returns>
         public IEnumerable<DovetailDiagnosticMetadataJoint> GetDiagnosticMetadata(params IEnumerable<DovetailCategory> categories) =>
-        DovetailResolver.ResolveMetadata([.. categories], builder.Metadata)
+        DovetailResolver.ResolveMetadata(categories, builder.Metadata)
         .Select(item => Create(builder.Metadata, item))
         .ToImmutableList();
     }

@@ -98,9 +98,10 @@ public class ExportedCategoryTests() : GeneratorTest()
         ExportedSource(result).ShouldContain("DovetailJointMetadata.FromFactory(");
         Category(result).ToString().ShouldBe(expected);
 
-        // And the joint still gets what its parameters ask for.
+        // And the joint still gets what its parameters ask for. The context is scoped to the joint's own category, because an empty
+        // set loads only the Application and Core joints.
         var options = new WidgetOptions();
-        var context = await DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []).Set(options).CreateAsync(TestContext.CancellationToken);
+        var context = await DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), [Category(result)]).Set(options).CreateAsync(TestContext.CancellationToken);
         var joint = context.Joints.Single();
         joint.GetType().GetProperty("Options")!.GetValue(joint).ShouldBeSameAs(options);
     }
