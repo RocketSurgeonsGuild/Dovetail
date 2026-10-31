@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Joinery.Dovetail.Sdk.Tests;
@@ -6,7 +7,7 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// Every <c>Register</c> on the docs site has to match an interface the packages generate, and this is where each C# code block that
 /// mentions one is accounted for: a block that implements a joint is compiled by <see cref="DocumentationExampleTests" />, and the two
 /// other kinds are checked against the code they show. A block with a <c>Register</c> that is none of the three fails the build, so a
-/// new example cannot go unchecked.
+/// new example cannot go unchecked. The table of joint kinds is compared with the interfaces by reflection.
 /// </summary>
 public partial class DocumentationExcerptTests
 {
@@ -82,6 +83,51 @@ public partial class DocumentationExcerptTests
             registers.Where(z => !generated.Contains(z)).ShouldBeEmpty($"{block} shows Register declarations that the build does not generate");
         }
     }
+
+    /// <summary>
+    /// The concepts page that explains the joint kinds lists what <c>Register</c> takes for each of them in a table, with the interface
+    /// in one column and the signature in the next. This project references Joinery.Dovetail, so the rows are compared with the
+    /// interfaces themselves, and with their async twins, which the page says take a trailing <c>CancellationToken</c> with a default.
+    /// </summary>
+    [Test]
+    public void EveryJointKindInATableOnTheDocsSite_HasTheRegisterTheTableShows()
+    {
+        var rows = DocumentationCodeBlock
+                  .Pages()
+                  .SelectMany(page => page.Lines.Select((line, index) => (page.Path, Line: index + 1, Row: KindRow().Match(line))))
+                  .Where(z => z.Row.Success)
+                  .ToArray();
+        rows.ShouldNotBeEmpty("defining-joints.md lists what Register takes for each kind of joint");
+
+        var assembly = typeof(IDovetailContext).Assembly;
+        foreach (var (path, line, row) in rows)
+        {
+            var arity = row.Groups["arguments"].Success ? row.Groups["arguments"].Value.Split(',').Length : 0;
+            var suffix = arity > 0 ? $"`{arity}" : "";
+            var name = row.Groups["interface"].Value;
+            var documented = row.Groups["parameters"].Value;
+
+            var joint = assembly.GetType($"Joinery.Dovetail.Joints.{name}{suffix}");
+            joint.ShouldNotBeNull($"{path}({line}) names {name}, which {assembly.GetName().Name} does not generate");
+            Parameters(RegisterOf(joint)).ShouldBe(documented, $"{path}({line}): {name}.Register");
+
+            var asyncName = name.Replace("Joint", "AsyncJoint", StringComparison.Ordinal);
+            var asyncJoint = assembly.GetType($"Joinery.Dovetail.Joints.{asyncName}{suffix}");
+            asyncJoint.ShouldNotBeNull($"{path}({line}) says {name} has an async twin, and there is no {asyncName}");
+            var asyncRegister = RegisterOf(asyncJoint);
+            Parameters(asyncRegister).ShouldBe($"{documented}, CancellationToken cancellationToken", $"{path}({line}): {asyncName}.Register");
+            asyncRegister.ReturnType.ShouldBe(typeof(ValueTask), $"{asyncName}.Register returns a ValueTask");
+            asyncRegister.GetParameters()[^1].HasDefaultValue.ShouldBeTrue($"the CancellationToken of {asyncName}.Register has a default");
+        }
+    }
+
+    private static MethodInfo RegisterOf(Type joint) => joint.GetMethods().Single(z => z.Name == "Register");
+
+    private static string Parameters(MethodInfo method) => string.Join(", ", method.GetParameters().Select(z => $"{z.ParameterType.Name} {z.Name}"));
+
+    // | Setup | `ISetupJoint` | `Register(IDovetailContext context)` |, and IHostCreatedJoint<THost> for a generic kind.
+    [GeneratedRegex(@"^\|[^|]*\|\s*`(?<interface>I\w+Joint)(?:<(?<arguments>[^>]*)>)?`\s*\|\s*`Register\((?<parameters>[^)]*)\)`\s*\|", RegexOptions.CultureInvariant)]
+    private static partial Regex KindRow();
 
     /// <summary>
     /// Compares lines without regard to the indentation and the spacing between tokens.

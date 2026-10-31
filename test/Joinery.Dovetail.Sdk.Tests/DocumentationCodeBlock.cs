@@ -12,16 +12,25 @@ namespace Joinery.Dovetail.Sdk.Tests;
 internal sealed partial record DocumentationCodeBlock(string Path, int Line, string Code)
 {
     /// <summary>
+    /// Every page of the docs site, with its path relative to the repository root (forward slashes) and its lines.
+    /// </summary>
+    public static IEnumerable<(string Path, string[] Lines)> Pages()
+    {
+        var docs = System.IO.Path.Combine(Config.RootDirectory, "docs", "src", "content", "docs");
+        foreach (var page in Directory.EnumerateFiles(docs, "*.md*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+        {
+            yield return (System.IO.Path.GetRelativePath(Config.RootDirectory, page).Replace('\\', '/'), File.ReadAllLines(page));
+        }
+    }
+
+    /// <summary>
     /// Every <c>c#</c>, <c>csharp</c> and <c>cs</c> code block on the docs site.
     /// </summary>
     public static IReadOnlyList<DocumentationCodeBlock> All()
     {
         var blocks = new List<DocumentationCodeBlock>();
-        var docs = System.IO.Path.Combine(Config.RootDirectory, "docs", "src", "content", "docs");
-        foreach (var page in Directory.EnumerateFiles(docs, "*.md*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+        foreach (var (relativePath, lines) in Pages())
         {
-            var relativePath = System.IO.Path.GetRelativePath(Config.RootDirectory, page).Replace('\\', '/');
-            var lines = File.ReadAllLines(page);
             for (var i = 0; i < lines.Length; i++)
             {
                 if (!OpeningFence().IsMatch(lines[i]))
