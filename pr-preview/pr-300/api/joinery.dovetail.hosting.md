@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Hosting
 
 - Package: `Joinery.Dovetail.Hosting`
-- Version: `0.4.2-pr.11`
+- Version: `0.4.2-pr.12`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Hosting](https://www.nuget.org/packages/Joinery.Dovetail.Hosting)
 

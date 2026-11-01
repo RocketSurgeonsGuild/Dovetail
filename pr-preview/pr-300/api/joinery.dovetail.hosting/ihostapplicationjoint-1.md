@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Hosting](/Dovetail/pr-preview/pr-300/api/joinery.dovetail.hosting.md)
-- Version: `0.4.2-pr.11`
+- Version: `0.4.2-pr.12`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
