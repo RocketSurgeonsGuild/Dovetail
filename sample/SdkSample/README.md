@@ -10,6 +10,13 @@ wiring is one line in each project, next to the SDK the project already names:
 </Project>
 ```
 
+`SdkSample.Console` shows the project SDK syntax instead: Joinery.Dovetail.Sdk is the project's only SDK, named with its
+version, and brings `Microsoft.NET.Sdk` itself:
+
+```xml
+<Project Sdk="Joinery.Dovetail.Sdk/0.0.0-sample">
+```
+
 The SDK could equally be applied once for every project, in a `Directory.Build.props`
 (`<Project Sdk="Joinery.Dovetail.Sdk">`, with its version under `msbuild-sdks` in `global.json`).
 
@@ -22,6 +29,7 @@ The SDK could equally be applied once for every project, in a `Directory.Build.p
 | `SdkSample.Storage`       | plain class library     | the same, for immutable options that Dovetail creates through generated code (see below)                                                                        |
 | `SdkSample.Diagnostics`   | plain class library     | the same, for options of types the library doesn't own (see below)                                                                                              |
 | `SdkSample.Worker`        | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
+| `SdkSample.Console`       | `Sdk="Joinery.Dovetail.Sdk/…"` | bring `Microsoft.NET.Sdk` itself, then the same as `SdkSample.Worker` (it references `SdkSample.Greetings` only) |
 | `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                                |
 
 `DovetailEnableConfiguration=true` (set in `Directory.Build.props`) additionally injects
@@ -72,6 +80,7 @@ From this directory:
 ```sh
 dotnet msbuild build/pack.proj   # pack src/** as 0.0.0-sample into artifacts/nuget-sample
 dotnet run --project SdkSample.Worker
+dotnet run --project SdkSample.Console  # the project SDK syntax: a greeting and a farewell
 dotnet run --project SdkSample.Web    # then GET / and GET /config
 ```
 
