@@ -1,7 +1,7 @@
 <Project>
   <!--
       Registered via CustomAfterMicrosoftCommonTargets (see Sdk.props) instead of living inline in
-      Sdk.targets. Sdk.targets is imported by Directory.Build.props's own trailing SDK-targets slot,
+      Sdk.targets. Applied in a Directory.Build.props, Sdk.targets is imported by its own trailing SDK-targets slot,
       which runs BEFORE the consuming project's own body (e.g. a worker.csproj's <OutputType>Exe</OutputType>)
       is ever evaluated - so a Choose block reading $(OutputType) there always sees it empty. Deferring
       via CustomAfterMicrosoftCommonTargets runs this after the whole project body (and Directory.Build.targets)
@@ -162,6 +162,6 @@
     -->
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')) == 'true')"/>
   </ItemGroup>
-  <!-- ImplicitPackageReferences.targets turns the DovetailSdkImplicitPackageReference items above into PackageReferences; Sdk.targets
+  <!-- ImplicitPackageReferences.targets turns the DovetailSdkImplicitPackageReference items above into PackageReferences; Sdk.props
        registers it after this file. -->
 </Project>

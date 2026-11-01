@@ -4,4 +4,6 @@
     to import. appsettings.yaml is renamed to SdkSample.Greetings.yaml and loaded by a generated
     configuration joint.
 -->
-<Project Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+</Project>

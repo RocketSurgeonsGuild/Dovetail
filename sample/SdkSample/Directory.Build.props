@@ -1,9 +1,9 @@
 <!--
-    The only Dovetail wiring in this sample: applying Joinery.Dovetail.Sdk here (version pinned by
-    global.json's msbuild-sdks) is enough for every project below to pick up the right Dovetail
-    packages and generated bootstrapping for its host type. No project references Dovetail directly.
+    Settings every project here shares. The Dovetail wiring is in each project: an
+    <Sdk Name="Joinery.Dovetail.Sdk" Version="..." /> element next to its own SDK, which is enough for it to pick up the
+    right Dovetail packages and generated bootstrapping for its host type. No project references Dovetail directly.
 -->
-<Project Sdk="Joinery.Dovetail.Sdk">
+<Project>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>

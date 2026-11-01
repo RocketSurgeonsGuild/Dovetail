@@ -2,13 +2,16 @@
 
 Consumes Dovetail purely as an MSBuild SDK from packed NuGet packages, the way an external project
 would. No project here references Dovetail directly or imports anything from `src/`. The only
-wiring is one line in [`Directory.Build.props`](Directory.Build.props):
+wiring is one line in each project, next to the SDK the project already names:
 
 ```xml
-<Project Sdk="Joinery.Dovetail.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+</Project>
 ```
 
-with the SDK version pinned in [`global.json`](global.json) under `msbuild-sdks`.
+The SDK could equally be applied once for every project, in a `Directory.Build.props`
+(`<Project Sdk="Joinery.Dovetail.Sdk">`, with its version under `msbuild-sdks` in `global.json`).
 
 ## What it exercises
 
@@ -130,11 +133,13 @@ curl http://127.0.0.1:5198/.well-known/dovetail/configuration-schema
 
 Rerun the pack step after changing anything under `src/`. It also clears the Dovetail entries from
 this sample's own package cache (`.nuget/`, see [`NuGet.config`](NuGet.config)), since the version
-never changes.
+never changes. After changing the SDK itself, also run `dotnet build-server shutdown`: MSBuild nodes
+that are still running keep the SDK files they read before.
 
 ## Why the extra files
 
-- `global.json` pins `Joinery.Dovetail.Sdk`. MSBuild SDKs resolved from NuGet need an explicit version.
+- `global.json` pins the .NET SDK. `Joinery.Dovetail.Sdk`'s version is in each project's `<Sdk>` element:
+  MSBuild SDKs resolved from NuGet need an explicit version.
 - `NuGet.config` clears the repository's feeds and maps `Joinery.Dovetail*` to the local feed.
 - `Directory.Packages.props` and `Directory.Build.targets` are intentionally empty so MSBuild stops
   here instead of picking up the repository's central package management and build targets.
