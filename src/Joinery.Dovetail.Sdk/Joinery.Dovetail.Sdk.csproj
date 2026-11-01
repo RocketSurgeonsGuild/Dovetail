@@ -16,69 +16,27 @@
     <Using Remove="**" />
   </ItemGroup>
 
-  <UsingTask
-    TaskName="GenerateDovetailPackagesProps"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll"
-  >
-    <ParameterGroup>
-      <DestinationFile ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.Collections.Generic" />
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Linq" />
-      <Using Namespace="System.Text" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        var versionsById = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var packages = Directory.EnumerateDirectories("$(MSBuildThisFileDirectory)../");
-        // Joinery.Dovetail.Build.Tasks ships inside the Dovetail package rather than as a package of its own.
-        // Hidden folders (an IDE's .vs, for one) are tool state, not packages, and a folder without its project
-        // (a renamed project's leftover bin/obj) isn't one either.
-        foreach (var package in packages.Where(z => !z.Contains("Analyzers") && !z.Contains("Build.Tasks") && !Path.GetFileName(z).StartsWith(".") && File.Exists(Path.Combine(z, Path.GetFileName(z) + ".csproj"))))
-        {
-          versionsById[Path.GetFileName(package)] = "$(Version)";
-        }
-
-        // Built via concatenation (not a literal "$(" substring) so MSBuild's own property
-        // expansion doesn't try to evaluate it while parsing this inline task's source text.
-        var dollar = "$";
-
-        var content = new StringBuilder();
-        content.AppendLine("<Project>");
-        content.AppendLine("    <!--");
-        content.AppendLine("        Generated from Directory.Packages.props at pack time — do not edit directly.");
-        content.AppendLine("        Each property is only set when the consumer has not already defined it, so any");
-        content.AppendLine("        of these can be overridden from Directory.Build.props, the project file, or the");
-        content.AppendLine("        command line.");
-        content.AppendLine("    -->");
-        content.AppendLine("    <PropertyGroup>");
-        foreach (var kv in versionsById)
-        {
-            // Joinery.Dovetail.Hosting -> DovetailHostingVersion: the properties keep their Dovetail names.
-            var propertyName = kv.Key.Substring("Joinery.".Length).Replace(".", "") + "Version";
-            var reference = dollar + "(" + propertyName + ")";
-            content.AppendLine($"        <{propertyName} Condition=\"'{reference}' == ''\">{kv.Value}</{propertyName}>");
-        }
-        content.AppendLine("    </PropertyGroup>");
-        content.AppendLine("</Project>");
-
-        Directory.CreateDirectory(Path.GetDirectoryName(DestinationFile));
-        File.WriteAllText(DestinationFile, content.ToString());
-      ]]></Code>
-    </Task>
-  </UsingTask>
-
+  <!--
+      Every Dovetail package ships at the same version, so the SDK adds each one at $(DovetailVersion), which defaults to the
+      version of the SDK itself. An application can set DovetailVersion to move every package the SDK adds together.
+  -->
   <Target Name="_DovetailGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack">
+    <PropertyGroup>
+      <_DovetailPackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailPackagesProps>
+    </PropertyGroup>
     <ItemGroup>
-      <_DovetailPackagesPropsPrefix Include="Dovetail" />
+      <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
+      <_DovetailPackagesPropsLine Include="&lt;Project&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk is packed. The version is only set when the application has not set it already. --&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;PropertyGroup&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;DovetailVersion Condition=&quot;%27%24(DovetailVersion)%27 == %27%27&quot;&gt;$(Version)&lt;/DovetailVersion&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;/Project&gt;" />
     </ItemGroup>
-
-    <GenerateDovetailPackagesProps       DestinationFile="$(IntermediateOutputPath)Packages.props"    />
-
+    <WriteLinesToFile File="$(_DovetailPackagesProps)" Lines="@(_DovetailPackagesPropsLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
     <ItemGroup>
-      <None Include="$(IntermediateOutputPath)Packages.props" Pack="true" PackagePath="Sdk" />
+      <None Include="$(_DovetailPackagesProps)" Pack="true" PackagePath="Sdk" />
+      <FileWrites Include="$(_DovetailPackagesProps)" />
     </ItemGroup>
   </Target>
-
 </Project>

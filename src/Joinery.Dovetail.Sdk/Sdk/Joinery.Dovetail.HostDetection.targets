@@ -39,7 +39,7 @@
       <ItemGroup>
         <DovetailHost Include="Maui" HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder" HostBuilderName="builder" HostType="global::Microsoft.Maui.Hosting.MauiApp" HelperName="global::Joinery.Dovetail.DovetailMauiHelpers" BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailMauiExtensions).Assembly" SyncEntryPoint="true"/>
         <AssemblyMetadata Include="DovetailEnvironmentName" Value="$(_DovetailMauiEnvironmentName)" />
-        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailVersion)" />
       </ItemGroup>
     </When>
     <!--
@@ -56,7 +56,7 @@
       </PropertyGroup>
       <ItemGroup>
         <DovetailHost Include="Uno" HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailUnoHelpers" BuildExpression=", static b => b.Build(), typeof(GeneratedDovetailUnoExtensions).Assembly" NavigateEntryPoint="true"/>
-        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailVersion)" />
       </ItemGroup>
     </When>
     <!-- An Uno app without Uno.Extensions.Hosting is not a generic host either: no host (see _DovetailWarnUnoWithoutHosting). -->
@@ -71,7 +71,7 @@
       </PropertyGroup>
       <ItemGroup>
         <DovetailHost Include="WebAssembly" HostBuilderType="global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder" HostBuilderName="builder" HostType="Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost"/>
-        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailVersion)" />
       </ItemGroup>
     </When>
     <When Condition=" '$(UsingMicrosoftNETSdkRazor)'=='true' or '$(UsingMicrosoftNETSdkWeb)'=='true' ">
@@ -80,7 +80,7 @@
       </PropertyGroup>
       <ItemGroup>
         <DovetailHost Include="WebApplication" HostBuilderType="global::Microsoft.AspNetCore.Builder.WebApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.AspNetCore.Builder.WebApplication" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"/>
-        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailVersion)" />
       </ItemGroup>
     </When>
     <When Condition=" '$(UsingMicrosoftNETSdkWorker)'=='true' or ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe') ">
@@ -89,7 +89,7 @@
       </PropertyGroup>
       <ItemGroup>
         <DovetailHost Include="HostApplication" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"/>
-        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailHostingVersion)" />
+        <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Hosting" Version="$(DovetailVersion)" />
       </ItemGroup>
     </When>
     <Otherwise>
@@ -152,15 +152,15 @@
   <!-- Flag-gated optional package references -->
   <ItemGroup>
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail" Version="$(DovetailVersion)"/>
-    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Autofac" Version="$(DovetailAutofacVersion)" Condition="'$(DovetailEnableAutofac)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac.Extensions.DependencyInjection')) == 'true')"/>
-    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.DryIoc" Version="$(DovetailDryIocVersion)" Condition="'$(DovetailEnableDryIoc)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc.Microsoft.DependencyInjection')) == 'true')"/>
-    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Stashbox" Version="$(DovetailStashboxVersion)" Condition="'$(DovetailEnableStashbox)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.DependencyInjection')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.Hosting')) == 'true')"/>
-    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Serilog" Version="$(DovetailSerilogVersion)" Condition="'$(DovetailEnableSerilog)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Serilog')) == 'true'"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Autofac" Version="$(DovetailVersion)" Condition="'$(DovetailEnableAutofac)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Autofac.Extensions.DependencyInjection')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.DryIoc" Version="$(DovetailVersion)" Condition="'$(DovetailEnableDryIoc)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'DryIoc.Microsoft.DependencyInjection')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Stashbox" Version="$(DovetailVersion)" Condition="'$(DovetailEnableStashbox)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.DependencyInjection')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Stashbox.Extensions.Hosting')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Serilog" Version="$(DovetailVersion)" Condition="'$(DovetailEnableSerilog)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Serilog')) == 'true'"/>
     <!--
         OpenTelemetry.Extensions.Hosting brings OpenTelemetry along, and is what a generic-host application references, so it counts too.
         Joinery.Dovetail.Hosting then emits the joint that turns OpenTelemetry on for the application's host.
     -->
-    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailOpenTelemetryVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')) == 'true')"/>
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')) == 'true')"/>
   </ItemGroup>
   <!-- ImplicitPackageReferences.targets turns the DovetailSdkImplicitPackageReference items above into PackageReferences; Sdk.targets
        registers it after this file. -->

@@ -1,5 +1,5 @@
 <Project>
-  <!-- Core packages every Dovetail consumer gets automatically -->
+  <!-- DovetailVersion: the version of every Dovetail package this SDK adds, generated when the SDK is packed -->
   <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
 
   <!--
