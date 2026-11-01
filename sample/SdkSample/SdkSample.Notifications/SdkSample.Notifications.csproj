@@ -2,4 +2,6 @@
     A plain class library, like SdkSample.Greetings: Joinery.Dovetail.Sdk injects the Dovetail package, exports this assembly's
     [DovetailExport] joints and renames appsettings.yaml to SdkSample.Notifications.yaml.
 -->
-<Project Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+</Project>

@@ -406,6 +406,25 @@ public sealed class SdkTestProject : IDisposable
     }
 
     /// <summary>
+    /// Runs the file-based app at <paramref name="relativePath"/> (a .cs file added with <see cref="AddFile"/>) with
+    /// <c>dotnet run</c> and returns what it wrote to standard output.
+    /// </summary>
+    public async Task<string> RunFile(string relativePath)
+    {
+        var path = Path.Combine(Directory, relativePath);
+        var psi = CreateHermeticStartInfo($"run {Path.GetFileName(path)}");
+        psi.WorkingDirectory = Path.GetDirectoryName(path)!;
+        // As in Run: a net10.0 application may have only the .NET 11 runtime to run on.
+        psi.Environment["DOTNET_ROLL_FORWARD"] = "Major";
+        psi.Environment["DOTNET_ROLL_FORWARD_TO_PRERELEASE"] = "1";
+        using var proc = Process.Start(psi)!;
+        var stdout = await proc.StandardOutput.ReadToEndAsync();
+        var stderr = await proc.StandardError.ReadToEndAsync();
+        await proc.WaitForExitAsync();
+        return proc.ExitCode == 0 ? stdout : throw new TUnitException($"dotnet run failed for {relativePath}:\n{stdout}\n{stderr}");
+    }
+
+    /// <summary>
     /// Publishes the project at <paramref name="relativePath"/> with <c>dotnet publish</c> (plus <paramref name="arguments"/>, say
     /// <c>-p:PublishAot=true</c>), runs the executable it produced, and returns what that wrote to standard output: for behaviour
     /// that has to hold in the published application, such as under trimming and Native AOT, where nothing is loaded by reflection.

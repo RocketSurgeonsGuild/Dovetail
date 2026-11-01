@@ -106,11 +106,15 @@ public class OpenTelemetryAspNetCoreTests
     [Test]
     public async Task A_Request_Is_Traced_Without_Any_Tracer_Configuration()
     {
-        List<Activity> exportedActivities = [];
+        // ASP.NET Core ends the request's activity after the test client has the response, so the test waits for it to end rather than
+        // looking for it as soon as the response is read.
+        var requestTraced = new TaskCompletionSource<Activity>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        await using var host = await builder.ConfigureDovetail(rb => rb.ConfigureTracerProvider((_, tracing) => tracing.AddInMemoryExporter(exportedActivities)));
+        await using var host = await builder.ConfigureDovetail(
+            rb => rb.ConfigureTracerProvider((_, tracing) => tracing.AddProcessor(new EndedActivityProcessor("Microsoft.AspNetCore", requestTraced)))
+        );
         host.MapGet("/telemetry", () => "traced");
 
         await host.StartAsync();
@@ -119,13 +123,25 @@ public class OpenTelemetryAspNetCoreTests
             using var response = await host.GetTestClient().GetAsync("/telemetry");
             ( await response.Content.ReadAsStringAsync() ).ShouldBe("traced");
 
-            host.Services.GetRequiredService<TracerProvider>().ForceFlush();
+            var activity = await requestTraced.Task.WaitAsync(TimeSpan.FromSeconds(15));
 
-            exportedActivities.ShouldContain(activity => activity.Source.Name == "Microsoft.AspNetCore");
+            activity.Source.Name.ShouldBe("Microsoft.AspNetCore");
         }
         finally
         {
             await host.StopAsync();
+        }
+    }
+
+    /// <summary>Completes <paramref name="ended" /> with the first activity from <paramref name="sourceName" /> to end.</summary>
+    private sealed class EndedActivityProcessor(string sourceName, TaskCompletionSource<Activity> ended) : BaseProcessor<Activity>
+    {
+        public override void OnEnd(Activity data)
+        {
+            if (data.Source.Name == sourceName)
+            {
+                ended.TrySetResult(data);
+            }
         }
     }
 #endif

@@ -2,13 +2,23 @@
 
 Consumes Dovetail purely as an MSBuild SDK from packed NuGet packages, the way an external project
 would. No project here references Dovetail directly or imports anything from `src/`. The only
-wiring is one line in [`Directory.Build.props`](Directory.Build.props):
+wiring is one line in each project, next to the SDK the project already names:
 
 ```xml
-<Project Sdk="Joinery.Dovetail.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+</Project>
 ```
 
-with the SDK version pinned in [`global.json`](global.json) under `msbuild-sdks`.
+`SdkSample.Console` shows the project SDK syntax instead: Joinery.Dovetail.Sdk is the project's only SDK, named with its
+version, and brings `Microsoft.NET.Sdk` itself:
+
+```xml
+<Project Sdk="Joinery.Dovetail.Sdk/0.0.0-sample">
+```
+
+The SDK could equally be applied once for every project, in a `Directory.Build.props`
+(`<Project Sdk="Joinery.Dovetail.Sdk">`, with its version under `msbuild-sdks` in `global.json`).
 
 ## What it exercises
 
@@ -19,6 +29,7 @@ with the SDK version pinned in [`global.json`](global.json) under `msbuild-sdks`
 | `SdkSample.Storage`       | plain class library     | the same, for immutable options that Dovetail creates through generated code (see below)                                                                        |
 | `SdkSample.Diagnostics`   | plain class library     | the same, for options of types the library doesn't own (see below)                                                                                              |
 | `SdkSample.Worker`        | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
+| `SdkSample.Console`       | `Sdk="Joinery.Dovetail.Sdk/…"` | bring `Microsoft.NET.Sdk` itself, then the same as `SdkSample.Worker` (it references `SdkSample.Greetings` only) |
 | `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                                |
 
 `DovetailEnableConfiguration=true` (set in `Directory.Build.props`) additionally injects
@@ -69,6 +80,7 @@ From this directory:
 ```sh
 dotnet msbuild build/pack.proj   # pack src/** as 0.0.0-sample into artifacts/nuget-sample
 dotnet run --project SdkSample.Worker
+dotnet run --project SdkSample.Console  # the project SDK syntax: a greeting and a farewell
 dotnet run --project SdkSample.Web    # then GET / and GET /config
 ```
 
@@ -130,11 +142,13 @@ curl http://127.0.0.1:5198/.well-known/dovetail/configuration-schema
 
 Rerun the pack step after changing anything under `src/`. It also clears the Dovetail entries from
 this sample's own package cache (`.nuget/`, see [`NuGet.config`](NuGet.config)), since the version
-never changes.
+never changes. After changing the SDK itself, also run `dotnet build-server shutdown`: MSBuild nodes
+that are still running keep the SDK files they read before.
 
 ## Why the extra files
 
-- `global.json` pins `Joinery.Dovetail.Sdk`. MSBuild SDKs resolved from NuGet need an explicit version.
+- `global.json` pins the .NET SDK. `Joinery.Dovetail.Sdk`'s version is in each project's `<Sdk>` element:
+  MSBuild SDKs resolved from NuGet need an explicit version.
 - `NuGet.config` clears the repository's feeds and maps `Joinery.Dovetail*` to the local feed.
 - `Directory.Packages.props` and `Directory.Build.targets` are intentionally empty so MSBuild stops
   here instead of picking up the repository's central package management and build targets.

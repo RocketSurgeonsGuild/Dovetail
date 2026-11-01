@@ -19,11 +19,13 @@
         Expanded into real PackageReference items below — eagerly, at evaluation time, not from a
         Target, because NuGet restore only ever sees items that exist by the time evaluation
         finishes; anything added later by a Target's execution is invisible to it. The expansion
-        only sees the items declared before it, so Sdk.targets registers this file as the LAST entry
+        only sees the items declared before it, so Sdk.props registers this file as the LAST entry
         of CustomAfterMicrosoftCommonTargets: after Joinery.Dovetail.HostDetection.targets, and after
         the files an SDK that chains this one (Rocket.Surgery.LaunchPad.Sdk, for one) adds from its
-        own Sdk.props, so those can declare DovetailSdkImplicitPackageReference items too. A package
-        the consumer already references directly is left alone rather than duplicated.
+        own Sdk.props before importing this SDK's, so those can declare DovetailSdkImplicitPackageReference
+        items too. It also has to come before the project's nuget.g.targets, whose package targets read
+        the PackageReferences (Joinery.Dovetail's implicit using, for one). A package the consumer
+        already references directly is left alone rather than duplicated.
     -->
     <ItemGroup>
         <PackageReference Include="@(DovetailSdkImplicitPackageReference)"

@@ -1,11 +1,7 @@
 <Project>
   <!--
-      Registered here rather than in Sdk.props, so it comes after every file added to CustomAfterMicrosoftCommonTargets before
-      this point: Joinery.Dovetail.HostDetection.targets (Sdk.props), and the files of an SDK that chains this one from its own
-      Sdk.props and then imports this file from its Sdk.targets. MSBuild imports the files of the list in order, so this one turns
-      the DovetailSdkImplicitPackageReference items all of them declare into PackageReferences.
+      Sdk.props registers everything else this SDK adds, since only it is imported before the project's own body however the SDK is
+      applied. This file only closes Microsoft.NET.Sdk when Sdk.props brought it (the project names no other SDK).
   -->
-  <PropertyGroup>
-    <CustomAfterMicrosoftCommonTargets>$(CustomAfterMicrosoftCommonTargets);$(MSBuildThisFileDirectory)ImplicitPackageReferences.targets</CustomAfterMicrosoftCommonTargets>
-  </PropertyGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition="'$(_DovetailImportsMicrosoftNETSdk)' == 'true'" />
 </Project>

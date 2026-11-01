@@ -56,6 +56,14 @@ internal static class Config
 
     private class ProjectEvaluationSerializer : WriteOnlyJsonConverter<ProjectEvaluationResult>
     {
+        // The versions of the non-Dovetail packages the SDK adds to file-based apps, written into its Packages.props from
+        // Directory.Packages.props when it is packed: placeholders, so a dependency update doesn't rewrite every snapshot.
+        private static readonly FrozenDictionary<string, string> ExternalPackageVersionPlaceholders = new Dictionary<string, string>
+        {
+            ["DovetailMicrosoftExtensionsHostingVersion"] = "{microsoft-extensions-hosting-version}",
+            ["DovetailOpenTelemetryExtensionsHostingVersion"] = "{opentelemetry-extensions-hosting-version}",
+        }.ToFrozenDictionary();
+
         private static readonly IReadOnlyCollection<string> PropertiesToWrite =
         [
             nameof(ProjectEvaluation.Configuration),
@@ -87,7 +95,7 @@ internal static class Config
                     continue;
                 }
                 writer.WritePropertyName(property.Key);
-                writer.WriteValue(property.Value);
+                writer.WriteValue(ExternalPackageVersionPlaceholders.TryGetValue(property.Key, out var placeholder) ? placeholder : property.Value);
             }
 
             writer.WriteEndObject();

@@ -3,4 +3,6 @@
     with required and init-only members), so Dovetail binds them through generated create code instead of the options
     pipeline's parameterless constructor.
 -->
-<Project Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+</Project>

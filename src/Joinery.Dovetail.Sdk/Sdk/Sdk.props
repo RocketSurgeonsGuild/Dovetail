@@ -1,16 +1,31 @@
 <Project>
+  <!--
+      Applied as a project's only SDK (<Project Sdk="Joinery.Dovetail.Sdk">, or a file-based app whose only #:sdk directive is this one,
+      which replaces the default Microsoft.NET.Sdk), this SDK brings Microsoft.NET.Sdk itself, and Sdk.targets its targets. Next to another
+      SDK (an <Sdk /> element, a second #:sdk directive) or in a Directory.Build.props, that SDK has already set UsingMicrosoftNETSdk.
+  -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
+    <_DovetailImportsMicrosoftNETSdk>true</_DovetailImportsMicrosoftNETSdk>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition="'$(_DovetailImportsMicrosoftNETSdk)' == 'true'" />
+
   <!-- DovetailVersion: the version of every Dovetail package this SDK adds, generated when the SDK is packed -->
   <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
 
   <!--
-      Register host detection to run via MSBuild's CustomAfterMicrosoftCommonTargets extensibility
-      point instead of inline in Sdk.targets. This SDK is normally applied through a consumer's
-      Directory.Build.props (Sdk="Joinery.Dovetail.Sdk"), which is imported (along with this file and
-      Sdk.targets) before the consuming project's own body - so host-detection logic that reads
-      project-set properties like $(OutputType) needs to run later, after the whole project has
-      been evaluated. See Joinery.Dovetail.HostDetection.targets for the logic itself.
+      Register host detection and the expansion of DovetailSdkImplicitPackageReference items to run via MSBuild's
+      CustomAfterMicrosoftCommonTargets extensibility point, after the whole project has been evaluated: host detection reads
+      project-set properties like $(OutputType). They are registered here, not in Sdk.targets, because this file is imported before
+      the consuming project's own body however the SDK is applied: in a Directory.Build.props (Sdk="Joinery.Dovetail.Sdk"), or in
+      the project itself (an <Sdk Name="Joinery.Dovetail.Sdk" Version="..." /> element, or a file-based app's #:sdk directive).
+      Sdk.targets comes at the end of the project in the second case, after Microsoft.Common.targets has imported the list.
+
+      MSBuild imports the files of the list in order:
+        - Joinery.Dovetail.HostDetection.targets first, so the files after it can read the DovetailHost items it declares.
+        - ImplicitPackageReferences.targets last, so it expands the items of every file before it. An SDK that chains this one adds
+          its own files to the list before importing this file (as Rocket.Surgery.LaunchPad.Sdk does), and they land between the two.
   -->
   <PropertyGroup>
-    <CustomAfterMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Joinery.Dovetail.HostDetection.targets;$(CustomAfterMicrosoftCommonTargets)</CustomAfterMicrosoftCommonTargets>
+    <CustomAfterMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Joinery.Dovetail.HostDetection.targets;$(CustomAfterMicrosoftCommonTargets);$(MSBuildThisFileDirectory)ImplicitPackageReferences.targets</CustomAfterMicrosoftCommonTargets>
   </PropertyGroup>
 </Project>

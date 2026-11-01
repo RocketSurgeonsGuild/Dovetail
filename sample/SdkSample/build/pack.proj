@@ -1,7 +1,7 @@
 <!--
-    Packs every src/*.csproj into artifacts/nuget-sample at the fixed version global.json pins
-    for Joinery.Dovetail.Sdk, so this sample consumes Dovetail exactly as published packages - never via
-    ProjectReference or direct props/targets imports.
+    Packs every src/*.csproj into artifacts/nuget-sample at the fixed version each project's
+    <Sdk Name="Joinery.Dovetail.Sdk" Version="..." /> names, so this sample consumes Dovetail exactly as
+    published packages - never via ProjectReference or direct props/targets imports.
 
         dotnet msbuild build/pack.proj
 
@@ -12,7 +12,6 @@
     <DovetailSampleVersion>0.0.0-sample</DovetailSampleVersion>
     <DovetailSampleFeed>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..', 'artifacts', 'nuget-sample'))</DovetailSampleFeed>
     <DovetailSamplePackagesFolder>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '.nuget', 'packages'))</DovetailSamplePackagesFolder>
-    <_DovetailSampleGlobalJson>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)..\global.json'))</_DovetailSampleGlobalJson>
     <_DovetailSampleProperties>Configuration=Release;Version=$(DovetailSampleVersion);PackageOutputPath=$(DovetailSampleFeed)</_DovetailSampleProperties>
   </PropertyGroup>
 
@@ -21,10 +20,6 @@
   </ItemGroup>
 
   <Target Name="Pack">
-    <Error
-      Text="global.json must pin Joinery.Dovetail.Sdk to '$(DovetailSampleVersion)' (the version this file packs)."
-      Condition="!$(_DovetailSampleGlobalJson.Contains('&quot;$(DovetailSampleVersion)&quot;'))" />
-
     <ItemGroup>
       <_DovetailStalePackage Include="$(DovetailSampleFeed)*.nupkg;$(DovetailSampleFeed)*.snupkg" />
       <_DovetailStaleCacheDirectory Include="$([System.IO.Directory]::GetDirectories('$(DovetailSamplePackagesFolder)', 'joinery.dovetail*'))"

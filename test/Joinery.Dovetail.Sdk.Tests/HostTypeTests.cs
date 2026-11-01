@@ -50,6 +50,47 @@ public class HostTypeTests(string targetFramework)
     }
 
     [Test]
+    public async Task HostApplication_SdkElementInTheProject_DetectsHostAndInjectsHosting()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject(
+                "worker/worker.csproj",
+                ProjectCreator
+                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                   // Applied in the project rather than in a Directory.Build.props: Sdk.targets then comes at the end of the project,
+                   // after Microsoft.Common.targets has imported CustomAfterMicrosoftCommonTargets.
+                   .Sdk("Joinery.Dovetail.Sdk")
+                   .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework))
+            )
+           .AddFile("worker/Program.cs", "System.Console.WriteLine(\"hello\");");
+
+        await project.VerifyProjects();
+    }
+
+    [Test]
+    public async Task HostApplication_ProjectSdk_DetectsHostAndInjectsHosting()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject(
+                "worker/worker.csproj",
+                ProjectCreator
+                   // The project SDK syntax: Joinery.Dovetail.Sdk is the project's only SDK, named with its version, and brings
+                   // Microsoft.NET.Sdk itself.
+                   .Templates.SdkCsproj(
+                        targetFramework: targetFramework,
+                        outputType: "Exe",
+                        sdk: $"Joinery.Dovetail.Sdk/{Config.DovetailPackageVersion("Joinery.Dovetail.Sdk")}"
+                    )
+                   .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework))
+            )
+           .AddFile("worker/Program.cs", "System.Console.WriteLine(\"hello\");");
+
+        await project.VerifyProjects();
+    }
+
+    [Test]
     public async Task WebAssembly_DetectsHostAndInjectsHostingWebAssembly()
     {
         using var project = new SdkTestProject();
