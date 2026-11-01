@@ -9,7 +9,7 @@
       AssemblyName: DovetailPkgTestLib1,
       BaseIntermediateOutputPath: obj/,
       BaseOutputPath: bin/,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -56,7 +56,6 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/lib1/DovetailPkgTestLib1.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],
@@ -87,7 +86,7 @@
       AssemblyName: DovetailPkgTestLib2,
       BaseIntermediateOutputPath: obj/,
       BaseOutputPath: bin/,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -134,7 +133,6 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/lib2/DovetailPkgTestLib2.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],
@@ -165,7 +163,7 @@
       AssemblyName: host,
       BaseIntermediateOutputPath: obj\,
       BaseOutputPath: bin\,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -224,7 +222,6 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/host/host.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],

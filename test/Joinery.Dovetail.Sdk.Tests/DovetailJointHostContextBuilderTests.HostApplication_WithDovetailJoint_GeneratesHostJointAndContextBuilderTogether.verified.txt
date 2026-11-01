@@ -9,7 +9,7 @@
       AssemblyName: worker,
       BaseIntermediateOutputPath: obj\,
       BaseOutputPath: bin\,
-      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
       DefineConstants: TRACE;DEBUG,
       DovetailAspireTestingVersion: {sdk-version},
       DovetailAspireVersion: {sdk-version},
@@ -74,7 +74,6 @@
     Using: [],
     Imports: [
       {TempPath}sdk-tests/{id}/worker/worker.csproj,
-      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/Directory.Build.props
     ],
