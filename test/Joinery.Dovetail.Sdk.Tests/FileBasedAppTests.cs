@@ -19,7 +19,6 @@ public class FileBasedAppTests(string targetFramework)
             #:property TargetFramework={{targetFramework}}
 
             using app;
-            using Microsoft.Extensions.Hosting;
 
             using var host = await Host.CreateApplicationBuilder(args).ConfigureDovetail();
             System.Console.WriteLine("Serilog=" + typeof(Joinery.Dovetail.Serilog.SerilogJoint).Assembly.GetName().Name);

@@ -98,6 +98,15 @@
         -->
         <DovetailSdkImplicitPackageReference Include="Microsoft.Extensions.Hosting" Version="$(DovetailMicrosoftExtensionsHostingVersion)" Condition="'$(FileBasedProgram)' == 'true'" />
         <DovetailSdkImplicitPackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(DovetailOpenTelemetryExtensionsHostingVersion)" Condition="'$(FileBasedProgram)' == 'true' and '$(DovetailEnableOpenTelemetry)' != 'false'" />
+        <!--
+            The namespaces a generic host's Program.cs uses (Host.CreateApplicationBuilder, GetRequiredService), as implicit usings, as
+            Microsoft.NET.Sdk.Worker and Microsoft.NET.Sdk.Web have them. Joinery.Dovetail brings Microsoft.Extensions.DependencyInjection;
+            Microsoft.Extensions.Hosting only exists once the project references it (or its abstractions), which a file-based app always does.
+        -->
+        <Using Include="Microsoft.Extensions.DependencyInjection"
+               Condition="('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and @(Using->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.DependencyInjection')) != 'true'" />
+        <Using Include="Microsoft.Extensions.Hosting"
+               Condition="('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and @(Using->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting')) != 'true' and ('$(FileBasedProgram)' == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Extensions.Hosting.Abstractions')) == 'true')" />
       </ItemGroup>
     </When>
     <Otherwise>

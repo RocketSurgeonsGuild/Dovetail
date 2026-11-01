@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using SdkSample.Diagnostics;
 using SdkSample.Greetings;
 using SdkSample.Notifications;
