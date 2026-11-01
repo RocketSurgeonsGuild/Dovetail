@@ -2,7 +2,7 @@
     The project SDK syntax: Joinery.Dovetail.Sdk is the project's only SDK, named with its version in the Sdk attribute. It brings
     Microsoft.NET.Sdk itself, and OutputType=Exe makes it detect a HostApplicationBuilder host as it does for SdkSample.Worker.
 -->
-<Project Sdk="Joinery.Dovetail.Sdk/0.0.0-sample">
+<Project Sdk="Joinery.Dovetail.Sdk/0.4.1">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
