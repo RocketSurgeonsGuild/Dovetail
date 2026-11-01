@@ -4,5 +4,5 @@
     pipeline's parameterless constructor.
 -->
 <Project Sdk="Microsoft.NET.Sdk">
-  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.4.1" />
 </Project>

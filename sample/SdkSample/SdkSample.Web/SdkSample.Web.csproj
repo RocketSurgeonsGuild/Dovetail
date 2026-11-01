@@ -3,7 +3,7 @@
     Joinery.Dovetail.Hosting and generates the ConfigureDovetail() extension used in Program.cs.
 -->
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.4.1" />
   <PropertyGroup>
     <!--
         Serves the merged configuration schema at /.well-known/dovetail/configuration-schema, only while developing: the
