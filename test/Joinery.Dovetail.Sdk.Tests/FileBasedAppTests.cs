@@ -1,9 +1,9 @@
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// A file-based app (<c>dotnet run app.cs</c>) applies the SDK with <c>#:sdk</c> directives. It is a console application like any
-/// other, so it gets the generic host, Joinery.Dovetail.Hosting, Joinery.Dovetail.Serilog and Joinery.Dovetail.OpenTelemetry without a
-/// single <c>#:package</c> directive.
+/// A file-based app (<c>dotnet run app.cs</c>) applies the SDK with a single <c>#:sdk</c> directive: the SDK brings Microsoft.NET.Sdk, which
+/// that directive replaces. It is a console application like any other, so it gets the generic host, Joinery.Dovetail.Hosting,
+/// Joinery.Dovetail.Serilog and Joinery.Dovetail.OpenTelemetry without a single <c>#:package</c> directive.
 /// </summary>
 [TargetFrameworks]
 public class FileBasedAppTests(string targetFramework)
@@ -15,7 +15,6 @@ public class FileBasedAppTests(string targetFramework)
         project.AddFile(
             "app/app.cs",
             $$"""
-            #:sdk Microsoft.NET.Sdk
             #:sdk Joinery.Dovetail.Sdk
             #:property TargetFramework={{targetFramework}}
 

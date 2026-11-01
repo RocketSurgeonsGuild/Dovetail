@@ -1,4 +1,14 @@
 <Project>
+  <!--
+      Applied as a project's only SDK (<Project Sdk="Joinery.Dovetail.Sdk">, or a file-based app whose only #:sdk directive is this one,
+      which replaces the default Microsoft.NET.Sdk), this SDK brings Microsoft.NET.Sdk itself, and Sdk.targets its targets. Next to another
+      SDK (an <Sdk /> element, a second #:sdk directive) or in a Directory.Build.props, that SDK has already set UsingMicrosoftNETSdk.
+  -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
+    <_DovetailImportsMicrosoftNETSdk>true</_DovetailImportsMicrosoftNETSdk>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition="'$(_DovetailImportsMicrosoftNETSdk)' == 'true'" />
+
   <!-- DovetailVersion: the version of every Dovetail package this SDK adds, generated when the SDK is packed -->
   <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
 

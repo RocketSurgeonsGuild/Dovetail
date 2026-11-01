@@ -56,6 +56,24 @@
             Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
           }
         ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+        Imports: [
+          {
+            Path: Sdk.props,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.targets,
+        Imports: [
+          {
+            Path: Sdk.targets,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
       }
     ],
     GeneratedFiles: [],
@@ -119,6 +137,24 @@
           {
             Path: $(MSBuildThisFileDirectory)Joinery.Dovetail.Configuration.targets,
             Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+        Imports: [
+          {
+            Path: Sdk.props,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.targets,
+        Imports: [
+          {
+            Path: Sdk.targets,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
           }
         ]
       }
@@ -196,6 +232,24 @@
           {
             Path: $(MSBuildThisFileDirectory)Joinery.Dovetail.Configuration.targets,
             Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+        Imports: [
+          {
+            Path: Sdk.props,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.targets,
+        Imports: [
+          {
+            Path: Sdk.targets,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
           }
         ]
       }

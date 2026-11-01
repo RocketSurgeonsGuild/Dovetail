@@ -1,6 +1,7 @@
 <Project>
   <!--
-      Nothing to import here: Sdk.props registers everything this SDK adds, since only it is imported before the project's own body
-      however the SDK is applied.
+      Sdk.props registers everything else this SDK adds, since only it is imported before the project's own body however the SDK is
+      applied. This file only closes Microsoft.NET.Sdk when Sdk.props brought it (the project names no other SDK).
   -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition="'$(_DovetailImportsMicrosoftNETSdk)' == 'true'" />
 </Project>
