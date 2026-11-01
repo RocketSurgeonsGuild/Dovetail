@@ -16,7 +16,8 @@ its conventions to a joint here.
 
 An application turns OpenTelemetry on by referencing `Joinery.Dovetail.OpenTelemetry` along with `Joinery.Dovetail.Hosting`.
 Joinery.Dovetail.Sdk adds `Joinery.Dovetail.OpenTelemetry` to every project that references `OpenTelemetry` or
-`OpenTelemetry.Extensions.Hosting`; set `DovetailEnableOpenTelemetry` to `false` to leave OpenTelemetry to the application.
+`OpenTelemetry.Extensions.Hosting`, and to every file-based app (`dotnet run app.cs`) along with `OpenTelemetry.Extensions.Hosting`;
+set `DovetailEnableOpenTelemetry` to `false` to leave OpenTelemetry to the application.
 
 `Joinery.Dovetail.Hosting` then emits joints into the application that add OpenTelemetry to its services, apply every
 OpenTelemetry joint, and start it. OpenTelemetry only listens to activity sources and meters once its providers are resolved,

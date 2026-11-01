@@ -14,7 +14,8 @@ without taking a dependency on how the application builds its logger.
 
 Reference `Joinery.Dovetail.Serilog`. Its `SerilogJoint` is exported to the application like any other joint, so there is
 nothing to call: every host that calls `ConfigureDovetail` and references it gets a Serilog logger. With
-`Joinery.Dovetail.Sdk`, set `DovetailEnableSerilog` to `true` and every project that references `Serilog` gets the package.
+`Joinery.Dovetail.Sdk`, set `DovetailEnableSerilog` to `true` and every project that references `Serilog` gets the package. A
+file-based app (`dotnet run app.cs`) gets it without either, unless it sets `DovetailEnableSerilog` to `false`.
 
 ## What it does
 

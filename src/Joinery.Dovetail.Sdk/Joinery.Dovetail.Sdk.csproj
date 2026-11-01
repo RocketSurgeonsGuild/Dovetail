@@ -19,17 +19,24 @@
   <!--
       Every Dovetail package ships at the same version, so the SDK adds each one at $(DovetailVersion), which defaults to the
       version of the SDK itself. An application can set DovetailVersion to move every package the SDK adds together.
+      A file-based app also gets Microsoft.Extensions.Hosting and OpenTelemetry.Extensions.Hosting, at
+      $(DovetailMicrosoftExtensionsHostingVersion) and $(DovetailOpenTelemetryExtensionsHostingVersion): the versions
+      Directory.Packages.props pins (for net10.0, which every target framework can use).
   -->
   <Target Name="_DovetailGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack">
     <PropertyGroup>
       <_DovetailPackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailPackagesProps>
+      <_DovetailMicrosoftExtensionsHostingVersion>@(PackageVersion->WithMetadataValue('Identity', 'Microsoft.Extensions.Hosting')->'%(Version)')</_DovetailMicrosoftExtensionsHostingVersion>
+      <_DovetailOpenTelemetryExtensionsHostingVersion>@(PackageVersion->WithMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')->'%(Version)')</_DovetailOpenTelemetryExtensionsHostingVersion>
     </PropertyGroup>
     <ItemGroup>
       <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
       <_DovetailPackagesPropsLine Include="&lt;Project&gt;" />
-      <_DovetailPackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk is packed. The version is only set when the application has not set it already. --&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk is packed. Each version is only set when the application has not set it already. --&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;PropertyGroup&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;DovetailVersion Condition=&quot;%27%24(DovetailVersion)%27 == %27%27&quot;&gt;$(Version)&lt;/DovetailVersion&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;DovetailMicrosoftExtensionsHostingVersion Condition=&quot;%27%24(DovetailMicrosoftExtensionsHostingVersion)%27 == %27%27&quot;&gt;$(_DovetailMicrosoftExtensionsHostingVersion)&lt;/DovetailMicrosoftExtensionsHostingVersion&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;DovetailOpenTelemetryExtensionsHostingVersion Condition=&quot;%27%24(DovetailOpenTelemetryExtensionsHostingVersion)%27 == %27%27&quot;&gt;$(_DovetailOpenTelemetryExtensionsHostingVersion)&lt;/DovetailOpenTelemetryExtensionsHostingVersion&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;/Project&gt;" />
     </ItemGroup>

@@ -20,6 +20,8 @@
       DovetailEnableOpenTelemetry: true,
       DovetailEnableSerilog: false,
       DovetailEnableStashbox: false,
+      DovetailMicrosoftExtensionsHostingVersion: 10.0.14,
+      DovetailOpenTelemetryExtensionsHostingVersion: 1.20.1,
       DovetailPackConfiguration: true,
       DovetailVersion: {sdk-version},
       EnableDefaultCompileItems: false,
