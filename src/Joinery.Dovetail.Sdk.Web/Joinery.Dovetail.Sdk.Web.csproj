@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <PackageType>MSBuildSdk</PackageType>
+    <NoBuildOutput>true</NoBuildOutput>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PackageDescription>MSBuild SDK for a Dovetail web application: Microsoft.NET.Sdk.Web and Joinery.Dovetail.Sdk as one project SDK</PackageDescription>
+    <PackageTags>$(PackageTags);sdk;msbuild;web</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Sdk/**" />
+    <None Include="Sdk/**" Pack="true" PackagePath="Sdk/" />
+    <Using Remove="**" />
+  </ItemGroup>
+
+  <!--
+      Writes Sdk/Packages.props into the package: DovetailSdkVersion, the version of Joinery.Dovetail.Sdk that Sdk/Sdk.props chains. Every
+      Dovetail package ships at the same version, so it is the version of this SDK. An application can set it first to chain another.
+  -->
+  <Target Name="_DovetailWebGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack">
+    <PropertyGroup>
+      <_DovetailWebPackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailWebPackagesProps>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
+      <_DovetailWebPackagesPropsLine Include="&lt;Project&gt;" />
+      <_DovetailWebPackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk.Web is packed. The version is only set when the application has not set it already. --&gt;" />
+      <_DovetailWebPackagesPropsLine Include="&lt;PropertyGroup&gt;" />
+      <_DovetailWebPackagesPropsLine Include="&lt;DovetailSdkVersion Condition=&quot;%27%24(DovetailSdkVersion)%27 == %27%27&quot;&gt;$(Version)&lt;/DovetailSdkVersion&gt;" />
+      <_DovetailWebPackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
+      <_DovetailWebPackagesPropsLine Include="&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_DovetailWebPackagesProps)" Lines="@(_DovetailWebPackagesPropsLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <None Include="$(_DovetailWebPackagesProps)" Pack="true" PackagePath="Sdk" />
+      <FileWrites Include="$(_DovetailWebPackagesProps)" />
+    </ItemGroup>
+  </Target>
+</Project>

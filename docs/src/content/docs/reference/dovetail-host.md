@@ -46,6 +46,9 @@ the entry points call.
 An Uno application without `Hosting` has no host and gets a build warning. MAUI is matched first, because a MAUI application is also
 an `Exe`.
 
+A web application can name `Joinery.Dovetail.Sdk.Web` as its only SDK (`<Project Sdk="Joinery.Dovetail.Sdk.Web/…">`) instead of
+`Microsoft.NET.Sdk.Web` with a `<Sdk Name="Joinery.Dovetail.Sdk" />` element. It brings both, so the project is a `WebApplication`.
+
 ## Declaring a host
 
 The item's `Include` is the host's name. It becomes part of the generated class and file names, and, unless you set `HelperName`, of

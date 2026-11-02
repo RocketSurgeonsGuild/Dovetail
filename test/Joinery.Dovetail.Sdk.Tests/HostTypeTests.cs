@@ -27,6 +27,23 @@ public class HostTypeTests(string targetFramework)
     }
 
     [Test]
+    public async Task WebApplication_WebSdk_DetectsHostAndInjectsHostingWeb()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject(
+                "web/web.csproj",
+                ProjectCreator
+                   // Joinery.Dovetail.Sdk.Web as the project's only SDK (global.json pins its version): it brings Microsoft.NET.Sdk.Web,
+                   // then Joinery.Dovetail.Sdk, so the project is detected as the WebApplication above is.
+                   .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Joinery.Dovetail.Sdk.Web")
+            )
+           .AddFile("web/Program.cs", "System.Console.WriteLine(\"hello\");");
+
+        await project.VerifyProjects();
+    }
+
+    [Test]
     public async Task HostApplication_OutputTypeExe_DetectsHostAndInjectsHosting()
     {
         using var project = new SdkTestProject();

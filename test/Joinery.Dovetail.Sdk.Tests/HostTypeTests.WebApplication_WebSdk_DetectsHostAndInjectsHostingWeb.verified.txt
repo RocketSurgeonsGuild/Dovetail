@@ -1,0 +1,104 @@
+﻿[
+  {
+    Name: web.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: {TargetFramework},
+    Properties: {
+      _DovetailApplicationDetected: true,
+      AssemblyName: web,
+      BaseIntermediateOutputPath: {TempPath}sdk-tests/{id}/web/obj/,
+      BaseOutputPath: bin\,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
+      DefineConstants: TRACE;DEBUG,
+      DovetailEnableAspire: false,
+      DovetailEnableAspireTesting: false,
+      DovetailEnableAutofac: false,
+      DovetailEnableDryIoc: false,
+      DovetailEnableHosting: false,
+      DovetailEnableHostingWeb: false,
+      DovetailEnableOpenTelemetry: true,
+      DovetailEnableSerilog: false,
+      DovetailEnableStashbox: false,
+      DovetailMicrosoftExtensionsHostingVersion: {microsoft-extensions-hosting-version},
+      DovetailOpenTelemetryExtensionsHostingVersion: {opentelemetry-extensions-hosting-version},
+      DovetailSdkVersion: {sdk-version},
+      DovetailVersion: {sdk-version},
+      EnableDefaultCompileItems: false,
+      ExportDovetailAssembly: true,
+      GenerateDocumentationFile: false,
+      ImportDovetailAssembly: true,
+      IsPackable: false,
+      NoWarn: 1701;1702,
+      PackageOutputPath: bin\Debug/,
+      RootNamespace: web,
+      TargetFramework: {TargetFramework}
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Joinery.Dovetail: {
+        IsImplicitlyDefined: true
+      },
+      Joinery.Dovetail.Hosting: {
+        IsImplicitlyDefined: true
+      }
+    },
+    DovetailJoint: {},
+    DovetailHost: {
+      WebApplication: {
+        HelperName: global::Joinery.Dovetail.DovetailHostApplicationHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.AspNetCore.Builder.WebApplicationBuilder,
+        HostType: global::Microsoft.AspNetCore.Builder.WebApplication
+      }
+    },
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.web/{sdk-version}/Sdk/Sdk.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.web/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/web/web.csproj,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props
+    ],
+    NoImports: [
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Joinery.Dovetail.Configuration.targets,
+            Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+        Imports: [
+          {
+            Path: Sdk.props,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.targets,
+        Imports: [
+          {
+            Path: Sdk.targets,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      }
+    ],
+    GeneratedFiles: [
+      DovetailContextBuilder.g.cs,
+      DovetailHost.WebApplication.g.cs,
+      DovetailHosting.DovetailConfigurationSchemaEndpointExtensions.g.cs,
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostLifecycleHelpers.g.cs
+    ],
+    OutputFiles: [
+      appsettings.schema.json,
+      web.runtimeconfig.dev.json,
+      web.staticwebassets.runtime.json
+    ]
+  }
+]

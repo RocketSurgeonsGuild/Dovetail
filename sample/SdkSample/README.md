@@ -17,6 +17,12 @@ version, and brings `Microsoft.NET.Sdk` itself:
 <Project Sdk="Joinery.Dovetail.Sdk/0.0.0-sample">
 ```
 
+`SdkSample.Web` uses `Joinery.Dovetail.Sdk.Web`, which is `Microsoft.NET.Sdk.Web` and Joinery.Dovetail.Sdk as one project SDK:
+
+```xml
+<Project Sdk="Joinery.Dovetail.Sdk.Web/0.0.0-sample">
+```
+
 The SDK could equally be applied once for every project, in a `Directory.Build.props`
 (`<Project Sdk="Joinery.Dovetail.Sdk">`, with its version under `msbuild-sdks` in `global.json`).
 
@@ -30,7 +36,7 @@ The SDK could equally be applied once for every project, in a `Directory.Build.p
 | `SdkSample.Diagnostics`   | plain class library     | the same, for options of types the library doesn't own (see below)                                                                                              |
 | `SdkSample.Worker`        | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
 | `SdkSample.Console`       | `Sdk="Joinery.Dovetail.Sdk/…"` | bring `Microsoft.NET.Sdk` itself, then the same as `SdkSample.Worker` (it references `SdkSample.Greetings` only) |
-| `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                                |
+| `SdkSample.Web`           | `Sdk="Joinery.Dovetail.Sdk.Web/…"` | bring `Microsoft.NET.Sdk.Web`, then detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                                |
 
 `DovetailEnableConfiguration=true` (set in `Directory.Build.props`) additionally injects
 `Joinery.Dovetail.Configuration.Yaml` into every project. YAML is the default format; setting

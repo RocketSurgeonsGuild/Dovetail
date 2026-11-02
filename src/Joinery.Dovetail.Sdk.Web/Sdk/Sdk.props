@@ -1,0 +1,13 @@
+<Project>
+  <!--
+      A web application's only SDK, <Project Sdk="Joinery.Dovetail.Sdk.Web">: Microsoft.NET.Sdk.Web, then Joinery.Dovetail.Sdk, as
+      <Project Sdk="Microsoft.NET.Sdk.Web"> with <Sdk Name="Joinery.Dovetail.Sdk" /> imports them. Joinery.Dovetail.Sdk finds
+      UsingMicrosoftNETSdk set by then, so it does not bring Microsoft.NET.Sdk a second time, and detects the WebApplication host as usual.
+  -->
+
+  <!-- DovetailSdkVersion: the version of Joinery.Dovetail.Sdk chained below, generated when the SDK is packed -->
+  <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Web" />
+  <Import Project="Sdk.props" Sdk="Joinery.Dovetail.Sdk" Version="$(DovetailSdkVersion)" />
+</Project>
