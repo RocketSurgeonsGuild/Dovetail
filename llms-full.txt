@@ -975,7 +975,7 @@ The generator runs in every project that references a Dovetail package, includin
 
 [Section titled “Turning it on”](#turning-it-on)
 
-An application turns OpenTelemetry on by referencing `Joinery.Dovetail.OpenTelemetry` along with `Joinery.Dovetail.Hosting`. Joinery.Dovetail.Sdk adds `Joinery.Dovetail.OpenTelemetry` to every project that references `OpenTelemetry` or `OpenTelemetry.Extensions.Hosting`; set `DovetailEnableOpenTelemetry` to `false` to leave OpenTelemetry to the application.
+An application turns OpenTelemetry on by referencing `Joinery.Dovetail.OpenTelemetry` along with `Joinery.Dovetail.Hosting`. Joinery.Dovetail.Sdk adds `Joinery.Dovetail.OpenTelemetry` to every project that references `OpenTelemetry` or `OpenTelemetry.Extensions.Hosting`, and to every file-based app (`dotnet run app.cs`) along with `OpenTelemetry.Extensions.Hosting`; set `DovetailEnableOpenTelemetry` to `false` to leave OpenTelemetry to the application.
 
 `Joinery.Dovetail.Hosting` then emits joints into the application that add OpenTelemetry to its services, apply every OpenTelemetry joint, and start it. OpenTelemetry only listens to activity sources and meters once its providers are resolved, which `OpenTelemetry.Extensions.Hosting` does from a hosted service, so what an application needs depends on whether its host runs hosted services:
 
@@ -1146,7 +1146,7 @@ The browser tests run the sample’s `net11.0-browser` build behind the Blazor G
 
 [Section titled “Turning it on”](#turning-it-on)
 
-Reference `Joinery.Dovetail.Serilog`. Its `SerilogJoint` is exported to the application like any other joint, so there is nothing to call: every host that calls `ConfigureDovetail` and references it gets a Serilog logger. With `Joinery.Dovetail.Sdk`, set `DovetailEnableSerilog` to `true` and every project that references `Serilog` gets the package.
+Reference `Joinery.Dovetail.Serilog`. Its `SerilogJoint` is exported to the application like any other joint, so there is nothing to call: every host that calls `ConfigureDovetail` and references it gets a Serilog logger. With `Joinery.Dovetail.Sdk`, set `DovetailEnableSerilog` to `true` and every project that references `Serilog` gets the package. A file-based app (`dotnet run app.cs`) gets it without either, unless it sets `DovetailEnableSerilog` to `false`.
 
 ## What it does
 
