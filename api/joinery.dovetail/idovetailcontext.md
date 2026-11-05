@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.4.3-beta.12`
+- Version: `0.4.3-beta.13`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
