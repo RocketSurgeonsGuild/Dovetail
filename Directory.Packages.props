@@ -97,8 +97,8 @@
       below so the two lines can be bumped independently.
   -->
   <ItemGroup Label="Uno.Extensions 7.x" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
-    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="7.3.6" />
-    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="7.3.6" />
+    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="7.4.1" />
+    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="7.4.1" />
   </ItemGroup>
   <ItemGroup Label="Uno.Extensions 8.x" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
     <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="8.0.0-dev.250" />
