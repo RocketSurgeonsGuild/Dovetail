@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.DryIoc](/Dovetail/api/joinery.dovetail.dryioc.md)
-- Version: `0.4.3-beta.18`
+- Version: `0.4.3-beta.19`
 - Namespace: `Joinery.Dovetail.DryIoc`
 - Target framework: `net10.0`
 
