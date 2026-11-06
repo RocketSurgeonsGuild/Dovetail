@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.4.3-beta.19`
+- Version: `0.4.3-beta.20`
 - Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
