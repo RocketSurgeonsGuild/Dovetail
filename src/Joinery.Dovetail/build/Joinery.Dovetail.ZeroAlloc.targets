@@ -1,0 +1,110 @@
+<Project>
+  <!--
+    Joinery.Dovetail.ZeroAlloc.targets
+    Turns on ZeroAlloc.Mediator (https://mediator.zeroalloc.net/) and ZeroAlloc.Validation (https://validation.zeroalloc.net/) for
+    the projects that use them: once the references resolve, each ZeroAlloc source generator the project runs gets a service joint,
+    written from a *.cs.template file next to this one, that calls the registration method the generator wrote into the project.
+    Those methods are generated per assembly (AddMediator() is internal), so a package can't call them; a joint compiled into the
+    project can. Joinery.Dovetail depends on none of the ZeroAlloc packages: running their generator is what turns a joint on.
+
+    Every project that runs a generator gets its joint, libraries included: each assembly registers its own handlers and validators,
+    and a library's joint is exported to the applications that reference it like any other.
+
+      DovetailZeroAllocMediatorJoint             - ZeroAlloc.Mediator.Generator runs: services.AddMediator(), then With...() for each
+                                                   bridge package referenced (ZeroAlloc.Mediator.Validation, .Cache, .Resilience and
+                                                   .Telemetry). ZeroAlloc.Mediator.Authorization's WithAuthorization() takes the
+                                                   application's policies, so it is left to the application.
+      DovetailZeroAllocValidatorsJoint           - ZeroAlloc.Validation.Inject runs: services.AddZeroAllocValidators().
+      DovetailZeroAllocAspNetCoreValidationJoint - the project references ZeroAlloc.Validation.AspNetCore itself and runs its generator:
+                                                   services.AddZeroAllocAspNetCoreValidation(). The package's generator also runs in the
+                                                   projects that only get it transitively, and each call adds the MVC filter again.
+
+    DovetailEnableZeroAllocMediator=false and DovetailEnableZeroAllocValidation=false leave the registration to the project.
+
+    Templates must not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to forward slashes
+    on Linux and macOS. The emitted types are internal and [Embedded], which the Dovetail source generator defines, so a project that
+    doesn't run it gets no joints.
+  -->
+  <PropertyGroup>
+    <_DovetailZeroAllocTargetsImported>true</_DovetailZeroAllocTargetsImported>
+  </PropertyGroup>
+
+  <!--
+      _DovetailZeroAllocMediatorBridge items: Include is the bridge package's assembly; Method is the static With...() method that turns
+      it on, which takes and returns the IMediatorBuilder.
+  -->
+  <ItemGroup>
+    <_DovetailZeroAllocMediatorBridge
+      Include="ZeroAlloc.Mediator.Validation"
+      Method="global::ZeroAlloc.Mediator.Validation.MediatorValidationServiceCollectionExtensions.WithValidation"
+    />
+    <_DovetailZeroAllocMediatorBridge
+      Include="ZeroAlloc.Mediator.Cache"
+      Method="global::ZeroAlloc.Mediator.Cache.MediatorCacheServiceCollectionExtensions.WithCache"
+    />
+    <_DovetailZeroAllocMediatorBridge
+      Include="ZeroAlloc.Mediator.Resilience"
+      Method="global::ZeroAlloc.Mediator.Resilience.MediatorResilienceServiceCollectionExtensions.WithResilience"
+    />
+    <_DovetailZeroAllocMediatorBridge
+      Include="ZeroAlloc.Mediator.Telemetry"
+      Method="global::ZeroAlloc.Mediator.Telemetry.MediatorTelemetryServiceCollectionExtensions.WithTelemetry"
+    />
+  </ItemGroup>
+
+  <!-- Right after the references resolve, the same hook Joinery.Dovetail.Environment.targets uses: the analyzers are known by then. -->
+  <Target Name="_DovetailResolveZeroAllocJoints" AfterTargets="ResolveAssemblyReferences">
+    <PropertyGroup>
+      <_DovetailZeroAllocGenerator>@(Analyzer->AnyHaveMetadataValue('Filename', 'Joinery.Dovetail.Analyzers'))</_DovetailZeroAllocGenerator>
+      <_DovetailZeroAllocMediator>false</_DovetailZeroAllocMediator>
+      <_DovetailZeroAllocMediator
+        Condition="'$(_DovetailZeroAllocGenerator)' == 'true' and '$(DovetailEnableZeroAllocMediator)' != 'false'"
+      >@(Analyzer->AnyHaveMetadataValue('Filename', 'ZeroAlloc.Mediator.Generator'))</_DovetailZeroAllocMediator>
+      <_DovetailZeroAllocValidators>false</_DovetailZeroAllocValidators>
+      <_DovetailZeroAllocValidators
+        Condition="'$(_DovetailZeroAllocGenerator)' == 'true' and '$(DovetailEnableZeroAllocValidation)' != 'false'"
+      >@(Analyzer->AnyHaveMetadataValue('Filename', 'ZeroAlloc.Validation.Inject'))</_DovetailZeroAllocValidators>
+      <_DovetailZeroAllocAspNetCore>false</_DovetailZeroAllocAspNetCore>
+      <_DovetailZeroAllocAspNetCore
+        Condition="'$(_DovetailZeroAllocGenerator)' == 'true' and '$(DovetailEnableZeroAllocValidation)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'ZeroAlloc.Validation.AspNetCore')) == 'true'"
+      >@(Analyzer->AnyHaveMetadataValue('Filename', 'ZeroAlloc.Validation.AspNetCore.Generator'))</_DovetailZeroAllocAspNetCore>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DovetailZeroAllocMediator)' == 'true'">
+      <_DovetailZeroAllocReference Include="@(ReferencePath->'%(Filename)')" />
+      <_DovetailZeroAllocMissingBridge Include="@(_DovetailZeroAllocMediatorBridge)" Exclude="@(_DovetailZeroAllocReference)" />
+      <_DovetailZeroAllocReferencedBridge Include="@(_DovetailZeroAllocMediatorBridge)" Exclude="@(_DovetailZeroAllocMissingBridge)" />
+      <_DovetailZeroAllocJoint Include="DovetailZeroAllocMediatorJoint" />
+    </ItemGroup>
+    <ItemGroup>
+      <_DovetailZeroAllocJoint Include="DovetailZeroAllocValidatorsJoint" Condition="'$(_DovetailZeroAllocValidators)' == 'true'" />
+      <_DovetailZeroAllocJoint Include="DovetailZeroAllocAspNetCoreValidationJoint" Condition="'$(_DovetailZeroAllocAspNetCore)' == 'true'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_DovetailZeroAllocMediatorBridges>@(_DovetailZeroAllocReferencedBridge->'%(Method)(mediator)%3B', ' ')</_DovetailZeroAllocMediatorBridges>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Batched once per emitted joint via Outputs, same as Joinery.Dovetail.Environment.targets. -->
+  <Target
+    Name="_DovetailGenerateZeroAllocJoints"
+    AfterTargets="_DovetailResolveZeroAllocJoints"
+    Condition="'@(_DovetailZeroAllocJoint)' != ''"
+    Outputs="%(_DovetailZeroAllocJoint.Identity)"
+  >
+    <PropertyGroup>
+      <_DovetailZeroAllocJointContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)%(_DovetailZeroAllocJoint.Identity).cs.template'))</_DovetailZeroAllocJointContent>
+      <_DovetailZeroAllocJointContent>$(_DovetailZeroAllocJointContent.Replace('/*{Bridges}*/', '$(_DovetailZeroAllocMediatorBridges)'))</_DovetailZeroAllocJointContent>
+      <_DovetailZeroAllocJointOutputFile>$(IntermediateOutputPath)DovetailZeroAlloc.%(_DovetailZeroAllocJoint.Identity).g.cs</_DovetailZeroAllocJointOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(_DovetailZeroAllocJointOutputFile)"
+      Lines="$([MSBuild]::Escape($(_DovetailZeroAllocJointContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+    />
+    <ItemGroup>
+      <Compile Include="$(_DovetailZeroAllocJointOutputFile)" />
+      <FileWrites Include="$(_DovetailZeroAllocJointOutputFile)" />
+    </ItemGroup>
+  </Target>
+</Project>
