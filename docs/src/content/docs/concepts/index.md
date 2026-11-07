@@ -14,4 +14,5 @@ Dovetail replaces runtime reflection-based application wiring with compile-time 
   <LinkCard title="Source Generation" href="/concepts/source-generation/" description="How the Roslyn generator resolves joints at build time." />
   <LinkCard title="Unit Tests" href="/concepts/unit-tests/" description="Testing joints in isolation." />
   <LinkCard title="Managed Configuration" href="/concepts/managed-configuration/" description="Declare configuration as code and get typed options, a reflection-free binder, and a merged JSON Schema." />
+  <LinkCard title="ZeroAlloc" href="/concepts/zeroalloc/" description="ZeroAlloc.Mediator and ZeroAlloc.Validation register themselves through joints written into the project." />
 </CardGrid>
