@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project>
+    <!--
+        A project that references Rocket.Surgery.AssemblyInfo gets its generated AssemblyInfo class in its own root namespace (set here, after
+        the SDK has defaulted RootNamespace). In the global namespace every such project would have the same AssemblyInfo, so a project that
+        sees another's internals would bind typeof(AssemblyInfo) to its own copy, and Specular, which can anchor an assembly with that type,
+        would scan the wrong one.
+    -->
+    <PropertyGroup>
+        <AssemblyInfoNamespace Condition="'$(AssemblyInfoNamespace)' == ''">$(RootNamespace)</AssemblyInfoNamespace>
+    </PropertyGroup>
     <!-- Runtime async: net11.0+ only (the flag breaks net10.0 builds), never for browser/WebAssembly (Mono WASM can't run runtime-async IL). Opt out per project with UseRuntimeAsync=false. -->
     <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) and '$(TargetPlatformIdentifier)' != 'browser' and '$(RuntimeIdentifier)' != 'browser-wasm' and '$(UseRuntimeAsync)' != 'false'">
         <Features>$(Features);runtime-async=on</Features>

@@ -1,6 +1,7 @@
 <Project>
     <ItemGroup>
         <PackageReference Include="Polyfill" PrivateAssets="all" />
+        <PackageReference Include="Rocket.Surgery.AssemblyInfo" PrivateAssets="all" />
         <Compile Include="$(MSBuildThisFileDirectory)..\Joinery.Dovetail.Analyzers\**\*.cs" Exclude="$(MSBuildThisFileDirectory)..\Joinery.Dovetail.Analyzers\obj\**\*.cs" />
     </ItemGroup>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />

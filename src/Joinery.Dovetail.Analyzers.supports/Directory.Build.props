@@ -13,6 +13,11 @@
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <TargetFramework>netstandard2.0</TargetFramework>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <GenerateAssemblyInfoManifest>false</GenerateAssemblyInfoManifest>
+        <!-- The generator only reads its own constants; the dependency accessors load assemblies, which analyzers may not. -->
+        <AssemblyInfoDependencies>false</AssemblyInfoDependencies>
+        <!-- The namespace the Joinery.Dovetail.Analyzers project (RootNamespace Joinery.Dovetail) generates AssemblyInfo in, for the shared sources. -->
+        <AssemblyInfoNamespace>Joinery.Dovetail</AssemblyInfoNamespace>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
 </Project>

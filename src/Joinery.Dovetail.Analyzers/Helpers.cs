@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -238,13 +237,13 @@ internal static class Helpers
                                         AttributeArgument(
                                             LiteralExpression(
                                                 SyntaxKind.StringLiteralExpression,
-                                                Literal(typeof(Helpers).Assembly.GetName().Name)
+                                                Literal(AssemblyInfo.Project.AssemblyName)
                                             )
                                         ),
                                         AttributeArgument(
                                             LiteralExpression(
                                                 SyntaxKind.StringLiteralExpression,
-                                                Literal(typeof(Helpers).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "generated")
+                                                Literal(AssemblyInfo.Attributes.FileVersion)
                                             )
                                         ),
                                     ]
