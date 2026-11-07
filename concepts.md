@@ -8,3 +8,4 @@ Dovetail replaces runtime reflection-based application wiring with compile-time 
   [Source Generation](/concepts/source-generation/)
   [Unit Tests](/concepts/unit-tests/)
   [Managed Configuration](/concepts/managed-configuration/)
+  [ZeroAlloc](/concepts/zeroalloc/)
