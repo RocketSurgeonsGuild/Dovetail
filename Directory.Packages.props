@@ -24,7 +24,7 @@
     <PackageVersion Include="Tomlyn.Extensions.Configuration" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.20.0" />
+    <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.21.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="20.0.0" />
     <!-- The MSBuild packages Joinery.Dovetail.Sdk.Tests compiles against (MSBuild.ProjectCreation brings Microsoft.Build); keep all three on one version. -->
     <PackageVersion Include="Microsoft.Build" Version="18.11.0" />
