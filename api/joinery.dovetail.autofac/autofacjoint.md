@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Autofac](/Dovetail/api/joinery.dovetail.autofac.md)
-- Version: `0.4.3-beta.28`
+- Version: `0.4.3-beta.30`
 - Namespace: `Joinery.Dovetail.Autofac`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
