@@ -24,6 +24,11 @@
   ],
   "packageRules": [
     {
+      "description": "The samples consume this repository's own packages at the local 0.0.0-sample placeholder that build/pack.proj packs; never bump them to a published release (ignorePaths alone has not kept Renovate out of the sample csproj files)",
+      "matchPackageNames": ["Joinery.Dovetail", "Joinery.Dovetail.*"],
+      "enabled": false
+    },
+    {
       "description": "The per-Roslyn-version analyzer builds pin their dependencies on purpose",
       "matchFileNames": ["src/*.Analyzers.supports/**"],
       "enabled": false
