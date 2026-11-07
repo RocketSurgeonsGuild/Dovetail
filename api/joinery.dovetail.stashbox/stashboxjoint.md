@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/api/joinery.dovetail.stashbox.md)
-- Version: `0.4.3-beta.20`
+- Version: `0.4.3-beta.21`
 - Namespace: `Joinery.Dovetail.Stashbox`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
