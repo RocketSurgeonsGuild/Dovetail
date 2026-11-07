@@ -1,6 +1,8 @@
 <Project>
     <ItemGroup>
         <PackageReference Include="FluentValidation" />
+        <!-- AssemblyInfo.Dependencies gives the generator's versions to the shared snapshot scrubbers without reflection. -->
+        <PackageReference Include="Rocket.Surgery.AssemblyInfo" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />

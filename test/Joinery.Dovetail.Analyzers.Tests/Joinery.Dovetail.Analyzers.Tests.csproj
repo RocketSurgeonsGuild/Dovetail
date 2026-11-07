@@ -6,6 +6,8 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="FluentValidation" />
+        <!-- AssemblyInfo.Dependencies gives the generator's versions to the snapshot scrubbers without reflection. -->
+        <PackageReference Include="Rocket.Surgery.AssemblyInfo" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />

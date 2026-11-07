@@ -7,11 +7,16 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <NoWarn>$(NoWarn);MSB3277</NoWarn>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <GenerateAssemblyInfoManifest>false</GenerateAssemblyInfoManifest>
+        <!-- The generator only reads its own constants; the dependency accessors load assemblies, which analyzers may not. -->
+        <AssemblyInfoDependencies>false</AssemblyInfoDependencies>
         <_AnalyzersLocation>../Joinery.Dovetail.Analyzers.supports/bin/</_AnalyzersLocation>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
         <PackageReference Include="Polyfill" PrivateAssets="all" />
+        <!-- The generator stamps [GeneratedCode] from its AssemblyInfo constants; nothing of it ships, so no manifest is written. -->
+        <PackageReference Include="Rocket.Surgery.AssemblyInfo" PrivateAssets="all" />
         <ProjectReference Include="../Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.0.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
         <ProjectReference Include="../Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.3.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
         <ProjectReference Include="../Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.6.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
