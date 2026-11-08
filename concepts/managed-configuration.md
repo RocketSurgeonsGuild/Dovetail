@@ -197,6 +197,10 @@ Dovetail registers every such validator in the assembly for the option types it 
 it never duplicates one you added yourself. Add `ValidateOnStart = true` on the attribute and a bad configuration fails
 the host at startup.
 
+With [ZeroAlloc.Validation](./zeroalloc#validating-configuration), mark the type `[Validate]` instead: Dovetail calls
+`ValidateWithZeroAlloc()` from ZeroAlloc.Validation.Options for it, which `Joinery.Dovetail.Sdk` adds alongside
+`ZeroAlloc.Validation`.
+
 ## Supported types
 
 The generator follows Microsoft's configuration binding source generator, not the serializer:
@@ -439,6 +443,7 @@ MyLibrary/
 | `DT0014` | Warning  | Schema generation failed unexpectedly for a type. It has no schema; please report it.                                                                                            |
 | `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                             |
 | `DT0016` | Error    | A type is bound with more than one key style. The later declaration is reported and produces nothing; use the same `KeyStyle`, or give the shared type `[ConfigurationKeyName]`. |
+| `DT0018` | Warning  | A `[Validate]` type has an asynchronous ZeroAlloc.Validation rule, so it isn't validated with `ValidateWithZeroAlloc()`: options validation is synchronous.                      |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one
 indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` and `DT0017` are described under

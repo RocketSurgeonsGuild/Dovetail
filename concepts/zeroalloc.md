@@ -43,6 +43,30 @@ joint of your own.
 With `ZeroAlloc.Mediator.Validation` and `ZeroAlloc.Validation.Inject` in the project that has the handlers, a request is
 validated before its handler runs, with nothing registered by hand.
 
+### Validating configuration
+
+A `[DovetailConfiguration]` class marked `[Validate]` is validated by its generated validator whenever its options are read,
+through [ZeroAlloc.Validation.Options](https://validation.zeroalloc.net/docs/options): the options joint Dovetail generates
+calls that package's `ValidateWithZeroAlloc()` on the type's options builder, before `ValidateOnStart()` when the attribute
+asks for it.
+
+```c#
+[DovetailConfiguration(ValidateOnStart = true), Validate]
+public class DatabaseOptions
+{
+    [NotEmpty]
+    public string ConnectionString { get; set; } = "";
+}
+```
+
+`Joinery.Dovetail.Sdk` adds `ZeroAlloc.Validation.Options` to every project that references `ZeroAlloc.Validation`, at the
+same version (ZeroAlloc ships them together), so there is nothing to add. Without the SDK, reference the package yourself.
+
+- Only types of the project itself are validated this way: `ValidateWithZeroAlloc()` is generated for the `[Validate]`
+  classes of each project, so a type from another assembly named by `[assembly: DovetailConfiguration<T>]` isn't.
+- A type with an asynchronous rule, its own or a nested model's, isn't validated, and Dovetail reports `DT0018`: options
+  validation is synchronous.
+
 ### ASP.NET Core
 
 `AddZeroAllocAspNetCoreValidation()` registers the validators too and adds an MVC action filter. Each call adds the filter
@@ -52,4 +76,5 @@ references `ZeroAlloc.Validation.AspNetCore` itself gets that joint.
 ## Turning it off
 
 Set `DovetailEnableZeroAllocMediator` or `DovetailEnableZeroAllocValidation` to `false` to leave that registration to the
-project. Neither turns the ZeroAlloc generators off.
+project. Neither turns the ZeroAlloc generators off. `DovetailEnableZeroAllocValidation=false` also stops the SDK adding
+`ZeroAlloc.Validation.Options` and the configuration options calling `ValidateWithZeroAlloc()`.
