@@ -1,10 +1,38 @@
-﻿## Registrations
-global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::ThirdParty.ExternalOptions>(services, "External", static configuration => DovetailConfigurationBinder.CreateThirdParty__ExternalOptions(configuration));
-global::ZeroAlloc.Validation.Options.ZeroAllocOptionsValidationExtensions.ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.InternalOptions>(services, "Internal", static configuration => DovetailConfigurationBinder.CreateSample__InternalOptions(configuration)));
-global::ZeroAlloc.Validation.Options.ZeroAllocOptionsValidationExtensions.ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.Outer.NestedOptions>(services, "Nested", static configuration => DovetailConfigurationBinder.CreateSample__Outer__NestedOptions(configuration)));
-global::ZeroAlloc.Validation.Options.ZeroAllocOptionsValidationExtensions.ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.Outer.ProtectedInternalOptions>(services, "ProtectedInternal", static configuration => DovetailConfigurationBinder.CreateSample__Outer__ProtectedInternalOptions(configuration)));
-global::ZeroAlloc.Validation.Options.ZeroAllocOptionsValidationExtensions.ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.PublicOptions>(services, "Public", static configuration => DovetailConfigurationBinder.CreateSample__PublicOptions(configuration)));
-global::ZeroAlloc.Validation.Options.ZeroAllocOptionsValidationExtensions.ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.RecordOptions>(services, "Record", static configuration => DovetailConfigurationBinder.CreateSample__RecordOptions(configuration)));
-global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.UnvalidatedOptions>(services, "Unvalidated", static configuration => DovetailConfigurationBinder.CreateSample__UnvalidatedOptions(configuration));
-
-## Diagnostics
+﻿{
+  FinalDiagnostics: [],
+  GeneratorDiagnostics: {
+    Joinery.Dovetail.DovetailAttributesGenerator: []
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: 
+  },
+  References: [
+    <in-memory assembly>,
+    FluentValidation.dll,
+    Joinery.Dovetail.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.Configuration.Binder,
+    Microsoft.Extensions.Configuration.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.Options.dll,
+    Microsoft.Extensions.Options.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.Collections.dll,
+    System.ComponentModel.Annotations.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Linq.dll,
+    System.Private.CoreLib.dll,
+    System.Private.Uri.dll,
+    System.Runtime.dll
+  ]
+}

@@ -648,7 +648,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        await Verify(DescribeRegistrations(result));
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await Verify(result);
     }
 
     /// <summary>
@@ -663,10 +664,12 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     public async Task Reports_each_way_a_ZeroAlloc_model_reaches_an_asynchronous_rule()
     {
         var result = await WithBinder(11)
+                          .WithDiagnosticSeverity(DiagnosticSeverity.Warning)
                           .AddSources(
                                ZeroAllocValidation,
                                ZeroAllocValidationOptions,
-                               Usings
+                               "#nullable enable\n"
+                             + Usings
                              + """
                                using System.Threading;
                                using System.Threading.Tasks;
@@ -767,7 +770,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        await Verify(DescribeRegistrations(result));
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await Verify(result);
     }
 
     /// <summary>Stand-ins for the ZeroAlloc.Validation types the generator looks for.</summary>
@@ -836,36 +840,6 @@ public class ConfigurationOptionsTests() : GeneratorTest()
 
     private static string GeneratedOptions(GeneratorTestResults result) =>
         result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Single(z => Path.GetFileName(z.FilePath) == "Dovetail_ConfigurationOptions.g.cs").ToString();
-
-    /// <summary>
-    ///     Just the options joint's registrations, one per line, and the generator's diagnostics: what the ZeroAlloc tests are
-    ///     about, without the binder. The generated code must compile.
-    /// </summary>
-    private static string DescribeRegistrations(GeneratorTestResults result)
-    {
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
-
-        var text = new StringBuilder();
-        text.AppendLine("## Registrations");
-        foreach (var line in GeneratedOptions(result)
-                            .Split('\n')
-                            .Select(z => z.Trim())
-                            .Where(z => z.Contains("AddDovetailConfigurationOptions<", StringComparison.Ordinal)))
-        {
-            text.AppendLine(line);
-        }
-
-        text.AppendLine();
-        text.AppendLine("## Diagnostics");
-        foreach (var diagnostic in result.Results[typeof(DovetailAttributesGenerator)]
-                                         .Diagnostics.OrderBy(z => z.Location.SourceSpan.Start)
-                                         .ThenBy(z => z.Id, StringComparer.Ordinal))
-        {
-            text.AppendLine($"{diagnostic.Id} {diagnostic.Severity}: {diagnostic.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}");
-        }
-
-        return text.ToString();
-    }
 
     /// <summary>
     ///     The test compilation, referencing the assemblies the generated code uses, and a stand-in for
