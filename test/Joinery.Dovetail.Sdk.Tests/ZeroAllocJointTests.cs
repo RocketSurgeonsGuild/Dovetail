@@ -184,6 +184,81 @@ public class ZeroAllocJointTests(string targetFramework)
         lines.ShouldContain(line => line.StartsWith("invalid threw ", StringComparison.Ordinal));
     }
 
+    /// <summary>
+    ///     Joinery.Dovetail.Sdk adds ZeroAlloc.Validation.Options to a library that references ZeroAlloc.Validation, and Dovetail's
+    ///     generator calls its <c>ValidateWithZeroAlloc()</c> for the library's <c>[DovetailConfiguration]</c> types marked
+    ///     <c>[Validate]</c>: reading options that break a rule throws. <c>DovetailEnableZeroAllocValidation=false</c> leaves the
+    ///     package, and so the validation, out.
+    /// </summary>
+    [Test]
+    [Arguments(null, "invalid threw OptionsValidationException: ConnectionString: ")]
+    [Arguments("false", "connection=")]
+    public async Task ValidatedConfiguration_IsValidatedWithZeroAllocValidationOptions(string? enabled, string expected)
+    {
+        using var project = new SdkTestProject();
+        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"));
+
+        // track: false - built only through the application's ProjectReference (see HostConfigurationPropagationTests).
+        var lib = ProjectCreator
+                 .Templates.SdkCsproj(targetFramework: targetFramework)
+                 .ItemPackageReference("ZeroAlloc.Validation", Version("ZeroAlloc.Validation"));
+        if (enabled is not null)
+        {
+            lib = lib.Property("DovetailEnableZeroAllocValidation", enabled);
+        }
+
+        project
+           .AddProject("lib/lib.csproj", lib, track: false)
+           .AddFile(
+                "lib/DatabaseOptions.cs",
+                """
+                using Joinery.Dovetail.Attributes;
+                using ZeroAlloc.Validation;
+
+                namespace lib;
+
+                [DovetailConfiguration, Validate]
+                public class DatabaseOptions
+                {
+                    [NotEmpty]
+                    public string ConnectionString { get; set; } = "";
+                }
+                """
+            );
+
+        var app = ProjectCreator
+                 .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                 .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework))
+                 .ItemProjectReference(lib);
+        project
+           .AddProject("app/app.csproj", app)
+           .AddFile(
+                "app/Program.cs",
+                """
+                using app;
+                using Joinery.Dovetail;
+                using Microsoft.Extensions.DependencyInjection;
+                using Microsoft.Extensions.Hosting;
+                using Microsoft.Extensions.Options;
+
+                var builder = Host.CreateApplicationBuilder(args);
+                using var host = await builder.ConfigureDovetail();
+                try
+                {
+                    System.Console.WriteLine("connection=" + host.Services.GetRequiredService<IOptions<lib.DatabaseOptions>>().Value.ConnectionString);
+                }
+                catch (OptionsValidationException exception)
+                {
+                    System.Console.WriteLine("invalid threw OptionsValidationException: " + exception.Message);
+                }
+                """
+            );
+
+        var lines = ( await project.Run("app") ).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        lines.ShouldContain(line => line.StartsWith(expected, StringComparison.Ordinal));
+    }
+
     private ProjectCreator WithMediator(ProjectCreator project) =>
         project
            .ItemPackageReference("ZeroAlloc.Mediator", Version("ZeroAlloc.Mediator"))

@@ -182,6 +182,22 @@
     -->
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and ('$(FileBasedProgram)' == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')) == 'true')"/>
   </ItemGroup>
+
+  <!--
+      A project that references ZeroAlloc.Validation gets ZeroAlloc.Validation.Options (https://validation.zeroalloc.net/docs/options)
+      too: its generator writes ValidateWithZeroAlloc() for each [Validate] class, and Dovetail's source generator calls it for the
+      [DovetailConfiguration] types marked [Validate], so their options are validated by the generated validator.
+      ZeroAlloc ships its packages at one version, so the Options package gets the version of the ZeroAlloc.Validation reference:
+      its VersionOverride or Version, or else the central PackageVersion. DovetailEnableZeroAllocValidation=false leaves it out, the
+      same switch that leaves ZeroAlloc.Validation's other registrations to the project; a direct reference to the package wins.
+      Items rather than properties: properties are evaluated before any item exists.
+  -->
+  <ItemGroup Condition="'$(DovetailEnableZeroAllocValidation)' != 'false' and @(PackageReference->AnyHaveMetadataValue('Identity', 'ZeroAlloc.Validation')) == 'true'">
+    <_DovetailZeroAllocValidationVersion Include="@(PackageReference->WithMetadataValue('Identity', 'ZeroAlloc.Validation')->'%(VersionOverride)'->Distinct())" />
+    <_DovetailZeroAllocValidationVersion Include="@(PackageReference->WithMetadataValue('Identity', 'ZeroAlloc.Validation')->'%(Version)'->Distinct())" Condition="'@(_DovetailZeroAllocValidationVersion)' == ''" />
+    <_DovetailZeroAllocValidationVersion Include="@(PackageVersion->WithMetadataValue('Identity', 'ZeroAlloc.Validation')->'%(Version)'->Distinct())" Condition="'@(_DovetailZeroAllocValidationVersion)' == ''" />
+    <DovetailSdkImplicitPackageReference Include="ZeroAlloc.Validation.Options" Version="@(_DovetailZeroAllocValidationVersion)" Condition="'@(_DovetailZeroAllocValidationVersion)' != ''" />
+  </ItemGroup>
   <!-- ImplicitPackageReferences.targets turns the DovetailSdkImplicitPackageReference items above into PackageReferences; Sdk.props
        registers it after this file. -->
 </Project>
