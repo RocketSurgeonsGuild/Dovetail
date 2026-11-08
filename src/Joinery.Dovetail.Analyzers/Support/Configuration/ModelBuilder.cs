@@ -135,7 +135,13 @@ internal sealed class ModelBuilder
                 }
                 else
                 {
-                    options = new(result.Path, result.ValidateOnStart, TypeRef.From(type), version, types);
+                    var validateWithZeroAlloc = ZeroAllocOptionsValidation.Applies(type, compilation, out var asyncRule);
+                    if (asyncRule is not null)
+                    {
+                        builder.Report(Diagnostics.ZeroAllocAsyncOptionsValidation, builder._declarationLocation, type.ToDisplayString(), asyncRule);
+                    }
+
+                    options = new(result.Path, result.ValidateOnStart, TypeRef.From(type), version, types, validateWithZeroAlloc);
                 }
             }
         }

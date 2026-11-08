@@ -43,6 +43,9 @@
     <CompilerVisibleProperty Include="ImportDovetailAssembly"/>
     <CompilerVisibleProperty Include="ExportDovetailAssembly"/>
     <CompilerVisibleProperty Include="DovetailConfigurationSchemaRequired"/>
+    <!-- false leaves ZeroAlloc.Validation.Options' ValidateWithZeroAlloc() off the generated configuration options, as it leaves the
+         Joinery.Dovetail.ZeroAlloc.targets joints out. ZeroAlloc.Validation.Options makes ZeroAllocGeneratedAccessibility visible itself. -->
+    <CompilerVisibleProperty Include="DovetailEnableZeroAllocValidation"/>
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DovetailReferenceDocumentation"/>
 
     <CompilerVisibleProperty Include="DovetailImportNamespace"/>

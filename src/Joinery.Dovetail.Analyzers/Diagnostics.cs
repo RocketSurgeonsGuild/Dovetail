@@ -156,4 +156,13 @@ internal static class Diagnostics
         DiagnosticSeverity.Error,
         true
     );
+
+    public static readonly DiagnosticDescriptor ZeroAllocAsyncOptionsValidation = new(
+        "DT0018",
+        "ZeroAlloc options validation skipped",
+        "'{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous",
+        "Dovetail",
+        DiagnosticSeverity.Warning,
+        true
+    );
 }

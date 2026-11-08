@@ -109,12 +109,20 @@ internal static class ConfigurationSchemaPipeline
             static (production, input) => Emit(production, input.Left.Left, input.Left.Right, input.Right)
         );
 
+        // The class ZeroAlloc.Validation.Options writes ValidateWithZeroAlloc() into, unless ZeroAlloc.Validation is left to the project.
+        var zeroAllocExtensions = context.AnalyzerConfigOptionsProvider.Select(
+            static (options, _) => options.GlobalOptions.GetBuildProperty(ZeroAllocOptionsValidation.EnableProperty, z => bool.TryParse(z, out var value) && !value)
+                ? null
+                : ZeroAllocOptionsValidation.ExtensionsClass(options.GlobalOptions.GetBuildProperty(ZeroAllocOptionsValidation.AccessibilityProperty, z => z))
+        );
+
         context.RegisterSourceOutput(
-            options.Combine(validators).Combine(msBuildConfig).Combine(supportedLanguageVersion),
+            options.Combine(validators).Combine(zeroAllocExtensions).Combine(msBuildConfig).Combine(supportedLanguageVersion),
             static (production, input) =>
             {
+                var (((registrations, validators), zeroAllocExtensions), msBuildConfig) = input.Left;
                 if (input.Right
-                 && ConfigurationOptionsEmitter.Emit(input.Left.Right.ExportConfiguration, input.Left.Left.Left, input.Left.Left.Right) is { } source)
+                 && ConfigurationOptionsEmitter.Emit(msBuildConfig.ExportConfiguration, registrations, validators, zeroAllocExtensions) is { } source)
                 {
                     production.AddSource("Dovetail_ConfigurationOptions.g.cs", source);
                 }

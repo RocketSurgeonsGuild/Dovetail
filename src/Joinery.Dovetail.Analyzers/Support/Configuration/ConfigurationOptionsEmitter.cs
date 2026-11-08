@@ -6,7 +6,15 @@ using Microsoft.CodeAnalysis.CSharp;
 namespace Joinery.Dovetail.Support.Configuration;
 
 /// <summary>What one <c>[DovetailConfiguration]</c> section registers with the options pipeline, and the types its binder needs.</summary>
-internal sealed record ConfigurationOptions(string Path, bool ValidateOnStart, TypeRef Type, BinderVersion Version, EquatableArray<TypeSpec> Types);
+/// <param name="ValidateWithZeroAlloc">Whether ZeroAlloc.Validation.Options generates a <c>ValidateWithZeroAlloc()</c> overload for the type.</param>
+internal sealed record ConfigurationOptions(
+    string Path,
+    bool ValidateOnStart,
+    TypeRef Type,
+    BinderVersion Version,
+    EquatableArray<TypeSpec> Types,
+    bool ValidateWithZeroAlloc = false
+);
 
 /// <summary>An <c>[OptionsValidator]</c> class and the options types it validates.</summary>
 internal sealed record ConfigurationValidator(string TypeName, EquatableArray<string> OptionsTypeNames);
@@ -22,7 +30,19 @@ internal static class ConfigurationOptionsEmitter
     private const string BinderClassName = "DovetailConfigurationBinder";
 
     /// <summary>The generated file, or <see langword="null" /> when no section registers options.</summary>
-    public static string? Emit(DovetailConfigurationData exports, EquatableArray<ConfigurationOptions> registrations, EquatableArray<ConfigurationValidator> validators)
+    /// <param name="exports">The assembly's exports class, which the joint is nested in.</param>
+    /// <param name="registrations">The sections that register options.</param>
+    /// <param name="validators">The assembly's <c>[OptionsValidator]</c> classes.</param>
+    /// <param name="zeroAllocExtensions">
+    ///     The class ZeroAlloc.Validation.Options generates <c>ValidateWithZeroAlloc()</c> into, or <see langword="null" /> when
+    ///     Dovetail leaves ZeroAlloc.Validation's registrations to the project.
+    /// </param>
+    public static string? Emit(
+        DovetailConfigurationData exports,
+        EquatableArray<ConfigurationOptions> registrations,
+        EquatableArray<ConfigurationValidator> validators,
+        string? zeroAllocExtensions = null
+    )
     {
         if (registrations.IsEmpty)
         {
@@ -89,7 +109,7 @@ internal static class ConfigurationOptionsEmitter
                                     .ThenBy(z => z.Path, StringComparer.Ordinal)
                                     .ThenBy(z => z.Type.FullyQualifiedName, StringComparer.Ordinal))
         {
-            writer.WriteLine(Registration(registration, roots[registration.Type]) + ";");
+            writer.WriteLine(Registration(registration, roots[registration.Type], zeroAllocExtensions) + ";");
         }
 
         foreach (var (options, validator) in validators
@@ -148,7 +168,7 @@ internal static class ConfigurationOptionsEmitter
         return writer.ToString();
     }
 
-    private static string Registration(ConfigurationOptions registration, ObjectSpec root)
+    private static string Registration(ConfigurationOptions registration, ObjectSpec root, string? zeroAllocExtensions)
     {
         // Every root is created by its generated Create entry point, which also binds types the options pipeline could create.
         var create = $"static configuration => {BinderClassName}.{BindingEmitter.CreateMethodName(root)}(configuration)";
@@ -159,6 +179,12 @@ internal static class ConfigurationOptionsEmitter
           + ", "
           + create
           + ")";
+        // The overload registers the type's generated validator as its IValidateOptions<T>, with TryAdd.
+        if (registration.ValidateWithZeroAlloc && zeroAllocExtensions is not null)
+        {
+            call = $"{zeroAllocExtensions}.ValidateWithZeroAlloc({call})";
+        }
+
         return registration.ValidateOnStart ? $"global::Microsoft.Extensions.DependencyInjection.OptionsBuilderExtensions.ValidateOnStart({call})" : call;
     }
 

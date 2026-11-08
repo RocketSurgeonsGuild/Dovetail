@@ -415,6 +415,209 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     }
 
     /// <summary>
+    ///     A <c>[Validate]</c> options type is validated by the ZeroAlloc.Validation.Options overload of its own:
+    ///     <c>ValidateWithZeroAlloc()</c> comes before <c>ValidateOnStart()</c>, and types without <c>[Validate]</c> don't call it
+    ///     (the stand-in only has overloads for the <c>[Validate]</c> types, so the generated code wouldn't compile otherwise).
+    /// </summary>
+    [Test]
+    public async Task Validates_ZeroAlloc_models_with_their_generated_validator()
+    {
+        var result = await WithBinder(11)
+                          .AddSources(ZeroAllocValidation, ZeroAllocValidationOptions, ZeroAllocOptionsSources, ZeroAllocOverloads("ZeroAllocOptionsValidationExtensions"))
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        await Verify(Describe(result));
+    }
+
+    [Test]
+    [Arguments("Internal", "InternalZeroAllocOptionsValidationExtensions")]
+    [Arguments("internal", "InternalZeroAllocOptionsValidationExtensions")]
+    [Arguments("Public", "ZeroAllocOptionsValidationExtensions")]
+    public async Task Calls_the_overloads_where_ZeroAllocGeneratedAccessibility_puts_them(string accessibility, string extensionsClass)
+    {
+        var result = await WithBinder(11)
+                          .AddGlobalOption("build_property.ZeroAllocGeneratedAccessibility", accessibility)
+                          .AddSources(ZeroAllocValidation, ZeroAllocValidationOptions, ZeroAllocOptionsSources, ZeroAllocOverloads(extensionsClass))
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        GeneratedOptions(result).ShouldContain($"global::ZeroAlloc.Validation.Options.{extensionsClass}.ValidateWithZeroAlloc(");
+    }
+
+    /// <summary>
+    ///     Without ZeroAlloc.Validation.Options there is no overload to call, and <c>DovetailEnableZeroAllocValidation=false</c>
+    ///     leaves ZeroAlloc.Validation's registrations to the project.
+    /// </summary>
+    [Test]
+    [Arguments(false, null)]
+    [Arguments(true, "false")]
+    public async Task Leaves_ZeroAlloc_validation_out(bool optionsPackage, string? enabled)
+    {
+        var builder = WithBinder(11).AddSources(ZeroAllocValidation, ZeroAllocOptionsSources);
+        if (optionsPackage)
+        {
+            builder = builder.AddSources(ZeroAllocValidationOptions, ZeroAllocOverloads("ZeroAllocOptionsValidationExtensions"));
+        }
+
+        if (enabled is not null)
+        {
+            builder = builder.AddGlobalOption("build_property.DovetailEnableZeroAllocValidation", enabled);
+        }
+
+        var result = await builder.Build().GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        GeneratedOptions(result).ShouldNotContain("ValidateWithZeroAlloc");
+    }
+
+    /// <summary>
+    ///     Options validation is synchronous, so calling <c>ValidateWithZeroAlloc()</c> for a model with an asynchronous rule, its
+    ///     own or one of a nested or collection model's, is an error (ZV0034). Dovetail reports DT0018 and leaves the call out.
+    /// </summary>
+    [Test]
+    public async Task Reports_ZeroAlloc_models_with_asynchronous_rules()
+    {
+        var result = await WithBinder(11)
+                          .AddSources(
+                               ZeroAllocValidation,
+                               ZeroAllocValidationOptions,
+                               Usings
+                             + """
+                               using System.Threading;
+                               using System.Threading.Tasks;
+                               using ZeroAlloc.Validation;
+
+                               namespace Sample;
+
+                               public sealed class UniqueNameAttribute : AsyncValidationAttribute<string>
+                               {
+                                   public override ValueTask<bool> IsValidAsync(string value, CancellationToken ct) => new(true);
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class TenantsOptions
+                               {
+                                   public string? Region { get; set; }
+                                   public List<TenantOptions> Tenants { get; set; } = [];
+                               }
+
+                               [Validate]
+                               public class TenantOptions
+                               {
+                                   [UniqueName]
+                                   public string Name { get; set; } = "";
+                               }
+
+                               public class BaseOptions
+                               {
+                                   [UniqueName]
+                                   public string Name { get; set; } = "";
+                               }
+
+                               // Only the type's own members are validated, so the base type's asynchronous rule doesn't count.
+                               [DovetailConfiguration, Validate(IncludeBaseProperties = false)]
+                               public class DerivedOptions : BaseOptions
+                               {
+                                   public string? Other { get; set; }
+                               }
+                               """,
+                               """
+                               using Microsoft.Extensions.Options;
+
+                               namespace ZeroAlloc.Validation.Options;
+
+                               public static class ZeroAllocOptionsValidationExtensions
+                               {
+                                   public static OptionsBuilder<global::Sample.DerivedOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.DerivedOptions> builder) => builder;
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        result.Results[typeof(DovetailAttributesGenerator)]
+              .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}")
+              .ShouldBe(
+                   [
+                       "DT0018: 'Sample.TenantsOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous",
+                   ]
+               );
+        var generated = GeneratedOptions(result);
+        generated.ShouldContain("ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.DerivedOptions>");
+        generated.ShouldNotContain("ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.TenantsOptions>");
+    }
+
+    /// <summary>Stand-ins for the ZeroAlloc.Validation types the generator looks for.</summary>
+    private const string ZeroAllocValidation = """
+        namespace ZeroAlloc.Validation
+        {
+            [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Struct)]
+            public sealed class ValidateAttribute : System.Attribute
+            {
+                public bool IncludeBaseProperties { get; set; } = true;
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.Field)]
+            public abstract class AsyncValidationAttribute<T> : System.Attribute
+            {
+                public abstract System.Threading.Tasks.ValueTask<bool> IsValidAsync(T value, System.Threading.CancellationToken ct);
+            }
+        }
+        """;
+
+    /// <summary>A stand-in for the runtime type of ZeroAlloc.Validation.Options, which tells the generator the package is referenced.</summary>
+    private const string ZeroAllocValidationOptions = """
+        namespace ZeroAlloc.Validation.Options
+        {
+            public sealed class ZeroAllocOptionsValidator<T>;
+        }
+        """;
+
+    private const string ZeroAllocOptionsSources = Usings
+      + """
+        using ZeroAlloc.Validation;
+
+        namespace Sample;
+
+        [DovetailConfiguration(ValidateOnStart = true), Validate]
+        public class DatabaseOptions
+        {
+            public string ConnectionString { get; set; } = "";
+        }
+
+        [DovetailConfiguration, Validate]
+        public class CacheOptions
+        {
+            public int Size { get; set; }
+        }
+
+        [DovetailConfiguration]
+        public class PlainOptions
+        {
+            public string? Value { get; set; }
+        }
+        """;
+
+    /// <summary>What ZeroAlloc.Validation.Options' generator writes for <see cref="ZeroAllocOptionsSources" />, in <paramref name="className" />.</summary>
+    private static string ZeroAllocOverloads(string className) => $$"""
+        using Microsoft.Extensions.Options;
+
+        namespace ZeroAlloc.Validation.Options;
+
+        public static class {{className}}
+        {
+            public static OptionsBuilder<global::Sample.DatabaseOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.DatabaseOptions> builder) => builder;
+            public static OptionsBuilder<global::Sample.CacheOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.CacheOptions> builder) => builder;
+        }
+        """;
+
+    private static string GeneratedOptions(GeneratorTestResults result) =>
+        result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Single(z => Path.GetFileName(z.FilePath) == "Dovetail_ConfigurationOptions.g.cs").ToString();
+
+    /// <summary>
     ///     The test compilation, referencing the assemblies the generated code uses, and a stand-in for
     ///     Microsoft.Extensions.Configuration.Binder at <paramref name="binder" />.0.0.0 that selects the binder rules.
     /// </summary>
