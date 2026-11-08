@@ -1,0 +1,159 @@
+﻿{
+  FinalDiagnostics: [
+    {
+      Id: DT0018,
+      Title: ZeroAlloc options validation skipped,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: Input2.cs: (36,1)-(36,22),
+      MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+      Message: 'Sample.OwnRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.OwnRuleOptions.Name' has an asynchronous rule and options validation is synchronous,
+      Category: Dovetail
+    },
+    {
+      Id: DT0018,
+      Title: ZeroAlloc options validation skipped,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: Input2.cs: (43,1)-(43,22),
+      MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+      Message: 'Sample.TypeRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TypeRuleOptions' has an asynchronous rule and options validation is synchronous,
+      Category: Dovetail
+    },
+    {
+      Id: DT0018,
+      Title: ZeroAlloc options validation skipped,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: Input2.cs: (49,1)-(49,22),
+      MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+      Message: 'Sample.NestedRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous,
+      Category: Dovetail
+    },
+    {
+      Id: DT0018,
+      Title: ZeroAlloc options validation skipped,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: Input2.cs: (55,1)-(55,22),
+      MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+      Message: 'Sample.ArrayRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous,
+      Category: Dovetail
+    },
+    {
+      Id: DT0018,
+      Title: ZeroAlloc options validation skipped,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: Input2.cs: (61,1)-(61,22),
+      MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+      Message: 'Sample.ListRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous,
+      Category: Dovetail
+    },
+    {
+      Id: DT0018,
+      Title: ZeroAlloc options validation skipped,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: Input2.cs: (67,1)-(67,22),
+      MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+      Message: 'Sample.InheritedRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.InheritedRuleOptions.Name' has an asynchronous rule and options validation is synchronous,
+      Category: Dovetail
+    }
+  ],
+  GeneratorDiagnostics: {
+    Joinery.Dovetail.DovetailAttributesGenerator: [
+      {
+        Id: DT0018,
+        Title: ZeroAlloc options validation skipped,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input2.cs: (36,1)-(36,22),
+        MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+        Message: 'Sample.OwnRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.OwnRuleOptions.Name' has an asynchronous rule and options validation is synchronous,
+        Category: Dovetail
+      },
+      {
+        Id: DT0018,
+        Title: ZeroAlloc options validation skipped,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input2.cs: (43,1)-(43,22),
+        MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+        Message: 'Sample.TypeRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TypeRuleOptions' has an asynchronous rule and options validation is synchronous,
+        Category: Dovetail
+      },
+      {
+        Id: DT0018,
+        Title: ZeroAlloc options validation skipped,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input2.cs: (49,1)-(49,22),
+        MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+        Message: 'Sample.NestedRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous,
+        Category: Dovetail
+      },
+      {
+        Id: DT0018,
+        Title: ZeroAlloc options validation skipped,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input2.cs: (55,1)-(55,22),
+        MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+        Message: 'Sample.ArrayRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous,
+        Category: Dovetail
+      },
+      {
+        Id: DT0018,
+        Title: ZeroAlloc options validation skipped,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input2.cs: (61,1)-(61,22),
+        MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+        Message: 'Sample.ListRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous,
+        Category: Dovetail
+      },
+      {
+        Id: DT0018,
+        Title: ZeroAlloc options validation skipped,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input2.cs: (67,1)-(67,22),
+        MessageFormat: '{0}' isn't validated with ZeroAlloc.Validation when its options are read, because '{1}' has an asynchronous rule and options validation is synchronous,
+        Message: 'Sample.InheritedRuleOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.InheritedRuleOptions.Name' has an asynchronous rule and options validation is synchronous,
+        Category: Dovetail
+      }
+    ]
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: 
+  },
+  References: [
+    FluentValidation.dll,
+    Joinery.Dovetail.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.Configuration.Binder,
+    Microsoft.Extensions.Configuration.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.Options.dll,
+    Microsoft.Extensions.Options.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.Collections.dll,
+    System.ComponentModel.Annotations.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Linq.dll,
+    System.Private.CoreLib.dll,
+    System.Private.Uri.dll,
+    System.Runtime.dll
+  ]
+}

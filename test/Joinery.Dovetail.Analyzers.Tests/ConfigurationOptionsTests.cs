@@ -550,6 +550,231 @@ public class ConfigurationOptionsTests() : GeneratorTest()
         generated.ShouldNotContain("ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.TenantsOptions>");
     }
 
+    /// <summary>
+    ///     Which <c>[DovetailConfiguration]</c> types call <c>ValidateWithZeroAlloc()</c>: the <c>[Validate]</c> classes (records
+    ///     included) of this assembly that the generated code can see, nested or not, whatever their accessibility. A type
+    ///     without <c>[Validate]</c> and an options type from another assembly get no overload from ZeroAlloc.Validation.Options,
+    ///     so they register without one. The overload stand-ins only cover the types that should call them, so a call the generator
+    ///     shouldn't make fails to compile.
+    /// </summary>
+    [Test]
+    public async Task Calls_ValidateWithZeroAlloc_only_for_the_types_ZeroAlloc_writes_an_overload_for()
+    {
+        // ZeroAlloc.Validation.Options writes overloads per project, so a [Validate] class of a referenced assembly has none here.
+        var thirdParty = await Builder
+                              .WithProjectName("ThirdParty")
+                              .AddReferences(typeof(IValidateOptions<>))
+                              .AddSources(
+                                   ZeroAllocValidation,
+                                   ZeroAllocValidationOptions,
+                                   """
+                                   namespace ThirdParty;
+
+                                   [ZeroAlloc.Validation.Validate]
+                                   public class ExternalOptions
+                                   {
+                                       public string? Endpoint { get; set; }
+                                   }
+                                   """
+                               )
+                              .Build()
+                              .GenerateAsync(TestContext.CancellationToken);
+
+        var result = await WithBinder(11)
+                          .AddCompilationReferences(thirdParty)
+                          .AddSources(
+                               Usings
+                             + """
+                               using ZeroAlloc.Validation;
+
+                               [assembly: DovetailConfiguration<ThirdParty.ExternalOptions>("External")]
+
+                               namespace Sample;
+
+                               [DovetailConfiguration, Validate]
+                               public class PublicOptions
+                               {
+                                   public string? Value { get; set; }
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               internal class InternalOptions
+                               {
+                                   public string? Value { get; set; }
+                               }
+
+                               public class Outer
+                               {
+                                   [DovetailConfiguration, Validate]
+                                   public class NestedOptions
+                                   {
+                                       public string? Value { get; set; }
+                                   }
+
+                                   [DovetailConfiguration, Validate]
+                                   protected internal class ProtectedInternalOptions
+                                   {
+                                       public string? Value { get; set; }
+                                   }
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public record RecordOptions
+                               {
+                                   public string? Value { get; init; }
+                               }
+
+                               [DovetailConfiguration]
+                               public class UnvalidatedOptions
+                               {
+                                   public string? Value { get; set; }
+                               }
+                               """,
+                               """
+                               using Microsoft.Extensions.Options;
+
+                               namespace ZeroAlloc.Validation.Options;
+
+                               public static class ZeroAllocOptionsValidationExtensions
+                               {
+                                   public static OptionsBuilder<global::Sample.PublicOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.PublicOptions> builder) => builder;
+                                   internal static OptionsBuilder<global::Sample.InternalOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.InternalOptions> builder) => builder;
+                                   public static OptionsBuilder<global::Sample.Outer.NestedOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.Outer.NestedOptions> builder) => builder;
+                                   internal static OptionsBuilder<global::Sample.Outer.ProtectedInternalOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.Outer.ProtectedInternalOptions> builder) => builder;
+                                   public static OptionsBuilder<global::Sample.RecordOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.RecordOptions> builder) => builder;
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await Verify(result);
+    }
+
+    /// <summary>
+    ///     Every way a <c>[Validate]</c> options type reaches an asynchronous rule, each reported with DT0018 and registered without
+    ///     <c>ValidateWithZeroAlloc()</c>: a rule on its own property, on the type itself, on a nested model, on the items of an
+    ///     array or a list, or on an inherited property. Rules ZeroAlloc.Validation doesn't run don't count: base properties under
+    ///     <c>IncludeBaseProperties = false</c>, and members of a nested type without <c>[Validate]</c>. A model that reaches itself
+    ///     is checked once. The overload stand-ins only cover the types that should call them, so a call the generator shouldn't make
+    ///     fails to compile.
+    /// </summary>
+    [Test]
+    public async Task Reports_each_way_a_ZeroAlloc_model_reaches_an_asynchronous_rule()
+    {
+        var result = await WithBinder(11)
+                          .WithDiagnosticSeverity(DiagnosticSeverity.Warning)
+                          .AddSources(
+                               ZeroAllocValidation,
+                               ZeroAllocValidationOptions,
+                               "#nullable enable\n"
+                             + Usings
+                             + """
+                               using System.Threading;
+                               using System.Threading.Tasks;
+                               using ZeroAlloc.Validation;
+
+                               namespace Sample;
+
+                               public sealed class UniqueNameAttribute : AsyncValidationAttribute<string>
+                               {
+                                   public override ValueTask<bool> IsValidAsync(string value, CancellationToken ct) => new(true);
+                               }
+
+                               [AttributeUsage(AttributeTargets.Class)]
+                               public sealed class ReachableAttribute : AsyncValidationAttribute<object>
+                               {
+                                   public override ValueTask<bool> IsValidAsync(object value, CancellationToken ct) => new(true);
+                               }
+
+                               [Validate]
+                               public class TenantOptions
+                               {
+                                   [UniqueName]
+                                   public string Name { get; set; } = "";
+                               }
+
+                               public class NamedOptions
+                               {
+                                   [UniqueName]
+                                   public string Name { get; set; } = "";
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class OwnRuleOptions
+                               {
+                                   [UniqueName]
+                                   public string Name { get; set; } = "";
+                               }
+
+                               [DovetailConfiguration, Validate, Reachable]
+                               public class TypeRuleOptions
+                               {
+                                   public string? Endpoint { get; set; }
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class NestedRuleOptions
+                               {
+                                   public TenantOptions Tenant { get; set; } = new();
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class ArrayRuleOptions
+                               {
+                                   public TenantOptions[] Tenants { get; set; } = [];
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class ListRuleOptions
+                               {
+                                   public IReadOnlyList<TenantOptions> Tenants { get; set; } = [];
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class InheritedRuleOptions : NamedOptions;
+
+                               [DovetailConfiguration, Validate(IncludeBaseProperties = false)]
+                               public class OwnPropertiesOnlyOptions : NamedOptions
+                               {
+                                   public string? Other { get; set; }
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class UnvalidatedModelOptions
+                               {
+                                   public NamedOptions Named { get; set; } = new();
+                               }
+
+                               [DovetailConfiguration, Validate]
+                               public class TreeOptions
+                               {
+                                   public string? Name { get; set; }
+                                   public List<TreeOptions> Children { get; set; } = [];
+                               }
+                               """,
+                               """
+                               using Microsoft.Extensions.Options;
+
+                               namespace ZeroAlloc.Validation.Options;
+
+                               public static class ZeroAllocOptionsValidationExtensions
+                               {
+                                   public static OptionsBuilder<global::Sample.OwnPropertiesOnlyOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.OwnPropertiesOnlyOptions> builder) => builder;
+                                   public static OptionsBuilder<global::Sample.UnvalidatedModelOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.UnvalidatedModelOptions> builder) => builder;
+                                   public static OptionsBuilder<global::Sample.TreeOptions> ValidateWithZeroAlloc(this OptionsBuilder<global::Sample.TreeOptions> builder) => builder;
+                               }
+                               """
+                           )
+                          .Build()
+                          .GenerateAsync(TestContext.CancellationToken);
+
+        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        // Which assembly versions need unifying (CS1701, CS1702) depends on the runtime the tests run on, so they stay out of the snapshot.
+        await Verify(result with { FinalDiagnostics = result.FinalDiagnostics.RemoveAll(z => z.Id is "CS1701" or "CS1702") });
+    }
+
     /// <summary>Stand-ins for the ZeroAlloc.Validation types the generator looks for.</summary>
     private const string ZeroAllocValidation = """
         namespace ZeroAlloc.Validation
