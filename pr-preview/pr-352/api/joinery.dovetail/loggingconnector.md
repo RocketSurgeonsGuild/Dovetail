@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-352/api/joinery.dovetail.md)
-- Version: `0.4.5-pr.10`
+- Version: `0.4.5-pr.14`
 - Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 - Implements: [IDovetailJoint](/Dovetail/pr-preview/pr-352/api/joinery.dovetail/idovetailjoint.md), [IServiceAsyncJoint](/Dovetail/pr-preview/pr-352/api/joinery.dovetail/iserviceasyncjoint.md)
