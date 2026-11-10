@@ -112,8 +112,8 @@
     <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="8.0.0-dev.250" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
-    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.120" />
-    <PackageVersion Include="Microsoft.Maui.Core" Version="10.0.120" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.130" />
+    <PackageVersion Include="Microsoft.Maui.Core" Version="10.0.130" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.14" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
