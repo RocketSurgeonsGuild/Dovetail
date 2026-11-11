@@ -390,9 +390,11 @@ public sealed class SdkTestProject : IDisposable
     /// wrote to standard output, for behaviour that only shows up at run time (e.g. the host type the generated
     /// <c>Imports</c> leaves the context with).
     /// </summary>
-    public async Task<string> Run(string relativePath)
+    /// <param name="relativePath">The directory of the application.</param>
+    /// <param name="arguments">The command line arguments the application is started with.</param>
+    public async Task<string> Run(string relativePath, string arguments = "")
     {
-        var psi = CreateHermeticStartInfo("run");
+        var psi = CreateHermeticStartInfo(arguments == "" ? "run" : $"run -- {arguments}");
         psi.WorkingDirectory = Path.Combine(Directory, relativePath);
         // A net10.0 application needs the .NET 10 runtime, which a machine with only the .NET 11 (preview) runtime installed, such as
         // the CI runner, doesn't have. Let it run on the next major runtime, prerelease included.

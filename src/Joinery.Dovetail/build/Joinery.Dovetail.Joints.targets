@@ -8,6 +8,9 @@
 
     DovetailJoint metadata (the item's Include is the joint's name):
       Namespace             — namespace for the generated types (default: $(RootNamespace).Joints)
+      Accessibility         — 'internal' makes every generated type internal instead of public, for a joint whose parameter type is
+                              itself internal (a source generator's own types, say ConsoleAppFramework's ConsoleApp.ConsoleAppBuilder)
+                              (default: public)
       ProvideConfiguration  — 'true' adds an IConfiguration parameter, handed context.Configuration (default: false)
       ProvideServices       — 'true' adds an IServiceCollection parameter (default: false)
       ParameterType         — optional trailing parameter type. It is written into the generated code exactly as given and nothing is
@@ -49,6 +52,7 @@
         <Visible>false</Visible>
         <Namespace Condition="'%(DovetailJoint.Namespace)' == ''">$(RootNamespace).Joints</Namespace>
         <IsAsync Condition="'%(DovetailJoint.IsAsync)' == ''">true</IsAsync>
+        <Accessibility Condition="'%(DovetailJoint.Accessibility)' == ''">public</Accessibility>
         <ParameterName Condition="'%(DovetailJoint.ParameterType)' != '' and '%(DovetailJoint.ParameterName)' == ''">parameter</ParameterName>
         <GenericVariance Condition="'%(DovetailJoint.GenericParameter)' != '' and '%(DovetailJoint.GenericVariance)' == ''">in</GenericVariance>
       </DovetailJoint>
@@ -119,6 +123,7 @@
     Outputs="%(DovetailJoint.Identity)">
     <PropertyGroup>
       <_DovetailJointName>%(DovetailJoint.Identity)</_DovetailJointName>
+      <_DovetailJointAccessibility>%(DovetailJoint.Accessibility)</_DovetailJointAccessibility>
       <_DovetailJointNamespace>%(DovetailJoint.Namespace)</_DovetailJointNamespace>
       <_DovetailJointSyncParams>%(DovetailJoint._SyncParams)</_DovetailJointSyncParams>
       <_DovetailJointAsyncParams>%(DovetailJoint._AsyncParams)</_DovetailJointAsyncParams>
@@ -145,6 +150,7 @@
       <_DovetailJointContent Condition="'%(DovetailJoint.IsAsync)' != 'true'">$(_DovetailJointContent.Replace('static global::System.Threading.Tasks.ValueTask{ReturnContext} Apply', 'static void Apply'))</_DovetailJointContent>
       <_DovetailJointContent Condition="'%(DovetailJoint.IsAsync)' != 'true'">$(_DovetailJointContent.Replace(', global::System.Threading.CancellationToken cancellationToken = default', ''))</_DovetailJointContent>
       <_DovetailJointContent>$(_DovetailJointContent.Replace('{HandlerMethods}', '$(_DovetailHandlerMethods)'))</_DovetailJointContent>
+      <_DovetailJointContent>$(_DovetailJointContent.Replace('{Accessibility}', '$(_DovetailJointAccessibility)'))</_DovetailJointContent>
       <_DovetailJointContent>$(_DovetailJointContent.Replace('{JointName}', '$(_DovetailJointName)'))</_DovetailJointContent>
       <_DovetailJointContent>$(_DovetailJointContent.Replace('{Namespace}', '$(_DovetailJointNamespace)'))</_DovetailJointContent>
       <_DovetailJointContent>$(_DovetailJointContent.Replace('{SyncParams}', '$(_DovetailJointSyncParams)'))</_DovetailJointContent>
@@ -166,6 +172,7 @@
       <_DovetailJointContent>$(_DovetailJointContent.Replace('{GenericConstraint}', '$(_DovetailJointGenericConstraint)'))</_DovetailJointContent>
       <_DovetailJointContent>$(_DovetailJointContent.Replace('{HandlerMethods}', '$(_DovetailHandlerMethods)'))</_DovetailJointContent>
       <_DovetailJointAsyncContent>$([System.IO.File]::ReadAllText('$(_DovetailJointAsyncTemplateFile)'))</_DovetailJointAsyncContent>
+      <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{Accessibility}', '$(_DovetailJointAccessibility)'))</_DovetailJointAsyncContent>
       <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{JointName}', '$(_DovetailJointName)'))</_DovetailJointAsyncContent>
       <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{Namespace}', '$(_DovetailJointNamespace)'))</_DovetailJointAsyncContent>
       <_DovetailJointAsyncContent>$(_DovetailJointAsyncContent.Replace('{SyncParams}', '$(_DovetailJointSyncParams)'))</_DovetailJointAsyncContent>

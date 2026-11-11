@@ -4,7 +4,7 @@
       Build infrastructure rather than Dovetail consumers: no configuration schema files, which for Joinery.Dovetail.Build.Tasks would
       also need the very tasks it builds.
   -->
-  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Joinery.Dovetail.Build.Tasks' or '$(MSBuildProjectName)' == 'Joinery.Dovetail.Sdk' or $(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers'))">
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Joinery.Dovetail.Build.Tasks' or '$(MSBuildProjectName)' == 'Joinery.Dovetail.Sdk' or '$(MSBuildProjectName)' == 'Joinery.Dovetail.Sdk.Console' or $(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers'))">
     <DovetailConfigurationSchema>false</DovetailConfigurationSchema>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail/build/Joinery.Dovetail.targets" />
@@ -37,7 +37,7 @@
       PrivateAssets="contentfiles;build;buildMultitargeting;buildTransitive"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
-      Condition="'$(MSBuildProjectName)' != 'Joinery.Dovetail' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Sdk' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Build.Tasks' and !$(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers'))"
+      Condition="'$(MSBuildProjectName)' != 'Joinery.Dovetail' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Sdk' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Sdk.Console' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Build.Tasks' and !$(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers'))"
     />
     <!--
       NuGet's default PrivateAssets (contentfiles;analyzers;build) would pack every integration package's dependency on

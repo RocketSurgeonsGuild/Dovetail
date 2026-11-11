@@ -22,7 +22,7 @@ namespace {Namespace};
 /// </summary>
 /// <seealso cref="global::Joinery.Dovetail.Infrastructure.IDovetailJoint" />
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
-public interface I{JointName}AsyncJoint{GenericParam} : global::Joinery.Dovetail.Infrastructure.IDovetailJoint {GenericConstraint}
+{Accessibility} interface I{JointName}AsyncJoint{GenericParam} : global::Joinery.Dovetail.Infrastructure.IDovetailJoint {GenericConstraint}
 {
     /// <summary>
     ///     Register the {JointName} part asynchronously.
@@ -34,7 +34,7 @@ public interface I{JointName}AsyncJoint{GenericParam} : global::Joinery.Dovetail
 ///     Async delegate for the {JointName} part.
 /// </summary>
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
-public delegate global::System.Threading.Tasks.ValueTask {JointName}AsyncJointDelegate{GenericParam}({AsyncParams}) {GenericConstraint};
+{Accessibility} delegate global::System.Threading.Tasks.ValueTask {JointName}AsyncJointDelegate{GenericParam}({AsyncParams}) {GenericConstraint};
 
 file class Private{JointName}AsyncJoint{GenericArg}({JointName}AsyncJointDelegate{GenericArg} fromDelegate, int priority, string? expression = null) : I{JointName}AsyncJoint{GenericArg}, IDovetailJointDelegate {GenericConstraint}
 {
@@ -49,7 +49,7 @@ file class Private{JointName}AsyncJoint{GenericArg}({JointName}AsyncJointDelegat
 /// <summary>
 ///     Builder-method extensions for applying {JointName} parts to a <see cref="global::Joinery.Dovetail.DovetailContextBuilder" />.
 /// </summary>
-public static partial class {JointName}HostBuilderExtensions
+{Accessibility} static partial class {JointName}HostBuilderExtensions
 {
     extension(DovetailContextBuilder container)
     {

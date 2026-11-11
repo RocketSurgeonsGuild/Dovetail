@@ -92,6 +92,8 @@
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
     <!-- Validates Joinery.Dovetail.Build.Tasks' schemas against the draft-07 meta-schema in its tests (Apache-2.0). -->
     <PackageVersion Include="Corvus.Json.JsonSchema.Draft7" Version="5.8.8" />
+    <!-- The command line framework Joinery.Dovetail.Sdk.Console adds to a console application (MIT). Pinned here for the SDK's generated Packages.props. -->
+    <PackageVersion Include="ConsoleAppFramework" Version="5.8.1" />
   </ItemGroup>
   <!--
       The pinned MSBuild task references sit in their own file so Renovate can leave just that group alone

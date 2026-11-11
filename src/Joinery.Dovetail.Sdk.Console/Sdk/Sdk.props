@@ -1,0 +1,38 @@
+<Project>
+  <!--
+      Joinery.Dovetail.Sdk.Console is applied the way Joinery.Dovetail.Sdk is: as a project's only SDK (<Project Sdk="Joinery.Dovetail.Sdk.Console">,
+      or a file-based app's only #:sdk directive), as <Sdk Name="Joinery.Dovetail.Sdk.Console" Version="..." /> next to another SDK, or once
+      for every project in a Directory.Build.props, with its version pinned in global.json under msbuild-sdks. It chains Joinery.Dovetail.Sdk,
+      so it is the only SDK entry a console application needs.
+
+      What it adds is DovetailConsoleApp, which Joinery.Dovetail.Hosting reads: with ConsoleAppFramework referenced, the application
+      gets a generated Program.cs that creates the host builder, runs the application's Dovetail joints and runs the command the
+      command line names. See docs/src/content/docs/guides/console-apps.md.
+  -->
+
+  <!-- The versions of ConsoleAppFramework and of the Dovetail SDK it chains, generated when the SDK is packed. -->
+  <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
+
+  <PropertyGroup>
+    <!-- A project (or a Directory.Build.props below the SDK entry) that sets either one first still wins. -->
+    <DovetailConsoleApp Condition="'$(DovetailConsoleApp)' == ''">true</DovetailConsoleApp>
+    <OutputType Condition="'$(OutputType)' == ''">Exe</OutputType>
+  </PropertyGroup>
+
+  <!--
+      The packages a console application gets come from the DovetailHost items Dovetail's host detection declares, and host detection
+      runs through CustomAfterMicrosoftCommonTargets once the whole project has been evaluated. This detection reads those items, so it
+      has to come after it: MSBuild imports the files of the list in order. It is added before Dovetail's Sdk.props is imported, which
+      puts host detection in front of it and the file that turns the DovetailSdkImplicitPackageReference items of both into
+      PackageReferences behind it.
+  -->
+  <PropertyGroup>
+    <CustomAfterMicrosoftCommonTargets>$(CustomAfterMicrosoftCommonTargets);$(MSBuildThisFileDirectory)Joinery.Dovetail.Console.Detection.targets</CustomAfterMicrosoftCommonTargets>
+  </PropertyGroup>
+
+  <!--
+      The version of the import wins over a Joinery.Dovetail.Sdk entry in global.json. To chain another version, set
+      DovetailConsoleSdkDovetailSdkVersion before this file is imported.
+  -->
+  <Import Project="Sdk.props" Sdk="Joinery.Dovetail.Sdk" Version="$(DovetailConsoleSdkDovetailSdkVersion)" />
+</Project>
