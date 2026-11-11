@@ -1507,6 +1507,86 @@ Note
 
 Dovetail requires .NET 8 or .NET 10 and a compatible Roslyn-based build.
 
+# Console applications
+
+> Build a command line application with ConsoleAppFramework where Dovetail writes Program.cs, builds the host from your joints and runs the command the command line names.
+
+# Console applications
+
+[Section titled “Console applications”](#console-applications)
+
+`Joinery.Dovetail.Sdk.Console` makes a project a Dovetail console application. You write commands and joints; the SDK writes the entry point.
+
+```xml
+<Project Sdk="Joinery.Dovetail.Sdk.Console">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+</Project>
+```
+
+Pin the SDK’s version in `global.json` under `msbuild-sdks`, as for `Joinery.Dovetail.Sdk`, which it chains. There is no `OutputType` to set: the SDK makes the project an `Exe`.
+
+## What the SDK does
+
+[Section titled “What the SDK does”](#what-the-sdk-does)
+
+* Chains `Joinery.Dovetail.Sdk`, so everything Dovetail’s SDK detects for an application still applies.
+* Sets `DovetailConsoleApp` to `true`.
+* Adds [ConsoleAppFramework](https://github.com/Cysharp/ConsoleAppFramework) (a source generator, so nothing ships with your application) and `Microsoft.Extensions.Hosting`. A version you reference yourself wins.
+* Through `Joinery.Dovetail.Hosting`, writes `Program.cs` to `obj/` and declares the `ConsoleApp` joint.
+
+The generated `Program` creates the generic host’s `HostApplicationBuilder`, configures it with Dovetail (services, configuration, logging, OpenTelemetry and every other joint), builds and starts the host, applies the `ConsoleApp` joints, runs the command the command line names, and stops the host. The exit code is ConsoleAppFramework’s.
+
+## Commands and joints
+
+[Section titled “Commands and joints”](#commands-and-joints)
+
+Dovetail is joints only here: there are no partial methods to implement. A class marked `[DovetailExport]` implements the joints it needs, and `IConsoleAppJoint` registers commands.
+
+```text
+using ConsoleAppFramework;
+using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
+using Microsoft.Extensions.DependencyInjection;
+
+
+public class GreetCommands(Greeter greeter)
+{
+    [Command("greet")]
+    public void Greet(string name = "world") => Console.WriteLine(greeter.Greet(name));
+}
+
+
+[DovetailExport]
+internal class AppJoint : IServiceJoint, IConsoleAppJoint
+{
+    public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton<Greeter>();
+
+
+    public void Register(IDovetailContext context, ConsoleApp.ConsoleAppBuilder app) => app.Add<GreetCommands>();
+}
+```
+
+Commands are built from the host’s services, so they can inject anything the other joints registered. `IConsoleAppAsyncJoint` and `ConfigureConsoleApp` on the context builder exist too, as for any joint kind.
+
+Note
+
+ConsoleAppFramework reads the `Add` calls in your application’s own compilation. The joints that add commands therefore have to live in the application’s assembly: a library cannot contribute commands through a joint.
+
+## Your own entry point
+
+[Section titled “Your own entry point”](#your-own-entry-point)
+
+Set `DovetailUseDefaultProgram` to `false` to leave `Program.cs` to you. The `ConsoleApp` joint is still declared, so your entry point can call `ApplyConsoleApp(context)` itself. Set `DovetailConsoleApp` to `false` to turn all of it off.
+
+| Property                             | Default                     | Effect                                                   |
+| ------------------------------------ | --------------------------- | -------------------------------------------------------- |
+| `DovetailConsoleApp`                 | `true` with the console SDK | Declares the `ConsoleApp` joint and writes `Program.cs`. |
+| `DovetailUseDefaultProgram`          | `true`                      | `false` keeps the generated `Program.cs` out.            |
+| `DovetailConsoleAppFrameworkVersion` | the version the SDK pins    | The ConsoleAppFramework version the SDK adds.            |
+
 # Custom Dovetails
 
 > Step-by-step guide to creating and distributing your own Dovetails.
@@ -2133,19 +2213,20 @@ That is the smallest useful declaration: a joint that is handed only the `IDovet
 
 Metadata is optional unless stated. A name the item does not read is ignored without a warning, so a misspelling falls back to the default (`NMAmespace` leaves `Namespace` at its default). Boolean values are compared with `true` ignoring case; any other non-empty value counts as false.
 
-| Metadata               | Default                                 | What it changes                                                                                                                                                                                                                                                 |
-| ---------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Namespace`            | `$(RootNamespace).Joints`               | The namespace of every generated type, and so the namespace consumers import. Joints of one package usually share one, as `Joinery.Dovetail.Joints` does.                                                                                                       |
-| `ProvideConfiguration` | empty (false)                           | `true` adds an `IConfiguration configuration` parameter to `Register`, after the context. The value passed is `context.Configuration`; `Apply{Name}` takes no configuration parameter.                                                                          |
-| `ProvideServices`      | empty (false)                           | `true` adds an `IServiceCollection services` parameter to `Register`, after the configuration if there is one. With no `ParameterType` it is also the subject of `Apply{Name}`.                                                                                 |
-| `ParameterType`        | empty                                   | The type of one more `Register` parameter, the last one. It becomes the subject of `Apply{Name}`. Written into the generated code exactly as given; see [common mistakes](#common-mistakes).                                                                    |
-| `ParameterName`        | `parameter` when `ParameterType` is set | The name of that parameter, as it appears in `Register` and in `Apply{Name}`. Ignored without `ParameterType`.                                                                                                                                                  |
-| `BuilderMethodName`    | `Configure{Name}`                       | The name of the extension method on `DovetailContextBuilder` that registers a delegate. `Service` is declared with `BuilderMethodName="ConfigureServices"`.                                                                                                     |
-| `GenericParameter`     | empty                                   | A type parameter name that makes the joint generic: `I{Name}Joint<in T>`, `Apply{Name}<T>`, `Configure{Name}<T>`. `ParameterType` may be this name, and then the parameter is typed `T`.                                                                        |
-| `GenericConstraint`    | empty                                   | The constraint of that type parameter: `where T : {GenericConstraint}`. Written as given. Ignored without `GenericParameter`.                                                                                                                                   |
-| `GenericVariance`      | `in` when `GenericParameter` is set     | The variance modifier on the type parameter of the generated interfaces and delegates. Ignored without `GenericParameter`. When `ParameterType` is the type parameter, only `in` compiles; see [common mistakes](#common-mistakes).                             |
-| `IsAsync`              | `true`                                  | `false` generates only the synchronous joint. No `I{Name}AsyncJoint`, `{Name}AsyncJointDelegate` or async `Configure{Name}` overload, no `DovetailJointAsync.{Name}.g.cs`, and `Apply{Name}` returns `void` instead of `ValueTask`.                             |
-| `ReturnFirstArgument`  | empty (false)                           | `true` makes `Apply{Name}` return `ValueTask<IDovetailContext>`, the context after the joints ran. It compiles only for a joint whose subject is the context itself: no `ParameterType` and no `ProvideServices`. With `IsAsync` false the result is discarded. |
+| Metadata               | Default                                 | What it changes                                                                                                                                                                                                                                                                                                                         |
+| ---------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Namespace`            | `$(RootNamespace).Joints`               | The namespace of every generated type, and so the namespace consumers import. Joints of one package usually share one, as `Joinery.Dovetail.Joints` does.                                                                                                                                                                               |
+| `Accessibility`        | `public`                                | `internal` makes every generated type internal. Use it when `ParameterType` is itself internal, as the types a source generator writes into your project are (ConsoleAppFramework’s `ConsoleApp.ConsoleAppBuilder`): a public joint over an internal type is error CS0051. Any other value is written into the generated code as given. |
+| `ProvideConfiguration` | empty (false)                           | `true` adds an `IConfiguration configuration` parameter to `Register`, after the context. The value passed is `context.Configuration`; `Apply{Name}` takes no configuration parameter.                                                                                                                                                  |
+| `ProvideServices`      | empty (false)                           | `true` adds an `IServiceCollection services` parameter to `Register`, after the configuration if there is one. With no `ParameterType` it is also the subject of `Apply{Name}`.                                                                                                                                                         |
+| `ParameterType`        | empty                                   | The type of one more `Register` parameter, the last one. It becomes the subject of `Apply{Name}`. Written into the generated code exactly as given; see [common mistakes](#common-mistakes).                                                                                                                                            |
+| `ParameterName`        | `parameter` when `ParameterType` is set | The name of that parameter, as it appears in `Register` and in `Apply{Name}`. Ignored without `ParameterType`.                                                                                                                                                                                                                          |
+| `BuilderMethodName`    | `Configure{Name}`                       | The name of the extension method on `DovetailContextBuilder` that registers a delegate. `Service` is declared with `BuilderMethodName="ConfigureServices"`.                                                                                                                                                                             |
+| `GenericParameter`     | empty                                   | A type parameter name that makes the joint generic: `I{Name}Joint<in T>`, `Apply{Name}<T>`, `Configure{Name}<T>`. `ParameterType` may be this name, and then the parameter is typed `T`.                                                                                                                                                |
+| `GenericConstraint`    | empty                                   | The constraint of that type parameter: `where T : {GenericConstraint}`. Written as given. Ignored without `GenericParameter`.                                                                                                                                                                                                           |
+| `GenericVariance`      | `in` when `GenericParameter` is set     | The variance modifier on the type parameter of the generated interfaces and delegates. Ignored without `GenericParameter`. When `ParameterType` is the type parameter, only `in` compiles; see [common mistakes](#common-mistakes).                                                                                                     |
+| `IsAsync`              | `true`                                  | `false` generates only the synchronous joint. No `I{Name}AsyncJoint`, `{Name}AsyncJointDelegate` or async `Configure{Name}` overload, no `DovetailJointAsync.{Name}.g.cs`, and `Apply{Name}` returns `void` instead of `ValueTask`.                                                                                                     |
+| `ReturnFirstArgument`  | empty (false)                           | `true` makes `Apply{Name}` return `ValueTask<IDovetailContext>`, the context after the joints ran. It compiles only for a joint whose subject is the context itself: no `ParameterType` and no `ProvideServices`. With `IsAsync` false the result is discarded.                                                                         |
 
 ### The parameter lists
 
