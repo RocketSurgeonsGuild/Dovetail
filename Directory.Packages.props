@@ -18,10 +18,11 @@
     <GlobalPackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="5.0.1" />
     <GlobalPackageReference Include="Roslynator.CodeFixes" Version="5.0.1" />
     <GlobalPackageReference Include="Roslynator.Refactorings" Version="5.0.1" />
+    <GlobalPackageReference Include="ZeroAlloc.Analyzers" Version="1.13.0" />
     <GlobalPackageReference Include="Spectre.Console.Analyzer" Version="1.0.0" />
     <GlobalPackageReference Include="FakeItEasy.Analyzer.CSharp" Version="6.1.1" />
     <GlobalPackageReference Include="JetBrains.ExternalAnnotations" Version="10.2.172" />
-    <PackageVersion Include="Tomlyn.Extensions.Configuration" Version="2.0.1" />
+    <GlobalPackageReference Include="JetBrains.Annotations.Sources" Version="2026.2.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="FoggyBalrog.MermaidDotNet" Version="0.21.0" />
@@ -40,7 +41,6 @@
     <PackageVersion Include="Sourcy.DotNet" Version="1.1.1" />
     <PackageVersion Include="Sourcy.Git" Version="1.1.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
-    <PackageVersion Include="JetBrains.Annotations.Sources" Version="2026.2.0" />
     <PackageVersion Include="Aspire.Hosting" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
@@ -48,6 +48,7 @@
     <PackageVersion Include="Polyfill" Version="11.4.5" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
     <PackageVersion Include="BenchMarkDotNet" Version="0.15.8" />
+    <PackageVersion Include="Tomlyn.Extensions.Configuration" Version="2.0.1" />
     <PackageVersion Include="bunit.web" Version="1.40.0" />
     <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="8.0.0-preview-04" />
     <PackageVersion Include="Stashbox.Extensions.DependencyInjection" Version="6.0.0" />
@@ -72,8 +73,8 @@
     <PackageVersion Include="YamlDotNet" Version="18.1.0" />
     <!-- Pinned to the last version without a System.Text.Json dependency (2.x+ requires >=10.0.2, which
              conflicts with the pinned System.Text.Json used by the older Roslyn-host support projects). -->
-    
-    
+
+
     <!-- Only the Joinery.Dovetail.Sdk.Tests scaffolds reference it, to prove Dovetail seeds Specular's provider without depending on Specular. -->
     <PackageVersion Include="Specular" Version="0.4.1" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
