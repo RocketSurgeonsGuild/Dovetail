@@ -22,7 +22,7 @@ namespace {Namespace};
 /// </summary>
 /// <seealso cref="global::Joinery.Dovetail.Infrastructure.IDovetailJoint" />
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
-public interface I{JointName}Joint{GenericParam} : global::Joinery.Dovetail.Infrastructure.IDovetailJoint {GenericConstraint}
+{Accessibility} interface I{JointName}Joint{GenericParam} : global::Joinery.Dovetail.Infrastructure.IDovetailJoint {GenericConstraint}
 {
     /// <summary>
     ///     Register the {JointName} part.
@@ -34,13 +34,13 @@ public interface I{JointName}Joint{GenericParam} : global::Joinery.Dovetail.Infr
 ///     Delegate for the {JointName} part.
 /// </summary>
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated"), JointName("{JointName}")]
-public delegate void {JointName}JointDelegate{GenericParam}({SyncParams}) {GenericConstraint};
+{Accessibility} delegate void {JointName}JointDelegate{GenericParam}({SyncParams}) {GenericConstraint};
 
 /// <summary>
 ///     Extension methods for applying {JointName} parts.
 /// </summary>
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated")]
-public static partial class {JointName}JointExtensions
+{Accessibility} static partial class {JointName}JointExtensions
 {
     /// <summary>
     ///     Applies the registered {JointName} parts.
@@ -67,7 +67,7 @@ file class Private{JointName}Joint{GenericArg}({JointName}JointDelegate{GenericA
 ///     Builder-method extensions for applying {JointName} parts to a <see cref="global::Joinery.Dovetail.DovetailContextBuilder" />.
 /// </summary>
 [global::System.CodeDom.Compiler.GeneratedCode("Dovetail", "generated")]
-public static partial class {JointName}HostBuilderExtensions
+{Accessibility} static partial class {JointName}HostBuilderExtensions
 {
     extension(DovetailContextBuilder container)
     {

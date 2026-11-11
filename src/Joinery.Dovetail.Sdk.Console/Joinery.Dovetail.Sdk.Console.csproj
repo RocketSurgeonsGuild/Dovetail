@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <PackageType>MSBuildSdk</PackageType>
+    <NoBuildOutput>true</NoBuildOutput>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PackageDescription>MSBuild SDK for Dovetail console applications: chains Joinery.Dovetail.Sdk, adds ConsoleAppFramework and writes the application's Program.cs, which builds and configures the host from the app's Dovetail joints</PackageDescription>
+    <PackageTags>$(PackageTags);sdk;msbuild;console;consoleappframework</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Sdk/**" />
+    <None Include="Sdk/**" Pack="true" PackagePath="Sdk/" />
+    <Using Remove="**" />
+  </ItemGroup>
+
+  <!--
+      Writes Sdk/Packages.props into the package: DovetailConsoleSdkDovetailSdkVersion, the version of Joinery.Dovetail.Sdk that
+      Sdk/Sdk.props chains, which is this SDK's own version (every Dovetail package ships at one version), and
+      DovetailConsoleAppFrameworkVersion, the version of ConsoleAppFramework that Directory.Packages.props pins. An application can set
+      either first to choose another. As in Joinery.Dovetail.Sdk, the versions are only known when the SDK is packed, so the file is
+      generated then rather than kept in the repository.
+  -->
+  <Target Name="_DovetailConsoleGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack">
+    <PropertyGroup>
+      <_DovetailConsoleAppFrameworkVersion>@(PackageVersion->WithMetadataValue('Identity', 'ConsoleAppFramework')->'%(Version)')</_DovetailConsoleAppFrameworkVersion>
+      <_DovetailConsolePackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailConsolePackagesProps>
+    </PropertyGroup>
+    <Error Condition="'$(_DovetailConsoleAppFrameworkVersion)' == ''" Text="Directory.Packages.props pins no version of ConsoleAppFramework, which Joinery.Dovetail.Sdk.Console adds to an application." />
+    <ItemGroup>
+      <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
+      <_DovetailConsolePackagesPropsLine Include="&lt;Project&gt;" />
+      <_DovetailConsolePackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk.Console is packed. Each version is only set when the application has not set it already. --&gt;" />
+      <_DovetailConsolePackagesPropsLine Include="&lt;PropertyGroup&gt;" />
+      <_DovetailConsolePackagesPropsLine Include="&lt;DovetailConsoleSdkDovetailSdkVersion Condition=&quot;%27%24(DovetailConsoleSdkDovetailSdkVersion)%27 == %27%27&quot;&gt;$(Version)&lt;/DovetailConsoleSdkDovetailSdkVersion&gt;" />
+      <_DovetailConsolePackagesPropsLine Include="&lt;DovetailConsoleAppFrameworkVersion Condition=&quot;%27%24(DovetailConsoleAppFrameworkVersion)%27 == %27%27&quot;&gt;$(_DovetailConsoleAppFrameworkVersion)&lt;/DovetailConsoleAppFrameworkVersion&gt;" />
+      <_DovetailConsolePackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
+      <_DovetailConsolePackagesPropsLine Include="&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_DovetailConsolePackagesProps)" Lines="@(_DovetailConsolePackagesPropsLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <None Include="$(_DovetailConsolePackagesProps)" Pack="true" PackagePath="Sdk" />
+      <FileWrites Include="$(_DovetailConsolePackagesProps)" />
+    </ItemGroup>
+  </Target>
+</Project>

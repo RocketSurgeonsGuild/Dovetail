@@ -1,0 +1,17 @@
+<Project>
+  <!--
+      Registered via CustomAfterMicrosoftCommonTargets (see Sdk.props), after Joinery.Dovetail.Sdk's host detection.
+
+      A console application is the generic host's HostApplication host (an OutputType=Exe project that is not MAUI, Uno, Blazor
+      WebAssembly or ASP.NET Core). It gets ConsoleAppFramework, a source generator, so it only needs to be referenced to compile, and
+      Microsoft.Extensions.Hosting, which the generated Program.cs builds the host with. Joinery.Dovetail.Hosting does the rest: it
+      writes Program.cs and declares the ConsoleApp joint (see Joinery.Dovetail.Hosting.targets).
+
+      DovetailConsoleApp=false turns all of it off (the SDK is then Joinery.Dovetail.Sdk). A package the project already references
+      is left alone, so its own version wins.
+  -->
+  <ItemGroup Condition="'$(DovetailConsoleApp)' == 'true' and @(DovetailHost->AnyHaveMetadataValue('Identity', 'HostApplication')) == 'true'">
+    <DovetailSdkImplicitPackageReference Include="ConsoleAppFramework" Version="$(DovetailConsoleAppFrameworkVersion)" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    <DovetailSdkImplicitPackageReference Include="Microsoft.Extensions.Hosting" Version="$(DovetailMicrosoftExtensionsHostingVersion)" />
+  </ItemGroup>
+</Project>

@@ -156,6 +156,52 @@
   </Target>
 
   <!--
+    Console applications (Joinery.Dovetail.Sdk.Console sets DovetailConsoleApp; any project can).
+
+    A console application built on ConsoleAppFramework (a source generator, referenced as a package) gets two things from here:
+
+      - The ConsoleApp joint kind, declared as a DovetailJoint: IConsoleAppJoint / IConsoleAppAsyncJoint, whose Register is handed the
+        IDovetailContext and ConsoleAppFramework's ConsoleApp.ConsoleAppBuilder, and the ConfigureConsoleApp builder methods. A joint
+        registers its commands with app.Add<TCommand>() (or app.Add("name", handler)): ConsoleAppFramework reads those calls in the
+        application's own compilation, so the joints that add commands have to be in the application's assembly. Its types are
+        internal, as ConsoleAppFramework's are (a public joint over an internal type does not compile).
+      - Program.cs, from DovetailConsoleProgram.cs.template, which builds the generic host with Dovetail, applies the ConsoleApp joints
+        and runs the command the command line names. DovetailUseDefaultProgram=false leaves it out, for an application that writes its
+        own entry point (it can still declare the joint and call ApplyConsoleApp itself).
+
+    Properties:
+      DovetailConsoleApp         - 'true' turns both on (default: off; Joinery.Dovetail.Sdk.Console turns it on).
+      DovetailUseDefaultProgram  - 'false' keeps Program.cs out (default: true).
+
+    Only an application gets them: an OutputType=Exe project that runs the Dovetail generator, on the generic host (HostApplication),
+    that references Microsoft.Extensions.Hosting and ConsoleAppFramework.
+  -->
+  <ItemGroup Condition="'$(DovetailConsoleApp)' == 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe') and @(PackageReference->AnyHaveMetadataValue('Identity', 'ConsoleAppFramework')) == 'true'">
+    <DovetailJoint
+      Include="ConsoleApp"
+      Namespace="Joinery.Dovetail.Joints"
+      Accessibility="internal"
+      ParameterType="global::ConsoleAppFramework.ConsoleApp.ConsoleAppBuilder"
+      ParameterName="app" />
+  </ItemGroup>
+
+  <Target Name="_DovetailResolveConsoleProgram"
+          AfterTargets="_DovetailResolveHostingHelpers"
+          BeforeTargets="DovetailGenerateTemplates"
+          Condition="'$(DovetailConsoleApp)' == 'true' and '$(DovetailUseDefaultProgram)' != 'false' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'exe')">
+    <PropertyGroup>
+      <_DovetailConsoleProgram>false</_DovetailConsoleProgram>
+      <_DovetailConsoleProgram Condition="'$(_DovetailHostingReferenced)' == 'true' and '$(_DovetailHostingGenericHost)' == 'true' and '$(ImportDovetailAssembly)' == 'true' and @(DovetailHost->AnyHaveMetadataValue('Identity', 'HostApplication')) == 'true' and @(Analyzer->AnyHaveMetadataValue('Filename', 'ConsoleAppFramework')) == 'true'">true</_DovetailConsoleProgram>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DovetailConsoleProgram)' == 'true'">
+      <DovetailEmittedTemplate
+        Include="DovetailConsoleProgram"
+        File="$(MSBuildThisFileDirectory)DovetailConsoleProgram.cs.template"
+        OutputPrefix="DovetailHosting" />
+    </ItemGroup>
+  </Target>
+
+  <!--
       The generated entry points of a DovetailHost call its helper, so a host whose helper this package didn't emit (its framework isn't
       referenced, say a Microsoft.NET.Sdk.WebAssembly app without Blazor) gets no entry points rather than ones that can't compile.
       HelperName defaults to Dovetail{Host}Helpers, as in Joinery.Dovetail.Hosts.targets; hosts with a helper of their own are left alone.

@@ -103,6 +103,7 @@
     <Project Path="src/Joinery.Dovetail.Mermaid/Joinery.Dovetail.Mermaid.csproj" />
     <Project Path="src/Joinery.Dovetail.Hosting/Joinery.Dovetail.Hosting.csproj" />
     <Project Path="src/Joinery.Dovetail.Sdk/Joinery.Dovetail.Sdk.csproj" />
+    <Project Path="src/Joinery.Dovetail.Sdk.Console/Joinery.Dovetail.Sdk.Console.csproj" />
   </Folder>
   <Folder Name="/src/Joinery.Dovetail.Analyzers.supports/">
     <Project Path="src/Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.0.csproj" />
