@@ -266,6 +266,8 @@ internal static class Config
             .SelectMany(z => z.Elements().Select(e => e.Name.LocalName))
             .Distinct()
         )
+        // Joinery.Dovetail.Sdk.Console defaults OutputType to Exe, which would otherwise list the property in every snapshot.
+        .Where(z => z != "OutputType")
         .ToFrozenSet();
 
     public static string RootDirectory => field ??= FindRootDirectory();
