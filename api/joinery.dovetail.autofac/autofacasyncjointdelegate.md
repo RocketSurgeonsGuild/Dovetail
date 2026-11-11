@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.Autofac](/Dovetail/api/joinery.dovetail.autofac.md)
-- Version: `0.4.5-beta.14`
+- Version: `0.4.5-beta.15`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
