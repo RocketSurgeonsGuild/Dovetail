@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.DryIoc](/Dovetail/pr-preview/pr-352/api/joinery.dovetail.dryioc.md)
-- Version: `0.4.5-pr.14`
+- Version: `0.4.5-pr.17`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Inherits: `MulticastDelegate`
