@@ -117,6 +117,62 @@ public class FileBasedAppTests(string targetFramework)
         output.ShouldNotContain($"Build.cs.{extension}");
     }
 
+    /// <summary>
+    /// The configuration joints of the provider packages (YamlJoint, JsonJoint, TomlJoint) also load <c>{ApplicationName}.{ext}</c>, the
+    /// environment and local variants included, from the application's output directory: for a file-based app that is <c>Build.{ext}</c>,
+    /// not <c>Build.cs.{ext}</c>. Dovetail copies only <c>appsettings.{ext}</c> to the output directory (as <c>Build.{ext}</c>, the same
+    /// path), so an app that keeps a <c>Build.{ext}</c> of its own copies it there itself, as here.
+    /// </summary>
+    [Test]
+    [Arguments("yaml", "Joinery.Dovetail.Configuration.Yaml")]
+    [Arguments("yml", "Joinery.Dovetail.Configuration.Yaml")]
+    [Arguments("json", "Joinery.Dovetail.Configuration.Json")]
+    [Arguments("toml", "Joinery.Dovetail.Configuration.Toml")]
+    public async Task FileBasedApp_ReferencingThePackages_LoadsAConfigurationFileNamedAfterItsAssembly(string extension, string providerPackageId)
+    {
+        using var project = new SdkTestProject();
+        project.AddFile(
+            "app/Build.cs",
+            $$"""
+            #:package Joinery.Dovetail.Hosting@{{Config.DovetailPackageVersion("Joinery.Dovetail.Hosting")}}
+            #:package {{providerPackageId}}@{{Config.DovetailPackageVersion(providerPackageId)}}
+            #:package Microsoft.Extensions.Hosting@10.0.9
+            #:property TargetFramework={{targetFramework}}
+
+            using Microsoft.Extensions.Hosting;
+
+            {{PrintGreeting}}
+            """
+        );
+        project.AddFile(
+            "app/Directory.Build.props",
+            $"""
+            <Project>
+              <PropertyGroup>
+                <ImportDovetailAssembly>true</ImportDovetailAssembly>
+              </PropertyGroup>
+              <ItemGroup>
+                <DovetailHost Include="HostApplication" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers" />
+                <None Include="Build.{extension}" CopyToOutputDirectory="PreserveNewest" />
+              </ItemGroup>
+            </Project>
+            """
+        );
+        project.AddFile(
+            $"app/Build.{extension}",
+            extension switch
+            {
+                "json" => """{ "Greeting": "from-build" }""",
+                "toml" => """Greeting = "from-build" """,
+                _ => "Greeting: from-build",
+            }
+        );
+
+        var output = await project.RunFile("app/Build.cs");
+
+        output.ShouldContain("Greeting=from-build");
+    }
+
     private const string PrintGreeting = """
         using Build;
         using Microsoft.Extensions.Configuration;
