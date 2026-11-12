@@ -16,6 +16,10 @@ on:
             - main
             - next
 
+env:
+    # Adds .config/mise.ci.toml, which keeps the editor-only tools out of CI installs and out of the shared mise cache.
+    MISE_ENV: ci
+
 permissions:
     contents: read
 

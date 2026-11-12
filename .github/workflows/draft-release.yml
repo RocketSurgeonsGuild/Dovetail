@@ -13,6 +13,10 @@ on:
     schedule:
         - cron: 0 0 * * 4
 
+env:
+    # Adds .config/mise.ci.toml, which keeps the editor-only tools out of CI installs and out of the shared mise cache.
+    MISE_ENV: ci
+
 permissions:
     actions: read
     checks: write
@@ -57,7 +61,10 @@ jobs:
                   cache: true
                   # Restore only: build.yml is the single cache writer, so the saved cache always includes the npm cache.
                   cache_save: false
-                  cache_key_prefix: mise-v2
+                  # build.yml's key (see the comment there): with mise-action's default key these never matched the one cache
+                  # build.yml saves, so every run installed every tool from scratch.
+                  cache_key: mise-{{platform}}-{{cache_period}}
+                  cache_max_age_days: 7
                   experimental: true
                   github_token: ${{ secrets.GITHUB_TOKEN }}
             - name: 🔨 Use GitVersion
