@@ -42,7 +42,15 @@ await using var pipeline = await Pipeline
 ```
 
 Configure what has to come before the joints on the builder before calling `ConfigureDovetail`: once it returns, the builder is
-consumed.
+consumed. That includes where configuration files are read from: the configuration joints resolve their files (`appsettings.json` and
+the rest) against the file provider of the pipeline's configuration, so a pipeline whose build scripts live in their own folder points
+it there first:
+
+```csharp
+var builder = Pipeline.CreateBuilder(args);
+builder.Configuration.SetBasePath(Path.Combine(Environment.CurrentDirectory, "build"));
+await using var pipeline = await builder.ConfigureDovetail();
+```
 
 ## Writing a PipelineBuilder joint
 

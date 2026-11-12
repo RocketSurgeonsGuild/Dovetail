@@ -930,7 +930,7 @@ MyLibrary/
 └── MyLibrary.csproj
 ```
 
-* `appsettings.{ext}` becomes `MyLibrary.{ext}` (`appsettings.Production.json` becomes `MyLibrary.Production.json`), so several libraries can ship their own file into one output directory.
+* `appsettings.{ext}` becomes `MyLibrary.{ext}` (`appsettings.Production.json` becomes `MyLibrary.Production.json`), so several libraries can ship their own file into one output directory. The name is the project’s assembly name (`AssemblyName`, which defaults to the project’s name): the `ApplicationName` the runtime conventions look for.
 * The files are packed under `contentFiles/any/any/configuration/`, copied to a same-solution host’s output directory through a `ProjectReference`, and restored from the package otherwise.
 * The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the project ignores `appsettings.local.*`.
 * A file-based app (`dotnet run Build.cs`) is named after its assembly, `Build`, without the `.cs`: its `appsettings.{ext}` files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK.
@@ -1851,7 +1851,13 @@ await using var pipeline = await Pipeline
                                 .ConfigureDovetail(z => z.ConfigurePipelineBuilder((_, builder) => builder.AddModule<ReleaseModule>()));
 ```
 
-Configure what has to come before the joints on the builder before calling `ConfigureDovetail`: once it returns, the builder is consumed.
+Configure what has to come before the joints on the builder before calling `ConfigureDovetail`: once it returns, the builder is consumed. That includes where configuration files are read from: the configuration joints resolve their files (`appsettings.json` and the rest) against the file provider of the pipeline’s configuration, so a pipeline whose build scripts live in their own folder points it there first:
+
+```csharp
+var builder = Pipeline.CreateBuilder(args);
+builder.Configuration.SetBasePath(Path.Combine(Environment.CurrentDirectory, "build"));
+await using var pipeline = await builder.ConfigureDovetail();
+```
 
 ## Writing a PipelineBuilder joint
 
