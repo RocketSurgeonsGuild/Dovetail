@@ -17,9 +17,10 @@
             <EnableDynamicManagedInstrumentation>True</EnableDynamicManagedInstrumentation>
             <!--
                 The SDK tests start hundreds of `dotnet build`/`run`/`publish` processes. Collecting from them attaches the
-                coverage profiler to every MSBuild node and compiler run they start.
+                coverage profiler to every MSBuild node and compiler run they start, for a few points of
+                Joinery.Dovetail.Build.Tasks coverage that its own unit tests (Joinery.Dovetail.Build.Tasks.Tests) mostly have.
             -->
-            <CollectFromChildProcesses>True</CollectFromChildProcesses>
+            <CollectFromChildProcesses>False</CollectFromChildProcesses>
             <ModulePaths>
               <Include>
                 <ModulePath>.*[\\/]Joinery\.Dovetail(\.[^\\/]+)?\.dll$</ModulePath>
