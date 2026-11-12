@@ -1,0 +1,26 @@
+<Project>
+  <!--
+    Joinery.Dovetail.ModularPipelines.targets
+    Declares the ModularPipelines host model for a project that references this package directly: a DovetailHost item, which
+    Joinery.Dovetail.Hosts.targets expands into ConfigureDovetail extension methods on ModularPipelines' PipelineBuilder. They
+    apply the project's joints to the builder and build the pipeline through DovetailPipelineHelpers.Configure, which this package
+    compiles, so nothing here depends on anything but the package itself.
+
+    Only an assembly that imports joints (ImportDovetailAssembly, which the SDK sets for applications and test projects) gets the entry
+    points: they call DovetailContextBuilder.Create(), which only such an assembly has. A library that references the package can still
+    export PipelineBuilder joints.
+
+    NuGet imports this file for a package reference; the repository's own projects that use the host (the sample and the tests) import it
+    by path. DovetailModularPipelinesHost=false leaves the host out, for a project that wires Dovetail in through DovetailPipelinePlugin
+    or DovetailPipelineHelpers itself.
+  -->
+  <ItemGroup Condition="'$(ImportDovetailAssembly)' == 'true' and '$(DovetailModularPipelinesHost)' != 'false'">
+    <DovetailHost
+      Include="ModularPipelines"
+      HostBuilderType="global::ModularPipelines.PipelineBuilder"
+      HostBuilderName="builder"
+      HostType="global::ModularPipelines.IPipeline"
+      HelperName="global::Joinery.Dovetail.DovetailPipelineHelpers"
+      HasBuildExpression="false" />
+  </ItemGroup>
+</Project>

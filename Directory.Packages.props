@@ -44,6 +44,8 @@
     <PackageVersion Include="Aspire.Hosting" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
+    <!-- Joinery.Dovetail.ModularPipelines; ModularPipelines 4 targets net11.0 only. -->
+    <PackageVersion Include="ModularPipelines" Version="4.0.0-rc.1" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
     <PackageVersion Include="Polyfill" Version="11.4.5" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />

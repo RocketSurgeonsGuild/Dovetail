@@ -1,0 +1,9 @@
+﻿[
+  IPipelineBuilderJoint.Register(IDovetailContext context, PipelineBuilder builder) : Void,
+  IPipelineBuilderAsyncJoint.Register(IDovetailContext context, PipelineBuilder builder, CancellationToken cancellationToken) : ValueTask,
+  PipelineBuilderJointDelegate.Invoke(IDovetailContext context, PipelineBuilder builder) : Void,
+  PipelineBuilderAsyncJointDelegate.Invoke(IDovetailContext context, PipelineBuilder builder, CancellationToken cancellationToken) : ValueTask,
+  PipelineBuilderJointExtensions.ApplyPipelineBuilder(PipelineBuilder builder, IDovetailContext context, CancellationToken cancellationToken) : ValueTask,
+  PipelineBuilderHostBuilderExtensions.ConfigurePipelineBuilder(DovetailContextBuilder container, PipelineBuilderAsyncJointDelegate delegate, Int32 priority, DovetailCategory category, DovetailHostType hostType, String expression) : DovetailContextBuilder,
+  PipelineBuilderHostBuilderExtensions.ConfigurePipelineBuilder(DovetailContextBuilder container, PipelineBuilderJointDelegate delegate, Int32 priority, DovetailCategory category, DovetailHostType hostType, String expression) : DovetailContextBuilder
+]

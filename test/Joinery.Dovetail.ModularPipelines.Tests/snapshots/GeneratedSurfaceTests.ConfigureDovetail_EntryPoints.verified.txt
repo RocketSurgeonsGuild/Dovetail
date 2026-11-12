@@ -1,0 +1,12 @@
+﻿[
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(PipelineBuilder builder, Action<DovetailContextBuilder> action, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(PipelineBuilder builder, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(PipelineBuilder builder, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(PipelineBuilder builder, Func<DovetailContextBuilder, CancellationToken, ValueTask> action, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(PipelineBuilder builder, Func<DovetailContextBuilder, ValueTask> action, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(Task<PipelineBuilder> builder, Action<DovetailContextBuilder> action, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(Task<PipelineBuilder> builder, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(Task<PipelineBuilder> builder, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(Task<PipelineBuilder> builder, Func<DovetailContextBuilder, CancellationToken, ValueTask> action, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  GeneratedDovetailModularPipelinesExtensions.ConfigureDovetail(Task<PipelineBuilder> builder, Func<DovetailContextBuilder, ValueTask> action, CancellationToken cancellationToken) : ValueTask<IPipeline>
+]
