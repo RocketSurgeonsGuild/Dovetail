@@ -504,7 +504,13 @@ await using var pipeline = await Pipeline
                                 .CreateBuilder(args)
                                 .ConfigureDovetail(z => z.ConfigurePipelineBuilder((_, builder) => builder.AddModule<ReleaseModule>()));
 ```
- Configure what has to come before the joints on the builder before calling `ConfigureDovetail`: once it returns, the builder is consumed. ## Writing a PipelineBuilder joint [Section titled “Writing a PipelineBuilder joint”](#writing-a-pipelinebuilder-joint) The `PipelineBuilder` joint is handed the builder, so it can do anything the pipeline project would: add modules, register services, set options, add plugins. A joint that adds the module of a sample pipeline and the service the module uses: sample/ModularPipelinesSample/BuildJoint.cs 
+ Configure what has to come before the joints on the builder before calling `ConfigureDovetail`: once it returns, the builder is consumed. That includes where configuration files are read from: the configuration joints resolve their files (`appsettings.json` and the rest) against the file provider of the pipeline’s configuration, so a pipeline whose build scripts live in their own folder points it there first: 
+```csharp
+var builder = Pipeline.CreateBuilder(args);
+builder.Configuration.SetBasePath(Path.Combine(Environment.CurrentDirectory, "build"));
+await using var pipeline = await builder.ConfigureDovetail();
+```
+ ## Writing a PipelineBuilder joint [Section titled “Writing a PipelineBuilder joint”](#writing-a-pipelinebuilder-joint) The `PipelineBuilder` joint is handed the builder, so it can do anything the pipeline project would: add modules, register services, set options, add plugins. A joint that adds the module of a sample pipeline and the service the module uses: sample/ModularPipelinesSample/BuildJoint.cs 
 ```csharp
 [DovetailExport]
 public sealed class BuildJoint : IPipelineBuilderJoint
