@@ -2,6 +2,7 @@ using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 namespace Joinery.Dovetail.ModularPipelines.Tests;
 
@@ -79,6 +80,56 @@ public class DovetailPipelineBuilderTests
                                          );
 
         pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].ShouldBe("joined");
+    }
+
+    [Test]
+    public async Task ConfigureDovetail_ResolvesTheFilesOfTheConfigurationJoints_AgainstTheBasePathOfThePipelineConfiguration()
+    {
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "appsettings.json"), """{ "Dovetail": { "FromFile": "file" } }""");
+            var builder = Pipeline.CreateBuilder();
+            builder.Configuration.SetBasePath(directory.FullName);
+
+            await using var pipeline = await builder.ConfigureDovetail(
+                z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
+            );
+
+            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("file");
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Test]
+    public async Task ConfigureDovetail_KeepsTheCommandLineAboveTheFilesOfTheConfigurationJoints_ReadThroughTheFileProviderOfThePipelineConfiguration()
+    {
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(directory.FullName, "appsettings.json"),
+                """{ "Dovetail": { "FromFile": "file", "Overridden": "file" } }"""
+            );
+            var builder = Pipeline.CreateBuilder(["--Dovetail:Overridden=commandline"]);
+            using var fileProvider = new PhysicalFileProvider(directory.FullName);
+            builder.Configuration.SetFileProvider(fileProvider);
+
+            await using var pipeline = await builder.ConfigureDovetail(
+                z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
+            );
+
+            var configuration = pipeline.Services.GetRequiredService<IConfiguration>();
+            configuration["Dovetail:FromFile"].ShouldBe("file");
+            configuration["Dovetail:Overridden"].ShouldBe("commandline");
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
     }
 
     [Test]
