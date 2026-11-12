@@ -420,6 +420,8 @@ MyLibrary/
 - The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and
   `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the
   project ignores `appsettings.local.*`.
+- A file-based app (`dotnet run Build.cs`) is named after its assembly, `Build`, without the `.cs`: its `appsettings.{ext}`
+  files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK.
 - JSON, YAML and TOML are supported. Opt in with `DovetailEnableConfiguration`; YAML is the default format, and
   `DovetailEnableJsonConfiguration` or `DovetailEnableTomlConfiguration` chooses another. Hosts with no file system
   (MAUI, Uno) read copies embedded in the assembly: `DovetailEmbedConfiguration`.

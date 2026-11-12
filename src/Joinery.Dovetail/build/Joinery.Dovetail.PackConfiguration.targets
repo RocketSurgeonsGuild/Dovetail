@@ -15,8 +15,8 @@
 
   <!--
     Packed / copied-to-output configuration files are renamed from the generic
-    "appsettings.*" convention to "$(MSBuildProjectName).*" (preserving any middle
-    qualifier, e.g. appsettings.Production.json -> Foo.Production.json) so that:
+    "appsettings.*" convention to the project's name (preserving any middle qualifier, e.g.
+    appsettings.Production.json -> Foo.Production.json) so that:
       - multiple Dovetail-enabled dependencies can each ship their own default
         configuration file into a consumer's output directory without colliding
         on the literal name "appsettings.json", and
@@ -36,6 +36,27 @@
     DovetailEmbedConfiguration=true (set by the SDK for MAUI and Uno applications) makes the
     embedded copies the only ones: the files are no longer copied to the output directory.
   -->
+
+  <!--
+    The name configuration files are renamed to. A file-based app (dotnet run Build.cs) is evaluated as a virtual Build.cs.csproj, so its
+    $(MSBuildProjectName) keeps the ".cs"; its assembly, and the ApplicationName the runtime conventions look for, is "Build".
+  -->
+  <PropertyGroup>
+    <_DovetailConfigurationName>$(MSBuildProjectName)</_DovetailConfigurationName>
+    <_DovetailConfigurationName Condition="'$(FileBasedProgram)' == 'true' and $(MSBuildProjectName.EndsWith('.cs'))">$([System.IO.Path]::GetFileNameWithoutExtension('$(MSBuildProjectName)'))</_DovetailConfigurationName>
+  </PropertyGroup>
+
+  <!--
+    A file-based app has no default None items (EnableDefaultNoneItems is false for it), so the None updates below would match nothing
+    and the files would never be copied to the output directory the generated joints read them from. Include them for it, unless
+    something already did (the Dovetail SDK's file-based apps keep the default items, and the Web SDK globs JSON as Content).
+  -->
+  <ItemGroup Condition="'$(FileBasedProgram)' == 'true'">
+    <None Include="$(MSBuildProjectDirectory)\appsettings*.json" Exclude="@(None);@(Content);$(MSBuildProjectDirectory)\appsettings.schema.json" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')" />
+    <None Include="$(MSBuildProjectDirectory)\appsettings*.yaml" Exclude="@(None);@(Content)" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')" />
+    <None Include="$(MSBuildProjectDirectory)\appsettings*.yml" Exclude="@(None);@(Content)" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')" />
+    <None Include="$(MSBuildProjectDirectory)\appsettings*.toml" Exclude="@(None);@(Content)" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')" />
+  </ItemGroup>
 
   <!--
     Deliberately NO file-presence auto-default of the DovetailEnable{Format}Configuration flags
@@ -65,31 +86,31 @@
     <_DovetailJsonAppSettings Include="$(MSBuildProjectDirectory)\appsettings*.json" Exclude="$(MSBuildProjectDirectory)\appsettings.schema.json" />
     <None Update="@(_DovetailJsonAppSettings)"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
     <None Update="@(_DovetailJsonAppSettings)" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
     <!--
       The Web SDK globs *.json as Content rather than None, so without these the file is copied (and published) under its
-      original name while the generated joint loads $(MSBuildProjectName).json - a FileNotFoundException at startup.
+      original name while the generated joint loads $(_DovetailConfigurationName).json - a FileNotFoundException at startup.
     -->
     <Content Update="@(_DovetailJsonAppSettings)"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
     <Content Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
     <Content Update="@(_DovetailJsonAppSettings)" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
     <EmbeddedResource Include="@(_DovetailJsonAppSettings)"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
     <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.json" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
@@ -98,17 +119,17 @@
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')">
     <None Update="$(MSBuildProjectDirectory)\appsettings*.yaml"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.yaml" Pack="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings*.yaml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
     <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.yaml"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
     <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yaml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
@@ -117,17 +138,17 @@
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')">
     <None Update="$(MSBuildProjectDirectory)\appsettings*.yml"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.yml" Pack="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings*.yml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
     <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.yml"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
     <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
@@ -136,17 +157,17 @@
   <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')">
     <None Update="$(MSBuildProjectDirectory)\appsettings*.toml"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings.local.toml" Pack="false" />
     <None Update="$(MSBuildProjectDirectory)\appsettings*.toml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
     <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.toml"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(MSBuildProjectName)'))%(Extension)"
+      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
     <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.toml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
@@ -260,7 +281,7 @@
     Outputs="$(_DovetailJsonConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitJsonConfiguration)' == 'true'">
       <_DovetailJsonConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailJsonConfigurationTemplateFile)'))</_DovetailJsonConfigurationContent>
-      <_DovetailJsonConfigurationContent>$(_DovetailJsonConfigurationContent.Replace('{{ProjectName}}', '$(MSBuildProjectName)'))</_DovetailJsonConfigurationContent>
+      <_DovetailJsonConfigurationContent>$(_DovetailJsonConfigurationContent.Replace('{{ProjectName}}', '$(_DovetailConfigurationName)'))</_DovetailJsonConfigurationContent>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_DovetailEmitJsonConfiguration)' == 'true'"
@@ -278,7 +299,7 @@
     Outputs="$(_DovetailYamlConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitYamlConfiguration)' == 'true'">
       <_DovetailYamlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailYamlConfigurationTemplateFile)'))</_DovetailYamlConfigurationContent>
-      <_DovetailYamlConfigurationContent>$(_DovetailYamlConfigurationContent.Replace('{{ProjectName}}', '$(MSBuildProjectName)'))</_DovetailYamlConfigurationContent>
+      <_DovetailYamlConfigurationContent>$(_DovetailYamlConfigurationContent.Replace('{{ProjectName}}', '$(_DovetailConfigurationName)'))</_DovetailYamlConfigurationContent>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_DovetailEmitYamlConfiguration)' == 'true'"
@@ -296,7 +317,7 @@
     Outputs="$(_DovetailYmlConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitYmlConfiguration)' == 'true'">
       <_DovetailYmlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailYmlConfigurationTemplateFile)'))</_DovetailYmlConfigurationContent>
-      <_DovetailYmlConfigurationContent>$(_DovetailYmlConfigurationContent.Replace('{{ProjectName}}', '$(MSBuildProjectName)'))</_DovetailYmlConfigurationContent>
+      <_DovetailYmlConfigurationContent>$(_DovetailYmlConfigurationContent.Replace('{{ProjectName}}', '$(_DovetailConfigurationName)'))</_DovetailYmlConfigurationContent>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_DovetailEmitYmlConfiguration)' == 'true'"
@@ -314,7 +335,7 @@
     Outputs="$(_DovetailTomlConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitTomlConfiguration)' == 'true'">
       <_DovetailTomlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailTomlConfigurationTemplateFile)'))</_DovetailTomlConfigurationContent>
-      <_DovetailTomlConfigurationContent>$(_DovetailTomlConfigurationContent.Replace('{{ProjectName}}', '$(MSBuildProjectName)'))</_DovetailTomlConfigurationContent>
+      <_DovetailTomlConfigurationContent>$(_DovetailTomlConfigurationContent.Replace('{{ProjectName}}', '$(_DovetailConfigurationName)'))</_DovetailTomlConfigurationContent>
     </PropertyGroup>
     <WriteLinesToFile
       Condition="'$(_DovetailEmitTomlConfiguration)' == 'true'"
