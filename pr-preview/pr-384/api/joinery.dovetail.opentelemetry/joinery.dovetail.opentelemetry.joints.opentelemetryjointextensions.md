@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.OpenTelemetry](/Dovetail/pr-preview/pr-384/api/joinery.dovetail.opentelemetry.md)
-- Version: `0.5.1-pr.8`
+- Version: `0.5.1-pr.11`
 - Namespace: `Joinery.Dovetail.OpenTelemetry.Joints`
 - Target framework: `net10.0`
 

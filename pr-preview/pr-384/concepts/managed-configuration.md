@@ -419,6 +419,31 @@ MyLibrary/
   project ignores `appsettings.local.*`.
 - A file-based app (`dotnet run Build.cs`) is named after its assembly, `Build`, without the `.cs`: its `appsettings.{ext}`
   files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK.
+
+### Naming the source files
+
+A library's configuration files can be written under either of two names, and both end up in the same place:
+
+| Source file                                            | Copied, packed and embedded as                     | Included when              |
+| ------------------------------------------------------ | -------------------------------------------------- | -------------------------- |
+| `appsettings.{ext}`, `appsettings.{Environment}.{ext}` | `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` | `appsettings.{ext}` exists |
+| `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}`     | the same name                                      | `MyLibrary.{ext}` exists   |
+| `appsettings.local.{ext}` or `MyLibrary.local.{ext}`   | `MyLibrary.local.{ext}`, never packed              | as above                   |
+
+`MyLibrary` is the assembly name, as above: in a `lib.csproj` whose `AssemblyName` is `Contoso.Library`, `Contoso.Library.yaml`
+is configuration and `lib.yaml` is an ordinary file, because nothing would load a `lib.yaml`. A file-based app's `Build.yaml`, next
+to `Build.cs`, is included the same way. Files named after the assembly are treated exactly like the `appsettings` ones: copied
+to the output directory, packed under `contentFiles/any/any/configuration/`, embedded, loaded by the generated joint, and added to a
+file-based app's items. `MyLibrary.schema.json` and a file-based app's `Build.run.json` (its launch profiles) are not
+configuration and are left alone. Add `MyLibrary.local.*` to your `.gitignore` next to `appsettings.local.*`.
+
+Each pair of names that would land on the same file, such as `appsettings.yaml` and `MyLibrary.yaml`, or
+`appsettings.Development.yaml` and `MyLibrary.Development.yaml`, fails the build with
+[`DT0019`](#diagnostics); keep one of them. Different extensions are different files, so `appsettings.yaml` and `MyLibrary.yml`
+coexist, as do `appsettings.yaml` and `MyLibrary.Development.yaml` (which is only included next to a `MyLibrary.yaml`).
+
+### Opting in
+
 - JSON, YAML and TOML are supported. Opt in with `DovetailEnableConfiguration`; YAML is the default format, and
   `DovetailEnableJsonConfiguration` or `DovetailEnableTomlConfiguration` chooses another. Hosts with no file system
   (MAUI, Uno) read copies embedded in the assembly: `DovetailEmbedConfiguration`.
@@ -447,6 +472,7 @@ MyLibrary/
 | `DT0015` | Error    | A type is configured by both a class `[DovetailConfiguration]` and an assembly `DovetailConfiguration<T>`. It is reported on the assembly attribute.                             |
 | `DT0016` | Error    | A type is bound with more than one key style. The later declaration is reported and produces nothing; use the same `KeyStyle`, or give the shared type `[ConfigurationKeyName]`. |
 | `DT0018` | Warning  | A `[Validate]` type has an asynchronous ZeroAlloc.Validation rule, so it isn't validated with `ValidateWithZeroAlloc()`: options validation is synchronous.                      |
+| `DT0019` | Error    | A project has both `appsettings{suffix}.{ext}` and `{AssemblyName}{suffix}.{ext}`, which land on the same file. Reported by the build; keep one.                                 |
 
 The generator runs in every project that references a Dovetail package, including those that only reference one
 indirectly, so these can fire in transitive consumers. `DT0001` to `DT0005` and `DT0017` are described under
