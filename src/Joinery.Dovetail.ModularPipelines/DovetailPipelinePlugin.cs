@@ -1,5 +1,3 @@
-using ModularPipelines;
-
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
 namespace Joinery.Dovetail;
@@ -23,7 +21,6 @@ namespace Joinery.Dovetail;
 [PublicAPI]
 public sealed class DovetailPipelinePlugin(DovetailContextBuilder contextBuilder) : IModularPipelinesPlugin
 {
-    private IDovetailContext? _context;
 
     /// <inheritdoc />
     public string Name => "Dovetail";
@@ -31,7 +28,7 @@ public sealed class DovetailPipelinePlugin(DovetailContextBuilder contextBuilder
     /// <summary>
     ///     The context the joints ran with, once the plugin has been added to a builder.
     /// </summary>
-    public IDovetailContext? Context => _context;
+    public IDovetailContext? Context { get; private set; }
 
     /// <inheritdoc />
     /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
@@ -39,6 +36,6 @@ public sealed class DovetailPipelinePlugin(DovetailContextBuilder contextBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
         var apply = DovetailPipelineHelpers.Apply(builder, contextBuilder, CancellationToken.None);
-        _context = apply.IsCompletedSuccessfully ? apply.Result : apply.AsTask().GetAwaiter().GetResult();
+        Context = apply.IsCompletedSuccessfully ? apply.Result : apply.AsTask().GetAwaiter().GetResult();
     }
 }

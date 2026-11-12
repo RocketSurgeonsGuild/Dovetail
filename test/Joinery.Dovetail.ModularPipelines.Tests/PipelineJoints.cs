@@ -1,7 +1,6 @@
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
-using ModularPipelines;
 
 namespace Joinery.Dovetail.ModularPipelines.Tests;
 
