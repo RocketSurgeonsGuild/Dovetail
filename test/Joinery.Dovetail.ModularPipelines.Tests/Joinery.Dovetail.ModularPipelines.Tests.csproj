@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <!-- ModularPipelines 4 targets net11.0 only. -->
+        <TargetFramework>net11.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.ModularPipelines\Joinery.Dovetail.ModularPipelines.csproj" />
+    </ItemGroup>
+    <!-- What NuGet imports for a package reference: the DovetailHost that generates ConfigureDovetail for PipelineBuilder. -->
+    <Import Project="..\..\src\Joinery.Dovetail.ModularPipelines\build\Joinery.Dovetail.ModularPipelines.targets" />
+</Project>

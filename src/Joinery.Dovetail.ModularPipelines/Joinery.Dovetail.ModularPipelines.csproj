@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <!-- ModularPipelines 4 targets net11.0 only. -->
+        <TargetFramework>net11.0</TargetFramework>
+        <IsAotCompatible>true</IsAotCompatible>
+        <PackageDescription>
+            Applies Dovetail joints to a ModularPipelines PipelineBuilder: the configuration, service and logging joints, and the
+            PipelineBuilder joint, through which a joint adds modules, options and services to the pipeline.
+        </PackageDescription>
+        <PackageTags>$(PackageTags);modularpipelines;pipeline;build</PackageTags>
+        <RootNamespace>Joinery.Dovetail</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="ModularPipelines" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <DovetailJoint Include="PipelineBuilder" ParameterType="global::ModularPipelines.PipelineBuilder" ParameterName="builder" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="build/*.*" Pack="true" PackagePath="build" />
+    </ItemGroup>
+</Project>

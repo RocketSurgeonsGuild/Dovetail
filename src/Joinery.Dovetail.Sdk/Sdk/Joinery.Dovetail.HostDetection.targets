@@ -181,6 +181,12 @@
         either way.
     -->
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and ('$(FileBasedProgram)' == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')) == 'true')"/>
+    <!--
+        A pipeline project (ModularPipelines 4, which targets net11.0 only) gets Joinery.Dovetail.ModularPipelines, whose build targets
+        declare the ModularPipelines host: ConfigureDovetail on PipelineBuilder. DovetailEnableModularPipelines=false opts out. No
+        default is written for the switch, so the evaluated properties of every other project stay as they were.
+    -->
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.ModularPipelines" Version="$(DovetailVersion)" Condition="'$(DovetailEnableModularPipelines)' != 'false' and '$(TargetFramework)' != '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) and @(PackageReference->AnyHaveMetadataValue('Identity', 'ModularPipelines')) == 'true'"/>
   </ItemGroup>
 
   <!--
