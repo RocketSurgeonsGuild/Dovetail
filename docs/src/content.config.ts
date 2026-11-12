@@ -40,7 +40,10 @@ export const collections = {
                 base: "changelog",
                 owner: "RocketSurgeonsGuild",
                 repo: "Dovetail",
-                token: import.meta.env.GH_API_TOKEN,
+                // Unauthenticated, the release list counts against GitHub's 60 requests an hour per IP, shared by every job on
+                // the runner's address: the docs build then fails with a 403 now and then, and takes the CI build with it. The
+                // build workflow already passes the job's GITHUB_TOKEN.
+                token: import.meta.env.GH_API_TOKEN ?? process.env.GITHUB_TOKEN,
             },
         ]),
     }),
