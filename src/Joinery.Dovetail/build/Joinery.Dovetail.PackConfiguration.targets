@@ -23,6 +23,9 @@
       - the generated per-project IConfigurationJoint (see the _DovetailGenerate*Configuration
         targets below) can load the file it knows it shipped by a deterministic name.
 
+    A file already named after the project ({Name}.{ext}, {Name}.{Environment}.{ext}, {Name}.local.{ext}) is
+    treated the same way and keeps its name; see the configuration file items below.
+
     appsettings.local.{ext} remains excluded from the NuGet package (developer-machine-only
     override, see Joinery.Dovetail.Configuration.targets' gitignore warning target) but IS still
     renamed and copied to the output directory like its siblings.
@@ -42,10 +45,55 @@
     assembly's name) and is unique among the assemblies that share an output directory, where two projects can share a file name. A
     file-based app (dotnet run Build.cs) is evaluated as a virtual Build.cs.csproj, so its $(MSBuildProjectName) keeps the ".cs"; its
     assembly is "Build".
+
+    _DovetailConfigurationNamePattern matches the prefix a source file's name is renamed from: "appsettings", or the name itself (a file
+    already named {Name}.{ext} keeps its name). The name is tried first, and only up to a "." or the end, so a name that starts with
+    "appsettings" isn't renamed again.
   -->
   <PropertyGroup>
     <_DovetailConfigurationName>$(AssemblyName)</_DovetailConfigurationName>
     <_DovetailConfigurationName Condition="'$(_DovetailConfigurationName)' == ''">$(MSBuildProjectName)</_DovetailConfigurationName>
+    <_DovetailConfigurationNamePattern>^(?:$([System.Text.RegularExpressions.Regex]::Escape('$(_DovetailConfigurationName)'))(?=\.|\z)|appsettings)</_DovetailConfigurationNamePattern>
+  </PropertyGroup>
+
+  <!--
+    The configuration files of each format: appsettings.{ext} and its variants (appsettings.{Environment}.{ext},
+    appsettings.local.{ext}) when appsettings.{ext} exists, and the same files named after the project's configuration name
+    ({Name}.{ext}, {Name}.{Environment}.{ext}, {Name}.local.{ext}) when {Name}.{ext} exists. Both are treated alike below; a
+    {Name} file keeps its name. When both spell the same file (say appsettings.yaml and lib.yaml), they would land on the same output
+    and package path: _DovetailCheckConfigurationNameCollisions fails the build with DT0019.
+
+    Not configuration, so never included: appsettings.schema.json and {Name}.schema.json (editor schemas, see
+    Joinery.Dovetail.ConfigurationSchema.targets) and {Name}.run.json (a file-based app's launch profiles). The Exclude of the
+    {Name} items drops what the appsettings items already have, for a project that is itself named "appsettings".
+
+    _Dovetail{Format}ConfigurationSource is the file whose existence turns a format on: appsettings.{ext}, or else {Name}.{ext}.
+  -->
+  <ItemGroup>
+    <_DovetailJsonConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.json" Exclude="$(MSBuildProjectDirectory)\appsettings.schema.json" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')" />
+    <_DovetailJsonNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).json;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.json" Exclude="@(_DovetailJsonConfigurationFile);$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).schema.json;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).run.json" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).json')" />
+    <_DovetailYamlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.yaml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')" />
+    <_DovetailYamlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.yaml" Exclude="@(_DovetailYamlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml')" />
+    <_DovetailYmlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.yml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')" />
+    <_DovetailYmlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.yml" Exclude="@(_DovetailYmlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml')" />
+    <_DovetailTomlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.toml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')" />
+    <_DovetailTomlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).toml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.toml" Exclude="@(_DovetailTomlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).toml')" />
+
+    <_DovetailNamedConfigurationFile Include="@(_DovetailJsonNamedConfigurationFile);@(_DovetailYamlNamedConfigurationFile);@(_DovetailYmlNamedConfigurationFile);@(_DovetailTomlNamedConfigurationFile)" />
+    <_DovetailJsonConfigurationFile Include="@(_DovetailJsonNamedConfigurationFile)" />
+    <_DovetailYamlConfigurationFile Include="@(_DovetailYamlNamedConfigurationFile)" />
+    <_DovetailYmlConfigurationFile Include="@(_DovetailYmlNamedConfigurationFile)" />
+    <_DovetailTomlConfigurationFile Include="@(_DovetailTomlNamedConfigurationFile)" />
+  </ItemGroup>
+  <PropertyGroup>
+    <_DovetailJsonConfigurationSource Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')">$(MSBuildProjectDirectory)\appsettings.json</_DovetailJsonConfigurationSource>
+    <_DovetailJsonConfigurationSource Condition="'$(_DovetailJsonConfigurationSource)' == '' and Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).json')">$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).json</_DovetailJsonConfigurationSource>
+    <_DovetailYamlConfigurationSource Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')">$(MSBuildProjectDirectory)\appsettings.yaml</_DovetailYamlConfigurationSource>
+    <_DovetailYamlConfigurationSource Condition="'$(_DovetailYamlConfigurationSource)' == '' and Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml')">$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml</_DovetailYamlConfigurationSource>
+    <_DovetailYmlConfigurationSource Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')">$(MSBuildProjectDirectory)\appsettings.yml</_DovetailYmlConfigurationSource>
+    <_DovetailYmlConfigurationSource Condition="'$(_DovetailYmlConfigurationSource)' == '' and Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml')">$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml</_DovetailYmlConfigurationSource>
+    <_DovetailTomlConfigurationSource Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')">$(MSBuildProjectDirectory)\appsettings.toml</_DovetailTomlConfigurationSource>
+    <_DovetailTomlConfigurationSource Condition="'$(_DovetailTomlConfigurationSource)' == '' and Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).toml')">$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).toml</_DovetailTomlConfigurationSource>
   </PropertyGroup>
 
   <!--
@@ -54,10 +102,10 @@
     something already did (the Dovetail SDK's file-based apps keep the default items, and the Web SDK globs JSON as Content).
   -->
   <ItemGroup Condition="'$(FileBasedProgram)' == 'true'">
-    <None Include="$(MSBuildProjectDirectory)\appsettings*.json" Exclude="@(None);@(Content);$(MSBuildProjectDirectory)\appsettings.schema.json" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')" />
-    <None Include="$(MSBuildProjectDirectory)\appsettings*.yaml" Exclude="@(None);@(Content)" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')" />
-    <None Include="$(MSBuildProjectDirectory)\appsettings*.yml" Exclude="@(None);@(Content)" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')" />
-    <None Include="$(MSBuildProjectDirectory)\appsettings*.toml" Exclude="@(None);@(Content)" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')" />
+    <None Include="@(_DovetailJsonConfigurationFile)" Exclude="@(None);@(Content)" />
+    <None Include="@(_DovetailYamlConfigurationFile)" Exclude="@(None);@(Content)" />
+    <None Include="@(_DovetailYmlConfigurationFile)" Exclude="@(None);@(Content)" />
+    <None Include="@(_DovetailTomlConfigurationFile)" Exclude="@(None);@(Content)" />
   </ItemGroup>
 
   <!--
@@ -80,100 +128,119 @@
     <_DovetailTomlConfigurationOutputFile>$(IntermediateOutputPath)Dovetail.TomlConfiguration.g.cs</_DovetailTomlConfigurationOutputFile>
   </PropertyGroup>
 
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')">
-    <!--
-      appsettings.schema.json (an editor schema, see Joinery.Dovetail.ConfigurationSchema.targets) is not configuration: it is never
-      renamed, packed or embedded. Update can't take an Exclude, hence the intermediate item.
-    -->
-    <_DovetailJsonAppSettings Include="$(MSBuildProjectDirectory)\appsettings*.json" Exclude="$(MSBuildProjectDirectory)\appsettings.schema.json" />
-    <None Update="@(_DovetailJsonAppSettings)"
+  <ItemGroup Condition="'@(_DovetailJsonConfigurationFile)' != ''">
+    <None Update="@(_DovetailJsonConfigurationFile)"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      Link="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
-    <None Update="@(_DovetailJsonAppSettings)" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <None Update="$(MSBuildProjectDirectory)\appsettings.local.json;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.json" Pack="false" />
+    <None Update="@(_DovetailJsonConfigurationFile)" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
     <!--
       The Web SDK globs *.json as Content rather than None, so without these the file is copied (and published) under its
       original name while the generated joint loads $(_DovetailConfigurationName).json - a FileNotFoundException at startup.
     -->
-    <Content Update="@(_DovetailJsonAppSettings)"
+    <Content Update="@(_DovetailJsonConfigurationFile)"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      Link="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
-    <Content Update="$(MSBuildProjectDirectory)\appsettings.local.json" Pack="false" />
-    <Content Update="@(_DovetailJsonAppSettings)" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
-    <EmbeddedResource Include="@(_DovetailJsonAppSettings)"
+    <Content Update="$(MSBuildProjectDirectory)\appsettings.local.json;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.json" Pack="false" />
+    <Content Update="@(_DovetailJsonConfigurationFile)" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="@(_DovetailJsonConfigurationFile)"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      LogicalName="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
-    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.json" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.json;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.json" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')">
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.yaml"
+  <ItemGroup Condition="'@(_DovetailYamlConfigurationFile)' != ''">
+    <None Update="@(_DovetailYamlConfigurationFile)"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      Link="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings.local.yaml" Pack="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.yaml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
-    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.yaml"
+    <None Update="$(MSBuildProjectDirectory)\appsettings.local.yaml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.yaml" Pack="false" />
+    <None Update="@(_DovetailYamlConfigurationFile)" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="@(_DovetailYamlConfigurationFile)"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      LogicalName="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
-    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yaml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yaml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.yaml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')">
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.yml"
+  <ItemGroup Condition="'@(_DovetailYmlConfigurationFile)' != ''">
+    <None Update="@(_DovetailYmlConfigurationFile)"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      Link="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings.local.yml" Pack="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.yml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
-    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.yml"
+    <None Update="$(MSBuildProjectDirectory)\appsettings.local.yml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.yml" Pack="false" />
+    <None Update="@(_DovetailYmlConfigurationFile)" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="@(_DovetailYmlConfigurationFile)"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      LogicalName="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
-    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.yml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.yml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
 
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')">
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.toml"
+  <ItemGroup Condition="'@(_DovetailTomlConfigurationFile)' != ''">
+    <None Update="@(_DovetailTomlConfigurationFile)"
       Pack="true"
-      PackagePath="contentFiles/any/any/configuration/$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      PackagePath="contentFiles/any/any/configuration/$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       PackageCopyToOutput="true"
       CopyToOutputDirectory="PreserveNewest"
-      Link="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
-      TargetPath="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      Link="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
+      TargetPath="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       Visible="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings.local.toml" Pack="false" />
-    <None Update="$(MSBuildProjectDirectory)\appsettings*.toml" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
-    <EmbeddedResource Include="$(MSBuildProjectDirectory)\appsettings*.toml"
+    <None Update="$(MSBuildProjectDirectory)\appsettings.local.toml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.toml" Pack="false" />
+    <None Update="@(_DovetailTomlConfigurationFile)" CopyToOutputDirectory="Never" Condition="'$(DovetailEmbedConfiguration)' == 'true'" />
+    <EmbeddedResource Include="@(_DovetailTomlConfigurationFile)"
       Exclude="@(EmbeddedResource)"
-      LogicalName="$([System.String]::Copy('%(Filename)').Replace('appsettings', '$(_DovetailConfigurationName)'))%(Extension)"
+      LogicalName="$([System.Text.RegularExpressions.Regex]::Replace('%(Filename)', '$(_DovetailConfigurationNamePattern)', '$(_DovetailConfigurationName)'))%(Extension)"
       DovetailConfiguration="true"
       Visible="false" />
-    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.toml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
+    <EmbeddedResource Remove="$(MSBuildProjectDirectory)\appsettings.local.toml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).local.toml" Condition="'$(DovetailEmbedConfiguration)' != 'true'" />
   </ItemGroup>
+
+  <!--
+    appsettings{suffix}.{ext} and {Name}{suffix}.{ext} are copied, packed and embedded under the same name, so one would silently
+    replace the other: fail instead with DT0019, naming both, for every such pair (hence ErrorAndContinue). Only pairs that are both
+    included count (appsettings.Development.yaml is only included when appsettings.yaml exists), and .yaml and .yml are different
+    files that coexist.
+  -->
+  <Target Name="_DovetailCheckConfigurationNameCollisions"
+    BeforeTargets="PrepareForBuild;GenerateNuspec"
+    Condition="'@(_DovetailNamedConfigurationFile)' != ''">
+    <ItemGroup>
+      <_DovetailConfigurationNameCollision
+        Include="@(_DovetailNamedConfigurationFile)"
+        AppSettingsFile="%(RootDir)%(Directory)appsettings$([System.String]::Copy('%(Filename)').Substring($(_DovetailConfigurationName.Length)))%(Extension)"
+        Condition="Exists('%(RootDir)%(Directory)appsettings%(Extension)')" />
+      <_DovetailConfigurationNameCollision Remove="@(_DovetailConfigurationNameCollision)" Condition="!Exists('%(AppSettingsFile)')" />
+    </ItemGroup>
+    <Error
+      Code="DT0019"
+      ContinueOnError="ErrorAndContinue"
+      File="%(_DovetailConfigurationNameCollision.FullPath)"
+      Text="Dovetail: '%(_DovetailConfigurationNameCollision.Filename)%(_DovetailConfigurationNameCollision.Extension)' and '$([System.IO.Path]::GetFileName('%(_DovetailConfigurationNameCollision.AppSettingsFile)'))' are both copied, packed and embedded as '%(_DovetailConfigurationNameCollision.Filename)%(_DovetailConfigurationNameCollision.Extension)'. Keep one of them."
+      Condition="'@(_DovetailConfigurationNameCollision)' != ''" />
+  </Target>
 
   <!--
     Some tools embed the same appsettings files themselves (Uno.Sdk's Configuration feature, for
@@ -203,13 +270,13 @@
   <!--
     Emission gate for the generated IConfigurationJoint sources below.
 
-    A project may legitimately carry an appsettings.{ext} (it still gets renamed, packed, and
+    A project may legitimately carry an appsettings.{ext} or {Name}.{ext} (it still gets renamed, packed, and
     copied to output by the ItemGroups above — that behavior is NOT gated) without referencing
     the configuration provider the generated code would need to compile against. Emitting the
     template there is a guaranteed CS1061.
 
     Rule: emit only when ALL hold —
-      1. appsettings.{ext} exists;
+      1. appsettings.{ext} or {Name}.{ext} exists;
       2. the provider assembly required by the template is present in the resolved references
          (@(ReferencePath): PackageReference, ProjectReference, and transitive all count):
            json      -> Microsoft.Extensions.Configuration.Json (AddJsonFile lives there)
@@ -224,11 +291,11 @@
     Condition (they'd always see them empty, and a false condition also skips the dependency).
     Instead: this compute target owns the gate AND registers the Compile/FileWrites items (so an
     up-to-date skip of a generate target cannot drop the item from an incremental compile), while
-    the generate targets keep only the static Exists() condition and gate their tasks individually.
+    the generate targets keep only the static source-file condition and gate their tasks individually.
   -->
   <Target Name="_DovetailComputeConfigurationEmission"
     DependsOnTargets="ResolveReferences"
-    Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json') or Exists('$(MSBuildProjectDirectory)\appsettings.yaml') or Exists('$(MSBuildProjectDirectory)\appsettings.yml') or Exists('$(MSBuildProjectDirectory)\appsettings.toml')">
+    Condition="'$(_DovetailJsonConfigurationSource)' != '' or '$(_DovetailYamlConfigurationSource)' != '' or '$(_DovetailYmlConfigurationSource)' != '' or '$(_DovetailTomlConfigurationSource)' != ''">
     <PropertyGroup>
       <_DovetailResolvedReferenceNames>@(ReferencePath->'%(Filename)')</_DovetailResolvedReferenceNames>
 
@@ -240,13 +307,13 @@
       <_DovetailTomlProviderReferenced Condition="$(_DovetailResolvedReferenceNames.Contains('Joinery.Dovetail.Configuration.Toml'))">true</_DovetailTomlProviderReferenced>
 
       <_DovetailEmitJsonConfiguration>false</_DovetailEmitJsonConfiguration>
-      <_DovetailEmitJsonConfiguration Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json') and '$(_DovetailJsonProviderReferenced)' == 'true' and '$(DovetailEnableJsonConfiguration)' != 'false'">true</_DovetailEmitJsonConfiguration>
+      <_DovetailEmitJsonConfiguration Condition="'$(_DovetailJsonConfigurationSource)' != '' and '$(_DovetailJsonProviderReferenced)' == 'true' and '$(DovetailEnableJsonConfiguration)' != 'false'">true</_DovetailEmitJsonConfiguration>
       <_DovetailEmitYamlConfiguration>false</_DovetailEmitYamlConfiguration>
-      <_DovetailEmitYamlConfiguration Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml') and '$(_DovetailYamlProviderReferenced)' == 'true' and '$(DovetailEnableYamlConfiguration)' != 'false'">true</_DovetailEmitYamlConfiguration>
+      <_DovetailEmitYamlConfiguration Condition="'$(_DovetailYamlConfigurationSource)' != '' and '$(_DovetailYamlProviderReferenced)' == 'true' and '$(DovetailEnableYamlConfiguration)' != 'false'">true</_DovetailEmitYamlConfiguration>
       <_DovetailEmitYmlConfiguration>false</_DovetailEmitYmlConfiguration>
-      <_DovetailEmitYmlConfiguration Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml') and '$(_DovetailYamlProviderReferenced)' == 'true' and '$(DovetailEnableYamlConfiguration)' != 'false'">true</_DovetailEmitYmlConfiguration>
+      <_DovetailEmitYmlConfiguration Condition="'$(_DovetailYmlConfigurationSource)' != '' and '$(_DovetailYamlProviderReferenced)' == 'true' and '$(DovetailEnableYamlConfiguration)' != 'false'">true</_DovetailEmitYmlConfiguration>
       <_DovetailEmitTomlConfiguration>false</_DovetailEmitTomlConfiguration>
-      <_DovetailEmitTomlConfiguration Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml') and '$(_DovetailTomlProviderReferenced)' == 'true' and '$(DovetailEnableTomlConfiguration)' != 'false'">true</_DovetailEmitTomlConfiguration>
+      <_DovetailEmitTomlConfiguration Condition="'$(_DovetailTomlConfigurationSource)' != '' and '$(_DovetailTomlProviderReferenced)' == 'true' and '$(DovetailEnableTomlConfiguration)' != 'false'">true</_DovetailEmitTomlConfiguration>
     </PropertyGroup>
     <ItemGroup Condition="'$(_DovetailEmitJsonConfiguration)' == 'true'">
       <Compile Include="$(_DovetailJsonConfigurationOutputFile)" />
@@ -265,21 +332,21 @@
       <FileWrites Include="$(_DovetailTomlConfigurationOutputFile)" />
     </ItemGroup>
     <Warning
-      Text="DovetailConfiguration: DovetailEnableJsonConfiguration is 'true' and appsettings.json exists, but Microsoft.Extensions.Configuration.Json is not referenced — the generated JSON configuration part is skipped. Add the Microsoft.Extensions.Configuration.Json (or Joinery.Dovetail.Configuration.Json) package."
-      Condition="'$(DovetailEnableJsonConfiguration)' == 'true' and '$(_DovetailJsonProviderReferenced)' != 'true' and Exists('$(MSBuildProjectDirectory)\appsettings.json')" />
+      Text="DovetailConfiguration: DovetailEnableJsonConfiguration is 'true' and appsettings.json (or $(_DovetailConfigurationName).json) exists, but Microsoft.Extensions.Configuration.Json is not referenced — the generated JSON configuration part is skipped. Add the Microsoft.Extensions.Configuration.Json (or Joinery.Dovetail.Configuration.Json) package."
+      Condition="'$(DovetailEnableJsonConfiguration)' == 'true' and '$(_DovetailJsonProviderReferenced)' != 'true' and '$(_DovetailJsonConfigurationSource)' != ''" />
     <Warning
-      Text="DovetailConfiguration: DovetailEnableYamlConfiguration is 'true' and appsettings.yaml/.yml exists, but Joinery.Dovetail.Configuration.Yaml is not referenced — the generated YAML configuration part is skipped. Add the Joinery.Dovetail.Configuration.Yaml package."
-      Condition="'$(DovetailEnableYamlConfiguration)' == 'true' and '$(_DovetailYamlProviderReferenced)' != 'true' and (Exists('$(MSBuildProjectDirectory)\appsettings.yaml') or Exists('$(MSBuildProjectDirectory)\appsettings.yml'))" />
+      Text="DovetailConfiguration: DovetailEnableYamlConfiguration is 'true' and appsettings.yaml/.yml (or $(_DovetailConfigurationName).yaml/.yml) exists, but Joinery.Dovetail.Configuration.Yaml is not referenced — the generated YAML configuration part is skipped. Add the Joinery.Dovetail.Configuration.Yaml package."
+      Condition="'$(DovetailEnableYamlConfiguration)' == 'true' and '$(_DovetailYamlProviderReferenced)' != 'true' and ('$(_DovetailYamlConfigurationSource)' != '' or '$(_DovetailYmlConfigurationSource)' != '')" />
     <Warning
-      Text="DovetailConfiguration: DovetailEnableTomlConfiguration is 'true' and appsettings.toml exists, but Joinery.Dovetail.Configuration.Toml is not referenced — the generated TOML configuration part is skipped. Add the Joinery.Dovetail.Configuration.Toml package."
-      Condition="'$(DovetailEnableTomlConfiguration)' == 'true' and '$(_DovetailTomlProviderReferenced)' != 'true' and Exists('$(MSBuildProjectDirectory)\appsettings.toml')" />
+      Text="DovetailConfiguration: DovetailEnableTomlConfiguration is 'true' and appsettings.toml (or $(_DovetailConfigurationName).toml) exists, but Joinery.Dovetail.Configuration.Toml is not referenced — the generated TOML configuration part is skipped. Add the Joinery.Dovetail.Configuration.Toml package."
+      Condition="'$(DovetailEnableTomlConfiguration)' == 'true' and '$(_DovetailTomlProviderReferenced)' != 'true' and '$(_DovetailTomlConfigurationSource)' != ''" />
   </Target>
 
   <Target Name="_DovetailGenerateJsonConfiguration"
     BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
-    Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')"
-    Inputs="$(MSBuildProjectDirectory)\appsettings.json;$(_DovetailJsonConfigurationTemplateFile)"
+    Condition="'$(_DovetailJsonConfigurationSource)' != ''"
+    Inputs="$(_DovetailJsonConfigurationSource);$(_DovetailJsonConfigurationTemplateFile)"
     Outputs="$(_DovetailJsonConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitJsonConfiguration)' == 'true'">
       <_DovetailJsonConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailJsonConfigurationTemplateFile)'))</_DovetailJsonConfigurationContent>
@@ -296,8 +363,8 @@
   <Target Name="_DovetailGenerateYamlConfiguration"
     BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
-    Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')"
-    Inputs="$(MSBuildProjectDirectory)\appsettings.yaml;$(_DovetailYamlConfigurationTemplateFile)"
+    Condition="'$(_DovetailYamlConfigurationSource)' != ''"
+    Inputs="$(_DovetailYamlConfigurationSource);$(_DovetailYamlConfigurationTemplateFile)"
     Outputs="$(_DovetailYamlConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitYamlConfiguration)' == 'true'">
       <_DovetailYamlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailYamlConfigurationTemplateFile)'))</_DovetailYamlConfigurationContent>
@@ -314,8 +381,8 @@
   <Target Name="_DovetailGenerateYmlConfiguration"
     BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
-    Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')"
-    Inputs="$(MSBuildProjectDirectory)\appsettings.yml;$(_DovetailYmlConfigurationTemplateFile)"
+    Condition="'$(_DovetailYmlConfigurationSource)' != ''"
+    Inputs="$(_DovetailYmlConfigurationSource);$(_DovetailYmlConfigurationTemplateFile)"
     Outputs="$(_DovetailYmlConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitYmlConfiguration)' == 'true'">
       <_DovetailYmlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailYmlConfigurationTemplateFile)'))</_DovetailYmlConfigurationContent>
@@ -332,8 +399,8 @@
   <Target Name="_DovetailGenerateTomlConfiguration"
     BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
-    Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')"
-    Inputs="$(MSBuildProjectDirectory)\appsettings.toml;$(_DovetailTomlConfigurationTemplateFile)"
+    Condition="'$(_DovetailTomlConfigurationSource)' != ''"
+    Inputs="$(_DovetailTomlConfigurationSource);$(_DovetailTomlConfigurationTemplateFile)"
     Outputs="$(_DovetailTomlConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitTomlConfiguration)' == 'true'">
       <_DovetailTomlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailTomlConfigurationTemplateFile)'))</_DovetailTomlConfigurationContent>

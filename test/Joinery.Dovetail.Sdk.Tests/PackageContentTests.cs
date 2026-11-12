@@ -234,6 +234,33 @@ public class PackageContentTests(string targetFramework)
     }
 
     /// <summary>
+    /// A configuration file already named after the project (<c>lib/lib.yaml</c>) is packed like a renamed <c>appsettings.yaml</c>: under
+    /// <c>contentFiles/any/any/configuration/lib.yaml</c>, its environment variant beside it and its <c>local</c> variant left out.
+    /// </summary>
+    [Test]
+    public async Task ConfigurationFileNamedAfterTheProject_IsPackagedUnderContentFilesConfiguration()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject(
+                "Directory.Build.props",
+                ProjectCreator
+                   .Create()
+                   .Sdk("Joinery.Dovetail.Sdk")
+            )
+           .AddProject(
+                "lib/lib.csproj",
+                ProjectCreator
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
+            )
+           .AddFile("lib/lib.yaml", "{}")
+           .AddFile("lib/lib.Development.yaml", "{}")
+           .AddFile("lib/lib.local.yaml", "{}");
+
+        await project.VerifyProjectsAndPackages();
+    }
+
+    /// <summary>
     /// The files are packed under the assembly name, the name the library's generated joint loads them by in the consumer's output
     /// directory, not under the project file's (see ConfigurationNameTests).
     /// </summary>

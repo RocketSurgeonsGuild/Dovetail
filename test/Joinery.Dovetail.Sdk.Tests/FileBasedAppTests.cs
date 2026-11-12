@@ -118,10 +118,10 @@ public class FileBasedAppTests(string targetFramework)
     }
 
     /// <summary>
-    /// The configuration joints of the provider packages (YamlJoint, JsonJoint, TomlJoint) also load <c>{ApplicationName}.{ext}</c>, the
-    /// environment and local variants included, from the application's output directory: for a file-based app that is <c>Build.{ext}</c>,
-    /// not <c>Build.cs.{ext}</c>. Dovetail copies only <c>appsettings.{ext}</c> to the output directory (as <c>Build.{ext}</c>, the same
-    /// path), so an app that keeps a <c>Build.{ext}</c> of its own copies it there itself, as here.
+    /// A file-based app's configuration file can also be named after its assembly: <c>Build.{ext}</c> next to <c>Build.cs</c>, not
+    /// <c>Build.cs.{ext}</c>. The packages copy it to the output directory under that name, as they would a renamed
+    /// <c>appsettings.{ext}</c>, so the generated configuration joint (and the provider packages' joints, which load
+    /// <c>{ApplicationName}.{ext}</c>) find it there; the app doesn't copy it itself.
     /// </summary>
     [Test]
     [Arguments("yaml", "Joinery.Dovetail.Configuration.Yaml")]
@@ -146,14 +146,13 @@ public class FileBasedAppTests(string targetFramework)
         );
         project.AddFile(
             "app/Directory.Build.props",
-            $"""
+            """
             <Project>
               <PropertyGroup>
                 <ImportDovetailAssembly>true</ImportDovetailAssembly>
               </PropertyGroup>
               <ItemGroup>
                 <DovetailHost Include="HostApplication" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers" />
-                <None Include="Build.{extension}" CopyToOutputDirectory="PreserveNewest" />
               </ItemGroup>
             </Project>
             """
@@ -171,6 +170,8 @@ public class FileBasedAppTests(string targetFramework)
         var output = await project.RunFile("app/Build.cs");
 
         output.ShouldContain("Greeting=from-build");
+        output.ShouldContain($"Build.{extension}=True");
+        output.ShouldNotContain($"Build.cs.{extension}");
     }
 
     private const string PrintGreeting = """
