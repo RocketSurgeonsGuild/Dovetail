@@ -9,6 +9,7 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// other kinds are checked against the code they show. A block with a <c>Register</c> that is none of the three fails the build, so a
 /// new example cannot go unchecked. The table of joint kinds is compared with the interfaces by reflection.
 /// </summary>
+[SingleTargetFrameworkJob]
 public partial class DocumentationExcerptTests
 {
     /// <summary>
