@@ -1,0 +1,10 @@
+# Layered over mise.toml in the GitHub workflows, which set MISE_ENV=ci.
+[settings]
+# Editor and agent tools that no workflow runs. Left out, CI doesn't install them, and build.yml's `mise prune --tools`
+# drops them from the shared mise cache (the JetBrains tools alone are about 1.8 GB unpacked) that every workflow restores.
+disable_tools = [
+  "dotnet:jetbrains.resharper.globaltools",
+  "dotnet:jetbrains.dotcover.commandlinetools",
+  "dotnet:jetbrains.dottrace.globaltools",
+  "dotnet:NuGet.Mcp.Server",
+]
