@@ -75,10 +75,17 @@ public static class DovetailPipelineHelpers
     }
 
     // The pipeline's own configuration holds only the environment variables and the command line, which keep the highest precedence,
-    // so Dovetail's configuration goes in front of them.
+    // so Dovetail's configuration goes in front of them. The joints run on a builder of their own so their sources can be chained in
+    // that position; it shares the pipeline configuration's properties, so a file provider or base path set on the pipeline
+    // (SetBasePath, SetFileProvider) is the one the file sources of the joints resolve against.
     private static async ValueTask ApplyConfiguration(IDovetailContext context, ConfigurationManager configuration, CancellationToken cancellationToken)
     {
         var dovetailConfiguration = new ConfigurationBuilder();
+        foreach (var property in ( (IConfigurationBuilder)configuration ).Properties)
+        {
+            dovetailConfiguration.Properties[property.Key] = property.Value;
+        }
+
         await dovetailConfiguration.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
         if (dovetailConfiguration.Sources is { Count: > 0, })
         {
