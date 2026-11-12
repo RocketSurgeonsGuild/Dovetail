@@ -29,7 +29,8 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    build:
+    # Everything but Joinery.Dovetail.Sdk.Tests, which the sdk-tests jobs run alongside it; the build job below reports both.
+    solution:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -88,6 +89,9 @@ jobs:
                   mise run build
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # Leaves Joinery.Dovetail.Sdk.Tests out of the solution's test run (and skips packing src for it): the
+                  # sdk-tests jobs run it.
+                  DovetailSdkTests: 'false'
                   # The folder of the gh-pages branch these docs deploy to (see the docs job): a pull request's preview, a
                   # release's version folder, or (empty) the site root that holds latest main.
                   DOCS_BASE: >-
@@ -149,6 +153,70 @@ jobs:
             - name: 🧹 Prune tools
               if: always() && github.ref == 'refs/heads/main'
               run: mise prune --tools
+
+    # Joinery.Dovetail.Sdk.Tests builds and runs throwaway projects against the packed SDK (hundreds of dotnet build/run/publish
+    # runs), and alone took longer than the rest of the build and tests together. Each job runs it for one target framework
+    # (DOVETAIL_SDK_TESTS_TARGET_FRAMEWORK), next to the solution job. The test project's own build packs src, so these
+    # jobs don't wait for the solution job.
+    sdk-tests:
+        name: sdk tests (${{ matrix.target-framework }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                target-framework:
+                    - net10.0
+                    - net11.0
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: 🛠️ Setup mise
+              uses: jdx/mise-action@v5
+              env:
+                  # One install at a time (see the solution job).
+                  MISE_JOBS: '1'
+              with:
+                  install: true
+                  # Only dotnet: the tests need the SDK, the .NET 10 runtime and the workloads, none of the other tools.
+                  install_args: dotnet
+                  # Restore only: the solution job saves the cache.
+                  cache: true
+                  cache_key: mise-{{platform}}-{{cache_period}}
+                  cache_max_age_days: 7
+                  cache_save: false
+                  experimental: true
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+            - name: ⚙️ Build
+              run: dotnet build test/Joinery.Dovetail.Sdk.Tests/Joinery.Dovetail.Sdk.Tests.csproj --configuration Release
+            - name: 🧪 Test
+              run: >-
+                  dotnet test --project test/Joinery.Dovetail.Sdk.Tests/Joinery.Dovetail.Sdk.Tests.csproj --configuration Release --no-build
+                  --results-directory artifacts/logs/tests --report-trx
+              env:
+                  DOVETAIL_SDK_TESTS_TARGET_FRAMEWORK: ${{ matrix.target-framework }}
+            - name: 🏺 Publish test data
+              if: always()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: test data sdk ${{ matrix.target-framework }}
+                  path: artifacts/logs/tests/
+
+    # The required status check: passes only when the solution job and every sdk-tests job passed.
+    build:
+        needs: [solution, sdk-tests]
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: ✅ Build and tests passed
+              run: |
+                  echo "solution: $SOLUTION, sdk-tests: $SDK_TESTS"
+                  if [ "$SOLUTION" != success ] || [ "$SDK_TESTS" != success ]; then
+                      echo "::error::The solution build or the SDK tests didn't succeed."
+                      exit 1
+                  fi
+              env:
+                  SOLUTION: ${{ needs.solution.result }}
+                  SDK_TESTS: ${{ needs.sdk-tests.result }}
 
     # Deploys the docs the build made to the gh-pages branch: main to the root, each release to v<version>/ (listed in
     # versions.json for the version switcher), and each pull request from this repository to pr-preview/pr-<n>/ (removed

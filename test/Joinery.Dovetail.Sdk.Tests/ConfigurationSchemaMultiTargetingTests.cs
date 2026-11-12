@@ -7,6 +7,7 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// ConfigurationSchema.json (a second root file would be NU5118), and a host writes the stable obj/appsettings.schema.json
 /// from its first target framework only, so the two inner builds never write the same file.
 /// </summary>
+[SingleTargetFrameworkJob]
 public class ConfigurationSchemaMultiTargetingTests
 {
     /// <summary>
