@@ -414,7 +414,8 @@ MyLibrary/
 ```
 
 - `appsettings.{ext}` becomes `MyLibrary.{ext}` (`appsettings.Production.json` becomes `MyLibrary.Production.json`), so several
-  libraries can ship their own file into one output directory.
+  libraries can ship their own file into one output directory. The name is the project's assembly name (`AssemblyName`, which
+  defaults to the project's name): the `ApplicationName` the runtime conventions look for.
 - The files are packed under `contentFiles/any/any/configuration/`, copied to a same-solution host's output directory
   through a `ProjectReference`, and restored from the package otherwise.
 - The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and

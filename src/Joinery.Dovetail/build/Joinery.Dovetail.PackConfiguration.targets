@@ -15,7 +15,7 @@
 
   <!--
     Packed / copied-to-output configuration files are renamed from the generic
-    "appsettings.*" convention to the project's name (preserving any middle qualifier, e.g.
+    "appsettings.*" convention to the project's assembly name (preserving any middle qualifier, e.g.
     appsettings.Production.json -> Foo.Production.json) so that:
       - multiple Dovetail-enabled dependencies can each ship their own default
         configuration file into a consumer's output directory without colliding
@@ -38,12 +38,14 @@
   -->
 
   <!--
-    The name configuration files are renamed to. A file-based app (dotnet run Build.cs) is evaluated as a virtual Build.cs.csproj, so its
-    $(MSBuildProjectName) keeps the ".cs"; its assembly, and the ApplicationName the runtime conventions look for, is "Build".
+    The name configuration files are renamed to: the assembly's, which is the ApplicationName the runtime conventions look for (the entry
+    assembly's name) and is unique among the assemblies that share an output directory, where two projects can share a file name. A
+    file-based app (dotnet run Build.cs) is evaluated as a virtual Build.cs.csproj, so its $(MSBuildProjectName) keeps the ".cs"; its
+    assembly is "Build".
   -->
   <PropertyGroup>
-    <_DovetailConfigurationName>$(MSBuildProjectName)</_DovetailConfigurationName>
-    <_DovetailConfigurationName Condition="'$(FileBasedProgram)' == 'true' and $(MSBuildProjectName.EndsWith('.cs'))">$([System.IO.Path]::GetFileNameWithoutExtension('$(MSBuildProjectName)'))</_DovetailConfigurationName>
+    <_DovetailConfigurationName>$(AssemblyName)</_DovetailConfigurationName>
+    <_DovetailConfigurationName Condition="'$(_DovetailConfigurationName)' == ''">$(MSBuildProjectName)</_DovetailConfigurationName>
   </PropertyGroup>
 
   <!--

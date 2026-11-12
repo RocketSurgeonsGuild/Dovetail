@@ -5,7 +5,7 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// <summary>
 /// Covers <c>src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.PackConfiguration.targets</c>: for each supported
 /// <c>appsettings.{ext}</c> format, an existing file is renamed/packed/copied to
-/// <c>$(MSBuildProjectName).{ext}</c> and - when the matching configuration provider assembly is
+/// <c>$(AssemblyName).{ext}</c> and - when the matching configuration provider assembly is
 /// also referenced - a generated <c>IConfigurationJoint</c> source is emitted. Both effects are
 /// driven purely by file presence + provider-reference detection, independent of the
 /// (default-off) <c>DovetailEnable*Configuration</c>/<c>Joinery.Dovetail.Configuration.targets</c> opt-in path.

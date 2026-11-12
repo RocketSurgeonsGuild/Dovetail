@@ -118,4 +118,36 @@ public class HostConfigurationPropagationTests(string targetFramework)
 
         await project.VerifyPublish("host");
     }
+
+    /// <summary>
+    /// Two libraries whose project files share a name (<c>a/Core.csproj</c> and <c>b/Core.csproj</c>) but not an assembly name. Named after
+    /// the project file, both configuration files were <c>Core.yaml</c>: they collided in the host's output, and each library's generated
+    /// joint loaded whichever won. Named after the assembly, each library ships its own.
+    /// </summary>
+    [Test]
+    public async Task HostReferencingTwoLibrariesWithTheSameProjectName_PublishesBothConfigurationFiles()
+    {
+        using var project = new SdkTestProject();
+        project.AddProject(
+            "Directory.Build.props",
+            ProjectCreator
+               .Create()
+               .Sdk("Joinery.Dovetail.Sdk")
+        );
+
+        // track: false, as in CreateHostWithTwoConfiguredLibraries.
+        var a = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework).Property("AssemblyName", "A.Core");
+        project.AddProject("a/Core.csproj", a, track: false).AddFile("a/appsettings.yaml", "Name: a");
+
+        var b = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework).Property("AssemblyName", "B.Core");
+        project.AddProject("b/Core.csproj", b, track: false).AddFile("b/appsettings.yaml", "Name: b");
+
+        var host = ProjectCreator
+           .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+           .ItemProjectReference(a)
+           .ItemProjectReference(b);
+        project.AddProject("host/host.csproj", host).AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");");
+
+        await project.VerifyPublish("host");
+    }
 }
