@@ -232,4 +232,40 @@ public class PackageContentTests(string targetFramework)
 
         await project.VerifyProjectsAndPackages();
     }
+
+    /// <summary>
+    /// The files are packed under the assembly name, the name the library's generated joint loads them by in the consumer's output
+    /// directory, not under the project file's (see ConfigurationNameTests).
+    /// </summary>
+    [Test]
+    public async Task AssemblyNameDifferentFromProjectName_PacksConfigurationUnderTheAssemblyName()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject(
+                "Directory.Build.props",
+                ProjectCreator
+                   .Create()
+                   .Sdk("Joinery.Dovetail.Sdk")
+            )
+           .AddProject(
+                "lib/lib.csproj",
+                ProjectCreator
+                   .Templates.SdkCsproj(targetFramework: targetFramework)
+                   .Property("AssemblyName", "DovetailPkgTestContoso.Library")
+            )
+           .AddFile("lib/appsettings.yaml", "{}")
+           .AddFile("lib/appsettings.Development.yaml", "{}")
+           .AddFile("lib/appsettings.local.yaml", "{}");
+
+        var package = await project.PackToLocalFeed("lib");
+
+        package.PackageId.ShouldBe("DovetailPkgTestContoso.Library");
+        package.Files.Where(z => z.StartsWith("contentFiles/", StringComparison.Ordinal)).ShouldBe(
+            [
+                "contentFiles/any/any/configuration/DovetailPkgTestContoso.Library.Development.yaml",
+                "contentFiles/any/any/configuration/DovetailPkgTestContoso.Library.yaml",
+            ]
+        );
+    }
 }
