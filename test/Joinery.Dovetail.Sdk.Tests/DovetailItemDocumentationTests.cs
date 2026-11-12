@@ -8,6 +8,7 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// read. They drifted from the targets before (a default that was never applied, values nobody listed); this keeps all three saying the
 /// same thing. The defaults themselves are checked where they take effect, by <see cref="DovetailItemReferenceTests" />.
 /// </summary>
+[SingleTargetFrameworkJob]
 public partial class DovetailItemDocumentationTests
 {
     /// <summary>

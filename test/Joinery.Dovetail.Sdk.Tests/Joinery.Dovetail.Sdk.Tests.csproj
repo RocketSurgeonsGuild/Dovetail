@@ -12,6 +12,17 @@
     -->
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
   </PropertyGroup>
+  <!--
+      CI runs these tests in their own jobs (the sdk-tests matrix in .github/workflows/build.yml), and its solution build sets
+      DovetailSdkTests=false so `dotnet test` on the solution leaves them out (it runs only testing platform applications)
+      and the build skips packing the src projects for them. A library, since without the testing platform there's no
+      generated entry point.
+  -->
+  <PropertyGroup Condition="'$(DovetailSdkTests)' == 'false'">
+    <IsTestProject>false</IsTestProject>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\sample\Sample.DependencyOne\Sample.DependencyOne.csproj" />
     <ProjectReference Include="..\..\sample\Sample.DependencyThree\Sample.DependencyThree.csproj" />
@@ -47,7 +58,7 @@
     <_DovetailSrcProject Include="$(MSBuildThisFileDirectory)..\..\src\**\*.csproj" />
   </ItemGroup>
 
-  <Target Name="PackDovetailSourcePackages" BeforeTargets="Build">
+  <Target Name="PackDovetailSourcePackages" BeforeTargets="Build" Condition="'$(DovetailSdkTests)' != 'false'">
     <!--
         Each target framework's inner build asks for the packages. Route every request to one call without a
         TargetFramework: MSBuild caches it, so the packages are built once per build rather than once (and

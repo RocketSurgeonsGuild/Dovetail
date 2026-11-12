@@ -7,6 +7,7 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// host maps its merged schema in <c>.vscode/settings.json</c>, touching nothing else in the file; without it nothing is written.
 /// The editor itself is covered by the Joinery.Dovetail.Build.Tasks tests.
 /// </summary>
+[SingleTargetFrameworkJob]
 public class ConfigurationSchemaEditorSettingsTests
 {
     private const string TargetFramework = "net10.0";

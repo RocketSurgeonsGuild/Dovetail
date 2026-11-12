@@ -7,6 +7,7 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// The schema across builds: an up-to-date one isn't merged again (or touched), and the files are deleted once a project stops
 /// writing them - when the schema is turned off, or a library no longer declares any section.
 /// </summary>
+[SingleTargetFrameworkJob]
 public class ConfigurationSchemaIncrementalTests
 {
     private const string TargetFramework = "net10.0";
