@@ -22,6 +22,10 @@ the SDK does not, which is one of:
 - the host is one the SDK does not detect. Aspire's `IDistributedApplicationBuilder` is declared by hand in
   `test/Joinery.Dovetail.Aspire.Tests`; the SDK has that case commented out.
 
+An integration package can declare its host itself, in the build targets NuGet imports for a direct reference.
+`Joinery.Dovetail.ModularPipelines` declares one for ModularPipelines' `PipelineBuilder` that way (see
+[ModularPipelines](../../guides/modular-pipelines/)), and the SDK adds that package to a project that references ModularPipelines.
+
 Do not declare a host the SDK already did. A second host on the same builder type makes `ConfigureDovetail` ambiguous (see
 [common mistakes](#common-mistakes)) and gives you two copies of the entry points.
 
