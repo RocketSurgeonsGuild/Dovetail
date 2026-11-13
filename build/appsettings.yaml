@@ -1,6 +1,6 @@
 solution: Dovetail.slnx
 # Coverage settings for the TestSolution module (the library writes its own default when this is missing).
 runSettings: test/coverage.runsettings
-# One `dotnet test` over the solution, as before. Joinery.Dovetail.Sdk.Tests is most of the test time and keeps all four of a CI
-# runner's cores busy on its own, so the library's per-project mode (its default) has nothing to fit beside it and is no shorter.
+# One `dotnet test` over the solution, as before. In CI Joinery.Dovetail.Sdk.Tests runs in jobs of its own: the solution job's
+# ExcludeTests (.github/workflows/build.yml) leaves it out here.
 TestMode: Solution
