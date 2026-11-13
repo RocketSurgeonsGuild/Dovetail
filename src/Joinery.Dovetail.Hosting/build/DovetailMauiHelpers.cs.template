@@ -90,7 +90,7 @@ internal static class DovetailMauiHelpers
            .AddIfMissing("Platform", GetPlatform());
 
         var context = await DovetailContext.FromAsync(contextBuilder, cancellationToken).ConfigureAwait(false);
-        await ApplyConfigurationAsync(context, builder.Configuration, cancellationToken).ConfigureAwait(false);
+        await ApplyConfigurationAsync(context, builder.Configuration, environment.ContentRootPath, cancellationToken).ConfigureAwait(false);
         await builder.Services.ApplyService(context, cancellationToken).ConfigureAwait(false);
 
         if (context.Get<ServiceProviderFactoryAdapter>() is { } factory)
@@ -107,14 +107,34 @@ internal static class DovetailMauiHelpers
     ///     application configured before, so Dovetail's values win. MAUI itself adds no configuration files, command line or environment
     ///     variables, so there is nothing of the host's to replace, unlike the generic host.
     /// </summary>
-    private static async ValueTask ApplyConfigurationAsync(IDovetailContext context, IConfigurationBuilder configuration, CancellationToken cancellationToken)
+    /// <remarks>
+    ///     Where the joints read files from disk rather than embedded copies, they read them where the other hosts do: from
+    ///     <c>Dovetail:ConfigurationDirectory</c>, else from next to the entry point file of a file-based app, else through the
+    ///     configuration's own file provider (the application's directory, MAUI's content root).
+    /// </remarks>
+    private static async ValueTask ApplyConfigurationAsync(
+        IDovetailContext context,
+        ConfigurationManager configuration,
+        string contentRootPath,
+        CancellationToken cancellationToken
+    )
     {
         // Sources only exist once the conventions have run, so apply them before deciding whether to chain.
         var dovetail = new ConfigurationBuilder();
+        foreach (var property in ( (IConfigurationBuilder)configuration ).Properties)
+        {
+            dovetail.Properties[property.Key] = property.Value;
+        }
+
+        if (GetConfigurationDirectory(dovetail, configuration, contentRootPath) is { } configurationDirectory)
+        {
+            dovetail.SetBasePath(configurationDirectory);
+        }
+
         await dovetail.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
         if (dovetail.Sources is { Count: > 0, })
         {
-            configuration.Add(new ChainedConfigurationSource { Configuration = dovetail.Build(), ShouldDisposeConfiguration = true, });
+            ( (IConfigurationBuilder)configuration ).Add(new ChainedConfigurationSource { Configuration = dovetail.Build(), ShouldDisposeConfiguration = true, });
         }
 
         configuration.AddInMemoryCollection(
@@ -135,6 +155,25 @@ internal static class DovetailMauiHelpers
             ?.Value is { Length: > 0, } fromBuild
                 ? fromBuild
                 : Environments.Production;
+
+    /// <summary>
+    ///     <c>Dovetail:ConfigurationDirectory</c>, or else the directory of a file-based app's entry point file while the file provider
+    ///     is still the default, rooted at the content root; otherwise <see langword="null" />.
+    /// </summary>
+    private static string? GetConfigurationDirectory(IConfigurationBuilder builder, IConfiguration configuration, string contentRootPath) =>
+        DovetailSettings.GetConfiguredDirectory(configuration)
+     ?? ( DovetailSettings.GetEntryPointFileDirectory() is { } entryPointFileDirectory && IsTheContentRoot(builder, contentRootPath)
+            ? entryPointFileDirectory
+            : null );
+
+    private static bool IsTheContentRoot(IConfigurationBuilder builder, string contentRootPath) =>
+        !builder.Properties.TryGetValue("FileProvider", out var fileProvider)
+     || ( fileProvider is PhysicalFileProvider physical
+         && string.Equals(
+                System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(physical.Root)),
+                System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(contentRootPath)),
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+            ) );
 
     private static string GetPlatform() =>
         OperatingSystem.IsAndroid() ? "Android"

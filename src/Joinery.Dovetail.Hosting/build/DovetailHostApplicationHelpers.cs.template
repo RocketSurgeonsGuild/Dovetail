@@ -113,15 +113,20 @@ internal static class DovetailHostApplicationHelpers
             }
         }
         // Sources only exist once the conventions have run, so apply them before deciding whether to chain.
+        // The joints run on a builder of their own so their sources can be chained in the position above. It shares the host
+        // configuration's properties, so the joints' file sources resolve against the host's file provider, which the host roots at its
+        // content root (or whatever SetBasePath/SetFileProvider pointed it at), as the host's own appsettings.json would.
         var cb = new ConfigurationBuilder();
-        // The joints read their files from the application's directory: the output directory, unless this is a file-based app
-        // (dotnet run Build.cs), whose configuration files sit next to its entry point file rather than in the output directory
-        // the SDK builds it into. The SDK writes that directory into the runtimeconfig.json, so a published or copied app still
-        // names the source directory of the machine it was built on: when that isn't there, read the output directory as usual.
-        if (AppContext.GetData("EntryPointFileDirectoryPath") is string { Length: > 0, } entryPointFileDirectoryPath
-         && System.IO.Directory.Exists(entryPointFileDirectoryPath))
+        foreach (var property in ( (IConfigurationBuilder)hostApplicationBuilder.Configuration ).Properties)
         {
-            cb.SetBasePath(entryPointFileDirectoryPath);
+            cb.Properties[property.Key] = property.Value;
+        }
+
+        // Dovetail:ConfigurationDirectory, when set, wins. Otherwise a file-based app (dotnet run Build.cs) reads the files next to its
+        // entry point file, unless the host's configuration was pointed somewhere other than the content root.
+        if (GetConfigurationDirectory(cb, hostApplicationBuilder.Configuration, hostApplicationBuilder.Environment.ContentRootPath) is { } configurationDirectory)
+        {
+            cb.SetBasePath(configurationDirectory);
         }
 
         await cb.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
@@ -141,6 +146,30 @@ internal static class DovetailHostApplicationHelpers
             new Dictionary<string, string?> { ["RocketSurgeryDovetails:HostType"] = context.GetHostType().ToString(), }
         );
     }
+
+    /// <summary>
+    ///     The directory the configuration joints read from in place of the host's file provider: <c>Dovetail:ConfigurationDirectory</c>,
+    ///     or else the directory of a file-based app's entry point file while the host's file provider is still its default, rooted at the
+    ///     content root; otherwise <see langword="null" />.
+    /// </summary>
+    internal static string? GetConfigurationDirectory(IConfigurationBuilder builder, IConfiguration configuration, string contentRootPath) =>
+        DovetailSettings.GetConfiguredDirectory(configuration)
+     ?? ( DovetailSettings.GetEntryPointFileDirectory() is { } entryPointFileDirectory && IsTheContentRoot(builder, contentRootPath)
+            ? entryPointFileDirectory
+            : null );
+
+    /// <summary>
+    ///     Whether the file sources would resolve against the content root: there's no file provider, or the one there is reads the
+    ///     content root, as the host's default does.
+    /// </summary>
+    private static bool IsTheContentRoot(IConfigurationBuilder builder, string contentRootPath) =>
+        !builder.Properties.TryGetValue("FileProvider", out var fileProvider)
+     || ( fileProvider is global::Microsoft.Extensions.FileProviders.PhysicalFileProvider physical
+         && string.Equals(
+                System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(physical.Root)),
+                System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(contentRootPath)),
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+            ) );
 
     /// <summary>
     ///     Identifies the <see cref="FileConfigurationSource" /> that <c>AddUserSecrets</c> adds for a user secrets store - always

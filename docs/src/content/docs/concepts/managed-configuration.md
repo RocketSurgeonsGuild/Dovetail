@@ -425,7 +425,19 @@ MyLibrary/
   files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK. At run time,
   though, the configuration joints read the files from next to `Build.cs` (the directory the .NET SDK names in the
   `EntryPointFileDirectoryPath` AppContext data), under their source names, so an edit takes effect on the next run without a
-  rebuild. A ModularPipelines pipeline whose configuration was given a base path or file provider of its own keeps it.
+  rebuild. A host or pipeline whose configuration was given a base path or file provider of its own keeps it.
+- Outside a file-based app, the joints read the files through the host's own file provider, the one its configuration
+  uses for `appsettings.json`: the host roots it at its content root, unless `SetBasePath` or `SetFileProvider` pointed it
+  somewhere else.
+- To read the files from another directory, set `Dovetail:ConfigurationDirectory` (`DovetailSettings.ConfigurationDirectory`)
+  in the host's configuration, for example `Dovetail__ConfigurationDirectory=./config` or
+  `--Dovetail:ConfigurationDirectory=./config`. A relative path is resolved against the current directory. It wins over
+  everything above. The `Dovetail__ConfigurationDirectory` environment variable is read directly too, for hosts whose
+  configuration doesn't read environment variables (MAUI).
+- Every host that reads the files from disk (the generic host, ASP.NET Core, ModularPipelines, MAUI, Uno) picks the
+  directory in the same order: `Dovetail:ConfigurationDirectory`, then the directory of a file-based app's entry point file,
+  then the host's own file provider. Configuration embedded in the application (MAUI and Uno apps) still wins over all of
+  them, and a browser (WebAssembly) host fetches its files over HTTP.
 
 ### Naming the source files
 

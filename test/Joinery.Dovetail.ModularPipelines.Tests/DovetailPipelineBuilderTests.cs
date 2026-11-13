@@ -200,6 +200,43 @@ public class DovetailPipelineBuilderTests
         pipeline.Services.GetRequiredService<IConfiguration>().ShouldNotBeNull();
     }
 
+    /// <summary>
+    ///     <see cref="DovetailSettings.ConfigurationDirectory" /> wins over the directory of the entry point file and over a base path
+    ///     set on the pipeline configuration.
+    /// </summary>
+    [Test]
+    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    public async Task ConfigureDovetail_ReadsTheFilesOfTheConfigurationJoints_FromTheConfigurationDirectorySetting()
+    {
+        var entryPointDirectory = Directory.CreateTempSubdirectory();
+        var basePathDirectory = Directory.CreateTempSubdirectory();
+        var configurationDirectory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(entryPointDirectory.FullName, "appsettings.json"), """{ "Dovetail": { "FromFile": "entry-point" } }""");
+            await File.WriteAllTextAsync(Path.Combine(basePathDirectory.FullName, "appsettings.json"), """{ "Dovetail": { "FromFile": "base-path" } }""");
+            await File.WriteAllTextAsync(Path.Combine(configurationDirectory.FullName, "appsettings.json"), """{ "Dovetail": { "FromFile": "setting" } }""");
+            using var _ = EntryPointFileDirectoryPath(entryPointDirectory.FullName);
+            var builder = Pipeline.CreateBuilder();
+            builder.Configuration.SetBasePath(basePathDirectory.FullName);
+            builder.Configuration.AddInMemoryCollection(
+                new Dictionary<string, string?> { [DovetailSettings.ConfigurationDirectory] = configurationDirectory.FullName, }
+            );
+
+            await using var pipeline = await builder.ConfigureDovetail(
+                z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
+            );
+
+            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("setting");
+        }
+        finally
+        {
+            configurationDirectory.Delete(true);
+            basePathDirectory.Delete(true);
+            entryPointDirectory.Delete(true);
+        }
+    }
+
     // What the .NET SDK sets for a file-based app; removed again on dispose, since it's process-wide.
     private static IDisposable EntryPointFileDirectoryPath(string path)
     {
