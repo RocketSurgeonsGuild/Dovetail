@@ -59,6 +59,56 @@ public class ConfigurationOptInTests(string targetFramework)
         await project.VerifyBuildWarnings("lib");
     }
 
+    /// <summary>
+    /// A local override named after the assembly (<c>lib.local.yaml</c>) isn't ignored by <c>appsettings.local.*</c>, so it is warned
+    /// about on its own, by name.
+    /// </summary>
+    [Test]
+    public async Task NamedLocalFile_NotIgnored_WarnsAboutIt()
+    {
+        using var project = CreateLibrary(new() { ["DovetailEnableConfiguration"] = "true" });
+        project
+           .AddFile(".gitignore", "appsettings.local.*\n")
+           .AddFile("lib/lib.yaml", "Greeting: lib")
+           .AddFile("lib/lib.local.yaml", "Greeting: local");
+
+        await project.VerifyBuildWarnings("lib");
+    }
+
+    /// <summary>
+    /// An entry for the named file, or a <c>*.local.*</c> wildcard (which covers <c>appsettings.local.*</c> as well), silences both
+    /// warnings.
+    /// </summary>
+    [Test]
+    [Arguments("appsettings.local.*\nlib.local.*\n")]
+    [Arguments("*.local.*\n")]
+    public async Task NamedLocalFile_Ignored_DoesNotWarn(string gitIgnore)
+    {
+        using var project = CreateLibrary(new() { ["DovetailEnableConfiguration"] = "true" });
+        project
+           .AddFile(".gitignore", gitIgnore)
+           .AddFile("lib/lib.yaml", "Greeting: lib")
+           .AddFile("lib/lib.local.yaml", "Greeting: local");
+
+        await project.VerifyBuildWarnings("lib");
+    }
+
+    /// <summary>
+    /// With only <c>appsettings.local.yaml</c>, an <c>appsettings.local.*</c> entry is still all it takes: nothing is said about a
+    /// <c>lib.local.*</c> file that doesn't exist.
+    /// </summary>
+    [Test]
+    public async Task OnlyAppSettingsLocalFile_IgnoredByItsEntry_DoesNotWarn()
+    {
+        using var project = CreateLibrary(new() { ["DovetailEnableConfiguration"] = "true" });
+        project
+           .AddFile(".gitignore", "appsettings.local.*\n")
+           .AddFile("lib/appsettings.yaml", "Greeting: appsettings")
+           .AddFile("lib/appsettings.local.yaml", "Greeting: local");
+
+        await project.VerifyBuildWarnings("lib");
+    }
+
     private SdkTestProject CreateLibrary(Dictionary<string, string> properties)
     {
         var library = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework);
