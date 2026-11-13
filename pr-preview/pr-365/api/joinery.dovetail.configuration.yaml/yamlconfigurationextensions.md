@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Configuration.Yaml](/Dovetail/pr-preview/pr-365/api/joinery.dovetail.configuration.yaml.md)
-- Version: `0.5.1-pr.4`
+- Version: `0.5.1-pr.6`
 - Namespace: `Joinery.Dovetail.Configuration.Yaml`
 - Target framework: `net10.0`
 
