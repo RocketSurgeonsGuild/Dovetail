@@ -56,9 +56,9 @@
     <PackageVersion Include="Stashbox.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageVersion Include="Serilog" Version="4.4.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
-    <PackageVersion Include="OpenTelemetry" Version="1.20.1" />
-    <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.20.1" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.1" />
+    <PackageVersion Include="OpenTelemetry" Version="1.21.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.21.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
     <PackageVersion Include="ZeroAlloc.Mediator" Version="6.7.0" />
     <PackageVersion Include="ZeroAlloc.Mediator.Cache" Version="6.7.0" />
     <PackageVersion Include="ZeroAlloc.Mediator.Generator" Version="6.7.0" />
