@@ -59,13 +59,13 @@
     <PackageVersion Include="OpenTelemetry" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
-    <PackageVersion Include="ZeroAlloc.Mediator" Version="6.6.5" />
-    <PackageVersion Include="ZeroAlloc.Mediator.Cache" Version="6.6.5" />
-    <PackageVersion Include="ZeroAlloc.Mediator.Generator" Version="6.6.5" />
-    <PackageVersion Include="ZeroAlloc.Mediator.Validation" Version="6.6.5" />
-    <PackageVersion Include="ZeroAlloc.Validation" Version="2.5.0" />
-    <PackageVersion Include="ZeroAlloc.Validation.AspNetCore" Version="2.5.0" />
-    <PackageVersion Include="ZeroAlloc.Validation.Inject" Version="2.5.0" />
+    <PackageVersion Include="ZeroAlloc.Mediator" Version="6.7.0" />
+    <PackageVersion Include="ZeroAlloc.Mediator.Cache" Version="6.7.0" />
+    <PackageVersion Include="ZeroAlloc.Mediator.Generator" Version="6.7.0" />
+    <PackageVersion Include="ZeroAlloc.Mediator.Validation" Version="6.7.0" />
+    <PackageVersion Include="ZeroAlloc.Validation" Version="2.6.0" />
+    <PackageVersion Include="ZeroAlloc.Validation.AspNetCore" Version="2.6.0" />
+    <PackageVersion Include="ZeroAlloc.Validation.Inject" Version="2.6.0" />
     <PackageVersion Include="System.Interactive" Version="7.0.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
