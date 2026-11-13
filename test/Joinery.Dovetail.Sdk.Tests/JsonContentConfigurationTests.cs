@@ -93,8 +93,8 @@ public class JsonContentConfigurationTests(string targetFramework)
                 "Dovetail.JsonConfiguration.g.cs"
             )
         );
-        joint.ShouldContain("""builder.AddJsonFile("Build.json", optional: false""");
-        joint.ShouldContain("""builder.AddJsonFile($"Build.{environmentName}.json", optional: true""");
+        joint.ShouldContain("""builder.AddJsonFile(files, FileName(files, "Build.json", "appsettings.json"), optional: false""");
+        joint.ShouldContain("""builder.AddJsonFile(files, FileName(files, $"Build.{environmentName}.json", $"appsettings.{environmentName}.json"), optional: true""");
     }
 
     /// <summary>The <c>appsettings*</c> items of <paramref name="itemType"/>: file name, target path and copy setting.</summary>

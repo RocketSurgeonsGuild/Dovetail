@@ -2,6 +2,7 @@ using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 
 /// <summary>
 ///     Default JSON app-settings convention for this project.
@@ -30,8 +31,15 @@ internal class JsonAppSettingsConfiguration : IConfigurationJoint
             return;
         }
 
-        builder.AddJsonFile("{{ProjectName}}.json", optional: false, reloadOnChange: false);
-        builder.AddJsonFile($"{{ProjectName}}.{environmentName}.json", optional: true, reloadOnChange: false);
-        builder.AddJsonFile("{{ProjectName}}.local.json", optional: true, reloadOnChange: false);
+        // The output directory holds the files under the project's name. A file-based app reads them from next to its entry point file
+        // instead, where they keep their source names, appsettings.json or {{ProjectName}}.json.
+        // One file provider for the three files, rather than one each.
+        var files = builder.GetFileProvider();
+        builder.AddJsonFile(files, FileName(files, "{{ProjectName}}.json", "appsettings.json"), optional: false, reloadOnChange: false);
+        builder.AddJsonFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.json", $"appsettings.{environmentName}.json"), optional: true, reloadOnChange: false);
+        builder.AddJsonFile(files, FileName(files, "{{ProjectName}}.local.json", "appsettings.local.json"), optional: true, reloadOnChange: false);
     }
+
+    private static string FileName(IFileProvider files, string name, string fallback) =>
+        files.GetFileInfo(name).Exists || !files.GetFileInfo(fallback).Exists ? name : fallback;
 }

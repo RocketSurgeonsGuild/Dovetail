@@ -3,6 +3,7 @@ using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using Microsoft.Extensions.FileProviders;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
@@ -68,7 +69,7 @@ public static class DovetailPipelineHelpers
            .AddIfMissing("EnvironmentName", builder.Environment.EnvironmentName);
 
         var context = await DovetailContext.FromAsync(contextBuilder, cancellationToken).ConfigureAwait(false);
-        await ApplyConfiguration(context, builder.Configuration, cancellationToken).ConfigureAwait(false);
+        await ApplyConfiguration(context, builder.Configuration, builder.Environment.ContentRootPath, cancellationToken).ConfigureAwait(false);
         await builder.Services.ApplyService(context, cancellationToken).ConfigureAwait(false);
         await builder.ApplyPipelineBuilder(context, cancellationToken).ConfigureAwait(false);
         return context;
@@ -78,12 +79,29 @@ public static class DovetailPipelineHelpers
     // so Dovetail's configuration goes in front of them. The joints run on a builder of their own so their sources can be chained in
     // that position; it shares the pipeline configuration's properties, so a file provider or base path set on the pipeline
     // (SetBasePath, SetFileProvider) is the one the file sources of the joints resolve against.
-    private static async ValueTask ApplyConfiguration(IDovetailContext context, ConfigurationManager configuration, CancellationToken cancellationToken)
+    //
+    // A file-based app (dotnet run build/Build.cs) keeps its configuration files next to its entry point file, while the pipeline's
+    // default file provider is rooted at the content root, the current directory. Unless the pipeline was pointed somewhere else, the
+    // joints read from the directory of the entry point file instead. The SDK writes that directory into the runtimeconfig.json, so a
+    // published or copied app still names the source directory of the machine it was built on, which needn't exist where it runs.
+    private static async ValueTask ApplyConfiguration(
+        IDovetailContext context,
+        ConfigurationManager configuration,
+        string contentRootPath,
+        CancellationToken cancellationToken
+    )
     {
         var dovetailConfiguration = new ConfigurationBuilder();
         foreach (var property in ( (IConfigurationBuilder)configuration ).Properties)
         {
             dovetailConfiguration.Properties[property.Key] = property.Value;
+        }
+
+        if (AppContext.GetData("EntryPointFileDirectoryPath") is string { Length: > 0, } entryPointFileDirectoryPath
+         && Directory.Exists(entryPointFileDirectoryPath)
+         && IsTheContentRoot(dovetailConfiguration, contentRootPath))
+        {
+            dovetailConfiguration.SetBasePath(entryPointFileDirectoryPath);
         }
 
         await dovetailConfiguration.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
@@ -105,4 +123,15 @@ public static class DovetailPipelineHelpers
 
         configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["RocketSurgeryDovetails:HostType"] = context.GetHostType().ToString(), });
     }
+
+    // Whether the file sources would resolve against the content root: there's no file provider, or the one there is reads the content
+    // root, as the pipeline's default does.
+    private static bool IsTheContentRoot(IConfigurationBuilder builder, string contentRootPath) =>
+        !builder.Properties.TryGetValue("FileProvider", out var fileProvider)
+     || ( fileProvider is PhysicalFileProvider physical
+         && string.Equals(
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(physical.Root)),
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(contentRootPath)),
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+            ) );
 }

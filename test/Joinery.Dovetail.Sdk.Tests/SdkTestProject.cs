@@ -425,13 +425,15 @@ public sealed class SdkTestProject : IDisposable
 
     /// <summary>
     /// Runs the file-based app at <paramref name="relativePath"/> (a .cs file added with <see cref="AddFile"/>) with
-    /// <c>dotnet run</c> and returns what it wrote to standard output.
+    /// <c>dotnet run</c> and returns what it wrote to standard output. It runs from the directory of the file, or from
+    /// <paramref name="workingDirectory"/> (relative to the project's directory) when one is given.
     /// </summary>
-    public async Task<string> RunFile(string relativePath)
+    public async Task<string> RunFile(string relativePath, string? workingDirectory = null)
     {
         var path = Path.Combine(Directory, relativePath);
-        var psi = CreateHermeticStartInfo($"run {Path.GetFileName(path)}");
-        psi.WorkingDirectory = Path.GetDirectoryName(path)!;
+        var directory = workingDirectory is null ? Path.GetDirectoryName(path)! : Path.Combine(Directory, workingDirectory);
+        var psi = CreateHermeticStartInfo($"run {Path.GetRelativePath(directory, path)}");
+        psi.WorkingDirectory = directory;
         // As in Run: a net10.0 application may have only the .NET 11 runtime to run on.
         psi.Environment["DOTNET_ROLL_FORWARD"] = "Major";
         psi.Environment["DOTNET_ROLL_FORWARD_TO_PRERELEASE"] = "1";

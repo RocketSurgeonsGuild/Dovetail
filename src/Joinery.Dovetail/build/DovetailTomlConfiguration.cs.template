@@ -3,6 +3,7 @@ using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Configuration.Toml;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Tomlyn.Extensions.Configuration;
 
 /// <summary>
@@ -32,8 +33,15 @@ internal class TomlAppSettingsConfiguration : IConfigurationJoint
             return;
         }
 
-        builder.AddTomlFile("{{ProjectName}}.toml", optional: false, reloadOnChange: false);
-        builder.AddTomlFile($"{{ProjectName}}.{environmentName}.toml", optional: true, reloadOnChange: false);
-        builder.AddTomlFile("{{ProjectName}}.local.toml", optional: true, reloadOnChange: false);
+        // The output directory holds the files under the project's name. A file-based app reads them from next to its entry point file
+        // instead, where they keep their source names, appsettings.toml or {{ProjectName}}.toml.
+        // One file provider for the three files, rather than one each.
+        var files = builder.GetFileProvider();
+        builder.AddTomlFile(files, FileName(files, "{{ProjectName}}.toml", "appsettings.toml"), optional: false, reloadOnChange: false);
+        builder.AddTomlFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.toml", $"appsettings.{environmentName}.toml"), optional: true, reloadOnChange: false);
+        builder.AddTomlFile(files, FileName(files, "{{ProjectName}}.local.toml", "appsettings.local.toml"), optional: true, reloadOnChange: false);
     }
+
+    private static string FileName(IFileProvider files, string name, string fallback) =>
+        files.GetFileInfo(name).Exists || !files.GetFileInfo(fallback).Exists ? name : fallback;
 }

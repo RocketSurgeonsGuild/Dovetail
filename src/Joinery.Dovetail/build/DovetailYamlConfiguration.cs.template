@@ -3,6 +3,7 @@ using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Configuration.Yaml;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 
 /// <summary>
 ///     Default YAML (<c>.yaml</c>) app-settings convention for this project.
@@ -31,8 +32,15 @@ internal class YamlAppSettingsConfiguration : IConfigurationJoint
             return;
         }
 
-        builder.AddYamlFile("{{ProjectName}}.yaml", optional: false, reloadOnChange: false);
-        builder.AddYamlFile($"{{ProjectName}}.{environmentName}.yaml", optional: true, reloadOnChange: false);
-        builder.AddYamlFile("{{ProjectName}}.local.yaml", optional: true, reloadOnChange: false);
+        // The output directory holds the files under the project's name. A file-based app reads them from next to its entry point file
+        // instead, where they keep their source names, appsettings.yaml or {{ProjectName}}.yaml.
+        // One file provider for the three files, rather than one each.
+        var files = builder.GetFileProvider();
+        builder.AddYamlFile(files, FileName(files, "{{ProjectName}}.yaml", "appsettings.yaml"), optional: false, reloadOnChange: false);
+        builder.AddYamlFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true, reloadOnChange: false);
+        builder.AddYamlFile(files, FileName(files, "{{ProjectName}}.local.yaml", "appsettings.local.yaml"), optional: true, reloadOnChange: false);
     }
+
+    private static string FileName(IFileProvider files, string name, string fallback) =>
+        files.GetFileInfo(name).Exists || !files.GetFileInfo(fallback).Exists ? name : fallback;
 }
