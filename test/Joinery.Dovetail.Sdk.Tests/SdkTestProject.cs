@@ -161,8 +161,7 @@ public sealed class SdkTestProject : IDisposable
             var relativePath = Path.GetDirectoryName(project.FullPath)!;
             results.Add(await BuildAndEvaluate(relativePath, "pack"));
 
-            var nupkg = System.IO.Directory.EnumerateFiles(relativePath, "*.nupkg", SearchOption.AllDirectories).SingleOrDefault() ?? throw new TUnitException($"dotnet pack did not produce a .nupkg for {relativePath}");
-            packages.Add(ReadPackage(nupkg));
+            packages.Add(ReadPackage(FindPackage(relativePath)));
         }
 
         if (files.Length == 0)
@@ -172,6 +171,23 @@ public sealed class SdkTestProject : IDisposable
         }
 
         await Verify(new { Projects = results, Packages = packages }, FileTargets(files), settings: _settings);
+    }
+
+    // The one .nupkg dotnet pack wrote under the project directory.
+    private static string FindPackage(string projectDirectory)
+    {
+        string? found = null;
+        foreach (var nupkg in System.IO.Directory.EnumerateFiles(projectDirectory, "*.nupkg", SearchOption.AllDirectories))
+        {
+            if (found is not null)
+            {
+                throw new TUnitException($"dotnet pack produced more than one .nupkg for {projectDirectory}");
+            }
+
+            found = nupkg;
+        }
+
+        return found ?? throw new TUnitException($"dotnet pack did not produce a .nupkg for {projectDirectory}");
     }
 
     /// <summary>
