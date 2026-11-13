@@ -433,11 +433,11 @@ MyLibrary/
   in the host's configuration, for example `Dovetail__ConfigurationDirectory=./config` or
   `--Dovetail:ConfigurationDirectory=./config`. A relative path is resolved against the current directory. It wins over
   everything above. The `Dovetail__ConfigurationDirectory` environment variable is read directly too, for hosts whose
-  configuration doesn't read environment variables (MAUI).
-- Every host that reads the files from disk (the generic host, ASP.NET Core, ModularPipelines, MAUI, Uno) picks the
+  configuration doesn't read environment variables.
+- Every host that reads the files from disk (the generic host, ASP.NET Core, ModularPipelines, Uno) picks the
   directory in the same order: `Dovetail:ConfigurationDirectory`, then the directory of a file-based app's entry point file,
   then the host's own file provider. Configuration embedded in the application (MAUI and Uno apps) still wins over all of
-  them, and a browser (WebAssembly) host fetches its files over HTTP.
+  them: a MAUI app always reads its embedded copies, and a browser (WebAssembly) host fetches its files over HTTP.
 
 ### Naming the source files
 

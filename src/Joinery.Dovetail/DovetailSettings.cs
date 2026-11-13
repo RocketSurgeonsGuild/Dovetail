@@ -47,7 +47,7 @@ public static class DovetailSettings
 
     /// <summary>
     ///     The full path of <see cref="ConfigurationDirectory" /> when <paramref name="configuration" /> sets it, or else the
-    ///     <c>Dovetail__ConfigurationDirectory</c> environment variable does (for hosts such as MAUI whose configuration doesn't read
+    ///     <c>Dovetail__ConfigurationDirectory</c> environment variable does (for hosts whose configuration doesn't read
     ///     environment variables); otherwise <see langword="null" />.
     /// </summary>
     /// <param name="configuration">The host's configuration.</param>
