@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-351/api/joinery.dovetail.md)
-- Version: `0.4.6-pr.5`
+- Version: `0.5.1-pr.4`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: [IDovetailJoint](/Dovetail/pr-preview/pr-351/api/joinery.dovetail/idovetailjoint.md)
