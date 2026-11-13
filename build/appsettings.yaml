@@ -1,3 +1,7 @@
 solution: Dovetail.slnx
 # Coverage settings for the TestSolution module (the library writes its own default when this is missing).
 runSettings: test/coverage.runsettings
+# One `dotnet test` over the solution, as before: Joinery.Dovetail.Sdk.Tests is most of the test time, and the library's per-project
+# mode (its default) would start it late until the run history on main says it is the longest, so `dotnet test` starting every
+# test application at once is still the shorter run.
+TestMode: Solution
