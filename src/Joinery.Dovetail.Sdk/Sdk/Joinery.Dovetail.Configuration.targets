@@ -24,33 +24,51 @@
     writing to the project's .gitignore, so the developer stays in control of that file.
 
     Git applies every .gitignore between a file and the repository root, so an entry in a parent
-    directory (typically the repository root) counts too. Walks up through at most four .gitignore
-    files - each hop only happens when another .gitignore exists further up, which covers the usual
-    project/solution/repository layouts without an inline task compiled on every build.
+    directory (typically the repository root) counts too. Reads at most four .gitignore files - each
+    hop only happens when another .gitignore exists further up, which covers the usual
+    project/solution/repository layouts without an inline task compiled on every build. An entry
+    "counts" when a .gitignore contains its text (a substring check, not git's matching).
+
+    The same layer can be written as {Name}.local.{ext}, named after the assembly (see
+    Joinery.Dovetail.PackConfiguration.targets). appsettings.local.* doesn't ignore that file, so
+    when one exists it needs its own entry: {Name}.local. or a wildcard *.local., which covers both
+    (and so silences the appsettings warning too).
   -->
   <Target Name="_DovetailScaffoldLocalConfigurationGitIgnore"
           Condition="'$(DovetailEnableConfiguration)' == 'true'"
           BeforeTargets="Build;Restore">
     <PropertyGroup>
       <_DovetailGitIgnoreEntry>appsettings.local.</_DovetailGitIgnoreEntry>
+      <_DovetailLocalConfigurationName>$(_DovetailConfigurationName)</_DovetailLocalConfigurationName>
+      <_DovetailLocalConfigurationName Condition="'$(_DovetailLocalConfigurationName)' == ''">$(AssemblyName)</_DovetailLocalConfigurationName>
+      <_DovetailLocalConfigurationName Condition="'$(_DovetailLocalConfigurationName)' == ''">$(MSBuildProjectName)</_DovetailLocalConfigurationName>
+      <_DovetailNamedGitIgnoreEntry>$(_DovetailLocalConfigurationName).local.</_DovetailNamedGitIgnoreEntry>
 
       <_DovetailGitIgnore1>$([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildProjectDirectory)'))</_DovetailGitIgnore1>
-      <_DovetailGitIgnoreFound Condition="'$(_DovetailGitIgnore1)' != '' and $([System.IO.File]::ReadAllText('$(_DovetailGitIgnore1)').Contains('$(_DovetailGitIgnoreEntry)'))">true</_DovetailGitIgnoreFound>
       <_DovetailGitIgnoreParent1 Condition="'$(_DovetailGitIgnore1)' != ''">$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('$(_DovetailGitIgnore1)'))))</_DovetailGitIgnoreParent1>
-
-      <_DovetailGitIgnore2 Condition="'$(_DovetailGitIgnoreFound)' != 'true' and '$(_DovetailGitIgnoreParent1)' != ''">$([MSBuild]::GetPathOfFileAbove('.gitignore', '$(_DovetailGitIgnoreParent1)'))</_DovetailGitIgnore2>
-      <_DovetailGitIgnoreFound Condition="'$(_DovetailGitIgnore2)' != '' and $([System.IO.File]::ReadAllText('$(_DovetailGitIgnore2)').Contains('$(_DovetailGitIgnoreEntry)'))">true</_DovetailGitIgnoreFound>
+      <_DovetailGitIgnore2 Condition="'$(_DovetailGitIgnoreParent1)' != ''">$([MSBuild]::GetPathOfFileAbove('.gitignore', '$(_DovetailGitIgnoreParent1)'))</_DovetailGitIgnore2>
       <_DovetailGitIgnoreParent2 Condition="'$(_DovetailGitIgnore2)' != ''">$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('$(_DovetailGitIgnore2)'))))</_DovetailGitIgnoreParent2>
-
-      <_DovetailGitIgnore3 Condition="'$(_DovetailGitIgnoreFound)' != 'true' and '$(_DovetailGitIgnoreParent2)' != ''">$([MSBuild]::GetPathOfFileAbove('.gitignore', '$(_DovetailGitIgnoreParent2)'))</_DovetailGitIgnore3>
-      <_DovetailGitIgnoreFound Condition="'$(_DovetailGitIgnore3)' != '' and $([System.IO.File]::ReadAllText('$(_DovetailGitIgnore3)').Contains('$(_DovetailGitIgnoreEntry)'))">true</_DovetailGitIgnoreFound>
+      <_DovetailGitIgnore3 Condition="'$(_DovetailGitIgnoreParent2)' != ''">$([MSBuild]::GetPathOfFileAbove('.gitignore', '$(_DovetailGitIgnoreParent2)'))</_DovetailGitIgnore3>
       <_DovetailGitIgnoreParent3 Condition="'$(_DovetailGitIgnore3)' != ''">$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('$(_DovetailGitIgnore3)'))))</_DovetailGitIgnoreParent3>
+      <_DovetailGitIgnore4 Condition="'$(_DovetailGitIgnoreParent3)' != ''">$([MSBuild]::GetPathOfFileAbove('.gitignore', '$(_DovetailGitIgnoreParent3)'))</_DovetailGitIgnore4>
 
-      <_DovetailGitIgnore4 Condition="'$(_DovetailGitIgnoreFound)' != 'true' and '$(_DovetailGitIgnoreParent3)' != ''">$([MSBuild]::GetPathOfFileAbove('.gitignore', '$(_DovetailGitIgnoreParent3)'))</_DovetailGitIgnore4>
-      <_DovetailGitIgnoreFound Condition="'$(_DovetailGitIgnore4)' != '' and $([System.IO.File]::ReadAllText('$(_DovetailGitIgnore4)').Contains('$(_DovetailGitIgnoreEntry)'))">true</_DovetailGitIgnoreFound>
+      <_DovetailGitIgnoreText Condition="'$(_DovetailGitIgnore1)' != ''">$([System.IO.File]::ReadAllText('$(_DovetailGitIgnore1)'))</_DovetailGitIgnoreText>
+      <_DovetailGitIgnoreText Condition="'$(_DovetailGitIgnore2)' != ''">$(_DovetailGitIgnoreText)$([System.IO.File]::ReadAllText('$(_DovetailGitIgnore2)'))</_DovetailGitIgnoreText>
+      <_DovetailGitIgnoreText Condition="'$(_DovetailGitIgnore3)' != ''">$(_DovetailGitIgnoreText)$([System.IO.File]::ReadAllText('$(_DovetailGitIgnore3)'))</_DovetailGitIgnoreText>
+      <_DovetailGitIgnoreText Condition="'$(_DovetailGitIgnore4)' != ''">$(_DovetailGitIgnoreText)$([System.IO.File]::ReadAllText('$(_DovetailGitIgnore4)'))</_DovetailGitIgnoreText>
+
+      <_DovetailGitIgnoreFound Condition="$(_DovetailGitIgnoreText.Contains('$(_DovetailGitIgnoreEntry)')) or $(_DovetailGitIgnoreText.Contains('*.local.'))">true</_DovetailGitIgnoreFound>
+      <_DovetailNamedGitIgnoreFound Condition="$(_DovetailGitIgnoreText.Contains('$(_DovetailNamedGitIgnoreEntry)')) or $(_DovetailGitIgnoreText.Contains('*.local.'))">true</_DovetailNamedGitIgnoreFound>
     </PropertyGroup>
+    <ItemGroup>
+      <_DovetailNamedLocalConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailNamedGitIgnoreEntry)json;$(MSBuildProjectDirectory)\$(_DovetailNamedGitIgnoreEntry)yaml;$(MSBuildProjectDirectory)\$(_DovetailNamedGitIgnoreEntry)yml;$(MSBuildProjectDirectory)\$(_DovetailNamedGitIgnoreEntry)toml" />
+      <_DovetailNamedLocalConfigurationFile Remove="@(_DovetailNamedLocalConfigurationFile)" Condition="!Exists('%(FullPath)')" />
+    </ItemGroup>
     <Warning
       Text="DovetailConfiguration: no .gitignore at or above '$(MSBuildProjectDirectory)' appears to ignore appsettings.local.{json,yaml,yml,toml}. Add those patterns to your .gitignore so local-only configuration overrides are never committed."
       Condition="'$(_DovetailGitIgnoreFound)' != 'true'"/>
+    <Warning
+      Text="DovetailConfiguration: no .gitignore at or above '$(MSBuildProjectDirectory)' appears to ignore @(_DovetailNamedLocalConfigurationFile->'%(Filename)%(Extension)', ', '). Add $(_DovetailNamedGitIgnoreEntry)* (or *.local.*) to your .gitignore so local-only configuration overrides are never committed."
+      Condition="'$(_DovetailNamedGitIgnoreFound)' != 'true' and '@(_DovetailNamedLocalConfigurationFile)' != ''"/>
   </Target>
 </Project>
