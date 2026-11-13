@@ -1,4 +1,4 @@
-<Project Sdk="Uno.Sdk/7.0.5">
+<Project Sdk="Uno.Sdk/7.0.22">
   <!--
       An Uno Platform app (Uno.Extensions.Hosting) bootstrapped by Dovetail (see App.xaml.cs), on the stable Uno.Sdk and the
       net10.0 heads. Its app code is shared with Sample.Uno.Net11. Needs the Uno Platform workloads for the mobile/Windows heads,
