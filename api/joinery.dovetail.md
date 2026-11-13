@@ -1,7 +1,7 @@
 # Joinery.Dovetail
 
 - Package: `Joinery.Dovetail`
-- Version: `0.5.2-beta.1`
+- Version: `0.5.3-beta.2`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail](https://www.nuget.org/packages/Joinery.Dovetail)
 
@@ -20,6 +20,7 @@
 - [DovetailExceptionPolicyDelegate](/Dovetail/api/joinery.dovetail/dovetailexceptionpolicydelegate.md) -- `delegate` -- A policy delegate that can be used to determine if a given exception should be ignored or not
 - [DovetailHostBuilderExtensions](/Dovetail/api/joinery.dovetail/dovetailhostbuilderextensions.md) -- `class` `static` -- Base convention extensions
 - [DovetailHostType](/Dovetail/api/joinery.dovetail/dovetailhosttype.md) -- `enum` -- The underlying host type (currently only checked for test host) This is so that conventions can avoid adding behaviors that might cause issues with unit testing such as writing to the console or debug pipes, or ensuring that something is configured in a correct way for testing. Careful consideration is needed to make sure that your system doesn't behave extremely differently in a live scenario vs a testing scenario
+- [DovetailSettings](/Dovetail/api/joinery.dovetail/dovetailsettings.md) -- `class` `static` -- Settings that change how Dovetail sets up a host, read from the host's own configuration (environment variables, command line, or anything added before Dovetail runs) rather than from Dovetail's configuration files.
 - [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md) -- `interface` -- The base context marker interface to define this as a context
 - [ImportHelpers](/Dovetail/api/joinery.dovetail/importhelpers.md) -- `class` `static` -- This class is used by the source generator to allow the conventions provided to be overridden by the caller.
 

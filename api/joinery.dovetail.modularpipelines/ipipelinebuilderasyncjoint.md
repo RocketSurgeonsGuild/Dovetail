@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.ModularPipelines](/Dovetail/api/joinery.dovetail.modularpipelines.md)
-- Version: `0.5.2-beta.1`
+- Version: `0.5.3-beta.2`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net11.0`
 - Implements: `IDovetailJoint`
