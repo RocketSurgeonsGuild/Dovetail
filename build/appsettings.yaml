@@ -1,6 +1,9 @@
 solution: Dovetail.slnx
 # Coverage settings for the TestSolution module (the library writes its own default when this is missing).
 runSettings: test/coverage.runsettings
-# One `dotnet test` over the solution, as before. In CI Joinery.Dovetail.Sdk.Tests runs in jobs of its own: the solution job's
-# ExcludeTests (.github/workflows/build.yml) leaves it out here.
-TestMode: Solution
+# The library's defaults run one `dotnet test` per test project (and target framework), longest first by the run history on main
+# (.modularpipelines, restored by build.yml), as many at a time as the runner has cores. `dotnet test --solution` took them in
+# solution order, which started the analyzer tests, the longest of them, only after the short ones; this starts them first while
+# there's no history for them. In CI Joinery.Dovetail.Sdk.Tests runs in jobs of its own (ExcludeTests in build.yml leaves it out here).
+TestOrder:
+    - test/Joinery.Dovetail.Analyzers.Tests/**
