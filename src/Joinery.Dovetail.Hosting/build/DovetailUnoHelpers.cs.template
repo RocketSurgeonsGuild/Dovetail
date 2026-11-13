@@ -124,8 +124,20 @@ internal static class DovetailUnoHostBuilderBridge
                     configuration.Sources.Remove(fileSource);
                 }
 
-                // Inserted after whatever's left (e.g. EmbeddedSource<App>()), so Dovetail's values win.
+                // Inserted after whatever's left (e.g. EmbeddedSource<App>()), so Dovetail's values win. Where the joints read files
+                // from disk rather than embedded copies, they read them where the other hosts do: from Dovetail:ConfigurationDirectory,
+                // else from next to the entry point file of a file-based app, else through Uno's own file provider (its content root).
                 var builder = new ConfigurationBuilder();
+                foreach (var property in configuration.Properties)
+                {
+                    builder.Properties[property.Key] = property.Value;
+                }
+
+                if (GetConfigurationDirectory(builder, hostContext.Configuration, hostContext.HostingEnvironment.ContentRootPath) is { } configurationDirectory)
+                {
+                    builder.SetBasePath(configurationDirectory);
+                }
+
                 Wait(builder.ApplyConfiguration(context, cancellationToken));
                 if (builder.Sources is { Count: > 0, })
                 {
@@ -155,6 +167,25 @@ internal static class DovetailUnoHostBuilderBridge
     }
 
     public static T Wait<T>(ValueTask<T> task) => task.IsCompletedSuccessfully ? task.Result : task.AsTask().GetAwaiter().GetResult();
+
+    /// <summary>
+    ///     <c>Dovetail:ConfigurationDirectory</c>, or else the directory of a file-based app's entry point file while the file provider
+    ///     is still the host's default, rooted at the content root; otherwise <see langword="null" />.
+    /// </summary>
+    private static string? GetConfigurationDirectory(IConfigurationBuilder builder, IConfiguration configuration, string contentRootPath) =>
+        DovetailSettings.GetConfiguredDirectory(configuration)
+     ?? ( DovetailSettings.GetEntryPointFileDirectory() is { } entryPointFileDirectory && IsTheContentRoot(builder, contentRootPath)
+            ? entryPointFileDirectory
+            : null );
+
+    private static bool IsTheContentRoot(IConfigurationBuilder builder, string contentRootPath) =>
+        !builder.Properties.TryGetValue("FileProvider", out var fileProvider)
+     || ( fileProvider is global::Microsoft.Extensions.FileProviders.PhysicalFileProvider physical
+         && string.Equals(
+                System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(physical.Root)),
+                System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(contentRootPath)),
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+            ) );
 
     /// <summary>
     ///     Identifies the <see cref="FileConfigurationSource" /> that <c>AddUserSecrets</c> adds for a user secrets store - always

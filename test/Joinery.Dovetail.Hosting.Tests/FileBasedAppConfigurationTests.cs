@@ -9,7 +9,7 @@ namespace Joinery.Dovetail.Hosting.Tests;
 ///     the <c>EntryPointFileDirectoryPath</c> AppContext data; its output directory is somewhere else entirely. The configuration joints read
 ///     their files from there.
 /// </summary>
-[NotInParallel("EntryPointFileDirectoryPath")]
+[NotInParallel] // EntryPointFileDirectoryPath is process-wide: any host built meanwhile would read, then lose, the temporary directory.
 public class FileBasedAppConfigurationTests
 {
     [Test]
@@ -29,6 +29,110 @@ public class FileBasedAppConfigurationTests
         {
             AppContext.SetData("EntryPointFileDirectoryPath", null);
             directory.Delete(true);
+        }
+    }
+
+    /// <summary>
+    ///     <see cref="DovetailSettings.ConfigurationDirectory" /> wins over the directory of the entry point file.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_ReadsTheFilesOfTheConfigurationJoints_FromTheConfigurationDirectorySetting()
+    {
+        var entryPointDirectory = Directory.CreateTempSubdirectory();
+        var configurationDirectory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(entryPointDirectory.FullName, "appsettings.yaml"), "Dovetail:\n  FromFile: entry-point\n");
+            await File.WriteAllTextAsync(Path.Combine(configurationDirectory.FullName, "appsettings.yaml"), "Dovetail:\n  FromFile: setting\n");
+            AppContext.SetData("EntryPointFileDirectoryPath", entryPointDirectory.FullName);
+            var builder = Host.CreateApplicationBuilder();
+            builder.Configuration.AddInMemoryCollection(
+                new Dictionary<string, string?> { [DovetailSettings.ConfigurationDirectory] = configurationDirectory.FullName, }
+            );
+
+            using var host = await builder.ConfigureDovetail();
+
+            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("setting");
+        }
+        finally
+        {
+            AppContext.SetData("EntryPointFileDirectoryPath", null);
+            configurationDirectory.Delete(true);
+            entryPointDirectory.Delete(true);
+        }
+    }
+
+    /// <summary>
+    ///     <see cref="DovetailSettings.ConfigurationDirectory" /> applies to any app, not only a file-based one.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_ReadsTheFilesOfTheConfigurationJoints_FromTheConfigurationDirectorySetting_OutsideAFileBasedApp()
+    {
+        var configurationDirectory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(configurationDirectory.FullName, "appsettings.yaml"), "Dovetail:\n  FromFile: setting\n");
+            var builder = Host.CreateApplicationBuilder();
+            builder.Configuration.AddInMemoryCollection(
+                new Dictionary<string, string?> { [DovetailSettings.ConfigurationDirectory] = configurationDirectory.FullName, }
+            );
+
+            using var host = await builder.ConfigureDovetail();
+
+            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("setting");
+        }
+        finally
+        {
+            configurationDirectory.Delete(true);
+        }
+    }
+
+    /// <summary>
+    ///     Outside a file-based app the joints read from the host's own file provider, which the host roots at its content root.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_ReadsTheFilesOfTheConfigurationJoints_FromTheContentRoot_OutsideAFileBasedApp()
+    {
+        var contentRoot = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(contentRoot.FullName, "appsettings.yaml"), "Dovetail:\n  FromFile: content-root\n");
+
+            using var host = await Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { ContentRootPath = contentRoot.FullName, }).ConfigureDovetail();
+
+            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("content-root");
+        }
+        finally
+        {
+            contentRoot.Delete(true);
+        }
+    }
+
+    /// <summary>
+    ///     A base path set on the host's configuration wins over the directory of the entry point file.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_KeepsTheBasePathOfTheHostConfiguration_InAFileBasedApp()
+    {
+        var entryPointDirectory = Directory.CreateTempSubdirectory();
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(entryPointDirectory.FullName, "appsettings.yaml"), "Dovetail:\n  FromFile: entry-point\n");
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "appsettings.yaml"), "Dovetail:\n  FromFile: base-path\n");
+            AppContext.SetData("EntryPointFileDirectoryPath", entryPointDirectory.FullName);
+            var builder = Host.CreateApplicationBuilder();
+            builder.Configuration.SetBasePath(directory.FullName);
+
+            using var host = await builder.ConfigureDovetail();
+
+            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("base-path");
+        }
+        finally
+        {
+            AppContext.SetData("EntryPointFileDirectoryPath", null);
+            directory.Delete(true);
+            entryPointDirectory.Delete(true);
         }
     }
 

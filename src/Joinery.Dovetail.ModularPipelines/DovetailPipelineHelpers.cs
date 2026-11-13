@@ -97,11 +97,15 @@ public static class DovetailPipelineHelpers
             dovetailConfiguration.Properties[property.Key] = property.Value;
         }
 
-        if (AppContext.GetData("EntryPointFileDirectoryPath") is string { Length: > 0, } entryPointFileDirectoryPath
-         && Directory.Exists(entryPointFileDirectoryPath)
-         && IsTheContentRoot(dovetailConfiguration, contentRootPath))
+        // Dovetail:ConfigurationDirectory, when set, wins over both.
+        var configurationDirectory = DovetailSettings.GetConfiguredDirectory(configuration)
+                                  ?? ( DovetailSettings.GetEntryPointFileDirectory() is { } entryPointFileDirectory
+                                     && IsTheContentRoot(dovetailConfiguration, contentRootPath)
+                                          ? entryPointFileDirectory
+                                          : null );
+        if (configurationDirectory is not null)
         {
-            dovetailConfiguration.SetBasePath(entryPointFileDirectoryPath);
+            dovetailConfiguration.SetBasePath(configurationDirectory);
         }
 
         await dovetailConfiguration.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
