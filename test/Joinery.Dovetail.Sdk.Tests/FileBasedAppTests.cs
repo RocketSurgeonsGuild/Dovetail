@@ -61,6 +61,47 @@ public class FileBasedAppTests(string targetFramework)
     }
 
     /// <summary>
+    /// A file-based app's configuration files live next to its entry point file, which the .NET SDK names in the
+    /// <c>EntryPointFileDirectoryPath</c> AppContext data, and that's where the configuration joints read them from, under their source
+    /// names: the copies in the output directory go stale as soon as the file is edited, since <c>dotnet run Build.cs</c> doesn't rebuild
+    /// for a changed configuration file. The app deletes those copies before it starts the host, so it can only have read the source.
+    /// </summary>
+    [Test]
+    public async Task FileBasedApp_ReadsItsConfigurationFromTheDirectoryOfItsEntryPointFile()
+    {
+        using var project = new SdkTestProject();
+        project.AddFile(
+            "app/Build.cs",
+            $$"""
+            #:sdk Joinery.Dovetail.Sdk
+            #:property TargetFramework={{targetFramework}}
+            #:property DovetailEnableYamlConfiguration=true
+
+            using Build;
+            using Microsoft.Extensions.Configuration;
+            using Microsoft.Extensions.DependencyInjection;
+
+            foreach (var copy in System.IO.Directory.EnumerateFiles(System.AppContext.BaseDirectory, "Build*.yaml").ToArray())
+            {
+                System.IO.File.Delete(copy);
+            }
+
+            using var host = await Host.CreateApplicationBuilder(args).ConfigureDovetail();
+            System.Console.WriteLine("Greeting=" + host.Services.GetRequiredService<IConfiguration>()["Greeting"]);
+            System.Console.WriteLine("Copies=" + System.IO.Directory.EnumerateFiles(System.AppContext.BaseDirectory, "Build*.yaml").Count());
+            """
+        );
+        project.AddFile("app/appsettings.yaml", "Greeting: from-appsettings");
+        project.AddFile("app/appsettings.local.yaml", "Greeting: from-local");
+        project.AddFile("app/.gitignore", "*.local.*");
+
+        var output = await project.RunFile("app/Build.cs");
+
+        output.ShouldContain("Greeting=from-local");
+        output.ShouldContain("Copies=0");
+    }
+
+    /// <summary>
     /// Without the Dovetail SDK, a file-based app has no default <c>None</c> items, so its <c>appsettings.{ext}</c> files were never copied to
     /// the output directory, and the generated configuration joint failed at startup looking for <c>Build.cs.{ext}</c> there. The packages
     /// now copy them for it, under the name of its assembly.

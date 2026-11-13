@@ -114,6 +114,14 @@ internal static class DovetailHostApplicationHelpers
         }
         // Sources only exist once the conventions have run, so apply them before deciding whether to chain.
         var cb = new ConfigurationBuilder();
+        // The joints read their files from the application's directory: the output directory, unless this is a file-based app
+        // (dotnet run Build.cs), whose configuration files sit next to its entry point file rather than in the output directory
+        // the SDK builds it into.
+        if (AppContext.GetData("EntryPointFileDirectoryPath") is string { Length: > 0, } entryPointFileDirectoryPath)
+        {
+            cb.SetBasePath(entryPointFileDirectoryPath);
+        }
+
         await cb.ApplyConfiguration(context, cancellationToken).ConfigureAwait(false);
         if (cb.Sources is { Count: > 0, })
         {

@@ -132,6 +132,71 @@ public class DovetailPipelineBuilderTests
         }
     }
 
+    /// <summary>
+    ///     A file-based app (<c>dotnet run build/Build.cs</c>) keeps its configuration files next to its entry point file, which the .NET SDK
+    ///     names in the <c>EntryPointFileDirectoryPath</c> AppContext data; the pipeline's default file provider reads the current directory.
+    /// </summary>
+    [Test]
+    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    public async Task ConfigureDovetail_ReadsTheFilesOfTheConfigurationJoints_FromTheDirectoryOfTheEntryPointFile()
+    {
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "appsettings.json"), """{ "Dovetail": { "FromFile": "entry-point" } }""");
+            using var _ = EntryPointFileDirectoryPath(directory.FullName);
+
+            await using var pipeline = await Pipeline.CreateBuilder().ConfigureDovetail(
+                z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
+            );
+
+            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("entry-point");
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
+    [Test]
+    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    public async Task ConfigureDovetail_KeepsTheBasePathOfThePipelineConfiguration_InAFileBasedApp()
+    {
+        var entryPointDirectory = Directory.CreateTempSubdirectory();
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(entryPointDirectory.FullName, "appsettings.json"), """{ "Dovetail": { "FromFile": "entry-point" } }""");
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "appsettings.json"), """{ "Dovetail": { "FromFile": "base-path" } }""");
+            using var _ = EntryPointFileDirectoryPath(entryPointDirectory.FullName);
+            var builder = Pipeline.CreateBuilder();
+            builder.Configuration.SetBasePath(directory.FullName);
+
+            await using var pipeline = await builder.ConfigureDovetail(
+                z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
+            );
+
+            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("base-path");
+        }
+        finally
+        {
+            directory.Delete(true);
+            entryPointDirectory.Delete(true);
+        }
+    }
+
+    // What the .NET SDK sets for a file-based app; removed again on dispose, since it's process-wide.
+    private static IDisposable EntryPointFileDirectoryPath(string path)
+    {
+        AppContext.SetData("EntryPointFileDirectoryPath", path);
+        return new Reset();
+    }
+
+    private sealed class Reset : IDisposable
+    {
+        public void Dispose() => AppContext.SetData("EntryPointFileDirectoryPath", null);
+    }
+
     [Test]
     public async Task ConfigureDovetail_HandsTheHostCreatedJointsThePipeline()
     {
