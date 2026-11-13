@@ -104,21 +104,15 @@
   -->
   <Import Project="$(MSBuildThisFileDirectory)Directory.Packages.MSBuildTasks.props" />
   <!--
-      Uno.Extensions per release line: no stable 7.x has net10.0+ assets (its net9.0 ones serve net10.0), and only the 8.0
-      prereleases target net10.0+, so net11.0 builds take those until 8.0 is stable. Kept apart from the per-framework groups
-      below so the two lines can be bumped independently.
+      Uno.Extensions 8.x serves both the net10.0 heads (Sample.Uno, on Uno.Sdk 7) and the net11.0 ones (Sample.Uno.Net11).
   -->
-  <ItemGroup Label="Uno.Extensions 7.x" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
-    <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="8.0.1" />
-    <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="8.0.1" />
-  </ItemGroup>
-  <ItemGroup Label="Uno.Extensions 8.x" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+  <ItemGroup Label="Uno.Extensions">
     <PackageVersion Include="Uno.Extensions.Hosting.WinUI" Version="8.0.1" />
     <PackageVersion Include="Uno.Extensions.Navigation.WinUI" Version="8.0.1" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
-    <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.10" />
-    <PackageVersion Include="Microsoft.Maui.Core" Version="11.0.10" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.130" />
+    <PackageVersion Include="Microsoft.Maui.Core" Version="10.0.130" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.15" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.15" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.15" />
