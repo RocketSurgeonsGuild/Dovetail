@@ -18,12 +18,12 @@
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Toml\Joinery.Dovetail.Configuration.Toml.csproj" />
         <PackageReference Include="Verify.SourceGenerators" />
 
-      <PackageReference Include="Microsoft.CodeAnalysis.Common" VersionOverride="5.9.0" PrivateAssets="all" />
-      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="5.9.0" PrivateAssets="all" />
-      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="5.9.0" PrivateAssets="all" />
-      <PackageReference Include="Microsoft.CodeAnalysis.Features" VersionOverride="5.9.0" PrivateAssets="all" />
-      <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" VersionOverride="5.9.0" PrivateAssets="all" />
-      <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" VersionOverride="5.9.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Common" VersionOverride="5.12.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="5.12.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="5.12.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Features" VersionOverride="5.12.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" VersionOverride="5.12.0" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" VersionOverride="5.12.0" PrivateAssets="all" />
     </ItemGroup>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 </Project>
