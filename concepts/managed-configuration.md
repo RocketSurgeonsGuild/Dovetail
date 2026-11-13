@@ -416,7 +416,7 @@ MyLibrary/
   through a `ProjectReference`, and restored from the package otherwise.
 - The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and
   `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the
-  project ignores `appsettings.local.*`.
+  project ignores `appsettings.local.*` (a `*.local.*` entry counts too).
 - A file-based app (`dotnet run Build.cs`) is named after its assembly, `Build`, without the `.cs`: its `appsettings.{ext}`
   files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK.
 
@@ -435,7 +435,8 @@ is configuration and `lib.yaml` is an ordinary file, because nothing would load 
 to `Build.cs`, is included the same way. Files named after the assembly are treated exactly like the `appsettings` ones: copied
 to the output directory, packed under `contentFiles/any/any/configuration/`, embedded, loaded by the generated joint, and added to a
 file-based app's items. `MyLibrary.schema.json` and a file-based app's `Build.run.json` (its launch profiles) are not
-configuration and are left alone. Add `MyLibrary.local.*` to your `.gitignore` next to `appsettings.local.*`.
+configuration and are left alone. `appsettings.local.*` doesn't ignore `MyLibrary.local.{ext}`, so when one exists the SDK
+warns, naming the file, until a `.gitignore` has `MyLibrary.local.*` or `*.local.*`, which covers both.
 
 Each pair of names that would land on the same file, such as `appsettings.yaml` and `MyLibrary.yaml`, or
 `appsettings.Development.yaml` and `MyLibrary.Development.yaml`, fails the build with

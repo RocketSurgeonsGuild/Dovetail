@@ -577,7 +577,7 @@ defaults to the project’s name): the <code dir="auto">ApplicationName</code> t
 through a <code dir="auto">ProjectReference</code>, and restored from the package otherwise.</li>
 <li>The generated joint loads, in ascending precedence, <code dir="auto">MyLibrary.{ext}</code>, <code dir="auto">MyLibrary.{Environment}.{ext}</code> and
 <code dir="auto">MyLibrary.local.{ext}</code>. The <code dir="auto">local</code> layer is never packed, and the SDK warns when no <code dir="auto">.gitignore</code> at or above the
-project ignores <code dir="auto">appsettings.local.*</code>.</li>
+project ignores <code dir="auto">appsettings.local.*</code> (a <code dir="auto">*.local.*</code> entry counts too).</li>
 <li>A file-based app (<code dir="auto">dotnet run Build.cs</code>) is named after its assembly, <code dir="auto">Build</code>, without the <code dir="auto">.cs</code>: its <code dir="auto">appsettings.{ext}</code>
 files, next to <code dir="auto">Build.cs</code>, are copied to its output directory as <code dir="auto">Build.{ext}</code>, with or without the Dovetail SDK.</li>
 </ul>
@@ -614,7 +614,8 @@ is configuration and <code dir="auto">lib.yaml</code> is an ordinary file, becau
 to <code dir="auto">Build.cs</code>, is included the same way. Files named after the assembly are treated exactly like the <code dir="auto">appsettings</code> ones: copied
 to the output directory, packed under <code dir="auto">contentFiles/any/any/configuration/</code>, embedded, loaded by the generated joint, and added to a
 file-based app’s items. <code dir="auto">MyLibrary.schema.json</code> and a file-based app’s <code dir="auto">Build.run.json</code> (its launch profiles) are not
-configuration and are left alone. Add <code dir="auto">MyLibrary.local.*</code> to your <code dir="auto">.gitignore</code> next to <code dir="auto">appsettings.local.*</code>.</p>
+configuration and are left alone. <code dir="auto">appsettings.local.*</code> doesn’t ignore <code dir="auto">MyLibrary.local.{ext}</code>, so when one exists the SDK
+warns, naming the file, until a <code dir="auto">.gitignore</code> has <code dir="auto">MyLibrary.local.*</code> or <code dir="auto">*.local.*</code>, which covers both.</p>
 <p>Each pair of names that would land on the same file, such as <code dir="auto">appsettings.yaml</code> and <code dir="auto">MyLibrary.yaml</code>, or
 <code dir="auto">appsettings.Development.yaml</code> and <code dir="auto">MyLibrary.Development.yaml</code>, fails the build with
 <a href="#diagnostics"><code dir="auto">DT0019</code></a>; keep one of them. Different extensions are different files, so <code dir="auto">appsettings.yaml</code> and <code dir="auto">MyLibrary.yml</code>
