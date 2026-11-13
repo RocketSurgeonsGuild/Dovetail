@@ -9,7 +9,7 @@ namespace Joinery.Dovetail.Hosting.Tests;
 ///     the <c>EntryPointFileDirectoryPath</c> AppContext data; its output directory is somewhere else entirely. The configuration joints read
 ///     their files from there.
 /// </summary>
-[NotInParallel("EntryPointFileDirectoryPath")]
+[NotInParallel] // EntryPointFileDirectoryPath is process-wide: any host built meanwhile would read, then lose, the temporary directory.
 public class FileBasedAppConfigurationTests
 {
     [Test]

@@ -137,7 +137,7 @@ public class DovetailPipelineBuilderTests
     ///     names in the <c>EntryPointFileDirectoryPath</c> AppContext data; the pipeline's default file provider reads the current directory.
     /// </summary>
     [Test]
-    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    [TUnit.Core.NotInParallel] // EntryPointFileDirectoryPath is process-wide, so no other pipeline may be built meanwhile.
     public async Task ConfigureDovetail_ReadsTheFilesOfTheConfigurationJoints_FromTheDirectoryOfTheEntryPointFile()
     {
         var directory = Directory.CreateTempSubdirectory();
@@ -159,7 +159,7 @@ public class DovetailPipelineBuilderTests
     }
 
     [Test]
-    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    [TUnit.Core.NotInParallel] // EntryPointFileDirectoryPath is process-wide, so no other pipeline may be built meanwhile.
     public async Task ConfigureDovetail_KeepsTheBasePathOfThePipelineConfiguration_InAFileBasedApp()
     {
         var entryPointDirectory = Directory.CreateTempSubdirectory();
@@ -190,7 +190,7 @@ public class DovetailPipelineBuilderTests
     ///     of the machine it was built on. Where that doesn't exist, the joints keep the pipeline's own file provider.
     /// </summary>
     [Test]
-    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    [TUnit.Core.NotInParallel] // EntryPointFileDirectoryPath is process-wide, so no other pipeline may be built meanwhile.
     public async Task ConfigureDovetail_Builds_WhenTheDirectoryOfTheEntryPointFileDoesNotExist()
     {
         using var _ = EntryPointFileDirectoryPath(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
@@ -205,7 +205,7 @@ public class DovetailPipelineBuilderTests
     ///     set on the pipeline configuration.
     /// </summary>
     [Test]
-    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    [TUnit.Core.NotInParallel] // EntryPointFileDirectoryPath is process-wide, so no other pipeline may be built meanwhile.
     public async Task ConfigureDovetail_ReadsTheFilesOfTheConfigurationJoints_FromTheConfigurationDirectorySetting()
     {
         var entryPointDirectory = Directory.CreateTempSubdirectory();
