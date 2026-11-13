@@ -1,0 +1,5 @@
+﻿[
+  A.Core.yaml,
+  appsettings.schema.json,
+  B.Core.yaml
+]

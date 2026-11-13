@@ -31,4 +31,159 @@ public class FileBasedAppTests(string targetFramework)
         output.ShouldContain("Serilog=Joinery.Dovetail.Serilog");
         output.ShouldContain("OpenTelemetry=Joinery.Dovetail.OpenTelemetry");
     }
+
+    /// <summary>
+    /// The project of a file-based app is named after the file, extension included (<c>Build.cs</c>). Its <c>appsettings.yaml</c> must still
+    /// reach the output directory under the name of its assembly (<c>Build.yaml</c>), which the generated configuration joint requires and
+    /// the runtime conventions look for, rather than <c>Build.cs.yaml</c>.
+    /// </summary>
+    [Test]
+    public async Task FileBasedApp_LoadsItsAppSettingsFile()
+    {
+        using var project = new SdkTestProject();
+        project.AddFile(
+            "app/Build.cs",
+            $$"""
+            #:sdk Joinery.Dovetail.Sdk
+            #:property TargetFramework={{targetFramework}}
+            #:property DovetailEnableYamlConfiguration=true
+
+            {{PrintGreeting}}
+            """
+        );
+        project.AddFile("app/appsettings.yaml", "Greeting: from-appsettings");
+
+        var output = await project.RunFile("app/Build.cs");
+
+        output.ShouldContain("Greeting=from-appsettings");
+        output.ShouldContain("Build.yaml=True");
+        output.ShouldNotContain("Build.cs.yaml");
+    }
+
+    /// <summary>
+    /// Without the Dovetail SDK, a file-based app has no default <c>None</c> items, so its <c>appsettings.{ext}</c> files were never copied to
+    /// the output directory, and the generated configuration joint failed at startup looking for <c>Build.cs.{ext}</c> there. The packages
+    /// now copy them for it, under the name of its assembly.
+    /// </summary>
+    [Test]
+    [Arguments("yaml", "Joinery.Dovetail.Configuration.Yaml", null)]
+    [Arguments("yml", "Joinery.Dovetail.Configuration.Yaml", null)]
+    [Arguments("json", "Microsoft.Extensions.Configuration.Json", "10.0.9")]
+    [Arguments("toml", "Joinery.Dovetail.Configuration.Toml", null)]
+    public async Task FileBasedApp_ReferencingThePackages_LoadsItsAppSettingsFile(string extension, string providerPackageId, string? providerVersion)
+    {
+        using var project = new SdkTestProject();
+        project.AddFile(
+            "app/Build.cs",
+            $$"""
+            #:package Joinery.Dovetail.Hosting@{{Config.DovetailPackageVersion("Joinery.Dovetail.Hosting")}}
+            #:package {{providerPackageId}}@{{providerVersion ?? Config.DovetailPackageVersion(providerPackageId)}}
+            #:package Microsoft.Extensions.Hosting@10.0.9
+            #:property TargetFramework={{targetFramework}}
+
+            using Microsoft.Extensions.Hosting;
+
+            {{PrintGreeting}}
+            """
+        );
+        // What the Dovetail SDK (or a package such as Joinery.Dovetail.ModularPipelines) would otherwise declare: the host to configure.
+        project.AddFile(
+            "app/Directory.Build.props",
+            """
+            <Project>
+              <PropertyGroup>
+                <ImportDovetailAssembly>true</ImportDovetailAssembly>
+              </PropertyGroup>
+              <ItemGroup>
+                <DovetailHost Include="HostApplication" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers" />
+              </ItemGroup>
+            </Project>
+            """
+        );
+        project.AddFile(
+            $"app/appsettings.{extension}",
+            extension switch
+            {
+                "json" => """{ "Greeting": "from-appsettings" }""",
+                "toml" => """Greeting = "from-appsettings" """,
+                _ => "Greeting: from-appsettings",
+            }
+        );
+
+        var output = await project.RunFile("app/Build.cs");
+
+        output.ShouldContain("Greeting=from-appsettings");
+        output.ShouldContain($"Build.{extension}=True");
+        output.ShouldNotContain($"Build.cs.{extension}");
+    }
+
+    /// <summary>
+    /// A file-based app's configuration file can also be named after its assembly: <c>Build.{ext}</c> next to <c>Build.cs</c>, not
+    /// <c>Build.cs.{ext}</c>. The packages copy it to the output directory under that name, as they would a renamed
+    /// <c>appsettings.{ext}</c>, so the generated configuration joint (and the provider packages' joints, which load
+    /// <c>{ApplicationName}.{ext}</c>) find it there; the app doesn't copy it itself.
+    /// </summary>
+    [Test]
+    [Arguments("yaml", "Joinery.Dovetail.Configuration.Yaml")]
+    [Arguments("yml", "Joinery.Dovetail.Configuration.Yaml")]
+    [Arguments("json", "Joinery.Dovetail.Configuration.Json")]
+    [Arguments("toml", "Joinery.Dovetail.Configuration.Toml")]
+    public async Task FileBasedApp_ReferencingThePackages_LoadsAConfigurationFileNamedAfterItsAssembly(string extension, string providerPackageId)
+    {
+        using var project = new SdkTestProject();
+        project.AddFile(
+            "app/Build.cs",
+            $$"""
+            #:package Joinery.Dovetail.Hosting@{{Config.DovetailPackageVersion("Joinery.Dovetail.Hosting")}}
+            #:package {{providerPackageId}}@{{Config.DovetailPackageVersion(providerPackageId)}}
+            #:package Microsoft.Extensions.Hosting@10.0.9
+            #:property TargetFramework={{targetFramework}}
+
+            using Microsoft.Extensions.Hosting;
+
+            {{PrintGreeting}}
+            """
+        );
+        project.AddFile(
+            "app/Directory.Build.props",
+            """
+            <Project>
+              <PropertyGroup>
+                <ImportDovetailAssembly>true</ImportDovetailAssembly>
+              </PropertyGroup>
+              <ItemGroup>
+                <DovetailHost Include="HostApplication" HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers" />
+              </ItemGroup>
+            </Project>
+            """
+        );
+        project.AddFile(
+            $"app/Build.{extension}",
+            extension switch
+            {
+                "json" => """{ "Greeting": "from-build" }""",
+                "toml" => """Greeting = "from-build" """,
+                _ => "Greeting: from-build",
+            }
+        );
+
+        var output = await project.RunFile("app/Build.cs");
+
+        output.ShouldContain("Greeting=from-build");
+        output.ShouldContain($"Build.{extension}=True");
+        output.ShouldNotContain($"Build.cs.{extension}");
+    }
+
+    private const string PrintGreeting = """
+        using Build;
+        using Microsoft.Extensions.Configuration;
+        using Microsoft.Extensions.DependencyInjection;
+
+        using var host = await Host.CreateApplicationBuilder(args).ConfigureDovetail();
+        System.Console.WriteLine("Greeting=" + host.Services.GetRequiredService<IConfiguration>()["Greeting"]);
+        foreach (var file in System.IO.Directory.EnumerateFiles(System.AppContext.BaseDirectory, "Build.*"))
+        {
+            System.Console.WriteLine(System.IO.Path.GetFileName(file) + "=True");
+        }
+        """;
 }

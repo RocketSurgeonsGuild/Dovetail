@@ -161,8 +161,7 @@ public sealed class SdkTestProject : IDisposable
             var relativePath = Path.GetDirectoryName(project.FullPath)!;
             results.Add(await BuildAndEvaluate(relativePath, "pack"));
 
-            var nupkg = System.IO.Directory.EnumerateFiles(relativePath, "*.nupkg", SearchOption.AllDirectories).SingleOrDefault() ?? throw new TUnitException($"dotnet pack did not produce a .nupkg for {relativePath}");
-            packages.Add(ReadPackage(nupkg));
+            packages.Add(ReadPackage(FindPackage(relativePath)));
         }
 
         if (files.Length == 0)
@@ -172,6 +171,23 @@ public sealed class SdkTestProject : IDisposable
         }
 
         await Verify(new { Projects = results, Packages = packages }, FileTargets(files), settings: _settings);
+    }
+
+    // The one .nupkg dotnet pack wrote under the project directory.
+    private static string FindPackage(string projectDirectory)
+    {
+        string? found = null;
+        foreach (var nupkg in System.IO.Directory.EnumerateFiles(projectDirectory, "*.nupkg", SearchOption.AllDirectories))
+        {
+            if (found is not null)
+            {
+                throw new TUnitException($"dotnet pack produced more than one .nupkg for {projectDirectory}");
+            }
+
+            found = nupkg;
+        }
+
+        return found ?? throw new TUnitException($"dotnet pack did not produce a .nupkg for {projectDirectory}");
     }
 
     /// <summary>
@@ -333,7 +349,7 @@ public sealed class SdkTestProject : IDisposable
             : [];
 
         // Joinery.Dovetail.PackConfiguration.targets renames/copies appsettings.{ext} to
-        // $(MSBuildProjectName).{ext} in bin/ via <None Update> metadata against an item the
+        // $(AssemblyName).{ext} in bin/ via <None Update> metadata against an item the
         // .NET SDK's own default globs add (evaluated before this project's own body) - that
         // never shows up in the evaluation snapshot's Items either, so verify it landed by
         // reading the actual build output instead. When this project has a <ProjectReference>
@@ -539,6 +555,34 @@ public sealed class SdkTestProject : IDisposable
                 )
                .ToArray()
             : [];
+    }
+
+    /// <summary>
+    /// Restores the project at <paramref name="relativePath"/>, either a project directory or a file-based app's <c>.cs</c> file, runs
+    /// <c>dotnet msbuild</c> (<c>dotnet build</c> for a file-based app, which <c>dotnet msbuild</c> can't open) with
+    /// <paramref name="msbuildArguments"/> on it, and returns the JSON that <c>-getProperty</c>/<c>-getItem</c> printed. Ask for at least two
+    /// properties, or a property and an item: MSBuild prints a single property as plain text.
+    /// </summary>
+    public async Task<System.Text.Json.JsonElement> Evaluate(string relativePath, string msbuildArguments)
+    {
+        var path = Path.Combine(Directory, relativePath);
+        string stdout;
+        if (path.EndsWith(".cs", StringComparison.Ordinal))
+        {
+            var directory = Path.GetDirectoryName(path)!;
+            var file = Path.GetFileName(path);
+            await RunDotnet($"restore {file}", directory);
+            stdout = await RunDotnet($"build {file} {msbuildArguments}", directory);
+        }
+        else
+        {
+            await RunDotnet("restore", path);
+            stdout = await RunDotnet($"msbuild {msbuildArguments}", path);
+        }
+
+        // Warnings (say, about a missing .gitignore entry) can precede the JSON.
+        using var document = System.Text.Json.JsonDocument.Parse(stdout[stdout.IndexOf('{', StringComparison.Ordinal)..]);
+        return document.RootElement.Clone();
     }
 
     private async Task<string> RunDotnet(string arguments, string workingDirectory)
