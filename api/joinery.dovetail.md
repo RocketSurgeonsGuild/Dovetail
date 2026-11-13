@@ -1,7 +1,7 @@
 # Joinery.Dovetail
 
 - Package: `Joinery.Dovetail`
-- Version: `0.5.1-beta.7`
+- Version: `0.5.2-beta.1`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail](https://www.nuget.org/packages/Joinery.Dovetail)
 

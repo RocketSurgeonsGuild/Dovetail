@@ -418,7 +418,10 @@ MyLibrary/
   `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the
   project ignores `appsettings.local.*` (a `*.local.*` entry counts too).
 - A file-based app (`dotnet run Build.cs`) is named after its assembly, `Build`, without the `.cs`: its `appsettings.{ext}`
-  files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK.
+  files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK. At run time,
+  though, the configuration joints read the files from next to `Build.cs` (the directory the .NET SDK names in the
+  `EntryPointFileDirectoryPath` AppContext data), under their source names, so an edit takes effect on the next run without a
+  rebuild. A ModularPipelines pipeline whose configuration was given a base path or file provider of its own keeps it.
 
 ### Naming the source files
 
