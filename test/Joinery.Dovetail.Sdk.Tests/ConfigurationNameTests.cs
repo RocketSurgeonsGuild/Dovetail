@@ -256,9 +256,9 @@ public class ConfigurationNameTests(string targetFramework)
                 "Dovetail.YamlConfiguration.g.cs"
             )
         );
-        joint.ShouldContain($"""builder.AddYamlFile(FileName(files, "{name}.yaml", "appsettings.yaml"), optional: false""");
-        joint.ShouldContain($$"""builder.AddYamlFile(FileName(files, $"{{name}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true""");
-        joint.ShouldContain($"""builder.AddYamlFile(FileName(files, "{name}.local.yaml", "appsettings.local.yaml"), optional: true""");
+        joint.ShouldContain($"""builder.AddYamlFile(files, FileName(files, "{name}.yaml", "appsettings.yaml"), optional: false""");
+        joint.ShouldContain($$"""builder.AddYamlFile(files, FileName(files, $"{{name}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true""");
+        joint.ShouldContain($"""builder.AddYamlFile(files, FileName(files, "{name}.local.yaml", "appsettings.local.yaml"), optional: true""");
         joint.ShouldContain($"""DovetailEmbeddedConfiguration.OpenResource(assembly, "{name}.yaml", "appsettings.yaml")""");
     }
 

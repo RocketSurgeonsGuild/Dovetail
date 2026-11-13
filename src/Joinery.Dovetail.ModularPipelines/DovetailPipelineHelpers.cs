@@ -82,7 +82,8 @@ public static class DovetailPipelineHelpers
     //
     // A file-based app (dotnet run build/Build.cs) keeps its configuration files next to its entry point file, while the pipeline's
     // default file provider is rooted at the content root, the current directory. Unless the pipeline was pointed somewhere else, the
-    // joints read from the directory of the entry point file instead.
+    // joints read from the directory of the entry point file instead. The SDK writes that directory into the runtimeconfig.json, so a
+    // published or copied app still names the source directory of the machine it was built on, which needn't exist where it runs.
     private static async ValueTask ApplyConfiguration(
         IDovetailContext context,
         ConfigurationManager configuration,
@@ -97,6 +98,7 @@ public static class DovetailPipelineHelpers
         }
 
         if (AppContext.GetData("EntryPointFileDirectoryPath") is string { Length: > 0, } entryPointFileDirectoryPath
+         && Directory.Exists(entryPointFileDirectoryPath)
          && IsTheContentRoot(dovetailConfiguration, contentRootPath))
         {
             dovetailConfiguration.SetBasePath(entryPointFileDirectoryPath);

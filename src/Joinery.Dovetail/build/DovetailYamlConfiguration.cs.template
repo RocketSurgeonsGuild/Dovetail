@@ -34,10 +34,11 @@ internal class YamlAppSettingsConfiguration : IConfigurationJoint
 
         // The output directory holds the files under the project's name. A file-based app reads them from next to its entry point file
         // instead, where they keep their source names, appsettings.yaml or {{ProjectName}}.yaml.
+        // One file provider for the three files, rather than one each.
         var files = builder.GetFileProvider();
-        builder.AddYamlFile(FileName(files, "{{ProjectName}}.yaml", "appsettings.yaml"), optional: false, reloadOnChange: false);
-        builder.AddYamlFile(FileName(files, $"{{ProjectName}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true, reloadOnChange: false);
-        builder.AddYamlFile(FileName(files, "{{ProjectName}}.local.yaml", "appsettings.local.yaml"), optional: true, reloadOnChange: false);
+        builder.AddYamlFile(files, FileName(files, "{{ProjectName}}.yaml", "appsettings.yaml"), optional: false, reloadOnChange: false);
+        builder.AddYamlFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true, reloadOnChange: false);
+        builder.AddYamlFile(files, FileName(files, "{{ProjectName}}.local.yaml", "appsettings.local.yaml"), optional: true, reloadOnChange: false);
     }
 
     private static string FileName(IFileProvider files, string name, string fallback) =>

@@ -185,6 +185,21 @@ public class DovetailPipelineBuilderTests
         }
     }
 
+    /// <summary>
+    ///     The SDK writes the directory into the runtimeconfig.json, so a published or copied file-based app still names the source directory
+    ///     of the machine it was built on. Where that doesn't exist, the joints keep the pipeline's own file provider.
+    /// </summary>
+    [Test]
+    [TUnit.Core.NotInParallel(nameof(EntryPointFileDirectoryPath))]
+    public async Task ConfigureDovetail_Builds_WhenTheDirectoryOfTheEntryPointFileDoesNotExist()
+    {
+        using var _ = EntryPointFileDirectoryPath(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+
+        await using var pipeline = await Pipeline.CreateBuilder().ConfigureDovetail();
+
+        pipeline.Services.GetRequiredService<IConfiguration>().ShouldNotBeNull();
+    }
+
     // What the .NET SDK sets for a file-based app; removed again on dispose, since it's process-wide.
     private static IDisposable EntryPointFileDirectoryPath(string path)
     {
