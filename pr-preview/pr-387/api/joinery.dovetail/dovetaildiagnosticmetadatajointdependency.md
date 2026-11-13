@@ -2,7 +2,7 @@
 
 - Kind: `record`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-387/api/joinery.dovetail.md)
-- Version: `0.5.2-pr.2`
+- Version: `0.5.2-pr.3`
 - Namespace: `Joinery.Dovetail.Diagnostics`
 - Target framework: `net10.0`
 - Inherits: [DovetailDiagnosticMetadataJoint](/Dovetail/pr-preview/pr-387/api/joinery.dovetail/dovetaildiagnosticmetadatajoint.md)

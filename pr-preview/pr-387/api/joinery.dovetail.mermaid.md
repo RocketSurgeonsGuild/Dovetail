@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Mermaid
 
 - Package: `Joinery.Dovetail.Mermaid`
-- Version: `0.5.2-pr.2`
+- Version: `0.5.2-pr.3`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Mermaid](https://www.nuget.org/packages/Joinery.Dovetail.Mermaid)
 
