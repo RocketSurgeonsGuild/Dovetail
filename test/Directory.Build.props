@@ -6,6 +6,12 @@
         <OutputType>Exe</OutputType>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <!--
+            Run each test framework on its own runtime. The root Directory.Build.props sets LatestMajor, which ran every net10.0
+            test application on .NET 11 whenever both were installed (CI installs both: .config/mise.toml). Major uses the
+            targeted major when it's installed and rolls forward only when it isn't.
+        -->
+        <RollForward>Major</RollForward>
         <MergeCoverage>true</MergeCoverage>
         <IncludeTestAssembly>true</IncludeTestAssembly>
         <ImportDovetailAssembly>true</ImportDovetailAssembly>
