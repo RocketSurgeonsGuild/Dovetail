@@ -48,7 +48,7 @@ public class ConfigurationSchemaTests(string targetFramework)
         var objSchema = $"lib/obj/Release/{targetFramework}/ConfigurationSchema.json";
         await project.VerifyProjectsAndPackages(objSchema);
 
-        project.ReadPackageFile("lib", "ConfigurationSchema.json").ShouldBe(project.ReadFile(objSchema));
+        await project.ReadPackageFile("lib", "ConfigurationSchema.json").Should().BeEqualTo(project.ReadFile(objSchema));
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public class ConfigurationSchemaTests(string targetFramework)
 
         await project.VerifyProjects(HostSchema);
 
-        project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").ShouldBe(project.ReadFile(HostSchema));
+        await project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 
     [Test]
@@ -118,7 +118,7 @@ public class ConfigurationSchemaTests(string targetFramework)
 
         await project.VerifyPublish("host");
 
-        project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").ShouldBe(project.ReadFile(HostSchema));
+        await project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 
     private async Task<SdkTestProject> CreateHostReferencingPackages()
@@ -135,8 +135,8 @@ public class ConfigurationSchemaTests(string targetFramework)
            .AddFile("lib2/Fragments.cs", SharedFragments);
         var lib1 = await project.PackToLocalFeed("lib1");
         var lib2 = await project.PackToLocalFeed("lib2");
-        lib1.Files.ShouldContain("ConfigurationSchema.json");
-        lib2.Files.ShouldContain("ConfigurationSchema.json");
+        await lib1.Files.Should().Contain("ConfigurationSchema.json");
+        await lib2.Files.Should().Contain("ConfigurationSchema.json");
 
         var host = ProjectCreator
                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
@@ -156,7 +156,7 @@ public class ConfigurationSchemaTests(string targetFramework)
 
         await project.VerifyProjects(HostSchema);
 
-        project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").ShouldBe(project.ReadFile(HostSchema));
+        await project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 
     [Test]
@@ -166,7 +166,7 @@ public class ConfigurationSchemaTests(string targetFramework)
 
         await project.VerifyPublish("host");
 
-        project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").ShouldBe(project.ReadFile(HostSchema));
+        await project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 
     /// <summary>
@@ -183,8 +183,8 @@ public class ConfigurationSchemaTests(string targetFramework)
 
         await project.VerifyBuildWarnings("tests");
 
-        project.ReadFile("tests/obj/appsettings.schema.json").ShouldContain("Unknown key in section \\\"Greetings\\\"");
-        project.ReadFile($"tests/bin/Debug/{targetFramework}/appsettings.schema.json").ShouldBe(project.ReadFile("tests/obj/appsettings.schema.json"));
+        await project.ReadFile("tests/obj/appsettings.schema.json").Should().Contain("Unknown key in section \\\"Greetings\\\"");
+        await project.ReadFile($"tests/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile("tests/obj/appsettings.schema.json"));
     }
 
     /// <summary>
@@ -215,7 +215,7 @@ public class ConfigurationSchemaTests(string targetFramework)
 
         await project.VerifyProjects(HostSchema);
 
-        project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").ShouldBe(project.ReadFile(HostSchema));
+        await project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 
     [Test]
@@ -225,6 +225,6 @@ public class ConfigurationSchemaTests(string targetFramework)
 
         await project.VerifyPublish("host");
 
-        project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").ShouldBe(project.ReadFile(HostSchema));
+        await project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 }

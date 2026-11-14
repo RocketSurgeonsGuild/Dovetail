@@ -15,7 +15,7 @@ namespace Joinery.Dovetail.Serilog.Tests;
 ///     The <c>Serilog:MinimumLevel</c> section of the application's configuration controls the minimum level of the logger and the level of
 ///     each source. Sinks and enrichers are not read from configuration (that takes reflection): the Serilog joints configure them.
 /// </summary>
-public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class SerilogConfigurationTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task The_Default_Minimum_Level_And_Its_Overrides_Are_Read_From_Configuration()
@@ -33,7 +33,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         noisy.Warning("Hidden by the override");
         noisy.Error("Shown from the override");
 
-        MessagesOf(sinkName).ShouldBe(["Shown", "Shown from the override",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown", "Shown from the override",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -49,7 +49,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         logger.Warning("Hidden");
         logger.ForContext(Constants.SourceContextPropertyName, "Chatty.Component").Debug("Shown");
 
-        MessagesOf(sinkName).ShouldBe(["Shown",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -65,7 +65,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         logger.Information("Hidden");
         logger.Warning("Shown");
 
-        MessagesOf(sinkName).ShouldBe(["Shown",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -81,7 +81,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         logger.Information("Hidden");
         logger.Warning("Shown");
 
-        MessagesOf(sinkName).ShouldBe(["Shown",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -97,7 +97,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         logger.Information("Hidden");
         logger.Warning("Shown");
 
-        MessagesOf(sinkName).ShouldBe(["Shown",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -115,7 +115,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         logger.Warning("Hidden by the options");
         logger.Error("Shown");
 
-        MessagesOf(sinkName).ShouldBe(["Shown",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -131,7 +131,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         logger.Debug("Hidden by Serilog's own default");
         logger.Information("Shown");
 
-        MessagesOf(sinkName).ShouldBe(["Shown",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -152,8 +152,8 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
 
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
 
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem().Properties.Keys.ShouldNotContain("FromConfiguration");
-        CapturingSink.Named(configuredSinkName).Events.ShouldBeEmpty();
+        await ( await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem() ).Properties.Keys.Should().NotContain("FromConfiguration");
+        await CapturingSink.Named(configuredSinkName).Events.Should().BeEmpty();
     }
 
     [Test]
@@ -176,7 +176,7 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         logger.Debug("Shown after the change");
         noisy.Warning("Shown after the change too");
 
-        MessagesOf(sinkName).ShouldBe(["Shown after the change", "Shown after the change too",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown after the change", "Shown after the change too",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -191,11 +191,11 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
 
         var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
         configuration["Serilog:MinimumLevel:Default"] = "Loud";
-        Should.NotThrow(configuration.Reload);
+        await Assert.That(configuration.Reload).ThrowsNothing();
         logger.Information("Hidden");
         logger.Warning("Shown");
 
-        MessagesOf(sinkName).ShouldBe(["Shown",]);
+        await MessagesOf(sinkName).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -207,9 +207,9 @@ public class SerilogConfigurationTests() : AutoFakeTest<TestRecord>(TestRecord.C
     [Arguments("Serilog:MinimumLevel:Override:Noisy", "$noisySwitch")]
     public async Task A_Level_That_Is_Not_The_Name_Of_A_Serilog_Level_Fails_The_Build(string key, string value)
     {
-        var exception = await Should.ThrowAsync<Exception>(async () => { using var host = await BuildAsync(new Dictionary<string, string?> { [key] = value, }); });
+        var exception = await ( (Func<Task>)( async () => { using var host = await BuildAsync(new Dictionary<string, string?> { [key] = value, }); } ) ).Should().Throw<Exception>();
 
-        Flatten(exception).ShouldContain(inner => inner.Message.Contains(key, StringComparison.Ordinal) && inner.Message.Contains("not a Serilog level", StringComparison.Ordinal));
+        await Flatten(exception).Should().Contain(inner => inner.Message.Contains(key, StringComparison.Ordinal) && inner.Message.Contains("not a Serilog level", StringComparison.Ordinal));
     }
 
     private static IReadOnlyList<string> MessagesOf(string sinkName) => [.. CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text)];

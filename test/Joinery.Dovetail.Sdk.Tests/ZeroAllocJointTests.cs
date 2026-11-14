@@ -21,7 +21,7 @@ public class ZeroAllocJointTests(string targetFramework)
     {
         using var project = CreateApplication();
 
-        ( await BuildAndReadJoints(project) ).ShouldBeEmpty();
+        await ( await BuildAndReadJoints(project) ).Should().BeEmpty();
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public class ZeroAllocJointTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemPackageReference("ZeroAlloc.Mediator", Version("ZeroAlloc.Mediator")));
 
-        ( await BuildAndReadJoints(project) ).ShouldBeEmpty();
+        await ( await BuildAndReadJoints(project) ).Should().BeEmpty();
     }
 
     [Test]
@@ -41,10 +41,10 @@ public class ZeroAllocJointTests(string targetFramework)
     {
         using var project = CreateApplication(WithMediator);
 
-        ( await BuildAndReadJoints(project) ).ShouldBe([Mediator]);
+        await ( await BuildAndReadJoints(project) ).Should().BeEquivalentTo([Mediator], CollectionOrdering.Matching);
         var joint = ReadJoint(project, Mediator);
-        joint.ShouldContain("var mediator = services.AddMediator();");
-        joint.ShouldNotContain("(mediator)");
+        await joint.Should().Contain("var mediator = services.AddMediator();");
+        await joint.Should().NotContain("(mediator)");
     }
 
     [Test]
@@ -56,12 +56,12 @@ public class ZeroAllocJointTests(string targetFramework)
                   .ItemPackageReference("ZeroAlloc.Mediator.Cache", Version("ZeroAlloc.Mediator.Cache"))
         );
 
-        ( await BuildAndReadJoints(project) ).ShouldBe([Mediator]);
+        await ( await BuildAndReadJoints(project) ).Should().BeEquivalentTo([Mediator], CollectionOrdering.Matching);
         var joint = ReadJoint(project, Mediator);
-        joint.ShouldContain("global::ZeroAlloc.Mediator.Validation.MediatorValidationServiceCollectionExtensions.WithValidation(mediator);");
-        joint.ShouldContain("global::ZeroAlloc.Mediator.Cache.MediatorCacheServiceCollectionExtensions.WithCache(mediator);");
-        joint.ShouldNotContain("WithResilience");
-        joint.ShouldNotContain("WithTelemetry");
+        await joint.Should().Contain("global::ZeroAlloc.Mediator.Validation.MediatorValidationServiceCollectionExtensions.WithValidation(mediator);");
+        await joint.Should().Contain("global::ZeroAlloc.Mediator.Cache.MediatorCacheServiceCollectionExtensions.WithCache(mediator);");
+        await joint.Should().NotContain("WithResilience");
+        await joint.Should().NotContain("WithTelemetry");
     }
 
     [Test]
@@ -69,7 +69,7 @@ public class ZeroAllocJointTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithValidation(app), ValidatedModel);
 
-        ( await BuildAndReadJoints(project) ).ShouldBe([Validators]);
+        await ( await BuildAndReadJoints(project) ).Should().BeEquivalentTo([Validators], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -83,7 +83,7 @@ public class ZeroAllocJointTests(string targetFramework)
             ValidatedModel
         );
 
-        ( await BuildAndReadJoints(project) ).ShouldBe([AspNetCoreValidation]);
+        await ( await BuildAndReadJoints(project) ).Should().BeEquivalentTo([AspNetCoreValidation], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -93,7 +93,7 @@ public class ZeroAllocJointTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithValidation(WithMediator(app).Property(property, "false")), ValidatedModel);
 
-        ( await BuildAndReadJoints(project) ).ShouldBe(expected);
+        await ( await BuildAndReadJoints(project) ).Should().BeEquivalentTo(expected, CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -178,10 +178,10 @@ public class ZeroAllocJointTests(string targetFramework)
 
         var lines = ( await project.Run("app") ).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        lines.ShouldContain("validator=True");
-        lines.ShouldContain("hello dovetail");
-        lines.ShouldNotContain("invalid=hello ");
-        lines.ShouldContain(line => line.StartsWith("invalid threw ", StringComparison.Ordinal));
+        await lines.Should().Contain("validator=True");
+        await lines.Should().Contain("hello dovetail");
+        await lines.Should().NotContain("invalid=hello ");
+        await lines.Should().Contain(line => line.StartsWith("invalid threw ", StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -256,7 +256,7 @@ public class ZeroAllocJointTests(string targetFramework)
 
         var lines = ( await project.Run("app") ).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        lines.ShouldContain(line => line.StartsWith(expected, StringComparison.Ordinal));
+        await lines.Should().Contain(line => line.StartsWith(expected, StringComparison.Ordinal));
     }
 
     private ProjectCreator WithMediator(ProjectCreator project) =>

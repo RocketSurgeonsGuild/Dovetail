@@ -18,11 +18,11 @@ public class RocketHostTests
         var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(12);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(24);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(12);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(24);
 #else
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(8);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(12);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(8);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(12);
 #endif
     }
 
@@ -36,11 +36,11 @@ public class RocketHostTests
         var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(12);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(0);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(12);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(0);
 #else
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(8);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(0);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(8);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(0);
 #endif
     }
 
@@ -54,11 +54,11 @@ public class RocketHostTests
         var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(2);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(24);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(2);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(24);
 #else
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(2);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(12);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(2);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(12);
 #endif
     }
 }

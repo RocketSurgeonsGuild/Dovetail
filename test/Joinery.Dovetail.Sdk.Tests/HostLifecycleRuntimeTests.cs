@@ -75,10 +75,10 @@ public class HostLifecycleRuntimeTests(string targetFramework)
         var lines = ( await project.Run("app") ).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // Each project's handlers run once, through that project's own hosted service: two services, not one shared by both.
-        lines.Count(line => line == "app started").ShouldBe(1);
-        lines.Count(line => line == "app stopped").ShouldBe(1);
-        lines.Count(line => line == "lib started").ShouldBe(1);
-        lines.Count(line => line == "lib stopped").ShouldBe(1);
-        lines.ShouldContain("lifecycle services=2");
+        await lines.Count(line => line == "app started").Should().BeEqualTo(1);
+        await lines.Count(line => line == "app stopped").Should().BeEqualTo(1);
+        await lines.Count(line => line == "lib started").Should().BeEqualTo(1);
+        await lines.Count(line => line == "lib stopped").Should().BeEqualTo(1);
+        await lines.Should().Contain("lifecycle services=2");
     }
 }

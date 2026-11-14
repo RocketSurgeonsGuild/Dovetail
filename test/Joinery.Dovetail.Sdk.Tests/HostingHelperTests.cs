@@ -36,7 +36,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithGenericHost(app));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostLifecycle, HostingContext], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -52,8 +52,8 @@ public class HostingHelperTests(string targetFramework)
            .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe"))
            .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(WithSharedFrameworkHostingContext());
-        GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo(WithSharedFrameworkHostingContext(), CollectionOrdering.Matching);
+        await GeneratedFiles(project, "DovetailHost.*.g.cs").Should().BeEmpty();
     }
 
     [Test]
@@ -61,7 +61,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemInclude("FrameworkReference", "Microsoft.AspNetCore.App"));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailConfigurationSchemaEndpointExtensions", GenericHost, HostLifecycle, HostingContext]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo(["DovetailConfigurationSchemaEndpointExtensions", GenericHost, HostLifecycle, HostingContext], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -69,7 +69,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([HostingContext, "DovetailMauiHelpers"]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([HostingContext, "DovetailMauiHelpers"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -77,7 +77,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WebAssembly(app));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(WithSharedFrameworkHostingContext("DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"));
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo(WithSharedFrameworkHostingContext("DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"), CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WebAssembly(app).Property("LangVersion", "13"));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(["DovetailWebAssemblyHelpers"]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo(["DovetailWebAssemblyHelpers"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -171,10 +171,8 @@ public class HostingHelperTests(string targetFramework)
 
         var helpers = await BuildAndReadHelpers(project);
 
-        helpers.ShouldBe(
-            navigation ? [GenericHost, HostLifecycle, HostingContext, "DovetailUnoHelpers", "DovetailUnoNavigationHelpers"] : [GenericHost, HostLifecycle, HostingContext, "DovetailUnoHelpers"]
-        );
-        GeneratedFiles(project, "DovetailHost.Uno.Navigate.g.cs").ShouldBe(navigation ? ["DovetailHost.Uno.Navigate.g.cs"] : []);
+        await helpers.Should().BeEquivalentTo(navigation ? (string[])[GenericHost, HostLifecycle, HostingContext, "DovetailUnoHelpers", "DovetailUnoNavigationHelpers"] : [GenericHost, HostLifecycle, HostingContext, "DovetailUnoHelpers"], CollectionOrdering.Matching);
+        await GeneratedFiles(project, "DovetailHost.Uno.Navigate.g.cs").Should().BeEquivalentTo(navigation ? (string[])["DovetailHost.Uno.Navigate.g.cs"] : [], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -191,8 +189,8 @@ public class HostingHelperTests(string targetFramework)
            .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.BlazorWebAssembly"))
            .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(WithSharedFrameworkHostingContext());
-        GeneratedFiles(project, "DovetailHost.*.g.cs").ShouldBeEmpty();
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo(WithSharedFrameworkHostingContext(), CollectionOrdering.Matching);
+        await GeneratedFiles(project, "DovetailHost.*.g.cs").Should().BeEmpty();
     }
 
     /// <summary>
@@ -204,7 +202,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithOpenTelemetryHosting(WithDovetailOpenTelemetry(WithGenericHost(app))));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryJoint"]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryJoint"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -212,10 +210,10 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithDovetailOpenTelemetry(WithGenericHost(app)));
 
-        var exception = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("app"));
+        var exception = await ( (Func<Task>)( () => project.BuildProject("app") ) ).Should().Throw<TUnitException>();
 
-        exception.Message.ShouldContain("error CS1029");
-        exception.Message.ShouldContain("Add a PackageReference to OpenTelemetry.Extensions.Hosting");
+        await exception.Message.Should().Contain("error CS1029");
+        await exception.Message.Should().Contain("Add a PackageReference to OpenTelemetry.Extensions.Hosting");
     }
 
     /// <summary>
@@ -229,7 +227,7 @@ public class HostingHelperTests(string targetFramework)
             app => WithDovetailOpenTelemetry(app.ItemPackageReference("Microsoft.Maui.Core", Config.CentralPackageVersion("Microsoft.Maui.Core", targetFramework)))
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([HostingContext, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([HostingContext, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -246,9 +244,7 @@ public class HostingHelperTests(string targetFramework)
             )
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(
-            [GenericHost, HostingContext, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"]
-        );
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostingContext, "DovetailMauiHelpers", "DovetailOpenTelemetryMauiStartJoint", "DovetailOpenTelemetryServicesJoint"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -259,14 +255,12 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithDovetailOpenTelemetry(WebAssembly(app)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(
-            WithSharedFrameworkHostingContext(
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo(WithSharedFrameworkHostingContext(
                 "DovetailOpenTelemetryServicesJoint",
                 "DovetailOpenTelemetryWebAssemblyStartJoint",
                 "DovetailWebAssemblyContextExtensions",
                 "DovetailWebAssemblyHelpers"
-            )
-        );
+            ), CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -278,9 +272,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithOpenTelemetryHosting(WithDovetailOpenTelemetry(WebAssembly(app))));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(
-            [HostingContext, "DovetailOpenTelemetryJoint", "DovetailOpenTelemetryWebAssemblyStartJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"]
-        );
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([HostingContext, "DovetailOpenTelemetryJoint", "DovetailOpenTelemetryWebAssemblyStartJoint", "DovetailWebAssemblyContextExtensions", "DovetailWebAssemblyHelpers"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -292,9 +284,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateApplication(app => WithDovetailOpenTelemetry(Uno(app)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe(
-            [GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryUnoStartJoint", "DovetailUnoHelpers"]
-        );
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryServicesJoint", "DovetailOpenTelemetryUnoStartJoint", "DovetailUnoHelpers"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -311,7 +301,7 @@ public class HostingHelperTests(string targetFramework)
         using var project = new SdkTestProject();
         project.AddProject("app/app.csproj", library);
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostLifecycle, HostingContext], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -323,7 +313,7 @@ public class HostingHelperTests(string targetFramework)
     {
         using var project = CreateSdkApplication(app => WithOpenTelemetryHosting(WithGenericHost(app)));
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryJoint"]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostLifecycle, HostingContext, "DovetailOpenTelemetryJoint"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -335,7 +325,7 @@ public class HostingHelperTests(string targetFramework)
                   .ItemPackageReference("OpenTelemetry", Config.CentralPackageVersion("OpenTelemetry", targetFramework))
         );
 
-        ( await BuildAndReadHelpers(project) ).ShouldBe([GenericHost, HostLifecycle, HostingContext]);
+        await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostLifecycle, HostingContext], CollectionOrdering.Matching);
     }
 
     private ProjectCreator WithGenericHost(ProjectCreator app) =>

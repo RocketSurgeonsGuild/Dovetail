@@ -161,12 +161,12 @@ public sealed class ConfigurationOptionsBindingTests
                 await using var provider = services.BuildServiceProvider();
 
                 var options = provider.GetRequiredService<IOptions<SampleOptions>>().Value;
-                options.Name.ShouldBe("initial");
-                options.Count.ShouldBe(1);
+                await options.Name.Should().BeEqualTo("initial");
+                await options.Count.Should().BeEqualTo(1);
 
                 var monitor = provider.GetRequiredService<IOptionsMonitor<SampleOptions>>();
-                monitor.CurrentValue.Name.ShouldBe("initial");
-                monitor.CurrentValue.Count.ShouldBe(1);
+                await monitor.CurrentValue.Name.Should().BeEqualTo("initial");
+                await monitor.CurrentValue.Count.Should().BeEqualTo(1);
             }
             finally
             {
@@ -201,7 +201,7 @@ public sealed class ConfigurationOptionsBindingTests
                 await using var provider = services.BuildServiceProvider();
 
                 var monitor = provider.GetRequiredService<IOptionsMonitor<SampleOptions>>();
-                monitor.CurrentValue.Name.ShouldBe("initial");
+                await monitor.CurrentValue.Name.Should().BeEqualTo("initial");
 
                 var changeReceived = new TaskCompletionSource<SampleOptions>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using var subscription = monitor.OnChange(
@@ -218,11 +218,11 @@ public sealed class ConfigurationOptionsBindingTests
                 using var timeout = new CancellationTokenSource();
                 var completed = await Task.WhenAny(changeReceived.Task, Task.Delay(TimeSpan.FromSeconds(15), timeout.Token));
                 await timeout.CancelAsync();
-                completed.ShouldBe(changeReceived.Task, "Expected IOptionsMonitor<SampleOptions> to observe the file-system change within the timeout.");
+                await completed.Should().BeEqualTo(changeReceived.Task).Because("Expected IOptionsMonitor<SampleOptions> to observe the file-system change within the timeout.");
 
                 var updated = await changeReceived.Task;
-                updated.Name.ShouldBe("updated");
-                updated.Count.ShouldBe(2);
+                await updated.Name.Should().BeEqualTo("updated");
+                await updated.Count.Should().BeEqualTo(2);
             }
             finally
             {

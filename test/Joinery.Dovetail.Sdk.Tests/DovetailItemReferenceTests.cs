@@ -29,15 +29,15 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var items = ( await project.EvaluateItems("worker", "DovetailJoint", "-t:_DovetailPrepareJointItems") ).ToDictionary(z => z["Identity"]);
 
-        Metadata(items["Bare"], "Namespace").ShouldBe("worker.Joints");
-        Metadata(items["Bare"], "IsAsync").ShouldBe("true");
-        Metadata(items["Bare"], "ParameterName").ShouldBe("", "ParameterName only defaults when there is a ParameterType");
-        Metadata(items["Bare"], "GenericVariance").ShouldBe("", "GenericVariance only defaults when there is a GenericParameter");
-        Metadata(items["Typed"], "ParameterName").ShouldBe("parameter");
-        Metadata(items["Generic"], "GenericVariance").ShouldBe("in");
-        Metadata(items["Explicit"], "Namespace").ShouldBe("Custom.Joints");
-        Metadata(items["Explicit"], "IsAsync").ShouldBe("false");
-        Metadata(items["Explicit"], "ParameterName").ShouldBe("thing");
+        await Metadata(items["Bare"], "Namespace").Should().BeEqualTo("worker.Joints");
+        await Metadata(items["Bare"], "IsAsync").Should().BeEqualTo("true");
+        await Metadata(items["Bare"], "ParameterName").Should().BeEqualTo("").Because("ParameterName only defaults when there is a ParameterType");
+        await Metadata(items["Bare"], "GenericVariance").Should().BeEqualTo("").Because("GenericVariance only defaults when there is a GenericParameter");
+        await Metadata(items["Typed"], "ParameterName").Should().BeEqualTo("parameter");
+        await Metadata(items["Generic"], "GenericVariance").Should().BeEqualTo("in");
+        await Metadata(items["Explicit"], "Namespace").Should().BeEqualTo("Custom.Joints");
+        await Metadata(items["Explicit"], "IsAsync").Should().BeEqualTo("false");
+        await Metadata(items["Explicit"], "ParameterName").Should().BeEqualTo("thing");
     }
 
     /// <summary>
@@ -189,31 +189,31 @@ public class DovetailItemReferenceTests(string targetFramework)
         var objDirectory = Path.Combine(project.Directory, "worker", "obj", "Debug", targetFramework);
         foreach (var asynchronous in new[] { "Minimal", "Wired", "Builder", "Generic", "Covariant", "Chained", "Unprefixed", "Ignored" })
         {
-            File.Exists(Path.Combine(objDirectory, $"DovetailJointAsync.{asynchronous}.g.cs")).ShouldBeTrue($"{asynchronous} is asynchronous");
+            await File.Exists(Path.Combine(objDirectory, $"DovetailJointAsync.{asynchronous}.g.cs")).Should().BeTrue().Because($"{asynchronous} is asynchronous");
         }
 
         foreach (var synchronous in new[] { "SyncOnly", "ChainedSync", "Shouting", "NotTrue" })
         {
-            File.Exists(Path.Combine(objDirectory, $"DovetailJoint.{synchronous}.g.cs")).ShouldBeTrue($"{synchronous} has its joint");
-            File.Exists(Path.Combine(objDirectory, $"DovetailJointAsync.{synchronous}.g.cs")).ShouldBeFalse($"{synchronous} is not asynchronous: IsAsync is not true");
+            await File.Exists(Path.Combine(objDirectory, $"DovetailJoint.{synchronous}.g.cs")).Should().BeTrue().Because($"{synchronous} has its joint");
+            await File.Exists(Path.Combine(objDirectory, $"DovetailJointAsync.{synchronous}.g.cs")).Should().BeFalse().Because($"{synchronous} is not asynchronous: IsAsync is not true");
         }
 
         var unprefixed = File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Unprefixed.g.cs"));
-        unprefixed.ShouldContain("(global::Joinery.Dovetail.IDovetailContext context, Microsoft.Extensions.Logging.ILoggingBuilder builder);");
-        unprefixed.ShouldNotContain("global::Microsoft.Extensions.Logging.ILoggingBuilder");
+        await unprefixed.Should().Contain("(global::Joinery.Dovetail.IDovetailContext context, Microsoft.Extensions.Logging.ILoggingBuilder builder);");
+        await unprefixed.Should().NotContain("global::Microsoft.Extensions.Logging.ILoggingBuilder");
 
         var chainedSync = File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.ChainedSync.g.cs"));
-        chainedSync.ShouldContain("public static void ApplyChainedSync(");
-        chainedSync.ShouldContain("RegisterJointsWithContext(context, ");
-        chainedSync.ShouldNotContain("return global::Joinery.Dovetail.DovetailContextExtensions");
+        await chainedSync.Should().Contain("public static void ApplyChainedSync(");
+        await chainedSync.Should().Contain("RegisterJointsWithContext(context, ");
+        await chainedSync.Should().NotContain("return global::Joinery.Dovetail.DovetailContextExtensions");
 
         var ignored = File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Ignored.g.cs"));
-        ignored.ShouldContain("namespace worker.Joints;");
-        ignored.ShouldNotContain(" thing");
-        ignored.ShouldNotContain("where ");
+        await ignored.Should().Contain("namespace worker.Joints;");
+        await ignored.Should().NotContain(" thing");
+        await ignored.Should().NotContain("where ");
 
-        File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Minimal.g.cs")).ShouldContain("namespace worker.Joints;");
-        File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Builder.g.cs")).ShouldContain("namespace Custom.Joints;");
+        await File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Minimal.g.cs")).Should().Contain("namespace worker.Joints;");
+        await File.ReadAllText(Path.Combine(objDirectory, "DovetailJoint.Builder.g.cs")).Should().Contain("namespace Custom.Joints;");
     }
 
     /// <summary>
@@ -305,22 +305,21 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var objDirectory = Path.Combine(project.Directory, "worker", "obj", "Debug", targetFramework);
         var mine = File.ReadAllText(Path.Combine(objDirectory, "DovetailHost.Mine.g.cs"));
-        mine.ShouldContain("namespace worker;");
-        mine.ShouldContain("return await DovetailMineHelpers.Configure(builder, static b => b.Build(), contextBuilder, cancellationToken);");
-        mine.ShouldContain("internal static partial class GeneratedDovetailMineExtensions");
+        await mine.Should().Contain("namespace worker;");
+        await mine.Should().Contain("return await DovetailMineHelpers.Configure(builder, static b => b.Build(), contextBuilder, cancellationToken);");
+        await mine.Should().Contain("internal static partial class GeneratedDovetailMineExtensions");
 
         var custom = File.ReadAllText(Path.Combine(objDirectory, "DovetailHost.Custom.g.cs"));
-        custom.ShouldContain("namespace Hosts.Custom;");
-        custom.ShouldContain("return await global::worker.CustomHelper.Configure(builder, static b => b.Build(), \"extra\", contextBuilder, cancellationToken);");
-        custom.ShouldNotContain("ignored");
+        await custom.Should().Contain("namespace Hosts.Custom;");
+        await custom.Should().Contain("return await global::worker.CustomHelper.Configure(builder, static b => b.Build(), \"extra\", contextBuilder, cancellationToken);");
+        await custom.Should().NotContain("ignored");
 
-        File.ReadAllText(Path.Combine(objDirectory, "DovetailHost.NoBuild.g.cs"))
-            .ShouldContain("return await global::worker.NoBuildHelper.Configure(builder, contextBuilder, cancellationToken);");
+        await File.ReadAllText(Path.Combine(objDirectory, "DovetailHost.NoBuild.g.cs")).Should().Contain("return await global::worker.NoBuildHelper.Configure(builder, contextBuilder, cancellationToken);");
 
         // One DovetailContextBuilder.Create(), however many hosts there are.
-        File.Exists(Path.Combine(objDirectory, "DovetailContextBuilder.g.cs")).ShouldBeTrue();
-        File.Exists(Path.Combine(objDirectory, "DovetailHost.Mine.Sync.g.cs")).ShouldBeFalse("SyncEntryPoint is not set");
-        File.Exists(Path.Combine(objDirectory, "DovetailHost.Mine.Navigate.g.cs")).ShouldBeFalse("NavigateEntryPoint is not set");
+        await File.Exists(Path.Combine(objDirectory, "DovetailContextBuilder.g.cs")).Should().BeTrue();
+        await File.Exists(Path.Combine(objDirectory, "DovetailHost.Mine.Sync.g.cs")).Should().BeFalse().Because("SyncEntryPoint is not set");
+        await File.Exists(Path.Combine(objDirectory, "DovetailHost.Mine.Navigate.g.cs")).Should().BeFalse().Because("NavigateEntryPoint is not set");
     }
 
     /// <summary>
@@ -337,11 +336,11 @@ public class DovetailItemReferenceTests(string targetFramework)
         );
         project.AddFile("worker/Capture.cs", "namespace Custom.Microsoft { internal sealed class Capture { } }");
 
-        var failure = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("worker"));
+        var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        failure.Message.ShouldContain("CS0234");
-        failure.Message.ShouldContain("DovetailJoint.Captured.g.cs");
-        failure.Message.ShouldNotContain("DovetailJoint.Safe.g.cs");
+        await failure.Message.Should().Contain("CS0234");
+        await failure.Message.Should().Contain("DovetailJoint.Captured.g.cs");
+        await failure.Message.Should().NotContain("DovetailJoint.Safe.g.cs");
     }
 
     /// <summary>
@@ -353,9 +352,9 @@ public class DovetailItemReferenceTests(string targetFramework)
     {
         using var project = CreateProject(J("Generic", "GenericParameter", "T", "GenericVariance", "out", "ParameterType", "T", "ParameterName", "value"));
 
-        var failure = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("worker"));
+        var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        failure.Message.ShouldContain("CS1961");
+        await failure.Message.Should().Contain("CS1961");
     }
 
     /// <summary>
@@ -370,11 +369,11 @@ public class DovetailItemReferenceTests(string targetFramework)
             J("WithServices", "ReturnFirstArgument", "true", "ProvideServices", "true")
         );
 
-        var failure = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("worker"));
+        var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        failure.Message.ShouldContain("CS0029");
-        failure.Message.ShouldContain("ValueTask<Microsoft.Extensions.Logging.ILoggingBuilder>");
-        failure.Message.ShouldContain("ValueTask<Microsoft.Extensions.DependencyInjection.IServiceCollection>");
+        await failure.Message.Should().Contain("CS0029");
+        await failure.Message.Should().Contain("ValueTask<Microsoft.Extensions.Logging.ILoggingBuilder>");
+        await failure.Message.Should().Contain("ValueTask<Microsoft.Extensions.DependencyInjection.IServiceCollection>");
     }
 
     /// <summary>
@@ -386,10 +385,10 @@ public class DovetailItemReferenceTests(string targetFramework)
     {
         using var project = CreateProject(H("Orphan"));
 
-        var failure = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("worker"));
+        var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        failure.Message.ShouldContain("CS0103");
-        failure.Message.ShouldContain("DovetailOrphanHelpers");
+        await failure.Message.Should().Contain("CS0103");
+        await failure.Message.Should().Contain("DovetailOrphanHelpers");
     }
 
     /// <summary>
@@ -401,10 +400,10 @@ public class DovetailItemReferenceTests(string targetFramework)
     {
         using var project = CreateProject(("DovetailHost", "Mine", Pairs(["HelperName", "global::Joinery.Dovetail.DovetailHostApplicationHelpers"])));
 
-        var failure = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("worker"));
+        var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        failure.Message.ShouldContain("CS1001");
-        failure.Message.ShouldContain("DovetailHost.Mine.g.cs");
+        await failure.Message.Should().Contain("CS1001");
+        await failure.Message.Should().Contain("DovetailHost.Mine.g.cs");
     }
 
     /// <summary>
@@ -429,9 +428,9 @@ public class DovetailItemReferenceTests(string targetFramework)
             """
         );
 
-        var failure = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("worker"));
+        var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        failure.Message.ShouldContain("CS0121");
+        await failure.Message.Should().Contain("CS0121");
     }
 
     /// <summary>
@@ -465,23 +464,20 @@ public class DovetailItemReferenceTests(string targetFramework)
         await project.BuildProject("worker");
 
         var objDirectory = Path.Combine(project.Directory, "worker", "obj", "Debug", targetFramework);
-        Directory
+        await Directory
            .EnumerateFiles(objDirectory, "*.g.cs")
            .Select(Path.GetFileName)
            .Where(z => z!.StartsWith("DovetailTemplate.", StringComparison.Ordinal) || z.StartsWith("Contoso.", StringComparison.Ordinal))
-           .Order(StringComparer.Ordinal)
-           .ShouldBe(
-                [
+           .Order(StringComparer.Ordinal).Should().BeEquivalentTo([
                     "Contoso.Prefixed.g.cs",
                     "DovetailTemplate.ForThisHost.g.cs",
                     "DovetailTemplate.NameOnly.g.cs",
                     "DovetailTemplate.PerHost.g.cs",
                     "DovetailTemplate.Plain.g.cs",
                     "DovetailTemplate.Referenced.g.cs",
-                ]
-            );
-        File.ReadAllText(Path.Combine(objDirectory, "DovetailTemplate.PerHost.g.cs")).ShouldContain("// Mine global::System.Object");
-        File.ReadAllText(Path.Combine(objDirectory, "DovetailTemplate.NameOnly.g.cs")).ShouldContain("// {HostName} {HostType}");
+                ], CollectionOrdering.Matching);
+        await File.ReadAllText(Path.Combine(objDirectory, "DovetailTemplate.PerHost.g.cs")).Should().Contain("// Mine global::System.Object");
+        await File.ReadAllText(Path.Combine(objDirectory, "DovetailTemplate.NameOnly.g.cs")).Should().Contain("// {HostName} {HostType}");
     }
 
     /// <summary>
@@ -502,9 +498,9 @@ public class DovetailItemReferenceTests(string targetFramework)
             })
         );
 
-        var failure = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("worker"));
+        var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        failure.Message.ShouldContain($"the template '{mistake}' {message}");
+        await failure.Message.Should().Contain($"the template '{mistake}' {message}");
     }
 
     private SdkTestProject CreateProject(params (string Type, string Name, Dictionary<string, string?> Metadata)[] items)

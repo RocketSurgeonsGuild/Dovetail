@@ -55,11 +55,11 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
     private static string[] Identities(IReadOnlyList<IReadOnlyDictionary<string, string>> segments) =>
         [.. segments.Select(z => WithoutPrivateSymlink(Path.GetFullPath(z["Identity"]))).OrderBy(z => z, StringComparer.Ordinal)];
 
-    private static void ShouldAllMatchTheFilePattern(IReadOnlyList<IReadOnlyDictionary<string, string>> segments)
+    private static async Task ShouldAllMatchTheFilePattern(IReadOnlyList<IReadOnlyDictionary<string, string>> segments)
     {
         foreach (var segment in segments)
         {
-            segment["FilePathPattern"].ShouldBe(FilePathPattern);
+            await segment["FilePathPattern"].Should().BeEqualTo(FilePathPattern);
         }
     }
 
@@ -98,7 +98,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
                .AddProject($"{packageId}/{packageId}.csproj", library)
                .AddFile($"{packageId}/Fragments.cs", ConfigurationSchemaTests.GreetingsFragment);
             var package = await project.PackToLocalFeed(packageId);
-            package.Files.ShouldContain("ConfigurationSchema.json");
+            await package.Files.Should().Contain("ConfigurationSchema.json");
             packages.Add(package);
         }
 
@@ -127,8 +127,8 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
 
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", ResolveReferences);
 
-        Identities(segments).ShouldBe([HostSchemaPath(project, "host")]);
-        ShouldAllMatchTheFilePattern(segments);
+        await Identities(segments).Should().BeEquivalentTo([HostSchemaPath(project, "host")], CollectionOrdering.Matching);
+        await ShouldAllMatchTheFilePattern(segments);
     }
 
     /// <summary>
@@ -142,7 +142,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
 
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", DesignTimeReferences);
 
-        Identities(segments).ShouldBe([HostSchemaPath(project, "host")]);
+        await Identities(segments).Should().BeEquivalentTo([HostSchemaPath(project, "host")], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -153,7 +153,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
 
         var segments = await project.EvaluateItems("tests", "JsonSchemaSegment", ResolveReferences);
 
-        Identities(segments).ShouldBe([HostSchemaPath(project, "tests")]);
+        await Identities(segments).Should().BeEquivalentTo([HostSchemaPath(project, "tests")], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -168,15 +168,15 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", ResolveReferences);
 
         var identities = Identities(segments);
-        identities.ShouldContain(HostSchemaPath(project, "host"));
+        await identities.Should().Contain(HostSchemaPath(project, "host"));
         foreach (var package in packages)
         {
-            identities.Count(z => IsPackageSchema(z, package)).ShouldBe(1);
+            await identities.Count(z => IsPackageSchema(z, package)).Should().BeEqualTo(1);
         }
 
-        identities.Length.ShouldBe(identities.Distinct().Count());
-        ShouldAllMatchTheFilePattern(segments);
-        File.Exists(identities.Single(z => IsPackageSchema(z, packages[0]))).ShouldBeTrue();
+        await identities.Length.Should().BeEqualTo(identities.Distinct().Count());
+        await ShouldAllMatchTheFilePattern(segments);
+        await File.Exists(identities.Single(z => IsPackageSchema(z, packages[0]))).Should().BeTrue();
     }
 
     [Test]
@@ -191,8 +191,8 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", DesignTimeReferences);
 
         var identities = Identities(segments);
-        identities.ShouldContain(HostSchemaPath(project, "host"));
-        identities.Count(z => IsPackageSchema(z, packages[0])).ShouldBe(1);
+        await identities.Should().Contain(HostSchemaPath(project, "host"));
+        await identities.Count(z => IsPackageSchema(z, packages[0])).Should().BeEqualTo(1);
     }
 
     /// <summary>
@@ -208,8 +208,8 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         var segments = await project.EvaluateItems("consumer", "JsonSchemaSegment", ResolveReferences);
 
         var identities = Identities(segments);
-        identities.Count(z => IsPackageSchema(z, packages[0])).ShouldBe(1);
-        identities.ShouldNotContain(HostSchemaPath(project, "consumer"));
+        await identities.Count(z => IsPackageSchema(z, packages[0])).Should().BeEqualTo(1);
+        await identities.Should().NotContain(HostSchemaPath(project, "consumer"));
     }
 
     /// <summary>
@@ -226,15 +226,15 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
 
         // Evaluation alone sees what the package declares...
         var declared = Identities(await project.EvaluateItems("host", "JsonSchemaSegment"));
-        declared.Count(z => IsPackageSchema(z, packages[0])).ShouldBe(1);
-        declared.Count(z => IsPackageSchema(z, packages[1])).ShouldBe(0);
+        await declared.Count(z => IsPackageSchema(z, packages[0])).Should().BeEqualTo(1);
+        await declared.Count(z => IsPackageSchema(z, packages[1])).Should().BeEqualTo(0);
 
         // ...and the build adds only what is missing.
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", ResolveReferences);
         var identities = Identities(segments);
-        identities.Count(z => IsPackageSchema(z, packages[0])).ShouldBe(1);
-        identities.Count(z => IsPackageSchema(z, packages[1])).ShouldBe(1);
-        identities.Length.ShouldBe(3);
+        await identities.Count(z => IsPackageSchema(z, packages[0])).Should().BeEqualTo(1);
+        await identities.Count(z => IsPackageSchema(z, packages[1])).Should().BeEqualTo(1);
+        await identities.Length.Should().BeEqualTo(3);
     }
 
     /// <summary>
@@ -254,7 +254,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
 
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", ResolveReferences);
 
-        Identities(segments).ShouldBe([HostSchemaPath(project, "host")]);
+        await Identities(segments).Should().BeEquivalentTo([HostSchemaPath(project, "host")], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -269,8 +269,8 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", $"{ResolveReferences} -p:DovetailConfigurationSchemaVisualStudio=false");
 
         var identities = Identities(segments);
-        identities.Length.ShouldBe(1);
-        IsPackageSchema(identities[0], packages[0]).ShouldBeTrue();
+        await identities.Length.Should().BeEqualTo(1);
+        await IsPackageSchema(identities[0], packages[0]).Should().BeTrue();
     }
 
     [Test]
@@ -285,7 +285,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         var segments = await project.EvaluateItems("host", "JsonSchemaSegment", $"{ResolveReferences} -p:DovetailConfigurationSchema=false");
 
         var identities = Identities(segments);
-        identities.Length.ShouldBe(1);
-        IsPackageSchema(identities[0], packages[0]).ShouldBeTrue();
+        await identities.Length.Should().BeEqualTo(1);
+        await IsPackageSchema(identities[0], packages[0]).Should().BeTrue();
     }
 }

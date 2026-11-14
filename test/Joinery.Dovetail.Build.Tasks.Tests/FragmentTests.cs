@@ -24,15 +24,15 @@ public class FragmentTests
     [Arguments("Dovetail.ConfigurationSchema.v1:Greetings", """{"definitions":{"Not valid":{}}}""", "definition name")]
     [Arguments("Dovetail.ConfigurationSchema.v1:Greetings", """{"definitions":[]}""", "definitions are not a JSON object")]
     [Arguments("Dovetail.ConfigurationSchema.v1:Greetings", """{"definitions":{"Retry":1}}""", "is not a schema")]
-    public void UnusableEntries_AreRejectedWithAReason(string key, string? value, string reason)
+    public async Task UnusableEntries_AreRejectedWithAReason(string key, string? value, string reason)
     {
-        ConfigurationSchemaFragment.TryParse(key, value, "Library", out var problem).ShouldBeNull();
+        await ConfigurationSchemaFragment.TryParse(key, value, "Library", out var problem).Should().BeNull();
 
-        problem.ShouldNotBeNull().ShouldContain(reason);
+        await ( await problem.Should().NotBeNull() ).Should().Contain(reason);
     }
 
     [Test]
-    public void AFragment_KnowsItsSectionPathAndSource()
+    public async Task AFragment_KnowsItsSectionPathAndSource()
     {
         var fragment = ConfigurationSchemaFragment.TryParse(
             "Dovetail.ConfigurationSchema.v1:Shared:Http",
@@ -41,18 +41,18 @@ public class FragmentTests
             out var problem
         );
 
-        problem.ShouldBeNull();
-        fragment.ShouldNotBeNull();
-        fragment.Path.ShouldBe(["Shared", "Http"]);
-        fragment.Source.ShouldBe("Library");
+        await problem.Should().BeNull();
+        await fragment.Should().NotBeNull();
+        await fragment.Path.Should().BeEquivalentTo(["Shared", "Http"], CollectionOrdering.Matching);
+        await fragment.Source.Should().BeEqualTo("Library");
     }
 
     [Test]
-    public void BooleanSchemas_AreFragmentsToo() =>
-        ConfigurationSchemaFragment.TryParse("Dovetail.ConfigurationSchema.v1:Anything", "true", "Library", out _).ShouldNotBeNull();
+    public async Task BooleanSchemas_AreFragmentsToo() =>
+        await ConfigurationSchemaFragment.TryParse("Dovetail.ConfigurationSchema.v1:Anything", "true", "Library", out _).Should().NotBeNull();
 
     [Test]
-    public void Fragments_AreReadFromAssemblyMetadata_AndUnusableOnesSkippedWithAMessage()
+    public async Task Fragments_AreReadFromAssemblyMetadata_AndUnusableOnesSkippedWithAMessage()
     {
         using var directory = new TemporaryDirectory();
         var assembly = directory.Assembly(
@@ -68,16 +68,16 @@ public class FragmentTests
 
         var fragments = ConfigurationSchemaFragments.Read([assembly, assembly], messages.Add);
 
-        fragments.Select(z => string.Join(":", z.Path)).ShouldBe(["Greetings", "Shared:Http", "Greetings"]);
-        fragments.ShouldAllBe(z => z.Source == "Lib1");
-        messages.Count(z => z.Contains("skipped", StringComparison.Ordinal)).ShouldBe(2);
-        messages.ShouldContain(z => z.Contains("Dovetail.ConfigurationSchema.v2:Future", StringComparison.Ordinal) && z.Contains("unknown version", StringComparison.Ordinal));
-        messages.ShouldContain(z => z.Contains("Dovetail.ConfigurationSchema.v1:Broken", StringComparison.Ordinal) && z.Contains("not valid JSON", StringComparison.Ordinal));
-        messages.ShouldNotContain(z => z.Contains("Some.Other.Key", StringComparison.Ordinal));
+        await fragments.Select(z => string.Join(":", z.Path)).Should().BeEquivalentTo(["Greetings", "Shared:Http", "Greetings"], CollectionOrdering.Matching);
+        await fragments.Should().All(z => z.Source == "Lib1");
+        await messages.Count(z => z.Contains("skipped", StringComparison.Ordinal)).Should().BeEqualTo(2);
+        await messages.Should().Contain(z => z.Contains("Dovetail.ConfigurationSchema.v2:Future", StringComparison.Ordinal) && z.Contains("unknown version", StringComparison.Ordinal));
+        await messages.Should().Contain(z => z.Contains("Dovetail.ConfigurationSchema.v1:Broken", StringComparison.Ordinal) && z.Contains("not valid JSON", StringComparison.Ordinal));
+        await messages.Should().All(z => !z.Contains("Some.Other.Key", StringComparison.Ordinal));
     }
 
     [Test]
-    public void FilesThatArentAssemblies_AreSkippedWithAMessage()
+    public async Task FilesThatArentAssemblies_AreSkippedWithAMessage()
     {
         using var directory = new TemporaryDirectory();
         var notAnAssembly = Path.Combine(directory.Path, "NotAnAssembly.dll");
@@ -87,9 +87,9 @@ public class FragmentTests
 
         var fragments = ConfigurationSchemaFragments.Read([notAnAssembly, missing, directory.Assembly("Lib1")], messages.Add);
 
-        fragments.ShouldBeEmpty();
-        messages.Count.ShouldBe(2);
-        messages.ShouldAllBe(z => z.StartsWith("Dovetail: skipped ", StringComparison.Ordinal));
+        await fragments.Should().BeEmpty();
+        await messages.Count.Should().BeEqualTo(2);
+        await messages.Should().All(z => z.StartsWith("Dovetail: skipped ", StringComparison.Ordinal));
     }
 
     private sealed class TemporaryDirectory : IDisposable

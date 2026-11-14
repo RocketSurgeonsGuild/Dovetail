@@ -287,12 +287,10 @@ public class PackageContentTests(string targetFramework)
 
         var package = await project.PackToLocalFeed("lib");
 
-        package.PackageId.ShouldBe("DovetailPkgTestContoso.Library");
-        package.Files.Where(z => z.StartsWith("contentFiles/", StringComparison.Ordinal)).ShouldBe(
-            [
+        await package.PackageId.Should().BeEqualTo("DovetailPkgTestContoso.Library");
+        await package.Files.Where(z => z.StartsWith("contentFiles/", StringComparison.Ordinal)).Should().BeEquivalentTo([
                 "contentFiles/any/any/configuration/DovetailPkgTestContoso.Library.Development.yaml",
                 "contentFiles/any/any/configuration/DovetailPkgTestContoso.Library.yaml",
-            ]
-        );
+            ], CollectionOrdering.Matching);
     }
 }

@@ -28,8 +28,8 @@ public class FileBasedAppTests(string targetFramework)
 
         var output = await project.RunFile("app/app.cs");
 
-        output.ShouldContain("Serilog=Joinery.Dovetail.Serilog");
-        output.ShouldContain("OpenTelemetry=Joinery.Dovetail.OpenTelemetry");
+        await output.Should().Contain("Serilog=Joinery.Dovetail.Serilog");
+        await output.Should().Contain("OpenTelemetry=Joinery.Dovetail.OpenTelemetry");
     }
 
     /// <summary>
@@ -55,9 +55,9 @@ public class FileBasedAppTests(string targetFramework)
 
         var output = await project.RunFile("app/Build.cs");
 
-        output.ShouldContain("Greeting=from-appsettings");
-        output.ShouldContain("Build.yaml=True");
-        output.ShouldNotContain("Build.cs.yaml");
+        await output.Should().Contain("Greeting=from-appsettings");
+        await output.Should().Contain("Build.yaml=True");
+        await output.Should().NotContain("Build.cs.yaml");
     }
 
     /// <summary>
@@ -97,8 +97,8 @@ public class FileBasedAppTests(string targetFramework)
 
         var output = await project.RunFile("app/Build.cs");
 
-        output.ShouldContain("Greeting=from-local");
-        output.ShouldContain("Copies=0");
+        await output.Should().Contain("Greeting=from-local");
+        await output.Should().Contain("Copies=0");
     }
 
     /// <summary>
@@ -144,8 +144,8 @@ public class FileBasedAppTests(string targetFramework)
 
         var output = await project.RunFile("build/Build.cs", workingDirectory: ".");
 
-        output.ShouldContain("Greeting=from-appsettings");
-        output.ShouldContain("Local=from-local");
+        await output.Should().Contain("Greeting=from-appsettings");
+        await output.Should().Contain("Local=from-local");
     }
 
     /// <summary>
@@ -200,9 +200,9 @@ public class FileBasedAppTests(string targetFramework)
 
         var output = await project.RunFile("app/Build.cs");
 
-        output.ShouldContain("Greeting=from-appsettings");
-        output.ShouldContain($"Build.{extension}=True");
-        output.ShouldNotContain($"Build.cs.{extension}");
+        await output.Should().Contain("Greeting=from-appsettings");
+        await output.Should().Contain($"Build.{extension}=True");
+        await output.Should().NotContain($"Build.cs.{extension}");
     }
 
     /// <summary>
@@ -257,9 +257,9 @@ public class FileBasedAppTests(string targetFramework)
 
         var output = await project.RunFile("app/Build.cs");
 
-        output.ShouldContain("Greeting=from-build");
-        output.ShouldContain($"Build.{extension}=True");
-        output.ShouldNotContain($"Build.cs.{extension}");
+        await output.Should().Contain("Greeting=from-build");
+        await output.Should().Contain($"Build.{extension}=True");
+        await output.Should().NotContain($"Build.cs.{extension}");
     }
 
     private const string PrintGreeting = """

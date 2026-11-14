@@ -18,7 +18,7 @@ namespace Joinery.Dovetail.Serilog.Tests;
 ///     Runtime tests of the logger that applying the Serilog joints produces. Every test builds a real host through <c>ConfigureDovetail</c>
 ///     and looks at what a <see cref="CapturingSink" /> was given, rather than at the registrations.
 /// </summary>
-public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class SerilogLoggerTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task A_Serilog_Joint_Produces_A_Logger_That_Writes_Events()
@@ -29,10 +29,10 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
         var logger = host.Services.GetRequiredService<SerilogILogger>();
         logger.Information("Hello {Name}", "Dovetail");
 
-        var logEvent = EventsOf(sinkName).ShouldHaveSingleItem();
-        logEvent.Level.ShouldBe(LogEventLevel.Information);
-        logEvent.RenderMessage().ShouldBe("Hello \"Dovetail\"");
-        host.Services.GetRequiredService<Logger>().ShouldBeSameAs(logger);
+        var logEvent = await EventsOf(sinkName).Should().HaveSingleItem();
+        await logEvent.Level.Should().BeEqualTo(LogEventLevel.Information);
+        await logEvent.RenderMessage().Should().BeEqualTo("Hello \"Dovetail\"");
+        await host.Services.GetRequiredService<Logger>().Should().BeSameReferenceAs(logger);
     }
 
     [Test]
@@ -41,13 +41,13 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
         var sinkName = NewSinkName();
         using var host = await BuildAsync(configure: rb => rb.ConfigureSerilog((_, _, loggerConfiguration) => loggerConfiguration.WriteTo.Capturing(sinkName)));
 
-        host.Services.GetRequiredService<ILoggerFactory>().ShouldBeOfType<SerilogLoggerFactory>();
+        await Assert.That(host.Services.GetRequiredService<ILoggerFactory>()).IsTypeOf<SerilogLoggerFactory>();
         host.Services.GetRequiredService<ILogger<SerilogLoggerTests>>().LogWarning("Hello {Name}", "Dovetail");
 
-        var logEvent = EventsOf(sinkName).ShouldHaveSingleItem();
-        logEvent.Level.ShouldBe(LogEventLevel.Warning);
-        logEvent.RenderMessage().ShouldBe("Hello \"Dovetail\"");
-        ( (ScalarValue)logEvent.Properties[Constants.SourceContextPropertyName] ).Value.ShouldBe(typeof(SerilogLoggerTests).FullName);
+        var logEvent = await EventsOf(sinkName).Should().HaveSingleItem();
+        await logEvent.Level.Should().BeEqualTo(LogEventLevel.Warning);
+        await logEvent.RenderMessage().Should().BeEqualTo("Hello \"Dovetail\"");
+        await ( (ScalarValue)logEvent.Properties[Constants.SourceContextPropertyName] ).Value.Should().BeEqualTo(typeof(SerilogLoggerTests).FullName);
     }
 
     [Test]
@@ -58,9 +58,9 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
 
         host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Some.Category").LogError("Broken");
 
-        var logEvent = EventsOf(sinkName).ShouldHaveSingleItem();
-        logEvent.Level.ShouldBe(LogEventLevel.Error);
-        ( (ScalarValue)logEvent.Properties[Constants.SourceContextPropertyName] ).Value.ShouldBe("Some.Category");
+        var logEvent = await EventsOf(sinkName).Should().HaveSingleItem();
+        await logEvent.Level.Should().BeEqualTo(LogEventLevel.Error);
+        await ( (ScalarValue)logEvent.Properties[Constants.SourceContextPropertyName] ).Value.Should().BeEqualTo("Some.Category");
     }
 
     [Test]
@@ -76,9 +76,9 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
 
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
 
-        var logEvent = EventsOf(sinkName).ShouldHaveSingleItem();
-        logEvent.Properties.Keys.ShouldContain("First");
-        logEvent.Properties.Keys.ShouldContain("Second");
+        var logEvent = await EventsOf(sinkName).Should().HaveSingleItem();
+        await logEvent.Properties.Keys.Should().Contain("First");
+        await logEvent.Properties.Keys.Should().Contain("Second");
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
     {
         using var host = await BuildAsync(configure: rb => rb.ConfigureSerilog((_, services, _) => services.AddSingleton<RegisteredByAJoint>()));
 
-        host.Services.GetService<RegisteredByAJoint>().ShouldNotBeNull();
+        await host.Services.GetService<RegisteredByAJoint>().Should().NotBeNull();
     }
 
     [Test]
@@ -94,12 +94,12 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
     {
         var sinkName = NewSinkName();
         var builder = Host.CreateApplicationBuilder();
-        ProviderTypes(builder.Services).ShouldContain("Microsoft.Extensions.Logging.Console.ConsoleLoggerProvider", "the host registers its default providers before Dovetail");
+        await ProviderTypes(builder.Services).Should().Contain("Microsoft.Extensions.Logging.Console.ConsoleLoggerProvider").Because("the host registers its default providers before Dovetail");
 
         using var host = await builder.ConfigureDovetail(rb => rb.ConfigureSerilog((_, _, loggerConfiguration) => loggerConfiguration.WriteTo.Capturing(sinkName)));
 
-        ProviderTypes(builder.Services).ShouldBeEmpty();
-        host.Services.GetServices<ILoggerProvider>().ShouldBeEmpty();
+        await ProviderTypes(builder.Services).Should().BeEmpty();
+        await host.Services.GetServices<ILoggerProvider>().Should().BeEmpty();
     }
 
     [Test]
@@ -107,13 +107,13 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
     {
         var sinkName = NewSinkName();
         var builder = WebApplication.CreateBuilder();
-        ProviderTypes(builder.Services).ShouldContain("Microsoft.Extensions.Logging.Console.ConsoleLoggerProvider", "the host registers its default providers before Dovetail");
+        await ProviderTypes(builder.Services).Should().Contain("Microsoft.Extensions.Logging.Console.ConsoleLoggerProvider").Because("the host registers its default providers before Dovetail");
 
         await using var app = await builder.ConfigureDovetail(rb => rb.ConfigureSerilog((_, _, loggerConfiguration) => loggerConfiguration.WriteTo.Capturing(sinkName)));
 
-        ProviderTypes(builder.Services).ShouldBeEmpty();
+        await ProviderTypes(builder.Services).Should().BeEmpty();
         app.Services.GetRequiredService<ILogger<SerilogLoggerTests>>().LogInformation("Hello");
-        EventsOf(sinkName).ShouldHaveSingleItem();
+        await EventsOf(sinkName).Should().HaveSingleItem();
     }
 
     [Test]
@@ -126,11 +126,11 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
         host.Services.GetRequiredService<ILogger<SerilogLoggerTests>>().LogInformation("Hello");
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
 
-        EventsOf(sinkName).Count.ShouldBe(2, "each call writes one event, none are repeated by a second logging provider");
-        builder.Services.Count(descriptor => descriptor.ServiceType == typeof(ILoggerFactory)).ShouldBe(1);
-        builder.Services.Count(descriptor => descriptor.ServiceType == typeof(SerilogILogger)).ShouldBe(1);
-        builder.Services.Count(descriptor => descriptor.ServiceType == typeof(Logger)).ShouldBe(1);
-        builder.Services.Count(descriptor => descriptor.ServiceType == typeof(ILogger<>)).ShouldBe(1);
+        await EventsOf(sinkName).Count.Should().BeEqualTo(2).Because("each call writes one event, none are repeated by a second logging provider");
+        await builder.Services.Count(descriptor => descriptor.ServiceType == typeof(ILoggerFactory)).Should().BeEqualTo(1);
+        await builder.Services.Count(descriptor => descriptor.ServiceType == typeof(SerilogILogger)).Should().BeEqualTo(1);
+        await builder.Services.Count(descriptor => descriptor.ServiceType == typeof(Logger)).Should().BeEqualTo(1);
+        await builder.Services.Count(descriptor => descriptor.ServiceType == typeof(ILogger<>)).Should().BeEqualTo(1);
     }
 
     [Test]
@@ -140,11 +140,11 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
         var host = await BuildAsync(configure: rb => rb.ConfigureSerilog((_, _, loggerConfiguration) => loggerConfiguration.WriteTo.Capturing(sinkName)));
 
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
-        CapturingSink.Named(sinkName).IsDisposed.ShouldBeFalse();
+        await CapturingSink.Named(sinkName).IsDisposed.Should().BeFalse();
 
         host.Dispose();
 
-        CapturingSink.Named(sinkName).IsDisposed.ShouldBeTrue("the container owns the logger, so its sinks are flushed and disposed with the host");
+        await CapturingSink.Named(sinkName).IsDisposed.Should().BeTrue().Because("the container owns the logger, so its sinks are flushed and disposed with the host");
     }
 
     [Test]
@@ -154,8 +154,8 @@ public class SerilogLoggerTests() : AutoFakeTest<TestRecord>(TestRecord.Create()
 
         var logger = host.Services.GetRequiredService<ILogger<SerilogLoggerTests>>();
 
-        Should.NotThrow(() => logger.LogInformation("Hello"));
-        host.Services.GetRequiredService<ILoggerFactory>().ShouldBeOfType<SerilogLoggerFactory>();
+        await Assert.That(() => logger.LogInformation("Hello")).ThrowsNothing();
+        await Assert.That(host.Services.GetRequiredService<ILoggerFactory>()).IsTypeOf<SerilogLoggerFactory>();
     }
 
     private static IReadOnlyList<LogEvent> EventsOf(string sinkName) => CapturingSink.Named(sinkName).Events;

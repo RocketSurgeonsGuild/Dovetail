@@ -23,20 +23,20 @@ public class ConfigurationSchemaIncrementalTests
         var schema = Path.Combine(project.Directory, "host/obj/appsettings.schema.json");
         var output = Path.Combine(project.Directory, $"host/bin/Debug/{TargetFramework}/appsettings.schema.json");
 
-        Merges(await project.BuildProject("host")).ShouldBeTrue();
+        await Merges(await project.BuildProject("host")).Should().BeTrue();
         var written = File.GetLastWriteTimeUtc(schema);
-        File.Exists(output).ShouldBeTrue();
+        await File.Exists(output).Should().BeTrue();
 
-        Merges(await project.BuildProject("host")).ShouldBeFalse();
-        File.GetLastWriteTimeUtc(schema).ShouldBe(written);
+        await Merges(await project.BuildProject("host")).Should().BeFalse();
+        await File.GetLastWriteTimeUtc(schema).Should().BeEqualTo(written);
 
         await project.BuildProject("host", "-p:DovetailConfigurationSchema=false");
-        File.Exists(schema).ShouldBeFalse();
-        File.Exists(output).ShouldBeFalse();
+        await File.Exists(schema).Should().BeFalse();
+        await File.Exists(output).Should().BeFalse();
 
-        Merges(await project.BuildProject("host")).ShouldBeTrue();
-        File.Exists(schema).ShouldBeTrue();
-        File.Exists(output).ShouldBeTrue();
+        await Merges(await project.BuildProject("host")).Should().BeTrue();
+        await File.Exists(schema).Should().BeTrue();
+        await File.Exists(output).Should().BeTrue();
     }
 
     [Test]
@@ -50,12 +50,12 @@ public class ConfigurationSchemaIncrementalTests
         var schema = Path.Combine(project.Directory, $"lib/obj/Debug/{TargetFramework}/ConfigurationSchema.json");
 
         await project.BuildProject("lib");
-        File.Exists(schema).ShouldBeTrue();
+        await File.Exists(schema).Should().BeTrue();
 
         File.Delete(Path.Combine(project.Directory, "lib/Fragments.cs"));
         project.AddFile("lib/Class1.cs", "namespace Lib { public class Class1 { } }");
         await project.BuildProject("lib");
-        File.Exists(schema).ShouldBeFalse();
+        await File.Exists(schema).Should().BeFalse();
     }
 
     private static bool Merges(Microsoft.Build.Logging.StructuredLogger.Build build) => build.FindChildrenRecursive<Microsoft.Build.Logging.StructuredLogger.Task>(z => z.Name == "MergeConfigurationSchema").Count > 0;

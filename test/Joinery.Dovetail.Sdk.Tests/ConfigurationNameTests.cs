@@ -154,19 +154,18 @@ public class ConfigurationNameTests(string targetFramework)
         );
 
         var none = Items(result, "None", "lib");
-        none.Keys.Order(StringComparer.Ordinal).ShouldBe(["lib.Development.yaml", "lib.local.yaml", "lib.yaml"]);
-        none.Values.ShouldAllBe(z => !z.ContainsKey("TargetPath") || z["TargetPath"] == "");
-        none.Values.ShouldAllBe(z => !z.ContainsKey("PackagePath") || z["PackagePath"] == "");
-        Items(result, "EmbeddedResource", "lib").ShouldBeEmpty();
+        await none.Keys.Order(StringComparer.Ordinal).Should().BeEquivalentTo(["lib.Development.yaml", "lib.local.yaml", "lib.yaml"], CollectionOrdering.Matching);
+        await none.Values.Should().All(z => !z.ContainsKey("TargetPath") || z["TargetPath"] == "");
+        await none.Values.Should().All(z => !z.ContainsKey("PackagePath") || z["PackagePath"] == "");
+        await Items(result, "EmbeddedResource", "lib").Should().BeEmpty();
         var properties = result.GetProperty("Properties");
-        File.Exists(
+        await File.Exists(
                 Path.Combine(
                     properties.GetProperty("MSBuildProjectDirectory").GetString()!,
                     properties.GetProperty("IntermediateOutputPath").GetString()!,
                     "Dovetail.YamlConfiguration.g.cs"
                 )
-            )
-           .ShouldBeFalse();
+            ).Should().BeFalse();
     }
 
     /// <summary>
@@ -187,11 +186,9 @@ public class ConfigurationNameTests(string targetFramework)
            .AddFile("lib/lib.yaml", "Greeting: lib")
            .AddFile($"lib/{file}", "Greeting: lib");
 
-        var exception = await Should.ThrowAsync<TUnitException>(() => project.BuildProject("lib"));
+        var exception = await ( (Func<Task>)( () => project.BuildProject("lib") ) ).Should().Throw<TUnitException>();
 
-        exception.Message.ShouldContain(
-            $"error DT0019: Dovetail: '{collidingFile}' and '{collidingAppSettings}' are both copied, packed and embedded as '{collidingFile}'."
-        );
+        await exception.Message.Should().Contain($"error DT0019: Dovetail: '{collidingFile}' and '{collidingAppSettings}' are both copied, packed and embedded as '{collidingFile}'.");
     }
 
     /// <summary>
@@ -212,7 +209,7 @@ public class ConfigurationNameTests(string targetFramework)
 
         var build = await project.BuildProject("lib");
 
-        build.Succeeded.ShouldBeTrue();
+        await build.Succeeded.Should().BeTrue();
     }
 
     private static void AddAppSettings(SdkTestProject project, string directory, string source = "appsettings") =>
@@ -233,20 +230,19 @@ public class ConfigurationNameTests(string targetFramework)
         );
 
         var none = Items(result, "None", source);
-        none.Keys.Order(StringComparer.Ordinal).ShouldBe([$"{source}.Development.yaml", $"{source}.local.yaml", $"{source}.yaml"]);
-        none[$"{source}.yaml"]["TargetPath"].ShouldBe($"{name}.yaml");
-        none[$"{source}.yaml"]["PackagePath"].ShouldBe($"contentFiles/any/any/configuration/{name}.yaml");
-        none[$"{source}.Development.yaml"]["TargetPath"].ShouldBe($"{name}.Development.yaml");
-        none[$"{source}.Development.yaml"]["PackagePath"].ShouldBe($"contentFiles/any/any/configuration/{name}.Development.yaml");
-        none[$"{source}.local.yaml"]["TargetPath"].ShouldBe($"{name}.local.yaml");
-        none[$"{source}.local.yaml"]["Pack"].ShouldBe("false");
+        await none.Keys.Order(StringComparer.Ordinal).Should().BeEquivalentTo([$"{source}.Development.yaml", $"{source}.local.yaml", $"{source}.yaml"], CollectionOrdering.Matching);
+        await none[$"{source}.yaml"]["TargetPath"].Should().BeEqualTo($"{name}.yaml");
+        await none[$"{source}.yaml"]["PackagePath"].Should().BeEqualTo($"contentFiles/any/any/configuration/{name}.yaml");
+        await none[$"{source}.Development.yaml"]["TargetPath"].Should().BeEqualTo($"{name}.Development.yaml");
+        await none[$"{source}.Development.yaml"]["PackagePath"].Should().BeEqualTo($"contentFiles/any/any/configuration/{name}.Development.yaml");
+        await none[$"{source}.local.yaml"]["TargetPath"].Should().BeEqualTo($"{name}.local.yaml");
+        await none[$"{source}.local.yaml"]["Pack"].Should().BeEqualTo("false");
 
-        Items(result, "EmbeddedResource", source)
+        await Items(result, "EmbeddedResource", source)
            .Values
            .Where(z => z.GetValueOrDefault("DovetailConfiguration") == "true")
            .Select(z => z["LogicalName"])
-           .Order(StringComparer.Ordinal)
-           .ShouldBe([$"{name}.Development.yaml", $"{name}.yaml"]);
+           .Order(StringComparer.Ordinal).Should().BeEquivalentTo([$"{name}.Development.yaml", $"{name}.yaml"], CollectionOrdering.Matching);
 
         var properties = result.GetProperty("Properties");
         var joint = await File.ReadAllTextAsync(
@@ -256,10 +252,10 @@ public class ConfigurationNameTests(string targetFramework)
                 "Dovetail.YamlConfiguration.g.cs"
             )
         );
-        joint.ShouldContain($"""builder.AddYamlFile(files, FileName(files, "{name}.yaml", "appsettings.yaml"), optional: false""");
-        joint.ShouldContain($$"""builder.AddYamlFile(files, FileName(files, $"{{name}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true""");
-        joint.ShouldContain($"""builder.AddYamlFile(files, FileName(files, "{name}.local.yaml", "appsettings.local.yaml"), optional: true""");
-        joint.ShouldContain($"""DovetailEmbeddedConfiguration.OpenResource(assembly, "{name}.yaml", "appsettings.yaml")""");
+        await joint.Should().Contain($"""builder.AddYamlFile(files, FileName(files, "{name}.yaml", "appsettings.yaml"), optional: false""");
+        await joint.Should().Contain($$"""builder.AddYamlFile(files, FileName(files, $"{{name}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true""");
+        await joint.Should().Contain($"""builder.AddYamlFile(files, FileName(files, "{name}.local.yaml", "appsettings.local.yaml"), optional: true""");
+        await joint.Should().Contain($"""DovetailEmbeddedConfiguration.OpenResource(assembly, "{name}.yaml", "appsettings.yaml")""");
     }
 
     /// <summary>The <paramref name="itemType"/> items whose file name starts with <paramref name="source"/>, by file name, with their metadata.</summary>

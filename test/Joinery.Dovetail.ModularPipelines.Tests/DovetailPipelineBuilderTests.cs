@@ -1,4 +1,3 @@
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +13,8 @@ public class DovetailPipelineBuilderTests
         await using var pipeline = await Pipeline.CreateBuilder().ConfigureDovetail();
 
         var plan = await pipeline.PlanAsync();
-        plan.Modules.OfType<RecordedModule>().Count().ShouldBe(1);
-        pipeline.Services.GetService<PipelineRecorder>().ShouldNotBeNull();
+        await plan.Modules.OfType<RecordedModule>().Count().Should().BeEqualTo(1);
+        await pipeline.Services.GetService<PipelineRecorder>().Should().NotBeNull();
     }
 
     [Test]
@@ -29,18 +28,18 @@ public class DovetailPipelineBuilderTests
 
         await pipeline.RunAsync();
 
-        pipeline.Services.GetRequiredService<PipelineRecorder>().Ran.ShouldBe([nameof(RecordedModule)]);
+        await pipeline.Services.GetRequiredService<PipelineRecorder>().Ran.Should().BeEquivalentTo([nameof(RecordedModule)], CollectionOrdering.Matching);
     }
 
     [Test]
     public async Task ConfigureDovetail_HandsThePipelineBuilderJointsTheBuilder()
     {
-        var joint = A.Fake<PipelineBuilderJointDelegate>();
+        var joint = Mock.OfDelegate<PipelineBuilderJointDelegate>();
         var builder = Pipeline.CreateBuilder();
 
-        await using var pipeline = await builder.ConfigureDovetail(z => z.ConfigurePipelineBuilder(joint));
+        await using var pipeline = await builder.ConfigureDovetail(z => z.ConfigurePipelineBuilder(joint.Object));
 
-        A.CallTo(() => joint.Invoke(A<IDovetailContext>._, builder)).MustHaveHappenedOnceExactly();
+        joint.Invoke(Any(), Is(builder)).WasCalled(Times.Once);
     }
 
     [Test]
@@ -63,9 +62,9 @@ public class DovetailPipelineBuilderTests
                                                  .ConfigurePipelineBuilder((_, _) => order.Add("sync"), priority: -10)
                                          );
 
-        order.ShouldBe(["sync", "async"]);
+        await order.Should().BeEquivalentTo(["sync", "async"], CollectionOrdering.Matching);
         var plan = await pipeline.PlanAsync();
-        plan.Modules.OfType<DelegateModule>().Count().ShouldBe(1);
+        await plan.Modules.OfType<DelegateModule>().Count().Should().BeEqualTo(1);
     }
 
     [Test]
@@ -79,7 +78,7 @@ public class DovetailPipelineBuilderTests
                                              )
                                          );
 
-        pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].ShouldBe("joined");
+        await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].Should().BeEqualTo("joined");
     }
 
     [Test]
@@ -96,7 +95,7 @@ public class DovetailPipelineBuilderTests
                 z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
             );
 
-            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("file");
+            await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("file");
         }
         finally
         {
@@ -123,8 +122,8 @@ public class DovetailPipelineBuilderTests
             );
 
             var configuration = pipeline.Services.GetRequiredService<IConfiguration>();
-            configuration["Dovetail:FromFile"].ShouldBe("file");
-            configuration["Dovetail:Overridden"].ShouldBe("commandline");
+            await configuration["Dovetail:FromFile"].Should().BeEqualTo("file");
+            await configuration["Dovetail:Overridden"].Should().BeEqualTo("commandline");
         }
         finally
         {
@@ -150,7 +149,7 @@ public class DovetailPipelineBuilderTests
                 z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
             );
 
-            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("entry-point");
+            await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("entry-point");
         }
         finally
         {
@@ -176,7 +175,7 @@ public class DovetailPipelineBuilderTests
                 z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
             );
 
-            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("base-path");
+            await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("base-path");
         }
         finally
         {
@@ -197,7 +196,7 @@ public class DovetailPipelineBuilderTests
 
         await using var pipeline = await Pipeline.CreateBuilder().ConfigureDovetail();
 
-        pipeline.Services.GetRequiredService<IConfiguration>().ShouldNotBeNull();
+        await pipeline.Services.GetRequiredService<IConfiguration>().Should().NotBeNull();
     }
 
     /// <summary>
@@ -227,7 +226,7 @@ public class DovetailPipelineBuilderTests
                 z => z.ConfigureConfiguration((_, configuration) => configuration.AddJsonFile("appsettings.json", optional: false))
             );
 
-            pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("setting");
+            await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("setting");
         }
         finally
         {
@@ -252,11 +251,11 @@ public class DovetailPipelineBuilderTests
     [Test]
     public async Task ConfigureDovetail_HandsTheHostCreatedJointsThePipeline()
     {
-        var joint = A.Fake<HostCreatedJointDelegate<IPipeline>>();
+        var joint = Mock.OfDelegate<HostCreatedJointDelegate<IPipeline>>();
 
-        await using var pipeline = await Pipeline.CreateBuilder().ConfigureDovetail(z => z.ConfigureHostCreated(joint));
+        await using var pipeline = await Pipeline.CreateBuilder().ConfigureDovetail(z => z.ConfigureHostCreated(joint.Object));
 
-        A.CallTo(() => joint.Invoke(A<IDovetailContext>._, pipeline)).MustHaveHappenedOnceExactly();
+        joint.Invoke(Any(), Is(pipeline)).WasCalled(Times.Once);
     }
 
     [Test]
@@ -265,10 +264,10 @@ public class DovetailPipelineBuilderTests
         var plugin = new DovetailPipelinePlugin(DovetailContextBuilder.Create());
         var builder = Pipeline.CreateBuilder().AddPlugin(plugin);
 
-        plugin.Context.ShouldNotBeNull();
-        plugin.Context.Get<PipelineBuilder>().ShouldBeSameAs(builder);
+        await plugin.Context.Should().NotBeNull();
+        await plugin.Context.Get<PipelineBuilder>().Should().BeSameReferenceAs(builder);
         await using var pipeline = await builder.BuildAsync();
         var plan = await pipeline.PlanAsync();
-        plan.Modules.OfType<RecordedModule>().Count().ShouldBe(1);
+        await plan.Modules.OfType<RecordedModule>().Count().Should().BeEqualTo(1);
     }
 }

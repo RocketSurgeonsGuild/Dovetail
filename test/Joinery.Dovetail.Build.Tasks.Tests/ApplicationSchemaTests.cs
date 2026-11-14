@@ -15,47 +15,45 @@ public class ApplicationSchemaTests
     {
         var json = Merge(GreetingsFragment());
 
-        SchemaAssert.ShouldBeWellFormed(json);
+        await SchemaAssert.ShouldBeWellFormed(json);
         await Verify(json, "json");
     }
 
     [Test]
-    public void PropertyNamesPattern_AcceptsAnyCasingAndRejectsTypos()
+    public async Task PropertyNamesPattern_AcceptsAnyCasingAndRejectsTypos()
     {
-        var document = SchemaAssert.ShouldBeWellFormed(Merge(GreetingsFragment()));
+        var document = await SchemaAssert.ShouldBeWellFormed(Merge(GreetingsFragment()));
         var propertyNames = SchemaAssert.Section(document, "Greetings")["propertyNames"]!;
         var pattern = new Regex(propertyNames["pattern"]!.GetValue<string>(), RegexOptions.ECMAScript);
 
-        pattern.IsMatch("Message").ShouldBeTrue();
-        pattern.IsMatch("message").ShouldBeTrue();
-        pattern.IsMatch("MESSAGE").ShouldBeTrue();
-        pattern.IsMatch("mEsSaGe").ShouldBeTrue();
-        pattern.IsMatch("Endpoint").ShouldBeTrue();
-        pattern.IsMatch("Mesage").ShouldBeFalse();
-        pattern.IsMatch("Message2").ShouldBeFalse();
-        pattern.IsMatch("").ShouldBeFalse();
-        propertyNames["patternErrorMessage"]!.GetValue<string>()
-                                             .ShouldBe("Unknown key in section \"Greetings\". Known keys (case-insensitive): Message, Count, Endpoint, Headers, Servers.");
-        propertyNames["doNotSuggest"]!.GetValue<bool>().ShouldBeTrue();
+        await pattern.IsMatch("Message").Should().BeTrue();
+        await pattern.IsMatch("message").Should().BeTrue();
+        await pattern.IsMatch("MESSAGE").Should().BeTrue();
+        await pattern.IsMatch("mEsSaGe").Should().BeTrue();
+        await pattern.IsMatch("Endpoint").Should().BeTrue();
+        await pattern.IsMatch("Mesage").Should().BeFalse();
+        await pattern.IsMatch("Message2").Should().BeFalse();
+        await pattern.IsMatch("").Should().BeFalse();
+        await propertyNames["patternErrorMessage"]!.GetValue<string>().Should().BeEqualTo("Unknown key in section \"Greetings\". Known keys (case-insensitive): Message, Count, Endpoint, Headers, Servers.");
+        await propertyNames["doNotSuggest"]!.GetValue<bool>().Should().BeTrue();
     }
 
     [Test]
-    public void DefinitionsAreClosed_WhileTheRootWrappersAndDictionariesStayOpen()
+    public async Task DefinitionsAreClosed_WhileTheRootWrappersAndDictionariesStayOpen()
     {
-        var document = SchemaAssert.ShouldBeWellFormed(Merge(GreetingsFragment()));
+        var document = await SchemaAssert.ShouldBeWellFormed(Merge(GreetingsFragment()));
         var dovetail = SchemaAssert.DovetailPart(document);
         var greetings = SchemaAssert.Section(document, "Greetings");
         var endpoint = document["definitions"]!["Greetings.Endpoint"]!;
 
-        dovetail.ContainsKey("propertyNames").ShouldBeFalse();
-        greetings["properties"]!["Endpoint"]!.AsObject().ContainsKey("propertyNames").ShouldBeFalse();
-        greetings["properties"]!["Endpoint"]!["allOf"]![0]!["$ref"]!.GetValue<string>().ShouldBe("#/definitions/Greetings.Endpoint");
-        greetings["properties"]!["Headers"]!.AsObject().ContainsKey("propertyNames").ShouldBeFalse();
-        greetings["properties"]!["Servers"]!["items"]!.AsObject().ContainsKey("propertyNames").ShouldBeFalse();
-        endpoint["propertyNames"]!["patternErrorMessage"]!.GetValue<string>()
-                                                          .ShouldBe("Unknown key in \"Endpoint\" (section \"Greetings\"). Known keys (case-insensitive): Url, Timeout.");
-        endpoint.AsObject().ContainsKey("type").ShouldBeFalse();
-        document["definitions"]!["Greetings.Server"]!["propertyNames"].ShouldNotBeNull();
+        await dovetail.ContainsKey("propertyNames").Should().BeFalse();
+        await greetings["properties"]!["Endpoint"]!.AsObject().ContainsKey("propertyNames").Should().BeFalse();
+        await greetings["properties"]!["Endpoint"]!["allOf"]![0]!["$ref"]!.GetValue<string>().Should().BeEqualTo("#/definitions/Greetings.Endpoint");
+        await greetings["properties"]!["Headers"]!.AsObject().ContainsKey("propertyNames").Should().BeFalse();
+        await greetings["properties"]!["Servers"]!["items"]!.AsObject().ContainsKey("propertyNames").Should().BeFalse();
+        await endpoint["propertyNames"]!["patternErrorMessage"]!.GetValue<string>().Should().BeEqualTo("Unknown key in \"Endpoint\" (section \"Greetings\"). Known keys (case-insensitive): Url, Timeout.");
+        await endpoint.AsObject().ContainsKey("type").Should().BeFalse();
+        await document["definitions"]!["Greetings.Server"]!["propertyNames"].Should().NotBeNull();
     }
 
     [Test]
@@ -68,10 +66,10 @@ public class ApplicationSchemaTests
             Parse("Tree", Section("Tree", Properties(("Root", Uses("Node"))), Definitions(("Node", Definition(Properties(("Name", String()), ("Children", ArrayOf(Uses("Node")))))))))
         );
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        SchemaAssert.DovetailDefinitions(document).Select(z => z.Key).ShouldBe(["Grpc", "Grpc.Retry", "Http", "Http.Retry", "Tree", "Tree.Node"]);
-        document["definitions"]!["Tree.Node"]!["properties"]!["Children"]!["items"]!["allOf"]![0]!["$ref"]!.GetValue<string>().ShouldBe("#/definitions/Tree.Node");
-        SchemaAssert.Objects(SchemaAssert.DovetailPart(document)["properties"]).ShouldAllBe(z => !z.ContainsKey("definitions"));
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await SchemaAssert.DovetailDefinitions(document).Select(z => z.Key).Should().BeEquivalentTo(["Grpc", "Grpc.Retry", "Http", "Http.Retry", "Tree", "Tree.Node"], CollectionOrdering.Matching);
+        await document["definitions"]!["Tree.Node"]!["properties"]!["Children"]!["items"]!["allOf"]![0]!["$ref"]!.GetValue<string>().Should().BeEqualTo("#/definitions/Tree.Node");
+        await SchemaAssert.Objects(SchemaAssert.DovetailPart(document)["properties"]).Should().All(z => !z.ContainsKey("definitions"));
         await Verify(json, "json");
     }
 
@@ -83,11 +81,10 @@ public class ApplicationSchemaTests
             Parse("shared", Section("shared", Properties(("Retries", Integer()), ("Backoff", String()))), source: "Lib2")
         );
 
-        var shared = SchemaAssert.Section(SchemaAssert.ShouldBeWellFormed(json), "Shared");
-        shared["type"]!.GetValue<string>().ShouldBe("object");
-        shared["allOf"]!.AsArray().ShouldAllBe(z => !z!.AsObject().ContainsKey("propertyNames"));
-        shared["propertyNames"]!["patternErrorMessage"]!.GetValue<string>()
-                                                        .ShouldBe("Unknown key in section \"Shared\". Known keys (case-insensitive): Timeout, BaseAddress, Retries, Backoff.");
+        var shared = SchemaAssert.Section(await SchemaAssert.ShouldBeWellFormed(json), "Shared");
+        await shared["type"]!.GetValue<string>().Should().BeEqualTo("object");
+        await shared["allOf"]!.AsArray().Should().All(z => !z!.AsObject().ContainsKey("propertyNames"));
+        await shared["propertyNames"]!["patternErrorMessage"]!.GetValue<string>().Should().BeEqualTo("Unknown key in section \"Shared\". Known keys (case-insensitive): Timeout, BaseAddress, Retries, Backoff.");
         await Verify(json, "json");
     }
 
@@ -100,27 +97,26 @@ public class ApplicationSchemaTests
             Parse("Shared", Section("Shared", Properties(("Retry", Uses("Retry"))), Definitions(("Retry", Definition(Properties(("Backoff", String())))))), source: "Lib2")
         );
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
         var retry = SchemaAssert.Section(document, "Shared", "Retry");
-        retry["propertyNames"]!["patternErrorMessage"]!.GetValue<string>()
-                                                       .ShouldBe("Unknown key in section \"Shared:Retry\". Known keys (case-insensitive): Attempts, Backoff.");
-        document["definitions"]!["Shared.Retry"]!.AsObject().ContainsKey("propertyNames").ShouldBeFalse();
-        document["definitions"]!["Shared.Retry.2"]!.AsObject().ContainsKey("propertyNames").ShouldBeFalse();
+        await retry["propertyNames"]!["patternErrorMessage"]!.GetValue<string>().Should().BeEqualTo("Unknown key in section \"Shared:Retry\". Known keys (case-insensitive): Attempts, Backoff.");
+        await document["definitions"]!["Shared.Retry"]!.AsObject().ContainsKey("propertyNames").Should().BeFalse();
+        await document["definitions"]!["Shared.Retry.2"]!.AsObject().ContainsKey("propertyNames").Should().BeFalse();
         await Verify(json, "json");
     }
 
     [Test]
-    public void OverlappingSections_WithTheSameTypeForAKey_KeepItsDefinitionsClosed()
+    public async Task OverlappingSections_WithTheSameTypeForAKey_KeepItsDefinitionsClosed()
     {
         var json = Merge(
             Parse("Shared", Section("Shared", Properties(("Timeout", Integer()), ("Retry", Uses("Retry"))), Definitions(("Retry", Definition(Properties(("Attempts", Integer())))))), source: "Lib1"),
             Parse("Shared", Section("Shared", Properties(("Enabled", Boolean()), ("Retry", Uses("Retry", description: "How to retry."))), Definitions(("Retry", Definition(Properties(("Attempts", Integer())))))), source: "Lib2")
         );
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        document["definitions"]!["Shared.Retry"]!["propertyNames"].ShouldNotBeNull();
-        document["definitions"]!["Shared.Retry.2"]!["propertyNames"].ShouldNotBeNull();
-        SchemaAssert.Section(document, "Shared", "Retry")["allOf"]!.AsArray().Count.ShouldBe(2);
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await document["definitions"]!["Shared.Retry"]!["propertyNames"].Should().NotBeNull();
+        await document["definitions"]!["Shared.Retry.2"]!["propertyNames"].Should().NotBeNull();
+        await SchemaAssert.Section(document, "Shared", "Retry")["allOf"]!.AsArray().Count.Should().BeEqualTo(2);
     }
 
     [Test]
@@ -131,11 +127,10 @@ public class ApplicationSchemaTests
             Parse("Shared:Http", Section("Shared:Http", Properties(("Retries", Integer()))), source: "Lib2")
         );
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
         var http = SchemaAssert.Section(document, "Shared", "Http");
-        http["propertyNames"]!["patternErrorMessage"]!.GetValue<string>()
-                                                      .ShouldBe("Unknown key in section \"Shared:Http\". Known keys (case-insensitive): Timeout, Retries.");
-        document["definitions"]!["Shared.Http"]!.AsObject().ContainsKey("propertyNames").ShouldBeFalse();
+        await http["propertyNames"]!["patternErrorMessage"]!.GetValue<string>().Should().BeEqualTo("Unknown key in section \"Shared:Http\". Known keys (case-insensitive): Timeout, Retries.");
+        await document["definitions"]!["Shared.Http"]!.AsObject().ContainsKey("propertyNames").Should().BeFalse();
         await Verify(json, "json");
     }
 
@@ -147,29 +142,29 @@ public class ApplicationSchemaTests
             Parse("Shared:Grpc", Section("Shared:Grpc", Properties(("Port", Integer()))))
         );
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        SchemaAssert.DovetailPart(document).ContainsKey("propertyNames").ShouldBeFalse();
-        SchemaAssert.Section(document, "Shared").ContainsKey("propertyNames").ShouldBeFalse();
-        SchemaAssert.Section(document, "Shared", "Http")["propertyNames"].ShouldNotBeNull();
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await SchemaAssert.DovetailPart(document).ContainsKey("propertyNames").Should().BeFalse();
+        await SchemaAssert.Section(document, "Shared").ContainsKey("propertyNames").Should().BeFalse();
+        await SchemaAssert.Section(document, "Shared", "Http")["propertyNames"].Should().NotBeNull();
         await Verify(json, "json");
     }
 
     [Test]
-    public void IdenticalFragments_AreMergedOnce()
+    public async Task IdenticalFragments_AreMergedOnce()
     {
         var json = Merge(
             Parse("Greetings", GreetingsSection(), source: "Lib1"),
             Parse("Greetings", GreetingsSection(), source: "Lib2")
         );
 
-        SchemaAssert.ShouldBeWellFormed(json);
-        json.ShouldBe(Merge(Parse("Greetings", GreetingsSection(), source: "Lib1")));
+        await SchemaAssert.ShouldBeWellFormed(json);
+        await json.Should().BeEqualTo(Merge(Parse("Greetings", GreetingsSection(), source: "Lib1")));
     }
 
     [Test]
-    public void TheMergedSection_IsSpelledTheOrdinalSmallestWay()
+    public async Task TheMergedSection_IsSpelledTheOrdinalSmallestWay()
     {
-        var document = SchemaAssert.ShouldBeWellFormed(
+        var document = await SchemaAssert.ShouldBeWellFormed(
             Merge(
                 Parse("greetings", Section("greetings", Properties(("message", String()))), source: "Lib1"),
                 Parse("Greetings", Section("Greetings", Properties(("Message", String()))), source: "Lib2")
@@ -177,12 +172,12 @@ public class ApplicationSchemaTests
         );
 
         var properties = SchemaAssert.DovetailPart(document)["properties"]!.AsObject();
-        properties.Select(z => z.Key).ShouldBe(["Greetings"]);
-        SchemaAssert.Section(document, "Greetings")["propertyNames"]!["patternErrorMessage"]!.GetValue<string>().ShouldEndWith("Known keys (case-insensitive): Message.");
+        await properties.Select(z => z.Key).Should().BeEquivalentTo(["Greetings"], CollectionOrdering.Matching);
+        await SchemaAssert.Section(document, "Greetings")["propertyNames"]!["patternErrorMessage"]!.GetValue<string>().Should().EndWith("Known keys (case-insensitive): Message.");
     }
 
     [Test]
-    public void TheOutput_DoesNotDependOnTheOrderOfFragments()
+    public async Task TheOutput_DoesNotDependOnTheOrderOfFragments()
     {
         ConfigurationSchemaFragment[] fragments =
         [
@@ -192,18 +187,18 @@ public class ApplicationSchemaTests
             Parse("Shared:Http", Section("Shared:Http", Properties(("Timeout", Integer()))), source: "Lib3"),
         ];
         var expected = Merge(fragments);
-        SchemaAssert.ShouldBeWellFormed(expected);
+        await SchemaAssert.ShouldBeWellFormed(expected);
 
         foreach (var permutation in Permutations(fragments))
         {
-            Merge(permutation).ShouldBe(expected);
+            await Merge(permutation).Should().BeEqualTo(expected);
         }
     }
 
     [Test]
-    public void NotStrict_LeavesEverySectionAndDefinitionOpen()
+    public async Task NotStrict_LeavesEverySectionAndDefinitionOpen()
     {
-        var document = SchemaAssert.ShouldBeWellFormed(
+        var document = await SchemaAssert.ShouldBeWellFormed(
             ConfigurationSchemaDocument.Serialize(
                 ConfigurationSchemaDocument.CreateApplicationSchema(
                     [
@@ -217,61 +212,60 @@ public class ApplicationSchemaTests
             )
         );
 
-        SchemaAssert.Objects(document).ShouldAllBe(z => !z.ContainsKey("propertyNames"));
-        SchemaAssert.DovetailDefinitions(document).ShouldNotBeEmpty();
+        await SchemaAssert.Objects(document).Should().All(z => !z.ContainsKey("propertyNames"));
+        await SchemaAssert.DovetailDefinitions(document).Should().NotBeEmpty();
     }
 
     [Test]
-    public void FragmentTwinsSpelledDifferently_AreStillReplacedWhenTheirKeyIsMerged()
+    public async Task FragmentTwinsSpelledDifferently_AreStillReplacedWhenTheirKeyIsMerged()
     {
         // A twin pattern that isn't the one Dovetail builds itself is matched against the keys instead.
         var shared = """
                      {"type":"object","properties":{"Http":{"type":"object","properties":{"Timeout":{"type":"integer"}}}},
                       "patternProperties":{"^[Hh][Tt][Tt][Pp]$":{"type":"object","properties":{"Timeout":{"type":"integer"}}}}}
                      """;
-        var document = SchemaAssert.ShouldBeWellFormed(
+        var document = await SchemaAssert.ShouldBeWellFormed(
             Merge(Parse("Shared", shared, source: "Lib1"), Parse("Shared:Http", Section("Shared:Http", Properties(("Retries", Integer()))), source: "Lib2"))
         );
 
         var patternProperties = SchemaAssert.Section(document, "Shared")["patternProperties"]!.AsObject();
-        patternProperties.Select(z => z.Key).ShouldBe([CaseInsensitivePattern.For("Http")]);
+        await patternProperties.Select(z => z.Key).Should().BeEquivalentTo([CaseInsensitivePattern.For("Http")], CollectionOrdering.Matching);
     }
 
     [Test]
-    public void InlineNestedObjects_AreClosedToo()
+    public async Task InlineNestedObjects_AreClosedToo()
     {
         // Hand-written fragments may nest objects inline rather than through definitions.
-        var document = SchemaAssert.ShouldBeWellFormed(
+        var document = await SchemaAssert.ShouldBeWellFormed(
             Merge(Parse("Greetings", """{"type":"object","properties":{"Endpoint":{"type":"object","properties":{"Url":{"type":"string"}}}}}"""))
         );
 
-        SchemaAssert.Section(document, "Greetings", "Endpoint")["propertyNames"]!["patternErrorMessage"]!
-                    .GetValue<string>()
-                    .ShouldBe("Unknown key in section \"Greetings:Endpoint\". Known keys (case-insensitive): Url.");
+        await SchemaAssert.Section(document, "Greetings", "Endpoint")["propertyNames"]!["patternErrorMessage"]!
+                    .GetValue<string>().Should().BeEqualTo("Unknown key in section \"Greetings:Endpoint\". Known keys (case-insensitive): Url.");
     }
 
     [Test]
-    public void SchemaStore_IsEmbeddedUnderItsOwnDefinition_WithItsReferencesRelocated()
+    public async Task SchemaStore_IsEmbeddedUnderItsOwnDefinition_WithItsReferencesRelocated()
     {
         var json = ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema([GreetingsFragment()], strict: true, includeSchemaStore: true));
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        document.ContainsKey("title").ShouldBeFalse();
-        document["$schema"]!.GetValue<string>().ShouldBe("http://json-schema.org/draft-07/schema#");
-        document["$comment"]!.GetValue<string>().ShouldContain("Apache License 2.0");
-        document["allOf"]![0]!.ToJsonString().ShouldBe("""{"$ref":"#/definitions/SchemaStoreAppSettings"}""");
-        document["definitions"]!.AsObject().Select(z => z.Key).ShouldBe(["SchemaStoreAppSettings", "Greetings", "Greetings.Endpoint", "Greetings.Server"]);
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await document.ContainsKey("title").Should().BeFalse();
+        await document["$schema"]!.GetValue<string>().Should().BeEqualTo("http://json-schema.org/draft-07/schema#");
+        await document["$comment"]!.GetValue<string>().Should().Contain("Apache License 2.0");
+        await document["allOf"]![0]!.ToJsonString().Should().BeEqualTo("""{"$ref":"#/definitions/SchemaStoreAppSettings"}""");
+        await document["definitions"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(["SchemaStoreAppSettings", "Greetings", "Greetings.Endpoint", "Greetings.Server"], CollectionOrdering.Matching);
 
         var embedded = document["definitions"]!["SchemaStoreAppSettings"]!.AsObject();
-        embedded.ContainsKey("$schema").ShouldBeFalse();
-        embedded.ContainsKey("$id").ShouldBeFalse();
-        embedded.ContainsKey("title").ShouldBeFalse();
-        embedded["properties"]!["Logging"].ShouldNotBeNull();
+        await embedded.ContainsKey("$schema").Should().BeFalse();
+        await embedded.ContainsKey("$id").Should().BeFalse();
+        await embedded.ContainsKey("title").Should().BeFalse();
+        await embedded["properties"]!["Logging"].Should().NotBeNull();
 
         // The same references as the pinned copy of SchemaStore's file, each pointing into the definition.
         using var pinned = typeof(SchemaStoreAppSettings).Assembly.GetManifestResourceStream("Joinery.Dovetail.Build.Tasks.SchemaStore.appsettings.json")!;
         var original = JsonNode.Parse(pinned)!;
-        SchemaAssert.References(embedded).ShouldBe(SchemaAssert.References(original).Select(z => "#/definitions/SchemaStoreAppSettings" + z[1..]));
+        await SchemaAssert.References(embedded).Should().BeEquivalentTo(SchemaAssert.References(original).Select(z => "#/definitions/SchemaStoreAppSettings" + z[1..]), CollectionOrdering.Matching);
     }
 
     [Test]
@@ -279,19 +273,19 @@ public class ApplicationSchemaTests
     {
         var json = ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema([], strict: true, includeSchemaStore: true));
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        document["allOf"]![1]!.ToJsonString().ShouldBe("""{"type":"object","properties":{}}""");
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await document["allOf"]![1]!.ToJsonString().Should().BeEqualTo("""{"type":"object","properties":{}}""");
         document["definitions"]!["SchemaStoreAppSettings"] = "{SchemaStore}";
         await Verify(ConfigurationSchemaDocument.Serialize(document), "json");
     }
 
     [Test]
-    public void TheMetaSchemaCheck_RejectsInvalidSchemas()
+    public async Task TheMetaSchemaCheck_RejectsInvalidSchemas()
     {
-        SchemaAssert.IsValidDraft07("""{"type":"object","properties":{"Message":{"type":"string"}}}""").ShouldBeTrue();
-        SchemaAssert.IsValidDraft07("""{"type":12}""").ShouldBeFalse();
-        SchemaAssert.IsValidDraft07("""{"properties":{"Message":"string"}}""").ShouldBeFalse();
-        SchemaAssert.IsValidDraft07("""{"required":"Message"}""").ShouldBeFalse();
+        await SchemaAssert.IsValidDraft07("""{"type":"object","properties":{"Message":{"type":"string"}}}""").Should().BeTrue();
+        await SchemaAssert.IsValidDraft07("""{"type":12}""").Should().BeFalse();
+        await SchemaAssert.IsValidDraft07("""{"properties":{"Message":"string"}}""").Should().BeFalse();
+        await SchemaAssert.IsValidDraft07("""{"required":"Message"}""").Should().BeFalse();
     }
 
     internal static ConfigurationSchemaFragment GreetingsFragment() => Parse("Greetings", GreetingsSection(), source: "Greetings");

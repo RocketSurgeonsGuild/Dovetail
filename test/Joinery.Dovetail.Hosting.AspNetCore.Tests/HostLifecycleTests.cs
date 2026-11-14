@@ -27,7 +27,7 @@ public class HostLifecycleTests
                .OnHostStopped(_ => moments.Add("stopped"))
         );
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -67,7 +67,7 @@ public class HostLifecycleTests
                 )
         );
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -107,7 +107,7 @@ public class HostLifecycleTests
                 )
         );
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -124,7 +124,7 @@ public class HostLifecycleTests
 
         await RunAsync(builder);
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -134,7 +134,7 @@ public class HostLifecycleTests
 
         await RunAsync(CreateBuilder().OnHostStarted(provider => environment = provider.GetRequiredService<IWebHostEnvironment>()));
 
-        environment.ShouldNotBeNull();
+        await environment.Should().NotBeNull();
     }
 
     [Test]
@@ -163,7 +163,7 @@ public class HostLifecycleTests
                 )
         );
 
-        finished.Order().ShouldBe(["first", "second"]);
+        await finished.Order().Should().BeEquivalentTo(["first", "second"], CollectionOrdering.Matching);
     }
 
     private static WebApplicationBuilder CreateBuilder()

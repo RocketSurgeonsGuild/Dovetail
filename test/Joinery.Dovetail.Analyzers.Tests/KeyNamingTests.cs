@@ -45,28 +45,16 @@ public class KeyNamingTests
     ];
 
     [Test]
-    public Task Camel_matches_JsonNamingPolicy_on_the_corpus()
-    {
-        Mismatches(Corpus, KeyNaming.Camel, JsonNamingPolicy.CamelCase).ShouldBeEmpty();
-        return Task.CompletedTask;
-    }
+    public async Task Camel_matches_JsonNamingPolicy_on_the_corpus() => await Mismatches(Corpus, KeyNaming.Camel, JsonNamingPolicy.CamelCase).Should().BeEmpty();
 
     [Test]
-    public Task Dash_matches_JsonNamingPolicy_on_the_corpus()
-    {
-        Mismatches(Corpus, KeyNaming.Dash, JsonNamingPolicy.KebabCaseLower).ShouldBeEmpty();
-        return Task.CompletedTask;
-    }
+    public async Task Dash_matches_JsonNamingPolicy_on_the_corpus() => await Mismatches(Corpus, KeyNaming.Dash, JsonNamingPolicy.KebabCaseLower).Should().BeEmpty();
 
     [Test]
-    public Task Underscore_matches_JsonNamingPolicy_on_the_corpus()
-    {
-        Mismatches(Corpus, KeyNaming.Underscore, JsonNamingPolicy.SnakeCaseLower).ShouldBeEmpty();
-        return Task.CompletedTask;
-    }
+    public async Task Underscore_matches_JsonNamingPolicy_on_the_corpus() => await Mismatches(Corpus, KeyNaming.Underscore, JsonNamingPolicy.SnakeCaseLower).Should().BeEmpty();
 
     [Test]
-    public Task Camel_dash_and_underscore_match_JsonNamingPolicy_on_generated_names()
+    public async Task Camel_dash_and_underscore_match_JsonNamingPolicy_on_generated_names()
     {
         // A fixed seed keeps a failure reproducible.
         var random = new Random(20260101);
@@ -83,10 +71,9 @@ public class KeyNamingTests
             names.Add(builder.ToString());
         }
 
-        Mismatches(names, KeyNaming.Camel, JsonNamingPolicy.CamelCase).ShouldBeEmpty();
-        Mismatches(names, KeyNaming.Dash, JsonNamingPolicy.KebabCaseLower).ShouldBeEmpty();
-        Mismatches(names, KeyNaming.Underscore, JsonNamingPolicy.SnakeCaseLower).ShouldBeEmpty();
-        return Task.CompletedTask;
+        await Mismatches(names, KeyNaming.Camel, JsonNamingPolicy.CamelCase).Should().BeEmpty();
+        await Mismatches(names, KeyNaming.Dash, JsonNamingPolicy.KebabCaseLower).Should().BeEmpty();
+        await Mismatches(names, KeyNaming.Underscore, JsonNamingPolicy.SnakeCaseLower).Should().BeEmpty();
     }
 
     [Test]
@@ -106,15 +93,14 @@ public class KeyNamingTests
     [Arguments("Greetings", "Greetings", "greetings", "greetings", "greetings")]
     [Arguments("HttpClient", "HttpClient", "httpClient", "http-client", "http_client")]
     [Arguments("OpenAI", "OpenAI", "openAI", "open-ai", "open_ai")]
-    public Task Spells_names_in_each_style(string name, string pascal, string camel, string dash, string underscore)
+    public async Task Spells_names_in_each_style(string name, string pascal, string camel, string dash, string underscore)
     {
         // Undefined keeps the declared name; Pascal only upper-cases its first letter.
-        KeyNaming.Apply(name, KeyStyle.Undefined).ShouldBe(name);
-        KeyNaming.Apply(name, KeyStyle.Pascal).ShouldBe(pascal);
-        KeyNaming.Apply(name, KeyStyle.Camel).ShouldBe(camel);
-        KeyNaming.Apply(name, KeyStyle.Dash).ShouldBe(dash);
-        KeyNaming.Apply(name, KeyStyle.Underscore).ShouldBe(underscore);
-        return Task.CompletedTask;
+        await KeyNaming.Apply(name, KeyStyle.Undefined).Should().BeEqualTo(name);
+        await KeyNaming.Apply(name, KeyStyle.Pascal).Should().BeEqualTo(pascal);
+        await KeyNaming.Apply(name, KeyStyle.Camel).Should().BeEqualTo(camel);
+        await KeyNaming.Apply(name, KeyStyle.Dash).Should().BeEqualTo(dash);
+        await KeyNaming.Apply(name, KeyStyle.Underscore).Should().BeEqualTo(underscore);
     }
 
     private static string[] Mismatches(IEnumerable<string> names, Func<string, string> actual, JsonNamingPolicy expected) =>

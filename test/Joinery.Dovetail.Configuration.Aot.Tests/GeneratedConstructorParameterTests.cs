@@ -24,8 +24,8 @@ public sealed class GeneratedConstructorParameterTests
 
         var joint = ( await builder.CreateAsync() ).Joints.OfType<GeneratedGreetingJoint>().Single();
 
-        joint.Greeting.ShouldBe("hello");
-        joint.Repeat.ShouldBe(3);
+        await joint.Greeting.Should().BeEqualTo("hello");
+        await joint.Repeat.Should().BeEqualTo(3);
     }
 
     [Test]
@@ -35,8 +35,8 @@ public sealed class GeneratedConstructorParameterTests
 
         var joint = ( await builder.CreateAsync() ).Joints.OfType<GeneratedGreetingJoint>().Single();
 
-        joint.Greeting.ShouldBe("none");
-        joint.Repeat.ShouldBe(1);
+        await joint.Greeting.Should().BeEqualTo("none");
+        await joint.Repeat.Should().BeEqualTo(1);
     }
 }
 

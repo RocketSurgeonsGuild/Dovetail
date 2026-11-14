@@ -32,9 +32,9 @@ public class ExportedCategoryTests() : GeneratorTest()
     {
         var result = await Generate($"[DovetailExport] {attributes} public class Contrib : IDovetailJoint {{ }}");
 
-        CompileErrors(result).ShouldBeEmpty();
-        Category(result).ToString().ShouldBe(expected);
-        Category(result).ShouldBe((DovetailCategory)expected);
+        await CompileErrors(result).Should().BeEmpty();
+        await Category(result).ToString().Should().BeEqualTo(expected);
+        await Category(result).Should().BeEqualTo((DovetailCategory)expected);
     }
 
     [Test]
@@ -45,7 +45,7 @@ public class ExportedCategoryTests() : GeneratorTest()
     {
         var result = await Generate($"[DovetailExport] [DovetailCategory({argument})] public class Contrib : IDovetailJoint {{ }}");
 
-        ExportedSource(result).ShouldContain($"new Sample.Contrib(), DovetailHostType.Undefined, {expected})");
+        await ExportedSource(result).Should().Contain($"new Sample.Contrib(), DovetailHostType.Undefined, {expected})");
     }
 
     [Test]
@@ -53,8 +53,8 @@ public class ExportedCategoryTests() : GeneratorTest()
     {
         var result = await Generate("[DovetailExport] public class Contrib : IDovetailJoint { }");
 
-        ExportedSource(result).ShouldContain("new Sample.Contrib(), DovetailHostType.Undefined, DovetailCategory.Application)");
-        Category(result).ToString().ShouldBe("Application");
+        await ExportedSource(result).Should().Contain("new Sample.Contrib(), DovetailHostType.Undefined, DovetailCategory.Application)");
+        await Category(result).ToString().Should().BeEqualTo("Application");
     }
 
     [Test]
@@ -62,10 +62,10 @@ public class ExportedCategoryTests() : GeneratorTest()
     {
         var result = await Generate("[DovetailExport] [LiveJoint] [DovetailCategory(DovetailCategory.Core)] public class Contrib : IDovetailJoint { }");
 
-        ExportedSource(result).ShouldContain("new Sample.Contrib(), DovetailHostType.Live, DovetailCategory.Core)");
+        await ExportedSource(result).Should().Contain("new Sample.Contrib(), DovetailHostType.Live, DovetailCategory.Core)");
         var metadata = Rivet(result).Single();
-        metadata.Category.ToString().ShouldBe("Core");
-        metadata.HostType.ShouldBe(DovetailHostType.Live);
+        await metadata.Category.ToString().Should().BeEqualTo("Core");
+        await metadata.HostType.Should().BeEqualTo(DovetailHostType.Live);
     }
 
     [Test]
@@ -80,9 +80,9 @@ public class ExportedCategoryTests() : GeneratorTest()
             """
         );
 
-        CompileErrors(result).ShouldBeEmpty();
+        await CompileErrors(result).Should().BeEmpty();
         // The metadata comes out in the generator's own order, which is not what is being checked here.
-        CategoriesByJoint(result).ShouldBe(["Custom: Custom", "FirstCore: Core", "Plain: Application", "SecondCore: Core"]);
+        await CategoriesByJoint(result).Should().BeEquivalentTo(["Custom: Custom", "FirstCore: Core", "Plain: Application", "SecondCore: Core"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -93,17 +93,17 @@ public class ExportedCategoryTests() : GeneratorTest()
     {
         var result = await Generate($"[DovetailExport] {attributes} public class Contrib(WidgetOptions? options = null) : IDovetailJoint {{ public WidgetOptions? Options => options; }}");
 
-        CompileErrors(result).ShouldBeEmpty();
+        await CompileErrors(result).Should().BeEmpty();
         // This is the factory form, which has its own entry point rather than a constructor overload.
-        ExportedSource(result).ShouldContain("DovetailJointMetadata.FromFactory(");
-        Category(result).ToString().ShouldBe(expected);
+        await ExportedSource(result).Should().Contain("DovetailJointMetadata.FromFactory(");
+        await Category(result).ToString().Should().BeEqualTo(expected);
 
         // And the joint still gets what its parameters ask for. The context is scoped to the joint's own category, because an empty
         // set loads only the Application and Core joints.
         var options = new WidgetOptions();
         var context = await DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), [Category(result)]).Set(options).CreateAsync(TestContext.CancellationToken);
         var joint = context.Joints.Single();
-        joint.GetType().GetProperty("Options")!.GetValue(joint).ShouldBeSameAs(options);
+        await joint.GetType().GetProperty("Options")!.GetValue(joint).Should().BeSameReferenceAs(options);
     }
 
     [Test]
@@ -116,9 +116,9 @@ public class ExportedCategoryTests() : GeneratorTest()
             """
         );
 
-        ExportedSource(result).ShouldContain("new Sample.Contrib(), DovetailHostType.Undefined, DovetailCategory.Core)");
-        Category(result).ToString().ShouldBe("Core");
-        AssertCategoryMatchesTheRuntimeScan(result);
+        await ExportedSource(result).Should().Contain("new Sample.Contrib(), DovetailHostType.Undefined, DovetailCategory.Core)");
+        await Category(result).ToString().Should().BeEqualTo("Core");
+        await AssertCategoryMatchesTheRuntimeScan(result);
     }
 
     [Test]
@@ -133,9 +133,9 @@ public class ExportedCategoryTests() : GeneratorTest()
             """
         );
 
-        CompileErrors(result).ShouldBeEmpty();
-        CategoriesByJoint(result).ShouldBe(["Contrib: Custom", "Overriding: Application"]);
-        AssertCategoryMatchesTheRuntimeScan(result);
+        await CompileErrors(result).Should().BeEmpty();
+        await CategoriesByJoint(result).Should().BeEquivalentTo(["Contrib: Custom", "Overriding: Application"], CollectionOrdering.Matching);
+        await AssertCategoryMatchesTheRuntimeScan(result);
     }
 
     [Test]
@@ -149,8 +149,8 @@ public class ExportedCategoryTests() : GeneratorTest()
             """
         );
 
-        Category(result).ToString().ShouldBe("Application");
-        AssertCategoryMatchesTheRuntimeScan(result);
+        await Category(result).ToString().Should().BeEqualTo("Application");
+        await AssertCategoryMatchesTheRuntimeScan(result);
     }
 
     [Test]
@@ -162,7 +162,7 @@ public class ExportedCategoryTests() : GeneratorTest()
     {
         var result = await Generate($"[DovetailExport] {attributes} public class Contrib : IDovetailJoint {{ }}");
 
-        AssertCategoryMatchesTheRuntimeScan(result);
+        await AssertCategoryMatchesTheRuntimeScan(result);
     }
 
     [Test]
@@ -178,7 +178,7 @@ public class ExportedCategoryTests() : GeneratorTest()
             """
         );
 
-        CompileErrors(result).ShouldBeEmpty();
+        await CompileErrors(result).Should().BeEmpty();
         await Verify(ExportedSource(result), "cs");
     }
 
@@ -217,8 +217,7 @@ public class ExportedCategoryTests() : GeneratorTest()
     /// </summary>
     private static IEnumerable<IDovetailJointMetadata> Rivet(GeneratorTestResults result)
     {
-        var assembly = result.Assembly;
-        assembly.ShouldNotBeNull(string.Join(Environment.NewLine, CompileErrors(result)));
+        var assembly = result.Assembly ?? throw new InvalidOperationException(string.Join(Environment.NewLine, CompileErrors(result)));
 
         return (IEnumerable<IDovetailJointMetadata>)assembly.GetType("Exports")!.GetMethod("Rivet")!.Invoke(null, null)!;
     }
@@ -232,13 +231,13 @@ public class ExportedCategoryTests() : GeneratorTest()
     /// Compares each generated category with the one the runtime path takes from the same joint's type. That is
     /// <c>DovetailContextBuilder.FromDovetail</c>: the category of the <c>[DovetailCategory]</c> attribute, otherwise <c>Application</c>.
     /// </summary>
-    private static void AssertCategoryMatchesTheRuntimeScan(GeneratorTestResults result)
+    private static async Task AssertCategoryMatchesTheRuntimeScan(GeneratorTestResults result)
     {
         foreach (var metadata in Rivet(result))
         {
             var runtime = metadata.Joint.GetType().GetCustomAttribute<DovetailCategoryAttribute>()?.Category ?? DovetailCategory.Application;
 
-            metadata.Category.ShouldBe(runtime, DovetailCategory.ValueComparer, metadata.Joint.GetType().Name);
+            await metadata.Category.Should().BeEqualTo(runtime, DovetailCategory.ValueComparer).Because(metadata.Joint.GetType().Name);
         }
     }
 }

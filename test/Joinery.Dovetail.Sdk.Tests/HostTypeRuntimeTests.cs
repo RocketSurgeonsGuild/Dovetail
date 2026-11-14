@@ -49,6 +49,6 @@ public class HostTypeRuntimeTests(string targetFramework)
 
         var output = await project.Run("app");
 
-        output.ShouldContain($"HostType={expected}");
+        await output.Should().Contain($"HostType={expected}");
     }
 }

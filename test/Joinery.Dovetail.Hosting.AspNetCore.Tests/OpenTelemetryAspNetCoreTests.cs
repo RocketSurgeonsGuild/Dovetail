@@ -57,12 +57,12 @@ public class OpenTelemetryAspNetCoreTests
             meterProvider.ForceFlush();
             loggerProvider.ForceFlush();
 
-            exportedActivities.ShouldContain(activity => activity.DisplayName == "started-span");
-            exportedMetrics.ShouldContain(metric => metric.Name == "started.counter" && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
-            exportedLogs.ShouldContain(record => record.Body == "started-log");
-            tracerProvider.GetResource().Attributes.ShouldContain(attribute);
-            meterProvider.GetResource().Attributes.ShouldContain(attribute);
-            loggerProvider.GetResource().Attributes.ShouldContain(attribute);
+            await exportedActivities.Should().Contain(activity => activity.DisplayName == "started-span");
+            await exportedMetrics.Should().Contain(metric => metric.Name == "started.counter" && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
+            await exportedLogs.Should().Contain(record => record.Body == "started-log");
+            await tracerProvider.GetResource().Attributes.Should().Contain(attribute);
+            await meterProvider.GetResource().Attributes.Should().Contain(attribute);
+            await loggerProvider.GetResource().Attributes.Should().Contain(attribute);
         }
         finally
         {
@@ -91,10 +91,10 @@ public class OpenTelemetryAspNetCoreTests
         {
             var attributes = provider.GetResource().Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
 
-            attributes.ShouldContainKeyAndValue("telemetry.sdk.name", "opentelemetry");
-            attributes.ShouldContainKeyAndValue("telemetry.sdk.language", "dotnet");
-            attributes.ShouldContainKey("telemetry.sdk.version");
-            attributes["service.name"].ShouldBeOfType<string>().ShouldStartWith("unknown_service");
+            await attributes.Should().ContainKeyWithValue("telemetry.sdk.name", "opentelemetry");
+            await attributes.Should().ContainKeyWithValue("telemetry.sdk.language", "dotnet");
+            await attributes.Should().ContainKey("telemetry.sdk.version");
+            await ( await Assert.That(attributes["service.name"]).IsTypeOf<string>() ).Should().StartWith("unknown_service");
         }
     }
 
@@ -121,11 +121,11 @@ public class OpenTelemetryAspNetCoreTests
         try
         {
             using var response = await host.GetTestClient().GetAsync("/telemetry");
-            ( await response.Content.ReadAsStringAsync() ).ShouldBe("traced");
+            await ( await response.Content.ReadAsStringAsync() ).Should().BeEqualTo("traced");
 
             var activity = await requestTraced.Task.WaitAsync(TimeSpan.FromSeconds(15));
 
-            activity.Source.Name.ShouldBe("Microsoft.AspNetCore");
+            await activity.Source.Name.Should().BeEqualTo("Microsoft.AspNetCore");
         }
         finally
         {

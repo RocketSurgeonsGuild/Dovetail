@@ -21,7 +21,7 @@ namespace Joinery.Dovetail.OpenTelemetry.Tests;
 ///     in-memory exporter rather than asserting against internal state, per design.md's flakiness mitigation
 ///     ("use the in-memory exporter... force synchronous flush, and avoid network exporters").
 /// </summary>
-public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public partial class OpenTelemetryBridgeTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     // tasks.md 4.3
     [Test]
@@ -49,12 +49,12 @@ public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestR
         using var source = new ActivitySource(sourceName);
         using (var activity = source.StartActivity("test-span"))
         {
-            activity.ShouldNotBeNull("the tracer part should have subscribed the source, otherwise no listener samples it");
+            await activity.Should().NotBeNull().Because("the tracer part should have subscribed the source, otherwise no listener samples it");
         }
 
         tracerProvider.ForceFlush();
 
-        exportedActivities.ShouldContain(a => a.DisplayName == "test-span");
+        await exportedActivities.Should().Contain(a => a.DisplayName == "test-span");
     }
 
     // tasks.md 4.5 (metric)
@@ -83,7 +83,7 @@ public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestR
 
         meterProvider.ForceFlush();
 
-        exportedMetrics.ShouldContain(m => m.Name == "test.counter");
+        await exportedMetrics.Should().Contain(m => m.Name == "test.counter");
     }
 
     // tasks.md 4.5 (log record)
@@ -105,7 +105,7 @@ public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestR
 
         loggerProvider.ForceFlush();
 
-        exportedLogRecords.ShouldContain(r => r.Body == "test-log-record");
+        await exportedLogRecords.Should().Contain(r => r.Body == "test-log-record");
     }
 
     // tasks.md 4.5 (resource attribute)
@@ -129,7 +129,7 @@ public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestR
 
         var resource = host.Services.GetRequiredService<TracerProvider>().GetResource();
 
-        resource.Attributes.ShouldContain(new KeyValuePair<string, object>("test.resource.attribute", "test-value"));
+        await resource.Attributes.Should().Contain(new KeyValuePair<string, object>("test.resource.attribute", "test-value"));
     }
 
     /// <summary>
@@ -167,10 +167,10 @@ public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestR
             tracerProvider.ForceFlush();
             meterProvider.ForceFlush();
 
-            exportedActivities.ShouldContain(activity => activity.DisplayName == "started-span");
-            exportedMetrics.ShouldContain(metric => metric.Name == "started.counter" && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
-            tracerProvider.GetResource().Attributes.ShouldContain(attribute);
-            meterProvider.GetResource().Attributes.ShouldContain(attribute);
+            await exportedActivities.Should().Contain(activity => activity.DisplayName == "started-span");
+            await exportedMetrics.Should().Contain(metric => metric.Name == "started.counter" && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
+            await tracerProvider.GetResource().Attributes.Should().Contain(attribute);
+            await meterProvider.GetResource().Attributes.Should().Contain(attribute);
         }
         finally
         {
@@ -214,13 +214,11 @@ public partial class OpenTelemetryBridgeTests() : AutoFakeTest<TestRecord>(TestR
         using var source = new ActivitySource(OpenTelemetryFixtures.AutoDiscoveredSourceName);
         using (var activity = source.StartActivity("auto-discovered-span"))
         {
-            activity.ShouldNotBeNull(
-                "the [DovetailExport]-annotated AutoDiscoveredTracerJoint should have been discovered and applied without an explicit ConfigureTracerProvider call"
-            );
+            await activity.Should().NotBeNull().Because("the [DovetailExport]-annotated AutoDiscoveredTracerJoint should have been discovered and applied without an explicit ConfigureTracerProvider call");
         }
 
         tracerProvider.ForceFlush();
 
-        exportedActivities.ShouldContain(a => a.DisplayName == "auto-discovered-span");
+        await exportedActivities.Should().Contain(a => a.DisplayName == "auto-discovered-span");
     }
 }

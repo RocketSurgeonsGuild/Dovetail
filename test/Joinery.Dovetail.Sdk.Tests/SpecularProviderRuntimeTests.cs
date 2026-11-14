@@ -29,10 +29,10 @@ public class SpecularProviderRuntimeTests(string targetFramework)
         var output = await project.Run("app");
 
         // Nothing was set by hand, and referencing Specular needs no suppressions: the seeding builds against what Specular generates.
-        project.Warnings("app").ShouldBeEmpty();
+        await project.Warnings("app").Should().BeEmpty();
         // The library emits no provider (SpecularEmitProvider=false), so the one it finds is the application's, which scans across assemblies.
-        output.ShouldContain("provider=SpecularProvider");
-        output.ShouldContain("plugins=IPlugin,PluginOne,PluginTwo");
+        await output.Should().Contain("provider=SpecularProvider");
+        await output.Should().Contain("plugins=IPlugin,PluginOne,PluginTwo");
     }
 
     [Test]
@@ -53,8 +53,8 @@ public class SpecularProviderRuntimeTests(string targetFramework)
 
         var output = await project.Run("app");
 
-        output.ShouldContain("provider=SpecularProvider");
-        output.ShouldContain("plugins=IPlugin,PluginOne,PluginTwo");
+        await output.Should().Contain("provider=SpecularProvider");
+        await output.Should().Contain("plugins=IPlugin,PluginOne,PluginTwo");
     }
 
     [Test]
@@ -88,8 +88,8 @@ public class SpecularProviderRuntimeTests(string targetFramework)
 
         var output = await project.Run("app");
 
-        output.ShouldContain("provider=HandWrittenProvider");
-        output.ShouldContain("plugins=String");
+        await output.Should().Contain("provider=HandWrittenProvider");
+        await output.Should().Contain("plugins=String");
     }
 
     /// <summary>
@@ -120,11 +120,11 @@ public class SpecularProviderRuntimeTests(string targetFramework)
 
         var output = await project.PublishAndRun("app");
 
-        output.ShouldContain("provider=SpecularProvider");
-        output.ShouldContain("plugins=IPlugin,PluginOne,PluginTwo");
+        await output.Should().Contain("provider=SpecularProvider");
+        await output.Should().Contain("plugins=IPlugin,PluginOne,PluginTwo");
         // Native AOT has no JIT: this shows the application that ran was the ahead-of-time compiled one.
-        output.ShouldContain(publishProperty == "PublishAot" ? "dynamicCode=False" : "dynamicCode=True");
-        project.Warnings("app").Where(z => z.StartsWith("IL2", StringComparison.Ordinal) || z.StartsWith("IL3", StringComparison.Ordinal)).ShouldBeEmpty();
+        await output.Should().Contain(publishProperty == "PublishAot" ? "dynamicCode=False" : "dynamicCode=True");
+        await project.Warnings("app").Where(z => z.StartsWith("IL2", StringComparison.Ordinal) || z.StartsWith("IL3", StringComparison.Ordinal)).Should().BeEmpty();
     }
 
     /// <summary>

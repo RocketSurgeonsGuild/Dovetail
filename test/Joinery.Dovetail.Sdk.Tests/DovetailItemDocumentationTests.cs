@@ -21,7 +21,7 @@ public partial class DovetailItemDocumentationTests
     [Arguments("DovetailJoint", "src/Joinery.Dovetail/build/Joinery.Dovetail.Joints.targets", "docs/src/content/docs/reference/dovetail-joint.md")]
     [Arguments("DovetailHost", "src/Joinery.Dovetail/build/Joinery.Dovetail.Hosts.targets", "docs/src/content/docs/reference/dovetail-host.md")]
     [Arguments("DovetailTemplate;DovetailEmittedTemplate", "src/Joinery.Dovetail/build/Joinery.Dovetail.Templates.targets", "docs/src/content/docs/reference/dovetail-template.md")]
-    public void HeaderCommentAndReferenceTable_ListExactlyTheMetadataTheTargetsRead(string items, string targetsPath, string pagePath)
+    public async Task HeaderCommentAndReferenceTable_ListExactlyTheMetadataTheTargetsRead(string items, string targetsPath, string pagePath)
     {
         var targets = File.ReadAllText(Path.Combine(Config.RootDirectory, targetsPath));
 
@@ -48,9 +48,9 @@ public partial class DovetailItemDocumentationTests
         var table = Regex.Match(page, @"^## Metadata\s*$(?<table>.*?)(?=^## )", RegexOptions.Multiline | RegexOptions.Singleline).Groups["table"].Value;
         var documentedInTable = TableRow().Matches(table).Select(z => z.Groups["name"].Value).Order(StringComparer.Ordinal).ToArray();
 
-        read.ShouldNotBeEmpty();
-        documentedInHeader.ShouldBe(read, $"the comment at the top of {targetsPath}");
-        documentedInTable.ShouldBe(read, $"the metadata table of {pagePath}");
+        await read.Should().NotBeEmpty();
+        await documentedInHeader.Should().BeEquivalentTo(read, CollectionOrdering.Matching).Because($"the comment at the top of {targetsPath}");
+        await documentedInTable.Should().BeEquivalentTo(read, CollectionOrdering.Matching).Because($"the metadata table of {pagePath}");
     }
 
     [GeneratedRegex(@"^ {6}(?<names>[A-Za-z]\w*(?:, [A-Za-z]\w*)*)\s+[-—]", RegexOptions.Multiline)]

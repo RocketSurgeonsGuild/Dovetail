@@ -43,14 +43,15 @@ public sealed class GeneratedJointTests
         await using var provider = services.BuildServiceProvider();
 
         var mutable = provider.GetRequiredService<IOptions<GeneratedMutableOptions>>().Value;
-        mutable.Name.ShouldBe("m");
-        mutable.Ports.ShouldBe([1]);
-        mutable.Limits.ShouldBe(new Dictionary<string, int> { ["a"] = 2 });
-        mutable.Child.Value.ShouldBe("c");
-        provider.GetRequiredService<IOptions<GeneratedPositionalOptions>>().Value.ShouldBe(new GeneratedPositionalOptions("example.org"));
+        await mutable.Name.Should().BeEqualTo("m");
+        await ( await mutable.Ports.Should().HaveSingleItem() ).Should().BeEqualTo(1);
+        await mutable.Limits.Should().HaveCount(1);
+        await mutable.Limits.Should().ContainKeyWithValue("a", 2);
+        await mutable.Child.Value.Should().BeEqualTo("c");
+        await provider.GetRequiredService<IOptions<GeneratedPositionalOptions>>().Value.Should().BeEqualTo(new GeneratedPositionalOptions("example.org"));
         var initialized = provider.GetRequiredService<IOptions<GeneratedInitializedOptions>>().Value;
-        initialized.Name.ShouldBe("i");
-        initialized.Size.ShouldBe(3);
+        await initialized.Name.Should().BeEqualTo("i");
+        await initialized.Size.Should().BeEqualTo(3);
     }
 }
 

@@ -17,7 +17,7 @@ namespace Joinery.Dovetail.Serilog.Tests;
 ///     The logging providers registered in the container, other than the default ones that Serilog replaces, keep receiving the events: the logger
 ///     writes to them as well as to its sinks.
 /// </summary>
-public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class SerilogProviderForwardingTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task A_Provider_Registered_In_The_Container_Receives_The_Events()
@@ -30,14 +30,14 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
         host.Services.GetRequiredService<SerilogILogger>().ForContext<SerilogProviderForwardingTests>().Information("Hello from Serilog");
 
         var entries = provider.Entries;
-        entries.Count.ShouldBe(2);
-        entries[0].Category.ShouldBe(typeof(SerilogProviderForwardingTests).FullName);
-        entries[0].Level.ShouldBe(LogLevel.Warning);
-        entries[0].Message.ShouldBe("Hello \"Dovetail\"");
-        entries[0].Exception.ShouldBeSameAs(exception);
-        entries[1].Category.ShouldBe(typeof(SerilogProviderForwardingTests).FullName);
-        entries[1].Level.ShouldBe(LogLevel.Information);
-        entries[1].Message.ShouldBe("Hello from Serilog");
+        await entries.Count.Should().BeEqualTo(2);
+        await entries[0].Category.Should().BeEqualTo(typeof(SerilogProviderForwardingTests).FullName);
+        await entries[0].Level.Should().BeEqualTo(LogLevel.Warning);
+        await entries[0].Message.Should().BeEqualTo("Hello \"Dovetail\"");
+        await entries[0].Exception.Should().BeSameReferenceAs(exception);
+        await entries[1].Category.Should().BeEqualTo(typeof(SerilogProviderForwardingTests).FullName);
+        await entries[1].Level.Should().BeEqualTo(LogLevel.Information);
+        await entries[1].Message.Should().BeEqualTo("Hello from Serilog");
     }
 
     [Test]
@@ -61,10 +61,10 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
         host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Some.Category").LogError("From the factory");
         host.Services.GetRequiredService<SerilogILogger>().Warning("From Serilog");
 
-        CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).ShouldBe(["From the generic logger", "From the factory", "From Serilog",]);
+        await CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).Should().BeEquivalentTo(["From the generic logger", "From the factory", "From Serilog",], CollectionOrdering.Matching);
         foreach (var provider in new[] { first, second, })
         {
-            provider.Entries.Select(entry => entry.Message).ShouldBe(["From the generic logger", "From the factory", "From Serilog",]);
+            await provider.Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["From the generic logger", "From the factory", "From Serilog",], CollectionOrdering.Matching);
         }
     }
 
@@ -77,8 +77,8 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        late.LoggerWasRegistered.ShouldBeTrue("the provider was registered after the Serilog joint registered the logger");
-        provider.Entries.Select(entry => entry.Message).ShouldBe(["Hello",]);
+        await late.LoggerWasRegistered.Should().BeTrue().Because("the provider was registered after the Serilog joint registered the logger");
+        await provider.Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["Hello",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -89,7 +89,7 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        provider.Entries.Select(entry => entry.Message).ShouldBe(["Hello",]);
+        await provider.Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["Hello",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -105,7 +105,7 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
         logger.LogInformation("Hidden");
         logger.LogWarning("Shown");
 
-        provider.Entries.Select(entry => entry.Message).ShouldBe(["Shown",]);
+        await provider.Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -122,8 +122,8 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem();
-        CapturingSink.Named(otherSinkName).Events.ShouldBeEmpty("Serilog's own provider is not one that events are forwarded to, or the logger would write to itself");
+        await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem();
+        await CapturingSink.Named(otherSinkName).Events.Should().BeEmpty().Because("Serilog's own provider is not one that events are forwarded to, or the logger would write to itself");
     }
 
     [Test]
@@ -135,8 +135,8 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        defaultProvider.Entries.ShouldBeEmpty("the default providers are replaced by Serilog, not written to besides it");
-        provider.Entries.ShouldHaveSingleItem();
+        await defaultProvider.Entries.Should().BeEmpty().Because("the default providers are replaced by Serilog, not written to besides it");
+        await provider.Entries.Should().HaveSingleItem();
     }
 
     [Test]
@@ -151,8 +151,8 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        provider.Entries.Select(entry => entry.Message).ShouldBe(["Hello",], "registered before the Serilog joint, so it was not removed");
-        ( (CapturingProvider)late.Providers.Single() ).Entries.Select(entry => entry.Message).ShouldBe(["Hello",], "registered after it");
+        await provider.Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["Hello",], CollectionOrdering.Matching).Because("registered before the Serilog joint, so it was not removed");
+        await ( (CapturingProvider)late.Providers.Single() ).Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["Hello",], CollectionOrdering.Matching).Because("registered after it");
     }
 
     [Test]
@@ -169,10 +169,10 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         host.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        builder.Services.Count(descriptor => descriptor.ServiceType == typeof(ILoggerProvider)).ShouldBe(1, "only the provider of the test");
-        host.Services.GetServices<ILoggerProvider>().ShouldBe([provider,]);
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem();
-        provider.Entries.ShouldHaveSingleItem();
+        await builder.Services.Count(descriptor => descriptor.ServiceType == typeof(ILoggerProvider)).Should().BeEqualTo(1).Because("only the provider of the test");
+        await ( await host.Services.GetServices<ILoggerProvider>().Should().HaveSingleItem() ).Should().BeSameReferenceAs(provider);
+        await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem();
+        await provider.Entries.Should().HaveSingleItem();
     }
 
     [Test]
@@ -190,8 +190,8 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         app.Services.GetRequiredService<ILogger<SerilogProviderForwardingTests>>().LogInformation("Hello");
 
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem();
-        provider.Entries.Select(entry => entry.Message).ShouldBe(["Hello",]);
+        await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem();
+        await provider.Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["Hello",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -205,6 +205,6 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
 
         // The logger disposes the providers it writes to, and so does the container that owns them: a provider has to cope with that, as it does
         // with any Dispose, and the providers that matter (OpenTelemetry's, say) do.
-        provider.Disposals.ShouldBeGreaterThanOrEqualTo(1);
+        await provider.Disposals.Should().BeGreaterThanOrEqualTo(1);
     }
 }

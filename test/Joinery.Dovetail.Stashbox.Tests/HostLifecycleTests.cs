@@ -30,6 +30,6 @@ public class HostLifecycleTests
         await host.StartAsync(TestContext.Current!.Execution.CancellationToken);
         await host.StopAsync(TestContext.Current!.Execution.CancellationToken);
 
-        moments.ShouldBe(["starting", "started", "stopped"]);
+        await moments.Should().BeEquivalentTo(["starting", "started", "stopped"], CollectionOrdering.Matching);
     }
 }

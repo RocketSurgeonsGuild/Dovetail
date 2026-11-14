@@ -1,4 +1,3 @@
-using FakeItEasy;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,14 +22,14 @@ public static class StashboxFixtures
     [DovetailExport]
     public class AbcDovetail : IStashboxJoint, IServiceJoint
     {
-        public void Register(IDovetailContext context, IStashboxContainer container) => container.RegisterInstance(A.Fake<IAbc>());
+        public void Register(IDovetailContext context, IStashboxContainer container) => container.RegisterInstance(IAbc.Mock().Object);
 
-        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(A.Fake<IAbc2>());
+        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(IAbc2.Mock().Object);
     }
 
     [DovetailExport]
     public class OtherDovetail : IServiceJoint
     {
-        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(A.Fake<IOtherAbc3>());
+        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(IOtherAbc3.Mock().Object);
     }
 }

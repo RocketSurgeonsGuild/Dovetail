@@ -8,21 +8,21 @@ using ILogger = Serilog.ILogger;
 namespace Joinery.Dovetail.Tests;
 
 public class TestContextTests_DependencyContext
-    () : AutoFakeTest<TestRecord>(TestRecord.Create(LogEventLevel.Information))
+    () : LoggerTest<TestRecord>(TestRecord.Create(LogEventLevel.Information))
 {
     [Test]
-    public void Builder_Should_Create_Host()
+    public async Task Builder_Should_Create_Host()
     {
-        var a = () => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
-        var context = a.ShouldNotThrow();
-        context.Get<ILogger>().ShouldBeSameAs(Logger);
+        DovetailContextBuilder a() => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
+        var context = await Assert.That(a).ThrowsNothing();
+        await context.Get<ILogger>().Should().BeSameReferenceAs(Logger);
     }
 
     [Test]
-    public void Builder_Should_Create_Host_ByType()
+    public async Task Builder_Should_Create_Host_ByType()
     {
-        var a = () => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger)
+        DovetailContextBuilder a() => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger)
             ;
-        a.ShouldNotThrow();
+        await Assert.That(a).ThrowsNothing();
     }
 }

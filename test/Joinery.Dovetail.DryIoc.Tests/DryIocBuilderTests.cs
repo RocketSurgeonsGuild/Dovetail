@@ -1,5 +1,4 @@
 using DryIoc;
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,7 +10,7 @@ using static Joinery.Dovetail.DryIoc.Tests.DryIocFixtures;
 
 namespace Joinery.Dovetail.DryIoc.Tests;
 
-public class DryIocBuilderTests : AutoFakeTest<TestRecord>
+public class DryIocBuilderTests : LoggerTest<TestRecord>
 {
     [Test]
     public async Task ConstructTheContainerAndRegisterWithCore()
@@ -23,17 +22,17 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                                         .ConfigureDryIoc(
                                              (context, container) =>
                                              {
-                                                 container.RegisterInstance(A.Fake<IAbc>());
+                                                 container.RegisterInstance(IAbc.Mock().Object);
                                              }
                                          )
-                                        .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                        .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                                );
 
         var items = host.Services.GetRequiredService<IResolverContext>();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefault).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefault).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefault).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefault).ShouldBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefault).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefault).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefault).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefault).Should().BeNull();
     }
 
     [Test]
@@ -46,18 +45,18 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                                         .ConfigureDryIoc(
                                              (context, container) =>
                                              {
-                                                 container.RegisterInstance(A.Fake<IAbc>());
-                                                 container.RegisterInstance(A.Fake<IAbc4>());
+                                                 container.RegisterInstance(IAbc.Mock().Object);
+                                                 container.RegisterInstance(IAbc4.Mock().Object);
                                              }
                                          )
-                                        .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                        .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                                );
 
         var items = host.Services.GetRequiredService<IResolverContext>();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefault).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefault).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefault).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefault).ShouldNotBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefault).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefault).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefault).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefault).Should().NotBeNull();
     }
 
     [Test]
@@ -70,15 +69,15 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                                         .ConfigureDryIoc(
                                              (context, container) =>
                                              {
-                                                 container.RegisterInstance(A.Fake<IAbc3>());
-                                                 container.RegisterInstance(A.Fake<IAbc4>());
+                                                 container.RegisterInstance(IAbc3.Mock().Object);
+                                                 container.RegisterInstance(IAbc4.Mock().Object);
                                              }
                                          )
                                );
 
         var items = host.Services.GetRequiredService<IResolverContext>();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefault).ShouldNotBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefault).ShouldNotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefault).Should().NotBeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefault).Should().NotBeNull();
     }
 
     [Test]
@@ -91,19 +90,19 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                                         .ConfigureDryIoc(
                                              (context, container) =>
                                              {
-                                                 container.RegisterInstance(A.Fake<IAbc>());
+                                                 container.RegisterInstance(IAbc.Mock().Object);
                                              }
                                          )
-                                        .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                        .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                                );
 
         var items = host.Services.GetRequiredService<IResolverContext>();
 
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -116,19 +115,19 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                                         .ConfigureDryIoc(
                                              (context, container) =>
                                              {
-                                                 container.Use(A.Fake<IAbc>());
-                                                 container.Use(A.Fake<IAbc4>());
+                                                 container.Use(IAbc.Mock().Object);
+                                                 container.Use(IAbc4.Mock().Object);
                                              }
                                          )
-                                        .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                        .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                                );
 
         var items = host.Services.GetRequiredService<IResolverContext>();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -141,16 +140,16 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                                         .ConfigureDryIoc(
                                              (context, container) =>
                                              {
-                                                 container.RegisterInstance(A.Fake<IAbc3>());
-                                                 container.RegisterInstance(A.Fake<IAbc4>());
+                                                 container.RegisterInstance(IAbc3.Mock().Object);
+                                                 container.RegisterInstance(IAbc4.Mock().Object);
                                              }
                                          )
                                );
 
         var items = host.Services.GetRequiredService<IResolverContext>();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc3>().ShouldNotBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc3>().Should().NotBeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -161,10 +160,10 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                               .ConfigureDovetail();
 
         var items = host.Services.GetRequiredService<IResolverContext>();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
     }
 
     [Test]
@@ -175,12 +174,12 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                               .ConfigureDovetail();
 
         var items = host.Services.GetRequiredService<IResolverContext>();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
     }
 
     [Test]
@@ -191,13 +190,9 @@ public class DryIocBuilderTests : AutoFakeTest<TestRecord>
                               .ConfigureDovetail();
 
         var container = host.Services.GetRequiredService<IContainer>();
-        container.ShouldNotBeNull();
+        await container.Should().NotBeNull();
     }
 
-    public DryIocBuilderTests() : base(TestRecord.Create(LogEventLevel.Information)) =>
-        AutoFake.Provide<IDictionary<object, object?>>(new Dictionary<object, object?>());
+    public DryIocBuilderTests() : base(TestRecord.Create(LogEventLevel.Information)) { }
 
-    protected override IContainer BuildContainer(IContainer container) =>
-        container
-           .With(FactoryMethod.ConstructorWithResolvableArgumentsIncludingNonPublic);
 }
