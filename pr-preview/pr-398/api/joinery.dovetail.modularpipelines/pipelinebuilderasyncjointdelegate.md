@@ -2,7 +2,7 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail.ModularPipelines](/Dovetail/pr-preview/pr-398/api/joinery.dovetail.modularpipelines.md)
-- Version: `0.5.4-pr.11`
+- Version: `0.5.4-pr.13`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net11.0`
 - Inherits: `MulticastDelegate`
