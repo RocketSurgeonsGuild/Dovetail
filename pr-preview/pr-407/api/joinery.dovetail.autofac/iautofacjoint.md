@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Autofac](/Dovetail/pr-preview/pr-407/api/joinery.dovetail.autofac.md)
-- Version: `0.5.4-pr.14`
+- Version: `0.5.4-pr.15`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
