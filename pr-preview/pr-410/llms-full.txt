@@ -1426,7 +1426,7 @@ Dovetail itself does not log while it scans and applies joints. <xref:Joinery.Do
 
 Tip
 
-With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `AutoFakeTest<TestRecord>`): its Serilog logger writes to the test’s output.
+With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `LoggerTest<TestRecord>`): its Serilog logger writes to the test’s output.
 
 The builder is a bag of properties, so the test can put its logger there for a joint to find:
 

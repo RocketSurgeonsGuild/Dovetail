@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/pr-preview/pr-410/api/joinery.dovetail.stashbox.md)
-- Version: `0.5.4-pr.15`
+- Version: `0.5.4-pr.17`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
