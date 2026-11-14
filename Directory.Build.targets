@@ -48,4 +48,12 @@
     <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
         <_SponsorCheck_OwnerVerified_Verify_eea2745e>true</_SponsorCheck_OwnerVerified_Verify_eea2745e>
     </PropertyGroup>
+    <!--
+        On CI, have the compiler time every analyzer and source generator. The times are in the build binlog (artifacts/logs, uploaded
+        as an artifact): the Structured Log Viewer shows them under each Csc task, or replay it with -flp:v=diag and look for
+        "Total analyzer execution time" and "Total generator execution time".
+    -->
+    <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
+        <ReportAnalyzer>true</ReportAnalyzer>
+    </PropertyGroup>
 </Project>
