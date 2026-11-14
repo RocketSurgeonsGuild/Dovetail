@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.ModularPipelines](/Dovetail/pr-preview/pr-408/api/joinery.dovetail.modularpipelines.md)
-- Version: `0.5.4-pr.13`
+- Version: `0.5.4-pr.16`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net11.0`
 
