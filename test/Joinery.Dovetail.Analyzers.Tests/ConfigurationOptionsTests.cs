@@ -861,7 +861,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     private static string Describe(GeneratorTestResults result)
     {
         var compileErrors = result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ToArray();
-        if (compileErrors.Length > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, compileErrors.AsEnumerable()));
+        if (compileErrors.Length > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, compileErrors.Select(z => z.ToString())));
 
         var generated = result.Results[typeof(DovetailAttributesGenerator)];
         var text = new StringBuilder();

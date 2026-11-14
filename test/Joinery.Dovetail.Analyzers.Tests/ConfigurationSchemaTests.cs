@@ -996,7 +996,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
     {
         // The generator's own DT errors are part of what's verified below; only compiler errors mean broken generated code.
         var compileErrors = result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ToArray();
-        if (compileErrors.Length > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, compileErrors.AsEnumerable()));
+        if (compileErrors.Length > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, compileErrors.Select(z => z.ToString())));
 
         const string prefix = "Dovetail.ConfigurationSchema.v1:";
         var options = new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };

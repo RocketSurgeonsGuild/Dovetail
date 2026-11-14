@@ -217,7 +217,7 @@ public class ExportedCategoryTests() : GeneratorTest()
     /// </summary>
     private static IEnumerable<IDovetailJointMetadata> Rivet(GeneratorTestResults result)
     {
-        var assembly = result.Assembly ?? throw new InvalidOperationException(string.Join(Environment.NewLine, CompileErrors(result)));
+        var assembly = result.Assembly ?? throw new InvalidOperationException(string.Join(Environment.NewLine, CompileErrors(result).Select(z => z.ToString())));
 
         return (IEnumerable<IDovetailJointMetadata>)assembly.GetType("Exports")!.GetMethod("Rivet")!.Invoke(null, null)!;
     }
