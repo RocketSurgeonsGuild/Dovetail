@@ -106,7 +106,7 @@ public class ExportedHostTypeTests() : GeneratorTest()
     private async Task AssertAppliesTheSameJointsAsTheRuntimeScan(GeneratorTestResults result)
     {
         var assembly = result.Assembly;
-        await assembly.Should().NotBeNull().Because(string.Join(Environment.NewLine, result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error)));
+        await assembly.Should().NotBeNull().Because(string.Join(Environment.NewLine, result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Select(z => z.ToString())));
 
         var metadata = ( (IEnumerable<IDovetailJointMetadata>)assembly.GetType("Exports")!.GetMethod("Rivet")!.Invoke(null, null)! ).ToArray();
         var joint = metadata.Single().Joint;

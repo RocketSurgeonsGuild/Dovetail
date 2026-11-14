@@ -43,7 +43,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
     /// </summary>
     private static bool IsPackageSchema(string identity, PackageVerificationResult package) =>
         identity.EndsWith(
-            string.Join(Path.DirectorySeparatorChar, package.PackageId.ToLowerInvariant(), package.Version.ToLowerInvariant(), "ConfigurationSchema.json"),
+            Path.Join(package.PackageId.ToLowerInvariant(), package.Version.ToLowerInvariant(), "ConfigurationSchema.json"),
             StringComparison.OrdinalIgnoreCase
         );
 
