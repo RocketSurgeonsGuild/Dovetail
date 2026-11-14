@@ -31,7 +31,7 @@ public class DovetailContextCategoriesTests
     {
         foreach (var categories in new DovetailCategory[][] { [], [Core], [Application], [Other], ["Nobody"], [Application, Other] })
         {
-            await Resolved(await Create(categories)).Should().Contain(nameof(CoreJoint)).Because($"for [{string.Join(", ", categories.Select(z => z.ToString()))}]");
+            await Resolved(await Create(categories)).Should().Contain(nameof(CoreJoint)).Because($"for [{string.Join(", ", Array.ConvertAll(categories, z => z.ToString()))}]");
         }
     }
 

@@ -64,7 +64,7 @@ public class SerilogProviderForwardingTests() : LoggerTest<TestRecord>(TestRecor
         await CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).Should().BeEquivalentTo(["From the generic logger", "From the factory", "From Serilog",], CollectionOrdering.Matching);
         foreach (var provider in new[] { first, second, })
         {
-            await provider.Entries.Select(entry => entry.Message).Should().BeEquivalentTo(["From the generic logger", "From the factory", "From Serilog",], CollectionOrdering.Matching);
+            await MessagesOf(provider).Should().BeEquivalentTo(["From the generic logger", "From the factory", "From Serilog",], CollectionOrdering.Matching);
         }
     }
 
@@ -206,5 +206,16 @@ public class SerilogProviderForwardingTests() : LoggerTest<TestRecord>(TestRecor
         // The logger disposes the providers it writes to, and so does the container that owns them: a provider has to cope with that, as it does
         // with any Dispose, and the providers that matter (OpenTelemetry's, say) do.
         await provider.Disposals.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    private static List<string> MessagesOf(CapturingProvider provider)
+    {
+        var messages = new List<string>(provider.Entries.Count);
+        foreach (var entry in provider.Entries)
+        {
+            messages.Add(entry.Message);
+        }
+
+        return messages;
     }
 }

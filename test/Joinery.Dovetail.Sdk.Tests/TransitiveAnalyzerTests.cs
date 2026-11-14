@@ -76,8 +76,10 @@ public class TransitiveAnalyzerTests(string targetFramework)
             var packageId = reader.GetIdentity().Id;
             foreach (var group in reader.NuspecReader.GetDependencyGroups())
             {
-                foreach (var dependency in group.Packages.Where(z => z.Id == "Joinery.Dovetail"))
+                foreach (var dependency in group.Packages)
                 {
+                    if (dependency.Id != "Joinery.Dovetail") continue;
+
                     excludes[$"{packageId} ({group.TargetFramework.GetShortFolderName()})"] = string.Join(",", dependency.Exclude);
                 }
             }

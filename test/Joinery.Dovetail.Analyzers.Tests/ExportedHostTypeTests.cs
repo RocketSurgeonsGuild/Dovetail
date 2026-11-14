@@ -116,10 +116,21 @@ public class ExportedHostTypeTests() : GeneratorTest()
             var generated = DovetailContextBuilder.Create(metadata, new Dictionary<object, object>(), hostType, []);
             var runtime = DovetailContextBuilder.Create([], new Dictionary<object, object>(), hostType, []).AppendJoint(joint);
 
-            var generatedJoints = ( await generated.CreateAsync(TestContext.CancellationToken) ).Joints.Select(z => z.GetType());
-            var runtimeJoints = ( await runtime.CreateAsync(TestContext.CancellationToken) ).Joints.Select(z => z.GetType());
+            var generatedJoints = JointTypes(await generated.CreateAsync(TestContext.CancellationToken));
+            var runtimeJoints = JointTypes(await runtime.CreateAsync(TestContext.CancellationToken));
 
             await generatedJoints.Should().BeEquivalentTo(runtimeJoints, CollectionOrdering.Matching).Because($"in a {hostType} host");
         }
+    }
+
+    private static List<Type> JointTypes(IDovetailContext context)
+    {
+        var types = new List<Type>(context.Joints.Count);
+        foreach (var joint in context.Joints)
+        {
+            types.Add(joint.GetType());
+        }
+
+        return types;
     }
 }

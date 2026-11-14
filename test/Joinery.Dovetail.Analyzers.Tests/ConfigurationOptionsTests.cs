@@ -158,7 +158,16 @@ public class ConfigurationOptionsTests() : GeneratorTest()
         var steps = driver.GetRunResult().Results.Single().TrackedSteps;
         foreach (var name in new[] { "dovetail:configuration_classes", "dovetail:configuration_options", "dovetail:configuration_sections" })
         {
-            await steps[name].SelectMany(z => z.Outputs).Select(z => z.Reason).Should().All(z => z is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged).Because(name);
+            var reasons = new List<IncrementalStepRunReason>();
+            foreach (var step in steps[name])
+            {
+                foreach (var (_, reason) in step.Outputs)
+                {
+                    reasons.Add(reason);
+                }
+            }
+
+            await reasons.Should().All(z => z is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged).Because(name);
         }
     }
 

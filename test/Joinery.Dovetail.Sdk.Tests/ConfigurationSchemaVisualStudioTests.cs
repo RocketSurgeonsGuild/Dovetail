@@ -171,7 +171,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         await identities.Should().Contain(HostSchemaPath(project, "host"));
         foreach (var package in packages)
         {
-            await identities.Count(z => IsPackageSchema(z, package)).Should().BeEqualTo(1);
+            await Array.FindAll(identities, z => IsPackageSchema(z, package)).Length.Should().BeEqualTo(1);
         }
 
         await identities.Length.Should().BeEqualTo(identities.Distinct().Count());

@@ -221,9 +221,12 @@ public class SerilogConfigurationTests() : LoggerTest<TestRecord>(TestRecord.Cre
             yield return current;
             if (current is AggregateException aggregate)
             {
-                foreach (var inner in aggregate.InnerExceptions.SelectMany(Flatten))
+                foreach (var innerException in aggregate.InnerExceptions)
                 {
-                    yield return inner;
+                    foreach (var inner in Flatten(innerException))
+                    {
+                        yield return inner;
+                    }
                 }
             }
         }

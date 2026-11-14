@@ -116,8 +116,19 @@ public class SerilogSchemaTests
 
         foreach (var definition in definitions.Where(z => z.Value!["properties"] is JsonObject))
         {
-            var keys = definition.Value!["properties"]!.AsObject().Select(z => z.Key).ToArray();
-            await definition.Value["patternProperties"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(keys.Select(CaseInsensitivePattern.For), CollectionOrdering.Matching).Because($"{definition.Key}'s patternProperties");
+            var patterns = new List<string>();
+            foreach (var property in definition.Value!["properties"]!.AsObject())
+            {
+                patterns.Add(CaseInsensitivePattern.For(property.Key));
+            }
+
+            var patternKeys = new List<string>();
+            foreach (var patternProperty in definition.Value["patternProperties"]!.AsObject())
+            {
+                patternKeys.Add(patternProperty.Key);
+            }
+
+            await patternKeys.Should().BeEquivalentTo(patterns, CollectionOrdering.Matching).Because($"{definition.Key}'s patternProperties");
         }
     }
 
@@ -141,8 +152,10 @@ public class SerilogSchemaTests
         {
             var document = await ApplicationSchema(includeSchemaStore: includeSchemaStore);
 
-            await SchemaAssert.DovetailPart(document)["properties"]!.AsObject().Select(z => z.Key).Should().Contain("Serilog");
-            await SchemaAssert.DovetailDefinitions(document).Single(z => z.Key == "Serilog.Settings").Value!["properties"]!["MinimumLevel"]!["oneOf"].Should().NotBeNull();
+            await SchemaAssert.DovetailPart(document)["properties"]!.AsObject().ContainsKey("Serilog").Should().BeTrue();
+            var settings = document["definitions"]!["Serilog.Settings"];
+            await settings.Should().NotBeNull();
+            await settings!["properties"]!["MinimumLevel"]!["oneOf"].Should().NotBeNull();
         }
     }
 

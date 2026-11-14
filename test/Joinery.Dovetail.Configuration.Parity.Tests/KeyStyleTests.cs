@@ -339,13 +339,13 @@ public class KeyStyleTests
             if (style == "Undefined")
             {
                 var bound = Binders.Dovetail<UndefinedLower>(configuration);
-                await (bound.myKey, bound.inner.waitTime, bound.itemList.Single().itemName).Should().BeEqualTo(("value", 7, "first")).Because($"casing {index}");
+                await (bound.myKey, bound.inner.waitTime, bound.itemList.Count, bound.itemList[0].itemName).Should().BeEqualTo(("value", 7, 1, "first")).Because($"casing {index}");
                 await Binders.Dovetail<UndefinedLowerRecord>(configuration).Should().BeEqualTo(new UndefinedLowerRecord("record-host", 8080)).Because($"casing {index}");
             }
             else
             {
                 var bound = Binders.Dovetail<PascalLower>(configuration);
-                await (bound.myKey, bound.inner.waitTime, bound.itemList.Single().itemName).Should().BeEqualTo(("value", 7, "first")).Because($"casing {index}");
+                await (bound.myKey, bound.inner.waitTime, bound.itemList.Count, bound.itemList[0].itemName).Should().BeEqualTo(("value", 7, 1, "first")).Because($"casing {index}");
                 await Binders.Dovetail<PascalLowerRecord>(configuration).Should().BeEqualTo(new PascalLowerRecord("record-host", 8080)).Because($"casing {index}");
             }
         }

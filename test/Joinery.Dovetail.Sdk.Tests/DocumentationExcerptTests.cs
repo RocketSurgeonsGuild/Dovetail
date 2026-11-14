@@ -43,13 +43,20 @@ public partial class DocumentationExcerptTests
             var file = Path.Combine(Config.RootDirectory, excerpt.ExcerptOf!);
             await File.Exists(file).Should().BeTrue().Because($"{excerpt} names {excerpt.ExcerptOf}, which does not exist");
 
-            var linesOfTheFile = File.ReadAllLines(file).Select(Normalize).ToHashSet(StringComparer.Ordinal);
-            var missing = excerpt
-                         .Code.Split('\n')
-                         .Skip(1)
-                         .Select(Normalize)
-                         .Where(z => z.Length > 0 && !linesOfTheFile.Contains(z))
-                         .ToArray();
+            var linesOfTheFile = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var line in File.ReadAllLines(file))
+            {
+                linesOfTheFile.Add(Normalize(line));
+            }
+
+            // The first line is the comment that names the file.
+            var excerptLines = excerpt.Code.Split('\n');
+            var missing = new List<string>();
+            for (var index = 1; index < excerptLines.Length; index++)
+            {
+                var line = Normalize(excerptLines[index]);
+                if (line.Length > 0 && !linesOfTheFile.Contains(line)) missing.Add(line);
+            }
 
             await missing.Should().BeEmpty().Because($"{excerpt} is not a copy of {excerpt.ExcerptOf}: these lines are not in the file");
         }
@@ -76,9 +83,19 @@ public partial class DocumentationExcerptTests
 
         foreach (var block in shown)
         {
-            var registers = block.Code.Split('\n').Select(Normalize).Where(z => z.Contains("Register(", StringComparison.Ordinal)).ToArray();
+            var registers = new List<string>();
+            var notGenerated = new List<string>();
+            foreach (var line in block.Code.Split('\n'))
+            {
+                var register = Normalize(line);
+                if (!register.Contains("Register(", StringComparison.Ordinal)) continue;
+
+                registers.Add(register);
+                if (!generated.Contains(register)) notGenerated.Add(register);
+            }
+
             await registers.Should().NotBeEmpty().Because($"{block} declares a joint interface without a Register");
-            await registers.Where(z => !generated.Contains(z)).Should().BeEmpty().Because($"{block} shows Register declarations that the build does not generate");
+            await notGenerated.Should().BeEmpty().Because($"{block} shows Register declarations that the build does not generate");
         }
     }
 
