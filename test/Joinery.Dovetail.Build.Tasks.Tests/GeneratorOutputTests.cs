@@ -30,8 +30,10 @@ public class GeneratorOutputTests
         // Every Dovetail object that lists properties is closed, however it is reached: sections and hoisted definitions.
         foreach (var definition in SchemaAssert.DovetailDefinitions(application))
         {
-            foreach (var schema in SchemaAssert.Objects(definition.Value).Where(z => z["properties"] is JsonObject properties && z["additionalProperties"] is null && !IsSharedParent(properties)))
+            foreach (var schema in SchemaAssert.Objects(definition.Value))
             {
+                if (schema["properties"] is not JsonObject properties || schema["additionalProperties"] is not null || IsSharedParent(properties)) continue;
+
                 schema["propertyNames"].ShouldNotBeNull($"{definition.Key} has an open object with properties: {schema.ToJsonString()}");
             }
         }

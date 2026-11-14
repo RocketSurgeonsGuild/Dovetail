@@ -728,7 +728,13 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         var steps = driver.GetRunResult().Results.Single().TrackedSteps;
         foreach (var name in new[] { "dovetail:configuration_classes", "dovetail:configuration_sections" })
         {
-            steps[name].SelectMany(z => z.Outputs).Select(z => z.Reason).ShouldAllBe(z => z == IncrementalStepRunReason.Cached || z == IncrementalStepRunReason.Unchanged, name);
+            foreach (var step in steps[name])
+            {
+                foreach (var (_, reason) in step.Outputs)
+                {
+                    reason.ShouldBeOneOf([IncrementalStepRunReason.Cached, IncrementalStepRunReason.Unchanged], name);
+                }
+            }
         }
     }
 

@@ -64,7 +64,7 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
         CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).ShouldBe(["From the generic logger", "From the factory", "From Serilog",]);
         foreach (var provider in new[] { first, second, })
         {
-            provider.Entries.Select(entry => entry.Message).ShouldBe(["From the generic logger", "From the factory", "From Serilog",]);
+            MessagesOf(provider).ShouldBe(["From the generic logger", "From the factory", "From Serilog",]);
         }
     }
 
@@ -206,5 +206,16 @@ public class SerilogProviderForwardingTests() : AutoFakeTest<TestRecord>(TestRec
         // The logger disposes the providers it writes to, and so does the container that owns them: a provider has to cope with that, as it does
         // with any Dispose, and the providers that matter (OpenTelemetry's, say) do.
         provider.Disposals.ShouldBeGreaterThanOrEqualTo(1);
+    }
+
+    private static List<string> MessagesOf(CapturingProvider provider)
+    {
+        var messages = new List<string>(provider.Entries.Count);
+        foreach (var entry in provider.Entries)
+        {
+            messages.Add(entry.Message);
+        }
+
+        return messages;
     }
 }

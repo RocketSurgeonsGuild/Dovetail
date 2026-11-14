@@ -334,13 +334,13 @@ public class KeyStyleTests
             if (style == "Undefined")
             {
                 var bound = Binders.Dovetail<UndefinedLower>(configuration);
-                (bound.myKey, bound.inner.waitTime, bound.itemList.Single().itemName).ShouldBe(("value", 7, "first"), $"casing {index}");
+                (bound.myKey, bound.inner.waitTime, bound.itemList.ShouldHaveSingleItem().itemName).ShouldBe(("value", 7, "first"), $"casing {index}");
                 Binders.Dovetail<UndefinedLowerRecord>(configuration).ShouldBe(new UndefinedLowerRecord("record-host", 8080), $"casing {index}");
             }
             else
             {
                 var bound = Binders.Dovetail<PascalLower>(configuration);
-                (bound.myKey, bound.inner.waitTime, bound.itemList.Single().itemName).ShouldBe(("value", 7, "first"), $"casing {index}");
+                (bound.myKey, bound.inner.waitTime, bound.itemList.ShouldHaveSingleItem().itemName).ShouldBe(("value", 7, "first"), $"casing {index}");
                 Binders.Dovetail<PascalLowerRecord>(configuration).ShouldBe(new PascalLowerRecord("record-host", 8080), $"casing {index}");
             }
         }

@@ -219,7 +219,7 @@ public class OpenTelemetryParityTests
 
         foreach (var provider in Providers(host))
         {
-            var attributes = provider.GetResource().Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
+            var attributes = AttributesOf(provider);
 
             attributes.ShouldContainKeyAndValue(TelemetrySdkName, "opentelemetry");
             attributes.ShouldContainKeyAndValue(TelemetrySdkLanguage, "dotnet");
@@ -246,7 +246,7 @@ public class OpenTelemetryParityTests
 
         foreach (var provider in Providers(host))
         {
-            var attributes = provider.GetResource().Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
+            var attributes = AttributesOf(provider);
 
             attributes.ShouldContainKeyAndValue(ServiceName, "from-configuration");
             attributes.ShouldContainKeyAndValue("test.detected", "from-configuration");
@@ -326,4 +326,15 @@ public class OpenTelemetryParityTests
         string.Join(';', resource.Attributes.OrderBy(attribute => attribute.Key, StringComparer.Ordinal).Select(attribute => $"{attribute.Key}={attribute.Value}"));
 
     private sealed class BaseJointMarker;
+
+    private static Dictionary<string, object> AttributesOf(BaseProvider provider)
+    {
+        var attributes = new Dictionary<string, object>();
+        foreach (var attribute in provider.GetResource().Attributes)
+        {
+            attributes.Add(attribute.Key, attribute.Value);
+        }
+
+        return attributes;
+    }
 }

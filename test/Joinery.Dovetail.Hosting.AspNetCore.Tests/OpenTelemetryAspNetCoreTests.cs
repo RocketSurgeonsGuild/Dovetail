@@ -89,7 +89,7 @@ public class OpenTelemetryAspNetCoreTests
         ];
         foreach (var provider in providers)
         {
-            var attributes = provider.GetResource().Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
+            var attributes = AttributesOf(provider);
 
             attributes.ShouldContainKeyAndValue("telemetry.sdk.name", "opentelemetry");
             attributes.ShouldContainKeyAndValue("telemetry.sdk.language", "dotnet");
@@ -145,4 +145,15 @@ public class OpenTelemetryAspNetCoreTests
         }
     }
 #endif
+
+    private static Dictionary<string, object> AttributesOf(BaseProvider provider)
+    {
+        var attributes = new Dictionary<string, object>();
+        foreach (var attribute in provider.GetResource().Attributes)
+        {
+            attributes.Add(attribute.Key, attribute.Value);
+        }
+
+        return attributes;
+    }
 }

@@ -50,9 +50,9 @@ internal static class SchemaAssert
             // patternProperties keys are patterns too (SchemaStore's use named groups); keep the schemas, number the keys.
             if (schema["patternProperties"] is JsonObject patternProperties)
             {
-                var entries = patternProperties.ToArray();
+                var entries = new List<KeyValuePair<string, JsonNode?>>(patternProperties);
                 patternProperties.Clear();
-                for (var index = 0; index < entries.Length; index++)
+                for (var index = 0; index < entries.Count; index++)
                 {
                     patternProperties[$"^p{index}$"] = entries[index].Value;
                 }

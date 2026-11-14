@@ -43,7 +43,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
     /// </summary>
     private static bool IsPackageSchema(string identity, PackageVerificationResult package) =>
         identity.EndsWith(
-            string.Join(Path.DirectorySeparatorChar, package.PackageId.ToLowerInvariant(), package.Version.ToLowerInvariant(), "ConfigurationSchema.json"),
+            Path.Combine(package.PackageId.ToLowerInvariant(), package.Version.ToLowerInvariant(), "ConfigurationSchema.json"),
             StringComparison.OrdinalIgnoreCase
         );
 
@@ -171,7 +171,7 @@ public class ConfigurationSchemaVisualStudioTests(string targetFramework)
         identities.ShouldContain(HostSchemaPath(project, "host"));
         foreach (var package in packages)
         {
-            identities.Count(z => IsPackageSchema(z, package)).ShouldBe(1);
+            identities.ShouldContain(z => IsPackageSchema(z, package), 1);
         }
 
         identities.Length.ShouldBe(identities.Distinct().Count());
