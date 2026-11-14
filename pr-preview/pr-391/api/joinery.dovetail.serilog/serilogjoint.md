@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/pr-preview/pr-391/api/joinery.dovetail.serilog.md)
-- Version: `0.5.4-pr.4`
+- Version: `0.5.4-pr.10`
 - Namespace: `Joinery.Dovetail.Serilog`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
