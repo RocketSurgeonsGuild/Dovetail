@@ -46,7 +46,7 @@
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
     <!-- Joinery.Dovetail.ModularPipelines; ModularPipelines 4 targets net11.0 only. -->
-    <PackageVersion Include="ModularPipelines" Version="4.0.0-rc.1" />
+    <PackageVersion Include="ModularPipelines" Version="4.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
     <PackageVersion Include="Polyfill" Version="11.4.5" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
@@ -84,9 +84,9 @@
     <PackageVersion Include="Microsoft.Playwright" Version="1.64.1" />
     <PackageVersion Include="Rocket.Surgery.Extensions.Testing.TUnit" Version="11.0.1" />
     <PackageVersion Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" Version="11.0.1" />
-    <PackageVersion Include="TUnit" Version="1.84.0" />
-    <PackageVersion Include="TUnit.Mocks" Version="1.84.0" />
-    <PackageVersion Include="TUnit.Assertions.Should" Version="1.84.0-beta" />
+    <PackageVersion Include="TUnit" Version="1.85.0" />
+    <PackageVersion Include="TUnit.Mocks" Version="1.85.0" />
+    <PackageVersion Include="TUnit.Assertions.Should" Version="1.85.0-beta" />
     <PackageVersion Include="Verify.TUnit" Version="33.4.0" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CrashDump" Version="2.5.3" />
     <PackageVersion Include="Microsoft.Testing.Extensions.HangDump" Version="2.5.3" />
