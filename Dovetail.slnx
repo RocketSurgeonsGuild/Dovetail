@@ -137,9 +137,4 @@
     <Project Path="test/Joinery.Dovetail.Hosting.Uno.Tests/Joinery.Dovetail.Hosting.Uno.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.WebAssembly.Hosting.Tests/Joinery.Dovetail.WebAssembly.Hosting.Tests.csproj" />
   </Folder>
-  <Folder Name="/test/Joinery.Dovetail.Analyzers.Tests.supports/">
-    <Project Path="test/Joinery.Dovetail.Analyzers.Tests.supports/Joinery.Dovetail.Analyzers.roslyn5.0.Tests.csproj" />
-    <Project Path="test/Joinery.Dovetail.Analyzers.Tests.supports/Joinery.Dovetail.Analyzers.roslyn5.3.Tests.csproj" />
-    <Project Path="test/Joinery.Dovetail.Analyzers.Tests.supports/Joinery.Dovetail.Analyzers.roslyn5.6.Tests.csproj" />
-  </Folder>
 </Solution>
