@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Stashbox
 
 - Package: `Joinery.Dovetail.Stashbox`
-- Version: `0.5.4-pr.2`
+- Version: `0.5.4-pr.7`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Stashbox](https://www.nuget.org/packages/Joinery.Dovetail.Stashbox)
 
