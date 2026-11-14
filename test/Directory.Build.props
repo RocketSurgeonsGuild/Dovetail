@@ -6,14 +6,13 @@
         <OutputType>Exe</OutputType>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <!--
-            Run each test framework on its own runtime. The root Directory.Build.props sets LatestMajor, which ran every net10.0
-            test application on .NET 11 whenever both were installed (CI installs both: .config/mise.toml). Major uses the
-            targeted major when it's installed and rolls forward only when it isn't.
-        -->
-        <RollForward>Major</RollForward>
         <MergeCoverage>true</MergeCoverage>
         <IncludeTestAssembly>true</IncludeTestAssembly>
+        <!--
+            The repo-wide LatestMajor would run the net10.0 tests on the newest installed runtime (.NET 11), so a .NET 10 regression
+            would pass CI. Keep each target on its own major: mise installs the .NET 10 runtime alongside the SDK for this.
+        -->
+        <RollForward>Minor</RollForward>
         <ImportDovetailAssembly>true</ImportDovetailAssembly>
     </PropertyGroup>
 </Project>

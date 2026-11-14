@@ -10,7 +10,8 @@ public static class ModuleInitializer
     [ModuleInitializer]
     public static void Init()
     {
-        VerifyPlaywright.Initialize(true);
+        // PlaywrightFixture installs the one browser it launches; Initialize(true) would install all of them, on every target framework.
+        VerifyPlaywright.Initialize();
         VerifyAngleSharpDiffing.Initialize();
         HtmlPrettyPrint.All(
             list =>

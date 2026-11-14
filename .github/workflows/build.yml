@@ -72,6 +72,18 @@ jobs:
               run: mise ls --current --local --json | jq -r 'keys[] | select(. != "dotnet")' | xargs mise install
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            # mise records a dotnet install by version alone, so a restored cache whose dotnet@10.0.15 is the base runtime (from
+            # before .config/mise.toml asked for runtime = "aspnetcore") counts as installed, and the net10.0 test projects that use
+            # ASP.NET Core can't start ("Framework: 'Microsoft.AspNetCore.App', version '10.0.0'"). For each runtime entry (an
+            # SDK's patch number is 100 or more), reinstall it when its ASP.NET Core runtime is missing.
+            - name: 🧩 Install missing ASP.NET Core runtimes
+              run: |
+                  for version in $(mise ls --current --local --json dotnet | jq -r '.[].version | select((split(".")[2] | tonumber) < 100)'); do
+                      if [ ! -d "$(mise where "dotnet@$version")/shared/Microsoft.AspNetCore.App/$version" ]; then
+                          echo "dotnet@$version has no ASP.NET Core runtime; reinstalling it"
+                          mise install --force "dotnet@$version"
+                      fi
+                  done
             # Run history, the duration estimates (which order the critical path and the test projects) and the module cache live
             # in .modularpipelines/, which a new runner starts without. Every run restores the newest one saved from main; only
             # main saves, so pull requests never make a cache of their own.

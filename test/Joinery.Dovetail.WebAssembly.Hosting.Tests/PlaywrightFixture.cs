@@ -23,8 +23,23 @@ public sealed class PlaywrightFixture : IAsyncInitializer, IAsyncDisposable
     public IBrowser? Browser { get; set; } = null!;
     private IPlaywright PlaywrightInstance { get; set; } = null!;
 
+    // Installs only what the fixture launches: a headless Chromium runs Chromium's headless shell. A full `playwright install`
+    // (Verify.Playwright's Initialize(true)) also fetched Chromium, Firefox, WebKit and FFmpeg, and on Linux runners warned that
+    // the Firefox and WebKit libraries were missing. A failed install throws here, so the browser tests fail instead of skipping.
+    private static readonly Lazy<Task> InstallBrowser = new(
+        () => Task.Run(
+            static () =>
+            {
+                var exitCode = Program.Main(["install", "--only-shell", "chromium"]);
+                if (exitCode != 0)
+                    throw new InvalidOperationException($"`playwright install --only-shell chromium` exited with code {exitCode}");
+            }
+        )
+    );
+
     public async Task InitializeAsync()
     {
+        await InstallBrowser.Value;
         Uri = await StartServerAsync();
         PlaywrightInstance = await Playwright.CreateAsync();
         Browser = await PlaywrightInstance.Chromium.LaunchAsync(new() { Headless = true, });
