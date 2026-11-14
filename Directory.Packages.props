@@ -37,7 +37,9 @@
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="11.0.0" />
     <!-- Sample.Uno pulls 10.0.12 of Pkcs and Xml through Uno (GHSA-7hqp-7c5m-4vq6 and others, fixed in 10.0.13). -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="11.0.0" />
-    <PackageVersion Include="Rocket.Surgery.ModularPipelines.Extensions" Version="0.1.15" />
+    <PackageVersion Include="Rocket.Surgery.ModularPipelines.Extensions" Version="0.2.1" />
+    <!-- The build host (build/Build.cs) references the published Dovetail and Specular generators directly, as Rocket.Surgery.ModularPipelines.Extensions requires; they write ConfigureDovetail and the module scan into it. -->
+    <PackageVersion Include="Joinery.Dovetail.ModularPipelines" Version="0.5.3" />
     <PackageVersion Include="Sourcy.DotNet" Version="1.1.1" />
     <PackageVersion Include="Sourcy.Git" Version="1.1.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
@@ -77,7 +79,7 @@
              conflicts with the pinned System.Text.Json used by the older Roslyn-host support projects). -->
 
 
-    <!-- Only the Joinery.Dovetail.Sdk.Tests scaffolds reference it, to prove Dovetail seeds Specular's provider without depending on Specular. -->
+    <!-- The build host (build/Build.cs) references it for its module scan; the Joinery.Dovetail.Sdk.Tests scaffolds reference it to prove Dovetail seeds Specular's provider without depending on Specular. -->
     <PackageVersion Include="Specular" Version="0.4.1" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
     <PackageVersion Include="FakeItEasy" Version="9.0.1" />
