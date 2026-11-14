@@ -89,9 +89,10 @@ jobs:
                   mise run build
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  # Leaves Joinery.Dovetail.Sdk.Tests out of the solution's test run (and skips packing src for it): the
-                  # sdk-tests jobs run it.
-                  DovetailSdkTests: 'false'
+                  # The sdk-tests jobs run Joinery.Dovetail.Sdk.Tests: leave it out of the pipeline's test run, and don't pack
+                  # src for it while building the solution.
+                  ExcludeTests__0: test/Joinery.Dovetail.Sdk.Tests/**
+                  SkipDovetailSourcePackages: 'true'
                   # The folder of the gh-pages branch these docs deploy to (see the docs job): a pull request's preview, a
                   # release's version folder, or (empty) the site root that holds latest main.
                   DOCS_BASE: >-
