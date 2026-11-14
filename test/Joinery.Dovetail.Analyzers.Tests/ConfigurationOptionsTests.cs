@@ -158,7 +158,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
         var steps = driver.GetRunResult().Results.Single().TrackedSteps;
         foreach (var name in new[] { "dovetail:configuration_classes", "dovetail:configuration_options", "dovetail:configuration_sections" })
         {
-            steps[name].SelectMany(z => z.Outputs).Select(z => z.Reason).ShouldAllBe(z => z == IncrementalStepRunReason.Cached || z == IncrementalStepRunReason.Unchanged, name);
+            await steps[name].SelectMany(z => z.Outputs).Select(z => z.Reason).Should().All(z => z is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged).Because(name);
         }
     }
 
@@ -241,8 +241,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
-        result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).ShouldContain("Dovetail_ConfigurationOptions.g.cs");
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().Contain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -326,7 +326,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
         var binderSource = result.Results[typeof(DovetailAttributesGenerator)]
                                  .SyntaxTrees.Single(z => Path.GetFileName(z.FilePath) == "Dovetail_ConfigurationOptions.g.cs")
                                  .ToString();
@@ -334,9 +334,9 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                            .Single(z => z.ConstructorArguments is [{ Value: "Dovetail.ConfigurationSchema.v1:Secret" }, _])
                            .ConstructorArguments[1]
                            .Value as string;
-        binderSource.Contains("key: \"Hidden\"", StringComparison.Ordinal).ShouldBe(!ignored);
-        schema!.Contains("\"Hidden\"", StringComparison.Ordinal).ShouldBe(!ignored);
-        binderSource.ShouldContain("key: \"Name\"");
+        await binderSource.Contains("key: \"Hidden\"", StringComparison.Ordinal).Should().BeEqualTo(!ignored);
+        await schema!.Contains("\"Hidden\"", StringComparison.Ordinal).Should().BeEqualTo(!ignored);
+        await binderSource.Should().Contain("key: \"Name\"");
     }
 
     [Test]
@@ -360,10 +360,9 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.Results[typeof(DovetailAttributesGenerator)]
-              .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}")
-              .ShouldBe(["DT0011: 'Sample.RefOptions' can't be created from configuration because its constructor parameters can't be in, out or ref ('value')"]);
-        result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).ShouldNotContain("Dovetail_ConfigurationOptions.g.cs");
+        await result.Results[typeof(DovetailAttributesGenerator)]
+              .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}").Should().BeEquivalentTo(["DT0011: 'Sample.RefOptions' can't be created from configuration because its constructor parameters can't be in, out or ref ('value')"], CollectionOrdering.Matching);
+        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().NotContain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -385,8 +384,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
-        result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).ShouldNotContain("Dovetail_ConfigurationOptions.g.cs");
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().NotContain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -408,10 +407,9 @@ public class ConfigurationOptionsTests() : GeneratorTest()
         );
 
         var steps = driver.GetRunResult().Results.Single().TrackedSteps;
-        steps["dovetail:configuration_options"]
+        await steps["dovetail:configuration_options"]
            .SelectMany(z => z.Outputs)
-           .Select(z => z.Reason)
-           .ShouldAllBe(z => z == IncrementalStepRunReason.Cached || z == IncrementalStepRunReason.Unchanged);
+           .Select(z => z.Reason).Should().All(z => z is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged);
     }
 
     /// <summary>
@@ -442,8 +440,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
-        GeneratedOptions(result).ShouldContain($"global::ZeroAlloc.Validation.Options.{extensionsClass}.ValidateWithZeroAlloc(");
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        await GeneratedOptions(result).Should().Contain($"global::ZeroAlloc.Validation.Options.{extensionsClass}.ValidateWithZeroAlloc(");
     }
 
     /// <summary>
@@ -468,8 +466,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
 
         var result = await builder.Build().GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
-        GeneratedOptions(result).ShouldNotContain("ValidateWithZeroAlloc");
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        await GeneratedOptions(result).Should().NotContain("ValidateWithZeroAlloc");
     }
 
     /// <summary>
@@ -537,17 +535,14 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
-        result.Results[typeof(DovetailAttributesGenerator)]
-              .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}")
-              .ShouldBe(
-                   [
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        await result.Results[typeof(DovetailAttributesGenerator)]
+              .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}").Should().BeEquivalentTo([
                        "DT0018: 'Sample.TenantsOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous",
-                   ]
-               );
+                   ], CollectionOrdering.Matching);
         var generated = GeneratedOptions(result);
-        generated.ShouldContain("ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.DerivedOptions>");
-        generated.ShouldNotContain("ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.TenantsOptions>");
+        await generated.Should().Contain("ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.DerivedOptions>");
+        await generated.Should().NotContain("ValidateWithZeroAlloc(global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.TenantsOptions>");
     }
 
     /// <summary>
@@ -648,7 +643,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
         await Verify(result);
     }
 
@@ -770,7 +765,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
         // Which assembly versions need unifying (CS1701, CS1702) depends on the runtime the tests run on, so they stay out of the snapshot.
         await Verify(result with { FinalDiagnostics = result.FinalDiagnostics.RemoveAll(z => z.Id is "CS1701" or "CS1702") });
     }
@@ -865,7 +860,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     /// <summary>The generated options file and the exports that list its joint; the generated code must compile.</summary>
     private static string Describe(GeneratorTestResults result)
     {
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        var compileErrors = result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ToArray();
+        if (compileErrors.Length > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, compileErrors.Select(z => z.ToString())));
 
         var generated = result.Results[typeof(DovetailAttributesGenerator)];
         var text = new StringBuilder();

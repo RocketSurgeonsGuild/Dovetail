@@ -8,7 +8,7 @@ using Rocket.Surgery.Extensions.Testing;
 
 namespace Joinery.Dovetail.Hosting.AspNetCore.Tests;
 
-public class RocketWebApplicationBuilderTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class RocketWebApplicationBuilderTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task Should_Build_The_Host_Correctly()
@@ -37,6 +37,6 @@ public class RocketWebApplicationBuilderTests() : AutoFakeTest<TestRecord>(TestR
             )
         );
 
-        host.Configuration["Dovetail:Chained"].ShouldBe("yes");
+        await host.Configuration["Dovetail:Chained"].Should().BeEqualTo("yes");
     }
 }

@@ -16,7 +16,7 @@ public partial class DocumentationExcerptTests
     /// generated interface. Anything else is a fragment the other tests cannot see, which is how a wrong signature stays in the docs.
     /// </summary>
     [Test]
-    public void EveryRegisterOnTheDocsSite_IsCompiledOrCopiedFromCodeThatBuilds()
+    public async Task EveryRegisterOnTheDocsSite_IsCompiledOrCopiedFromCodeThatBuilds()
     {
         var unaccounted = DocumentationCodeBlock
                         .All()
@@ -24,10 +24,8 @@ public partial class DocumentationExcerptTests
                         .Select(z => z.ToString())
                         .ToArray();
 
-        unaccounted.ShouldBeEmpty(
-            "each of these blocks has a Register that no test checks: make it a complete class that implements a joint interface, begin it with a comment "
-          + "naming the file it is copied from (// sample/..., // src/... or // test/...), or declare the joint interface that the build generates"
-        );
+        await unaccounted.Should().BeEmpty().Because("each of these blocks has a Register that no test checks: make it a complete class that implements a joint interface, begin it with a comment "
+          + "naming the file it is copied from (// sample/..., // src/... or // test/...), or declare the joint interface that the build generates");
     }
 
     /// <summary>
@@ -35,15 +33,15 @@ public partial class DocumentationExcerptTests
     /// the comment that names the file, is not part of the file.
     /// </summary>
     [Test]
-    public void EveryExcerptOnTheDocsSite_IsMadeOfLinesOfTheFileItNames()
+    public async Task EveryExcerptOnTheDocsSite_IsMadeOfLinesOfTheFileItNames()
     {
         var excerpts = DocumentationCodeBlock.All().Where(z => z.HasRegister && z.ExcerptOf is not null).ToArray();
-        excerpts.ShouldNotBeEmpty("the dovetail-joint reference page excerpts DatabaseServiceJoint from the sample");
+        await excerpts.Should().NotBeEmpty().Because("the dovetail-joint reference page excerpts DatabaseServiceJoint from the sample");
 
         foreach (var excerpt in excerpts)
         {
             var file = Path.Combine(Config.RootDirectory, excerpt.ExcerptOf!);
-            File.Exists(file).ShouldBeTrue($"{excerpt} names {excerpt.ExcerptOf}, which does not exist");
+            await File.Exists(file).Should().BeTrue().Because($"{excerpt} names {excerpt.ExcerptOf}, which does not exist");
 
             var linesOfTheFile = File.ReadAllLines(file).Select(Normalize).ToHashSet(StringComparer.Ordinal);
             var missing = excerpt
@@ -53,7 +51,7 @@ public partial class DocumentationExcerptTests
                          .Where(z => z.Length > 0 && !linesOfTheFile.Contains(z))
                          .ToArray();
 
-            missing.ShouldBeEmpty($"{excerpt} is not a copy of {excerpt.ExcerptOf}: these lines are not in the file");
+            await missing.Should().BeEmpty().Because($"{excerpt} is not a copy of {excerpt.ExcerptOf}: these lines are not in the file");
         }
     }
 
@@ -63,10 +61,10 @@ public partial class DocumentationExcerptTests
     /// (this project builds the Serilog one, and packs them all).
     /// </summary>
     [Test]
-    public void EveryGeneratedInterfaceOnTheDocsSite_IsLineForLineWhatTheBuildGenerates()
+    public async Task EveryGeneratedInterfaceOnTheDocsSite_IsLineForLineWhatTheBuildGenerates()
     {
         var shown = DocumentationCodeBlock.All().Where(z => z.DeclaresAJointInterface).ToArray();
-        shown.ShouldNotBeEmpty("the dovetail-joint reference page shows the interface the Serilog declaration generates");
+        await shown.Should().NotBeEmpty().Because("the dovetail-joint reference page shows the interface the Serilog declaration generates");
 
         var generated = Directory
                        .EnumerateFiles(Path.Combine(Config.RootDirectory, "src"), "DovetailJoint*.g.cs", SearchOption.AllDirectories)
@@ -74,13 +72,13 @@ public partial class DocumentationExcerptTests
                        .SelectMany(File.ReadAllLines)
                        .Select(Normalize)
                        .ToHashSet(StringComparer.Ordinal);
-        generated.ShouldNotBeEmpty("the source projects have not been built, so there is no generated code to compare with");
+        await generated.Should().NotBeEmpty().Because("the source projects have not been built, so there is no generated code to compare with");
 
         foreach (var block in shown)
         {
             var registers = block.Code.Split('\n').Select(Normalize).Where(z => z.Contains("Register(", StringComparison.Ordinal)).ToArray();
-            registers.ShouldNotBeEmpty($"{block} declares a joint interface without a Register");
-            registers.Where(z => !generated.Contains(z)).ShouldBeEmpty($"{block} shows Register declarations that the build does not generate");
+            await registers.Should().NotBeEmpty().Because($"{block} declares a joint interface without a Register");
+            await registers.Where(z => !generated.Contains(z)).Should().BeEmpty().Because($"{block} shows Register declarations that the build does not generate");
         }
     }
 
@@ -90,14 +88,14 @@ public partial class DocumentationExcerptTests
     /// interfaces themselves, and with their async twins, which the page says take a trailing <c>CancellationToken</c> with a default.
     /// </summary>
     [Test]
-    public void EveryJointKindInATableOnTheDocsSite_HasTheRegisterTheTableShows()
+    public async Task EveryJointKindInATableOnTheDocsSite_HasTheRegisterTheTableShows()
     {
         var rows = DocumentationCodeBlock
                   .Pages()
                   .SelectMany(page => page.Lines.Select((line, index) => (page.Path, Line: index + 1, Row: KindRow().Match(line))))
                   .Where(z => z.Row.Success)
                   .ToArray();
-        rows.ShouldNotBeEmpty("defining-joints.md lists what Register takes for each kind of joint");
+        await rows.Should().NotBeEmpty().Because("defining-joints.md lists what Register takes for each kind of joint");
 
         var assembly = typeof(IDovetailContext).Assembly;
         foreach (var (path, line, row) in rows)
@@ -108,16 +106,16 @@ public partial class DocumentationExcerptTests
             var documented = row.Groups["parameters"].Value;
 
             var joint = assembly.GetType($"Joinery.Dovetail.Joints.{name}{suffix}");
-            joint.ShouldNotBeNull($"{path}({line}) names {name}, which {assembly.GetName().Name} does not generate");
-            Parameters(RegisterOf(joint)).ShouldBe(documented, $"{path}({line}): {name}.Register");
+            await joint.Should().NotBeNull().Because($"{path}({line}) names {name}, which {assembly.GetName().Name} does not generate");
+            await Parameters(RegisterOf(joint)).Should().BeEqualTo(documented).Because($"{path}({line}): {name}.Register");
 
             var asyncName = name.Replace("Joint", "AsyncJoint", StringComparison.Ordinal);
             var asyncJoint = assembly.GetType($"Joinery.Dovetail.Joints.{asyncName}{suffix}");
-            asyncJoint.ShouldNotBeNull($"{path}({line}) says {name} has an async twin, and there is no {asyncName}");
+            await asyncJoint.Should().NotBeNull().Because($"{path}({line}) says {name} has an async twin, and there is no {asyncName}");
             var asyncRegister = RegisterOf(asyncJoint);
-            Parameters(asyncRegister).ShouldBe($"{documented}, CancellationToken cancellationToken", $"{path}({line}): {asyncName}.Register");
-            asyncRegister.ReturnType.ShouldBe(typeof(ValueTask), $"{asyncName}.Register returns a ValueTask");
-            asyncRegister.GetParameters()[^1].HasDefaultValue.ShouldBeTrue($"the CancellationToken of {asyncName}.Register has a default");
+            await Parameters(asyncRegister).Should().BeEqualTo($"{documented}, CancellationToken cancellationToken").Because($"{path}({line}): {asyncName}.Register");
+            await asyncRegister.ReturnType.Should().BeEqualTo(typeof(ValueTask)).Because($"{asyncName}.Register returns a ValueTask");
+            await asyncRegister.GetParameters()[^1].HasDefaultValue.Should().BeTrue().Because($"the CancellationToken of {asyncName}.Register has a default");
         }
     }
 

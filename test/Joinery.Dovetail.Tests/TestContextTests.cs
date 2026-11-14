@@ -7,27 +7,27 @@ using ILogger = Serilog.ILogger;
 
 namespace Joinery.Dovetail.Tests;
 
-public class TestContextTests() : AutoFakeTest<TestRecord>(TestRecord.Create(LogEventLevel.Information))
+public class TestContextTests() : LoggerTest<TestRecord>(TestRecord.Create(LogEventLevel.Information))
 {
     [Test]
-    public void Builder_Should_Create_Host()
+    public async Task Builder_Should_Create_Host()
     {
-        var a = () => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
-        var context = a.ShouldNotThrow();
-        context.Get<ILogger>().ShouldBeSameAs(Logger);
+        DovetailContextBuilder a() => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
+        var context = await Assert.That(a).ThrowsNothing();
+        await context.Get<ILogger>().Should().BeSameReferenceAs(Logger);
     }
 
     [Test]
-    public void Builder_Should_Create_Host_ByType()
+    public async Task Builder_Should_Create_Host_ByType()
     {
-        var a = () => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
-        a.ShouldNotThrow();
+        DovetailContextBuilder a() => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
+        await Assert.That(a).ThrowsNothing();
     }
 
     [Test]
-    public void Builder_Should_Create_Host_ByAssembly()
+    public async Task Builder_Should_Create_Host_ByAssembly()
     {
-        var a = () => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
-        a.ShouldNotThrow();
+        DovetailContextBuilder a() => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
+        await Assert.That(a).ThrowsNothing();
     }
 }

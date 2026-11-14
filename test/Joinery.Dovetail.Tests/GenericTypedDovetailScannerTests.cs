@@ -1,18 +1,16 @@
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
+using Joinery.Dovetail.Tests.Fixtures;
 using Rocket.Surgery.Extensions.Testing;
-
-
 
 namespace Joinery.Dovetail.Tests;
 
-public class GenericTypedDovetailScannerTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class GenericTypedDovetailScannerTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
-    public void ShouldConstruct()
+    public async Task ShouldConstruct()
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
-        scanner.ShouldNotBeNull();
+        await scanner.Should().NotBeNull();
     }
 
     [Test]
@@ -29,8 +27,8 @@ public class GenericTypedDovetailScannerTests() : AutoFakeTest<TestRecord>(TestR
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var contribution = A.Fake<IServiceJoint>(c => c.Named("contribution"));
-        var contribution2 = A.Fake<IServiceJoint>(c => c.Named("contribution2"));
+        var contribution = new NamedServiceJoint("contribution");
+        var contribution2 = new NamedServiceJoint("contribution2");
 
         scanner.PrependJoint(contribution);
         scanner.AppendJoint(contribution2);
@@ -44,8 +42,8 @@ public class GenericTypedDovetailScannerTests() : AutoFakeTest<TestRecord>(TestR
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var @delegate = A.Fake<ServiceJointDelegate>(c => c.Named("delegate"));
-        var delegate2 = A.Fake<ServiceJointDelegate>(c => c.Named("delegate2"));
+        var @delegate = Mock.OfDelegate<ServiceJointDelegate>().Object;
+        var delegate2 = Mock.OfDelegate<ServiceJointDelegate>().Object;
 
         scanner.ConfigureServices(delegate2, default, null);
         scanner.ConfigureServices(@delegate, default, null);
@@ -58,8 +56,8 @@ public class GenericTypedDovetailScannerTests() : AutoFakeTest<TestRecord>(TestR
     public async Task ShouldScanExcludeContributionTypes()
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
-        var contribution = A.Fake<IServiceJoint>(c => c.Named("contribution"));
-        var contribution2 = A.Fake<IServiceJoint>(c => c.Named("contribution2"));
+        var contribution = new NamedServiceJoint("contribution");
+        var contribution2 = new NamedServiceJoint("contribution2");
 
         scanner.AppendJoint(contribution);
         scanner.PrependJoint(contribution2);
@@ -74,7 +72,7 @@ public class GenericTypedDovetailScannerTests() : AutoFakeTest<TestRecord>(TestR
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var contribution = A.Fake<IServiceJoint>(c => c.Named("contribution"));
+        var contribution = new NamedServiceJoint("contribution");
 
         scanner.PrependJoint(contribution);
         scanner.ExceptJoint(contribution.GetType().Assembly);

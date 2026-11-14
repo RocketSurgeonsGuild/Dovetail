@@ -26,9 +26,9 @@ public class MauiHostingTests
     {
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
-        app.Services.GetService<IFromHostApplicationJoint>().ShouldNotBeNull();
-        app.Services.GetService<IFromMauiAppBuilderJoint>().ShouldNotBeNull();
-        Observed.App.ShouldBeSameAs(app);
+        await app.Services.GetService<IFromHostApplicationJoint>().Should().NotBeNull();
+        await app.Services.GetService<IFromMauiAppBuilderJoint>().Should().NotBeNull();
+        await Observed.App.Should().BeSameReferenceAs(app);
     }
 
     [Test]
@@ -36,9 +36,9 @@ public class MauiHostingTests
     {
         await using var app = await MauiApp.CreateBuilder(useDefaults: false).ConfigureDovetail();
 
-        app.Services.GetService<IFromHostApplicationJoint>().ShouldNotBeNull();
-        app.Services.GetService<IFromMauiAppBuilderJoint>().ShouldNotBeNull();
-        Observed.App.ShouldBeSameAs(app);
+        await app.Services.GetService<IFromHostApplicationJoint>().Should().NotBeNull();
+        await app.Services.GetService<IFromMauiAppBuilderJoint>().Should().NotBeNull();
+        await Observed.App.Should().BeSameReferenceAs(app);
     }
 
     [Test]
@@ -48,7 +48,7 @@ public class MauiHostingTests
                              .CreateBuilder(useDefaults: false)
                              .UseDovetail(rb => rb.ConfigureServices((_, services) => services.AddSingleton(new Marker())));
 
-        app.Services.GetService<Marker>().ShouldNotBeNull();
+        await app.Services.GetService<Marker>().Should().NotBeNull();
     }
 
     [Test]
@@ -57,8 +57,8 @@ public class MauiHostingTests
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
         var configuration = app.Services.GetRequiredService<IConfiguration>();
 
-        configuration["Maui:Name"].ShouldBe("testing");
-        configuration["Maui:Source"].ShouldBe("appsettings");
+        await configuration["Maui:Name"].Should().BeEqualTo("testing");
+        await configuration["Maui:Source"].Should().BeEqualTo("appsettings");
     }
 
     [Test]
@@ -66,8 +66,8 @@ public class MauiHostingTests
     {
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
-        Observed.ApplicationName.ShouldBe(typeof(MauiHostingTests).Assembly.GetName().Name);
-        Observed.Platform.ShouldBe(OperatingSystem.IsMacOS() ? "macOS" : OperatingSystem.IsWindows() ? "Windows" : "Linux");
+        await Observed.ApplicationName.Should().BeEqualTo(typeof(MauiHostingTests).Assembly.GetName().Name);
+        await Observed.Platform.Should().BeEqualTo(OperatingSystem.IsMacOS() ? "macOS" : OperatingSystem.IsWindows() ? "Windows" : "Linux");
     }
 
     [Test]
@@ -76,8 +76,8 @@ public class MauiHostingTests
         using var _ = new EnvironmentVariableScope("DOTNET_ENVIRONMENT", null);
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
-        Observed.EnvironmentName.ShouldBe("Testing");
-        app.Services.GetRequiredService<IHostEnvironment>().EnvironmentName.ShouldBe("Testing");
+        await Observed.EnvironmentName.Should().BeEqualTo("Testing");
+        await app.Services.GetRequiredService<IHostEnvironment>().EnvironmentName.Should().BeEqualTo("Testing");
     }
 
     [Test]
@@ -86,16 +86,16 @@ public class MauiHostingTests
         using var _ = new EnvironmentVariableScope("DOTNET_ENVIRONMENT", "Staging");
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
-        Observed.EnvironmentName.ShouldBe("Staging");
-        app.Services.GetRequiredService<IHostEnvironment>().EnvironmentName.ShouldBe("Staging");
+        await Observed.EnvironmentName.Should().BeEqualTo("Staging");
+        await app.Services.GetRequiredService<IHostEnvironment>().EnvironmentName.Should().BeEqualTo("Staging");
     }
 
     [Test]
-    public void EnvironmentName_FallsBackToProduction()
+    public async Task EnvironmentName_FallsBackToProduction()
     {
         using var _ = new EnvironmentVariableScope("DOTNET_ENVIRONMENT", null);
 
-        DovetailMauiHelpers.GetEnvironmentName(typeof(object).Assembly).ShouldBe(Environments.Production);
+        await DovetailMauiHelpers.GetEnvironmentName(typeof(object).Assembly).Should().BeEqualTo(Environments.Production);
     }
 
     [Test]
@@ -103,7 +103,7 @@ public class MauiHostingTests
     {
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
-        app.Services.GetService<IStashboxContainer>().ShouldNotBeNull();
+        await app.Services.GetService<IStashboxContainer>().Should().NotBeNull();
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public class MauiHostingTests
         using (var source = new ActivitySource(ActivitySourceName))
         using (source.StartActivity(name)) { }
 
-        RecordingProcessor.Ended.ShouldContain(name);
+        await RecordingProcessor.Ended.Should().Contain(name);
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ public class MauiHostingTests
         meter.CreateCounter<long>(name).Add(3);
         app.Services.GetRequiredService<MeterProvider>().ForceFlush();
 
-        ExportedMetrics.ShouldContain(metric => metric.Name == name && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
+        await ExportedMetrics.Should().Contain(metric => metric.Name == name && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
     }
 
     /// <summary>
@@ -149,8 +149,8 @@ public class MauiHostingTests
         await using var app = MauiApp.CreateBuilder(useDefaults: false).UseDovetail();
 
         var attribute = new KeyValuePair<string, object>(ResourceAttribute, "maui");
-        app.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.ShouldContain(attribute);
-        app.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.ShouldContain(attribute);
+        await app.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.Should().Contain(attribute);
+        await app.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.Should().Contain(attribute);
     }
 
     private sealed class Marker;

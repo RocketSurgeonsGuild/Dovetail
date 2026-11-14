@@ -78,13 +78,11 @@ public class JsonContentConfigurationTests(string targetFramework)
             "-t:_DovetailGenerateJsonConfiguration -getProperty:MSBuildProjectDirectory -getProperty:IntermediateOutputPath -getItem:None -getItem:Content"
         );
 
-        AppSettings(result, "None").ShouldBeEmpty();
-        AppSettings(result, "Content").ShouldBe(
-            [
+        await AppSettings(result, "None").Should().BeEmpty();
+        await AppSettings(result, "Content").Should().BeEquivalentTo([
                 ("appsettings.Development.json", "Build.Development.json", "PreserveNewest"),
                 ("appsettings.json", "Build.json", "PreserveNewest"),
-            ]
-        );
+            ], CollectionOrdering.Matching);
         var properties = result.GetProperty("Properties");
         var joint = await File.ReadAllTextAsync(
             Path.Combine(
@@ -93,8 +91,8 @@ public class JsonContentConfigurationTests(string targetFramework)
                 "Dovetail.JsonConfiguration.g.cs"
             )
         );
-        joint.ShouldContain("""builder.AddJsonFile(files, FileName(files, "Build.json", "appsettings.json"), optional: false""");
-        joint.ShouldContain("""builder.AddJsonFile(files, FileName(files, $"Build.{environmentName}.json", $"appsettings.{environmentName}.json"), optional: true""");
+        await joint.Should().Contain("""builder.AddJsonFile(files, FileName(files, "Build.json", "appsettings.json"), optional: false""");
+        await joint.Should().Contain("""builder.AddJsonFile(files, FileName(files, $"Build.{environmentName}.json", $"appsettings.{environmentName}.json"), optional: true""");
     }
 
     /// <summary>The <c>appsettings*</c> items of <paramref name="itemType"/>: file name, target path and copy setting.</summary>

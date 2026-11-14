@@ -43,8 +43,8 @@ public class ConfigurationSchemaFragmentTests(string targetFramework)
         var fragment = File.ReadAllText(
             Directory.EnumerateFiles(Path.Combine(project.Directory, "app", "obj"), "Dovetail_ConfigurationSchema.g.cs", SearchOption.AllDirectories).Single()
         );
-        fragment.ShouldContain("Dovetail.ConfigurationSchema.v1:Host");
+        await fragment.Should().Contain("Dovetail.ConfigurationSchema.v1:Host");
         // HostOptions.ShutdownTimeout's <summary>, from Microsoft.Extensions.Hosting.xml in the package.
-        fragment.ShouldContain("Gets or sets the default timeout for IHost.StopAsync.");
+        await fragment.Should().Contain("Gets or sets the default timeout for IHost.StopAsync.");
     }
 }

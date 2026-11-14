@@ -41,29 +41,29 @@ public class ScaffoldEditorSettingsTests
     }
 
     [Test]
-    public void SettingsGoToTheNearestAncestorWithAGitEntry_AndAreCreatedWithTheirFolder()
+    public async Task SettingsGoToTheNearestAncestorWithAGitEntry_AndAreCreatedWithTheirFolder()
     {
         using var repository = new Repository();
 
         var outcome = repository.Run();
 
-        outcome.SettingsFile.ShouldBe(repository.Settings);
-        outcome.Status.ShouldBe(EditorSettingsStatus.Updated);
-        outcome.Warning.ShouldBeNull();
-        File.ReadAllText(repository.Settings).ShouldContain("\"./src/Host/obj/appsettings.schema.json\"");
+        await outcome.SettingsFile.Should().BeEqualTo(repository.Settings);
+        await outcome.Status.Should().BeEqualTo(EditorSettingsStatus.Updated);
+        await outcome.Warning.Should().BeNull();
+        await File.ReadAllText(repository.Settings).Should().Contain("\"./src/Host/obj/appsettings.schema.json\"");
     }
 
     [Test]
-    public void AGitFile_CountsAsAGitEntry()
+    public async Task AGitFile_CountsAsAGitEntry()
     {
         using var repository = new Repository(git: false);
         File.WriteAllText(Path.Combine(repository.Root, ".git"), "gitdir: ../elsewhere");
 
-        repository.Run().SettingsFile.ShouldBe(repository.Settings);
+        await repository.Run().SettingsFile.Should().BeEqualTo(repository.Settings);
     }
 
     [Test]
-    public void WithoutAGitEntry_TheProjectDirectoryIsUsed()
+    public async Task WithoutAGitEntry_TheProjectDirectoryIsUsed()
     {
         // A temporary directory's ancestors could hold a .git entry on a developer machine; the rule decides, so look for one first.
         using var repository = new Repository(git: false);
@@ -71,40 +71,40 @@ public class ScaffoldEditorSettingsTests
 
         var outcome = repository.Run();
 
-        outcome.SettingsFile.ShouldBe(Path.Combine(repository.Project, ".vscode", "settings.json"));
-        File.ReadAllText(outcome.SettingsFile).ShouldContain("\"./obj/appsettings.schema.json\"");
+        await outcome.SettingsFile.Should().BeEqualTo(Path.Combine(repository.Project, ".vscode", "settings.json"));
+        await File.ReadAllText(outcome.SettingsFile).Should().Contain("\"./obj/appsettings.schema.json\"");
     }
 
     [Test]
-    public void AnExplicitDirectory_WinsOverTheGitRoot()
+    public async Task AnExplicitDirectory_WinsOverTheGitRoot()
     {
         using var repository = new Repository();
         var custom = Path.Combine(repository.Root, "src");
 
         var outcome = repository.Run(custom);
 
-        outcome.SettingsFile.ShouldBe(Path.Combine(custom, ".vscode", "settings.json"));
-        File.Exists(repository.Settings).ShouldBeFalse();
-        File.ReadAllText(outcome.SettingsFile).ShouldContain("\"./Host/obj/appsettings.schema.json\"");
+        await outcome.SettingsFile.Should().BeEqualTo(Path.Combine(custom, ".vscode", "settings.json"));
+        await File.Exists(repository.Settings).Should().BeFalse();
+        await File.ReadAllText(outcome.SettingsFile).Should().Contain("\"./Host/obj/appsettings.schema.json\"");
     }
 
     [Test]
-    public void AnUpToDateFile_IsNotRewritten_AndKeepsItsTimestamp()
+    public async Task AnUpToDateFile_IsNotRewritten_AndKeepsItsTimestamp()
     {
         using var repository = new Repository();
-        repository.Run().Status.ShouldBe(EditorSettingsStatus.Updated);
+        await repository.Run().Status.Should().BeEqualTo(EditorSettingsStatus.Updated);
         var written = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         File.SetLastWriteTimeUtc(repository.Settings, written);
         var content = File.ReadAllBytes(repository.Settings);
 
-        repository.Run().Status.ShouldBe(EditorSettingsStatus.Unchanged);
+        await repository.Run().Status.Should().BeEqualTo(EditorSettingsStatus.Unchanged);
 
-        File.GetLastWriteTimeUtc(repository.Settings).ShouldBe(written);
-        File.ReadAllBytes(repository.Settings).ShouldBe(content);
+        await File.GetLastWriteTimeUtc(repository.Settings).Should().BeEqualTo(written);
+        await File.ReadAllBytes(repository.Settings).Should().BeEquivalentTo(content, CollectionOrdering.Matching);
     }
 
     [Test]
-    public void ExistingSettings_GetOnlyTheMappingsAdded()
+    public async Task ExistingSettings_GetOnlyTheMappingsAdded()
     {
         using var repository = new Repository();
         Directory.CreateDirectory(Path.GetDirectoryName(repository.Settings)!);
@@ -112,13 +112,13 @@ public class ScaffoldEditorSettingsTests
 
         var outcome = repository.Run();
 
-        outcome.Status.ShouldBe(EditorSettingsStatus.Updated);
-        outcome.Warning.ShouldBeNull();
-        File.ReadAllText(repository.Settings).ShouldStartWith("{\n  // keep\n  \"a\": 1,\n  \"json.schemas\": [");
+        await outcome.Status.Should().BeEqualTo(EditorSettingsStatus.Updated);
+        await outcome.Warning.Should().BeNull();
+        await File.ReadAllText(repository.Settings).Should().StartWith("{\n  // keep\n  \"a\": 1,\n  \"json.schemas\": [");
     }
 
     [Test]
-    public void TwoHostsInOneRepository_EachGetTheirOwnEntries()
+    public async Task TwoHostsInOneRepository_EachGetTheirOwnEntries()
     {
         using var repository = new Repository();
         var other = Path.Combine(repository.Root, "src", "Other");
@@ -126,12 +126,12 @@ public class ScaffoldEditorSettingsTests
 
         repository.Run();
         repository.Run(project: other);
-        repository.Run().Status.ShouldBe(EditorSettingsStatus.Unchanged);
-        repository.Run(project: other).Status.ShouldBe(EditorSettingsStatus.Unchanged);
+        await repository.Run().Status.Should().BeEqualTo(EditorSettingsStatus.Unchanged);
+        await repository.Run(project: other).Status.Should().BeEqualTo(EditorSettingsStatus.Unchanged);
 
         var text = File.ReadAllText(repository.Settings);
-        text.Split("\"./src/Host/obj/appsettings.schema.json\"").Length.ShouldBe(4);
-        text.Split("\"./src/Other/obj/appsettings.schema.json\"").Length.ShouldBe(4);
+        await text.Split("\"./src/Host/obj/appsettings.schema.json\"").Length.Should().BeEqualTo(4);
+        await text.Split("\"./src/Other/obj/appsettings.schema.json\"").Length.Should().BeEqualTo(4);
     }
 
     [Test]
@@ -146,12 +146,12 @@ public class ScaffoldEditorSettingsTests
         var text = File.ReadAllText(repository.Settings);
         foreach (var project in projects)
         {
-            text.Split($"\"./src/{Path.GetFileName(project)}/obj/appsettings.schema.json\"").Length.ShouldBe(4);
+            await text.Split($"\"./src/{Path.GetFileName(project)}/obj/appsettings.schema.json\"").Length.Should().BeEqualTo(4);
         }
     }
 
     [Test]
-    public void AFileThatCantBeUpdatedSafely_IsLeftAloneWithAWarningAndTheSnippet()
+    public async Task AFileThatCantBeUpdatedSafely_IsLeftAloneWithAWarningAndTheSnippet()
     {
         using var repository = new Repository();
         Directory.CreateDirectory(Path.GetDirectoryName(repository.Settings)!);
@@ -162,17 +162,17 @@ public class ScaffoldEditorSettingsTests
 
         var outcome = repository.Run();
 
-        outcome.Status.ShouldBe(EditorSettingsStatus.Unsafe);
-        File.ReadAllText(repository.Settings).ShouldBe(broken);
-        File.GetLastWriteTimeUtc(repository.Settings).ShouldBe(written);
-        outcome.Warning.ShouldNotBeNull().ShouldContain(repository.Settings);
-        outcome.Warning.ShouldContain("\"json.schemas\": [");
-        outcome.Warning.ShouldContain("\"url\": \"./src/Host/obj/appsettings.schema.json\"");
-        outcome.Warning.ShouldContain("\"evenBetterToml.schema.associations\"");
+        await outcome.Status.Should().BeEqualTo(EditorSettingsStatus.Unsafe);
+        await File.ReadAllText(repository.Settings).Should().BeEqualTo(broken);
+        await File.GetLastWriteTimeUtc(repository.Settings).Should().BeEqualTo(written);
+        await ( await outcome.Warning.Should().NotBeNull() ).Should().Contain(repository.Settings);
+        await outcome.Warning.Should().Contain("\"json.schemas\": [");
+        await outcome.Warning.Should().Contain("\"url\": \"./src/Host/obj/appsettings.schema.json\"");
+        await outcome.Warning.Should().Contain("\"evenBetterToml.schema.associations\"");
     }
 
     [Test]
-    public void AReadOnlyFile_IsLeftAloneWithAWarning_UnlessItAlreadyHasTheMappings()
+    public async Task AReadOnlyFile_IsLeftAloneWithAWarning_UnlessItAlreadyHasTheMappings()
     {
         using var repository = new Repository();
         Directory.CreateDirectory(Path.GetDirectoryName(repository.Settings)!);
@@ -181,22 +181,22 @@ public class ScaffoldEditorSettingsTests
 
         var outcome = repository.Run();
 
-        outcome.Status.ShouldBe(EditorSettingsStatus.Unsafe);
-        outcome.Warning.ShouldNotBeNull().ShouldContain("read-only");
-        File.ReadAllText(repository.Settings).ShouldBe("{ \"a\": 1 }");
+        await outcome.Status.Should().BeEqualTo(EditorSettingsStatus.Unsafe);
+        await ( await outcome.Warning.Should().NotBeNull() ).Should().Contain("read-only");
+        await File.ReadAllText(repository.Settings).Should().BeEqualTo("{ \"a\": 1 }");
 
         File.SetAttributes(repository.Settings, FileAttributes.Normal);
-        repository.Run().Status.ShouldBe(EditorSettingsStatus.Updated);
+        await repository.Run().Status.Should().BeEqualTo(EditorSettingsStatus.Updated);
         File.SetAttributes(repository.Settings, FileAttributes.ReadOnly);
 
         var again = repository.Run();
 
-        again.Status.ShouldBe(EditorSettingsStatus.Unchanged);
-        again.Warning.ShouldBeNull();
+        await again.Status.Should().BeEqualTo(EditorSettingsStatus.Unchanged);
+        await again.Warning.Should().BeNull();
     }
 
     [Test]
-    public void AProjectOutsideTheSettingsDirectory_WarnsInsteadOfWritingAnUnusablePath()
+    public async Task AProjectOutsideTheSettingsDirectory_WarnsInsteadOfWritingAnUnusablePath()
     {
         using var repository = new Repository();
         var elsewhere = Directory.CreateTempSubdirectory("dovetail-scaffold-other-").FullName;
@@ -204,8 +204,8 @@ public class ScaffoldEditorSettingsTests
         {
             var outcome = repository.Run(elsewhere);
 
-            File.Exists(Path.Combine(elsewhere, ".vscode", "settings.json")).ShouldBeFalse();
-            outcome.Warning.ShouldNotBeNull().ShouldContain("isn't below");
+            await File.Exists(Path.Combine(elsewhere, ".vscode", "settings.json")).Should().BeFalse();
+            await ( await outcome.Warning.Should().NotBeNull() ).Should().Contain("isn't below");
         }
         finally
         {

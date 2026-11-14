@@ -32,7 +32,7 @@ public class ExportedHostTypeTests() : GeneratorTest()
     {
         var result = await Generate($"[DovetailExport] {attributes} internal class Contrib : IDovetailJoint {{ }}", isTestProject);
 
-        ExportedSource(result).ShouldContain($"new Joinery.Dovetail.Tests.Contrib(), DovetailHostType.{expected}, DovetailCategory.Application)");
+        await ExportedSource(result).Should().Contain($"new Joinery.Dovetail.Tests.Contrib(), DovetailHostType.{expected}, DovetailCategory.Application)");
     }
 
     [Test]
@@ -41,7 +41,7 @@ public class ExportedHostTypeTests() : GeneratorTest()
         // The attributes are inherited, so the runtime path sees [LiveJoint] on the base class of an exported joint.
         var result = await Generate(InheritedLiveJoint);
 
-        ExportedSource(result).ShouldContain("new Joinery.Dovetail.Tests.Contrib(), DovetailHostType.Live, DovetailCategory.Application)");
+        await ExportedSource(result).Should().Contain("new Joinery.Dovetail.Tests.Contrib(), DovetailHostType.Live, DovetailCategory.Application)");
     }
 
     [Test]
@@ -106,7 +106,7 @@ public class ExportedHostTypeTests() : GeneratorTest()
     private async Task AssertAppliesTheSameJointsAsTheRuntimeScan(GeneratorTestResults result)
     {
         var assembly = result.Assembly;
-        assembly.ShouldNotBeNull(string.Join(Environment.NewLine, result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error)));
+        await assembly.Should().NotBeNull().Because(string.Join(Environment.NewLine, result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Select(z => z.ToString())));
 
         var metadata = ( (IEnumerable<IDovetailJointMetadata>)assembly.GetType("Exports")!.GetMethod("Rivet")!.Invoke(null, null)! ).ToArray();
         var joint = metadata.Single().Joint;
@@ -119,7 +119,7 @@ public class ExportedHostTypeTests() : GeneratorTest()
             var generatedJoints = ( await generated.CreateAsync(TestContext.CancellationToken) ).Joints.Select(z => z.GetType());
             var runtimeJoints = ( await runtime.CreateAsync(TestContext.CancellationToken) ).Joints.Select(z => z.GetType());
 
-            generatedJoints.ShouldBe(runtimeJoints, $"in a {hostType} host");
+            await generatedJoints.Should().BeEquivalentTo(runtimeJoints, CollectionOrdering.Matching).Because($"in a {hostType} host");
         }
     }
 }

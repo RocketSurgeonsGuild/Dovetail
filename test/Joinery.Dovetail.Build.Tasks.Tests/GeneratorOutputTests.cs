@@ -17,43 +17,42 @@ public class GeneratorOutputTests
 
     [Test]
     [MethodDataSource(nameof(Files))]
-    public void EachFile_MergesIntoAWellFormedApplicationSchema_AndAPermissiveLibrarySegment(string file)
+    public async Task EachFile_MergesIntoAWellFormedApplicationSchema_AndAPermissiveLibrarySegment(string file)
     {
         var fragments = Read(file);
-        fragments.ShouldNotBeEmpty();
+        await fragments.Should().NotBeEmpty();
 
-        var application = SchemaAssert.ShouldBeWellFormed(
+        var application = await SchemaAssert.ShouldBeWellFormed(
             ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema(fragments, strict: true, includeSchemaStore: true))
         );
-        var library = SchemaAssert.ShouldBeWellFormed(ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateLibrarySchema(fragments)!));
+        var library = await SchemaAssert.ShouldBeWellFormed(ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateLibrarySchema(fragments)!));
 
         // Every Dovetail object that lists properties is closed, however it is reached: sections and hoisted definitions.
         foreach (var definition in SchemaAssert.DovetailDefinitions(application))
         {
             foreach (var schema in SchemaAssert.Objects(definition.Value).Where(z => z["properties"] is JsonObject properties && z["additionalProperties"] is null && !IsSharedParent(properties)))
             {
-                schema["propertyNames"].ShouldNotBeNull($"{definition.Key} has an open object with properties: {schema.ToJsonString()}");
+                await schema["propertyNames"].Should().NotBeNull().Because($"{definition.Key} has an open object with properties: {schema.ToJsonString()}");
             }
         }
 
-        SchemaAssert.Objects(library).ShouldAllBe(z => !z.ContainsKey("propertyNames") || z["propertyNames"]!["pattern"] is JsonValue, "only dictionary key patterns");
-        library["properties"]!.AsObject().Select(z => z.Key).ShouldBe(fragments.Select(z => z.Path[0]).Distinct(StringComparer.OrdinalIgnoreCase), ignoreOrder: true);
+        await SchemaAssert.Objects(library).Should().All(z => !z.ContainsKey("propertyNames") || z["propertyNames"]!["pattern"] is JsonValue).Because("only dictionary key patterns");
+        await library["properties"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(fragments.Select(z => z.Path[0]).Distinct(StringComparer.OrdinalIgnoreCase));
     }
 
     [Test]
-    public void AllFilesTogether_Merge_AndTheDefinitionsStayUnique()
+    public async Task AllFilesTogether_Merge_AndTheDefinitionsStayUnique()
     {
         var fragments = Files().SelectMany(Read).ToArray();
 
-        var document = SchemaAssert.ShouldBeWellFormed(
+        var document = await SchemaAssert.ShouldBeWellFormed(
             ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema(fragments, strict: true, includeSchemaStore: true))
         );
 
         var names = document["definitions"]!.AsObject().Select(z => z.Key).ToArray();
-        names.Distinct(StringComparer.OrdinalIgnoreCase).Count().ShouldBe(names.Length);
+        await names.Distinct(StringComparer.OrdinalIgnoreCase).Count().Should().BeEqualTo(names.Length);
         // The recursive type (Reports_problems.txt's Tree) refers to itself under its new name.
-        document["definitions"]!.AsObject().Where(z => z.Key.StartsWith("Tree.", StringComparison.Ordinal))
-                                .ShouldContain(z => SchemaAssert.References(z.Value!).Contains("#/definitions/" + z.Key));
+        await document["definitions"]!.AsObject().Where(z => z.Key.StartsWith("Tree.", StringComparison.Ordinal)).Should().Contain(z => SchemaAssert.References(z.Value!).Contains("#/definitions/" + z.Key));
     }
 
     [Test]
@@ -74,25 +73,24 @@ public class GeneratorOutputTests
             ConfigurationSchemaDocument.CreateApplicationSchema([Parse("Shapes", shapes), Parse("Other", other)], strict: true, includeSchemaStore: false)
         );
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        document["definitions"]!["Shapes.Sample.IShape"]!["propertyNames"]!["patternErrorMessage"]!.GetValue<string>()
-            .ShouldBe("Unknown key in \"Sample.IShape\" (section \"Shapes\"). Known keys (case-insensitive): Sides.");
-        document["definitions"]!["Other.Sample.IShape"]!["propertyNames"]!["pattern"]!.GetValue<string>().ShouldContain("[Ff][Ii][Ll][Ll]");
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await document["definitions"]!["Shapes.Sample.IShape"]!["propertyNames"]!["patternErrorMessage"]!.GetValue<string>().Should().BeEqualTo("Unknown key in \"Sample.IShape\" (section \"Shapes\"). Known keys (case-insensitive): Sides.");
+        await document["definitions"]!["Other.Sample.IShape"]!["propertyNames"]!["pattern"]!.GetValue<string>().Should().Contain("[Ff][Ii][Ll][Ll]");
         await Verify(json, "json");
     }
 
     [Test]
-    public void AnObjectWithoutBindableMembers_IsClosedToo()
+    public async Task AnObjectWithoutBindableMembers_IsClosedToo()
     {
         // An interface or abstract class with nothing to bind has no valid keys.
         var section = Section("Empty", Properties(("Marker", Uses("Sample.IMarker"))), Definitions(("Sample.IMarker", Definition(Properties()))));
 
-        var document = SchemaAssert.ShouldBeWellFormed(
+        var document = await SchemaAssert.ShouldBeWellFormed(
             ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema([Parse("Empty", section)], strict: true, includeSchemaStore: false))
         );
 
         var pattern = new Regex(document["definitions"]!["Empty.Sample.IMarker"]!["propertyNames"]!["pattern"]!.GetValue<string>(), RegexOptions.ECMAScript);
-        pattern.IsMatch("Anything").ShouldBeFalse();
+        await pattern.IsMatch("Anything").Should().BeFalse();
     }
 
     // A section that only exists because of deeper ones (Shared for Shared:A) stays open: its properties are bare references.

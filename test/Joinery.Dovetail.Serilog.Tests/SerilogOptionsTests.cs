@@ -13,7 +13,7 @@ namespace Joinery.Dovetail.Serilog.Tests;
 /// <summary>
 ///     The options registered for <see cref="LoggerConfiguration" /> (<c>services.Configure</c>, <c>services.PostConfigure</c>) configure the logger too.
 /// </summary>
-public class SerilogOptionsTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class SerilogOptionsTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task Configure_Options_Are_Applied_To_The_Logger_Configuration()
@@ -25,7 +25,7 @@ public class SerilogOptionsTests() : AutoFakeTest<TestRecord>(TestRecord.Create(
 
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
 
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem();
+        await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem();
     }
 
     [Test]
@@ -38,7 +38,7 @@ public class SerilogOptionsTests() : AutoFakeTest<TestRecord>(TestRecord.Create(
 
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
 
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem();
+        await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem();
     }
 
     [Test]
@@ -64,7 +64,7 @@ public class SerilogOptionsTests() : AutoFakeTest<TestRecord>(TestRecord.Create(
         logger.Information("Hidden by PostConfigure too");
         logger.Warning("Shown");
 
-        CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).ShouldBe(["Shown",]);
+        await CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -81,7 +81,7 @@ public class SerilogOptionsTests() : AutoFakeTest<TestRecord>(TestRecord.Create(
         logger.Warning("Hidden");
         logger.Error("Shown");
 
-        CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).ShouldBe(["Shown",]);
+        await CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text).Should().BeEquivalentTo(["Shown",], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -102,8 +102,8 @@ public class SerilogOptionsTests() : AutoFakeTest<TestRecord>(TestRecord.Create(
 
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
 
-        var logEvent = CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem();
-        ( (ScalarValue)logEvent.Properties["Application"] ).Value.ShouldBe("Dovetail.Serilog.Tests");
+        var logEvent = await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem();
+        await ( (ScalarValue)logEvent.Properties["Application"] ).Value.Should().BeEqualTo("Dovetail.Serilog.Tests");
     }
 
     [Test]
@@ -123,8 +123,8 @@ public class SerilogOptionsTests() : AutoFakeTest<TestRecord>(TestRecord.Create(
 
         host.Services.GetRequiredService<SerilogILogger>().Information("Hello");
 
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem();
-        CapturingSink.Named(otherSinkName).Events.ShouldBeEmpty();
+        await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem();
+        await CapturingSink.Named(otherSinkName).Events.Should().BeEmpty();
     }
 
     public sealed record ApplicationName(string Value);

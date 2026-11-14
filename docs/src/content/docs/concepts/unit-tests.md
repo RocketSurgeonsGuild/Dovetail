@@ -33,7 +33,7 @@ take no `ILogger` or `ILoggerFactory`, and nothing in the packages looks for one
 scan. What a test can capture is what your own code logs, including your joints.
 
 > [!TIP]
-> With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `AutoFakeTest<TestRecord>`): its Serilog logger writes to the test's output.
+> With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `LoggerTest<TestRecord>`): its Serilog logger writes to the test's output.
 
 The builder is a bag of properties, so the test can put its logger there for a joint to find:
 

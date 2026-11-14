@@ -31,11 +31,11 @@ public class ConfigurationSchemaMultiTargetingTests
 
         var package = await project.PackToLocalFeed("lib");
 
-        package.Files.Count(z => z == "ConfigurationSchema.json").ShouldBe(1);
-        project.ReadFile("lib/obj/Release/net10.0/ConfigurationSchema.json").ShouldContain("Net10");
-        project.ReadFile("lib/obj/Release/net11.0/ConfigurationSchema.json").ShouldContain("Net11");
-        project.ReadPackageFile("lib", "ConfigurationSchema.json").ShouldBe(project.ReadFile("lib/obj/Release/net10.0/ConfigurationSchema.json"));
-        project.Warnings("lib").ShouldNotContain(z => z.StartsWith("NU5118", StringComparison.Ordinal));
+        await package.Files.Count(z => z == "ConfigurationSchema.json").Should().BeEqualTo(1);
+        await project.ReadFile("lib/obj/Release/net10.0/ConfigurationSchema.json").Should().Contain("Net10");
+        await project.ReadFile("lib/obj/Release/net11.0/ConfigurationSchema.json").Should().Contain("Net11");
+        await project.ReadPackageFile("lib", "ConfigurationSchema.json").Should().BeEqualTo(project.ReadFile("lib/obj/Release/net10.0/ConfigurationSchema.json"));
+        await project.Warnings("lib").Should().All(z => !z.StartsWith("NU5118", StringComparison.Ordinal));
     }
 
     [Test]
@@ -50,10 +50,10 @@ public class ConfigurationSchemaMultiTargetingTests
 
         await project.VerifyBuildWarnings("host");
 
-        project.ReadFile("host/obj/appsettings.schema.json").ShouldContain("Net10");
-        project.ReadFile("host/obj/Debug/net11.0/appsettings.schema.json").ShouldContain("Net11");
-        File.Exists(Path.Combine(project.Directory, "host/obj/Debug/net10.0/appsettings.schema.json")).ShouldBeFalse();
-        project.ReadFile("host/bin/Debug/net10.0/appsettings.schema.json").ShouldBe(project.ReadFile("host/obj/appsettings.schema.json"));
-        project.ReadFile("host/bin/Debug/net11.0/appsettings.schema.json").ShouldBe(project.ReadFile("host/obj/Debug/net11.0/appsettings.schema.json"));
+        await project.ReadFile("host/obj/appsettings.schema.json").Should().Contain("Net10");
+        await project.ReadFile("host/obj/Debug/net11.0/appsettings.schema.json").Should().Contain("Net11");
+        await File.Exists(Path.Combine(project.Directory, "host/obj/Debug/net10.0/appsettings.schema.json")).Should().BeFalse();
+        await project.ReadFile("host/bin/Debug/net10.0/appsettings.schema.json").Should().BeEqualTo(project.ReadFile("host/obj/appsettings.schema.json"));
+        await project.ReadFile("host/bin/Debug/net11.0/appsettings.schema.json").Should().BeEqualTo(project.ReadFile("host/obj/Debug/net11.0/appsettings.schema.json"));
     }
 }

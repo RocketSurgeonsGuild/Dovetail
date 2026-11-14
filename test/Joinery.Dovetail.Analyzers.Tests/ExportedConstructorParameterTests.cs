@@ -27,7 +27,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
     {
         var result = await Generate(RequiredAndOptionalParameters);
 
-        CompileErrors(result).ShouldBeEmpty();
+        await CompileErrors(result).Should().BeEmpty();
         await Verify(ExportedSource(result), "cs");
     }
 
@@ -43,7 +43,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         builder.Set<IWidget>(widget).Set(options);
         var joint = await CreateJoint(builder);
 
-        joint.Arguments.ShouldBe([widget, options, "fallback", 3, WidgetMode.Slow, null]);
+        await Assert.That(joint.Arguments).IsEquivalentTo(new object?[] { widget, options, "fallback", 3, WidgetMode.Slow, null }, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -63,7 +63,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         };
         var joint = await CreateJoint(DovetailContextBuilder.Create(Rivet(result), properties, []));
 
-        joint.Arguments.ShouldBe([widget, null, "supplied", 8, WidgetMode.Fast, 13]);
+        await Assert.That(joint.Arguments).IsEquivalentTo(new object?[] { widget, null, "supplied", 8, WidgetMode.Fast, 13 }, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -75,7 +75,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         var builder = DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []).Set<IWidget>(widget);
         var joint = await CreateJoint(builder);
 
-        joint.Arguments.ShouldBe([widget, null, "fallback", 3, WidgetMode.Slow, null]);
+        await Assert.That(joint.Arguments).IsEquivalentTo(new object?[] { widget, null, "fallback", 3, WidgetMode.Slow, null }, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -86,10 +86,10 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         var builder = DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []);
         var create = () => builder.CreateAsync(TestContext.CancellationToken).AsTask();
 
-        var exception = await create.ShouldThrowAsync<InvalidOperationException>();
-        exception.Message.ShouldContain(typeof(IWidget).FullName!);
-        exception.Message.ShouldContain("widget");
-        exception.Message.ShouldContain("Constructed");
+        var exception = await create.Should().Throw<InvalidOperationException>();
+        await exception.Message.Should().Contain(typeof(IWidget).FullName!);
+        await exception.Message.Should().Contain("widget");
+        await exception.Message.Should().Contain("Constructed");
     }
 
     [Test]
@@ -116,12 +116,12 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         var builder = DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []);
         var create = () => builder.CreateAsync(TestContext.CancellationToken).AsTask();
 
-        var exception = await create.ShouldThrowAsync<InvalidOperationException>();
-        exception.Message.ShouldNotContain(typeof(IWidget).FullName!);
-        var inner = exception.InnerException.ShouldBeOfType<InvalidOperationException>();
-        inner.Message.ShouldContain(typeof(IWidget).FullName!);
-        inner.Message.ShouldContain("widget");
-        inner.Message.ShouldContain("Sample.Needy");
+        var exception = await create.Should().Throw<InvalidOperationException>();
+        await exception.Message.Should().NotContain(typeof(IWidget).FullName!);
+        var inner = await Assert.That(exception.InnerException).IsTypeOf<InvalidOperationException>();
+        await inner.Message.Should().Contain(typeof(IWidget).FullName!);
+        await inner.Message.Should().Contain("widget");
+        await inner.Message.Should().Contain("Sample.Needy");
     }
 
     [Test]
@@ -138,8 +138,8 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         );
         var required = await Generate(RequiredAndOptionalParameters);
 
-        ( (ConstructedJoint)Rivet(onlyOptional).Single().Joint ).Arguments.ShouldBe([null, null, "label", 3, WidgetMode.Slow, null]);
-        Should.Throw<InvalidOperationException>(() => Rivet(required).Single().Joint);
+        await Assert.That(( (ConstructedJoint)Rivet(onlyOptional).Single().Joint ).Arguments).IsEquivalentTo(new object?[] { null, null, "label", 3, WidgetMode.Slow, null }, CollectionOrdering.Matching);
+        await ( (Func<object?>)( () => Rivet(required).Single().Joint ) ).Should().Throw<InvalidOperationException>();
     }
 
     [Test]
@@ -166,15 +166,13 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
             """
         );
 
-        CompileErrors(result).ShouldBeEmpty();
+        await CompileErrors(result).Should().BeEmpty();
         var joint = Rivet(result).Single().Joint;
-        joint.GetType().GetProperty("Arguments")!.GetValue(joint).ShouldBe(
-            new object?[]
+        await Assert.That((IEnumerable<object?>)joint.GetType().GetProperty("Arguments")!.GetValue(joint)!).IsEquivalentTo(new object?[]
             {
                 (byte)3, (sbyte)-4, (short)5, (ushort)6, 7u, -8L, 9UL, 1.5f, 0.25d, 2.5m, 'x', true, "a \"quoted\" \\ value\n", null,
                 WidgetMode.Fast, WidgetMode.Fast, null, 11, default(WidgetMarker), null,
-            }
-        );
+            }, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -190,8 +188,8 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
             """
         );
 
-        CompileErrors(result).ShouldBeEmpty();
-        ExportedSource(result).ShouldContain("new DovetailJointMetadata(new Sample.Constructed(), ");
+        await CompileErrors(result).Should().BeEmpty();
+        await ExportedSource(result).Should().Contain("new DovetailJointMetadata(new Sample.Constructed(), ");
     }
 
     [Test]
@@ -212,17 +210,17 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
 
         // Reported once, on the joint, and nothing else: the joint is left out of the exports instead of generating code that
         // can't compile, and an exports class with no joint left in it is still valid.
-        var diagnostic = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldHaveSingleItem();
-        diagnostic.Id.ShouldBe("DT0017");
-        diagnostic.Severity.ShouldBe(DiagnosticSeverity.Error);
-        diagnostic.GetMessage().ShouldBe("Joint 'Sample.Constructed' has no public or internal constructor, so it cannot be created");
+        var diagnostic = await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().HaveSingleItem();
+        await diagnostic.Id.Should().BeEqualTo("DT0017");
+        await diagnostic.Severity.Should().BeEqualTo(DiagnosticSeverity.Error);
+        await diagnostic.GetMessage().Should().BeEqualTo("Joint 'Sample.Constructed' has no public or internal constructor, so it cannot be created");
         var location = diagnostic.Location;
-        location.IsInSource.ShouldBeTrue();
-        location.SourceTree!.GetText().ToString(location.SourceSpan).ShouldBe("Constructed");
-        location.SourceTree.GetText().Lines[location.GetLineSpan().StartLinePosition.Line].ToString().Trim().ShouldBe("public class Constructed : ConstructedJoint");
+        await location.IsInSource.Should().BeTrue();
+        await location.SourceTree!.GetText().ToString(location.SourceSpan).Should().BeEqualTo("Constructed");
+        await location.SourceTree.GetText().Lines[location.GetLineSpan().StartLinePosition.Line].ToString().Trim().Should().BeEqualTo("public class Constructed : ConstructedJoint");
 
-        CompileErrors(result).Where(z => z.Id != "DT0017").ShouldBeEmpty();
-        ExportedSource(result).ShouldNotContain("Constructed");
+        await CompileErrors(result).Where(z => z.Id != "DT0017").Should().BeEmpty();
+        await ExportedSource(result).Should().NotContain("Constructed");
     }
 
     [Test]
@@ -242,11 +240,11 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
               """
         );
 
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
-        CompileErrors(result).ShouldBeEmpty();
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await CompileErrors(result).Should().BeEmpty();
         var options = new WidgetOptions();
         var joint = await CreateJoint(DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []).Set(options));
-        joint.Arguments[1].ShouldBeSameAs(options);
+        await joint.Arguments[1].Should().BeSameReferenceAs(options);
     }
 
     [Test]
@@ -264,9 +262,9 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
             """
         );
 
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
-        CompileErrors(result).ShouldBeEmpty();
-        Rivet(result).Single().Joint.ShouldBeOfType(result.Assembly!.GetType("Sample.Constructed")!);
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await CompileErrors(result).Should().BeEmpty();
+        await Rivet(result).Single().Joint.Should().BeOfType(result.Assembly!.GetType("Sample.Constructed")!);
     }
 
     [Test]
@@ -285,8 +283,8 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
               """
         );
 
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldHaveSingleItem().Id.ShouldBe("DT0001");
-        CompileErrors(result).Where(z => z.Id != "DT0001").ShouldBeEmpty();
+        await ( await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().HaveSingleItem() ).Id.Should().BeEqualTo("DT0001");
+        await CompileErrors(result).Where(z => z.Id != "DT0001").Should().BeEmpty();
     }
 
     private async Task<GeneratorTestResults> Generate(string declarations) =>
@@ -322,8 +320,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
     /// </summary>
     private static IEnumerable<IDovetailJointMetadata> Rivet(GeneratorTestResults result)
     {
-        var assembly = result.Assembly;
-        assembly.ShouldNotBeNull(string.Join(Environment.NewLine, CompileErrors(result)));
+        var assembly = result.Assembly ?? throw new InvalidOperationException(string.Join(Environment.NewLine, CompileErrors(result).Select(z => z.ToString())));
 
         return (IEnumerable<IDovetailJointMetadata>)assembly.GetType("Exports")!.GetMethod("Rivet")!.Invoke(null, null)!;
     }

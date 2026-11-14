@@ -1,4 +1,3 @@
-using FakeItEasy;
 using Joinery.Dovetail.Infrastructure;
 using Joinery.Dovetail.Joints;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -17,7 +16,7 @@ public class SharedHostConfigurationTests
 
         await DovetailWebAssemblyHelpers.SharedHostConfigurationAsync(context, configuration, CancellationToken.None);
 
-        configuration["Dovetail:Chained"].ShouldBe("yes");
+        await configuration["Dovetail:Chained"].Should().BeEqualTo("yes");
     }
 
     [Test]
@@ -30,8 +29,8 @@ public class SharedHostConfigurationTests
 
         await DovetailWebAssemblyHelpers.SharedHostConfigurationAsync(context, configuration, CancellationToken.None);
 
-        configuration["Blazor"].ShouldBe("default");
-        configuration["Dovetail"].ShouldBe("dovetail");
+        await configuration["Blazor"].Should().BeEqualTo("default");
+        await configuration["Dovetail"].Should().BeEqualTo("dovetail");
     }
 
 #if NET11_0_OR_GREATER
@@ -49,7 +48,7 @@ public class SharedHostConfigurationTests
 
             await DovetailWebAssemblyHelpers.SharedHostConfigurationAsync(context, configuration, CancellationToken.None);
 
-            configuration["DovetailWasmTests:FromEnvironment"].ShouldBe("from-rsg");
+            await configuration["DovetailWasmTests:FromEnvironment"].Should().BeEqualTo("from-rsg");
         }
         finally
         {
@@ -61,10 +60,10 @@ public class SharedHostConfigurationTests
     [Test]
     public async Task Should_Expose_The_WebAssembly_Host_Environment()
     {
-        var environment = A.Fake<IWebAssemblyHostEnvironment>();
+        var environment = IWebAssemblyHostEnvironment.Mock().Object;
         var context = await DovetailContext.FromAsync(DovetailContextBuilder.Create([], new DovetailDictionary(), []).Set(environment));
 
-        context.WebAssemblyHostEnvironment.ShouldBeSameAs(environment);
+        await context.WebAssemblyHostEnvironment.Should().BeSameReferenceAs(environment);
     }
 
     private static async Task<IDovetailContext> CreateContextAsync(ConfigurationJointDelegate configure) =>

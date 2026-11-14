@@ -2,14 +2,15 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Testing.Extensions.CrashDump" />
         <PackageReference Include="Microsoft.Testing.Extensions.HangDump" />
-        <PackageReference Include="Rocket.Surgery.Extensions.Testing.FakeItEasy" />
         <PackageReference Include="Bogus" />
-        <PackageReference Include="FakeItEasy" />
-        <PackageReference Include="Shouldly" />
         <PackageReference Include="Rocket.Surgery.Extensions.Testing.TUnit" />
         <PackageReference Include="TUnit" />
+        <PackageReference Include="TUnit.Mocks" />
+        <PackageReference Include="TUnit.Assertions.Should" />
+        <Using Include="TUnit.Assertions.Should" />
+        <Using Include="TUnit.Assertions.Should.Extensions" />
+        <Using Include="TUnit.Assertions.Enums" />
         <PackageReference Include="Verify.TUnit" />
-        <Using Include="Shouldly" />
         <ProjectReference
             Include="..\..\src\Joinery.Dovetail.Analyzers\Joinery.Dovetail.Analyzers.csproj"
             OutputItemType="Analyzer"

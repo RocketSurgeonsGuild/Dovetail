@@ -1,16 +1,14 @@
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Rocket.Surgery.Extensions.Testing;
 
 
 
 namespace Joinery.Dovetail.Hosting.Tests;
 
-public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public partial class RocketHostBuilderTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task Should_UseRocketBooster_With_Dovetails()
@@ -19,29 +17,29 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
                               .CreateApplicationBuilder()
                               .ConfigureDovetail();
 
-        host.Services.ShouldNotBeNull();
+        await host.Services.Should().NotBeNull();
     }
 
     [Test]
     public async Task Should_ConfigureServices()
     {
-        var convention = A.Fake<ServiceJointDelegate>();
+        var convention = Mock.OfDelegate<ServiceJointDelegate>();
         using var host = await Host
                               .CreateApplicationBuilder()
-                              .ConfigureDovetail(rb => rb.ConfigureServices(convention));
+                              .ConfigureDovetail(rb => rb.ConfigureServices(convention.Object));
 
-        A.CallTo(() => convention.Invoke(A<IDovetailContext>._, A<IServiceCollection>._)).MustHaveHappened();
+        convention.Invoke(Any(), Any()).WasCalled();
     }
 
     [Test]
     public async Task Should_ConfigureConfiguration()
     {
-        var convention = A.Fake<ConfigurationJointDelegate>();
+        var convention = Mock.OfDelegate<ConfigurationJointDelegate>();
         using var host = await Host
                               .CreateApplicationBuilder()
-                              .ConfigureDovetail(rb => rb.ConfigureConfiguration(convention));
+                              .ConfigureDovetail(rb => rb.ConfigureConfiguration(convention.Object));
 
-        A.CallTo(() => convention.Invoke(A<IDovetailContext>._, A<IConfigurationBuilder>._)).MustHaveHappened();
+        convention.Invoke(Any(), Any()).WasCalled();
     }
 
     [Test]
@@ -55,52 +53,52 @@ public partial class RocketHostBuilderTests() : AutoFakeTest<TestRecord>(TestRec
                                    )
                                );
 
-        host.Services.GetRequiredService<IConfiguration>()["Dovetail:Chained"].ShouldBe("yes");
+        await host.Services.GetRequiredService<IConfiguration>()["Dovetail:Chained"].Should().BeEqualTo("yes");
     }
 
     [Test]
     public async Task Should_ConfigureHosting()
     {
-        var convention = A.Fake<HostApplicationJointDelegate<IHostApplicationBuilder>>();
+        var convention = Mock.OfDelegate<HostApplicationJointDelegate<IHostApplicationBuilder>>();
         using var host = await Host
                               .CreateApplicationBuilder()
-                              .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention));
+                              .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention.Object));
 
-        A.CallTo(() => convention.Invoke(A<IDovetailContext>._, A<IHostApplicationBuilder>._)).MustHaveHappened();
+        convention.Invoke(Any(), Any()).WasCalled();
     }
 
     [Test]
     public async Task Should_ConfigureHosting_HostApplication()
     {
-        var convention = A.Fake<HostApplicationJointDelegate<HostApplicationBuilder>>();
+        var convention = Mock.OfDelegate<HostApplicationJointDelegate<HostApplicationBuilder>>();
         using var host = await Host
                               .CreateApplicationBuilder()
-                              .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention));
+                              .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention.Object));
 
-        A.CallTo(() => convention.Invoke(A<IDovetailContext>._, A<HostApplicationBuilder>._)).MustHaveHappened();
+        convention.Invoke(Any(), Any()).WasCalled();
     }
 
     [Test]
     public async Task Should_ConfigureLogging()
     {
-        var convention = A.Fake<LoggingJointDelegate>();
+        var convention = Mock.OfDelegate<LoggingJointDelegate>();
         using var host = await Host
                               .CreateApplicationBuilder()
-                              .ConfigureDovetail(rb => rb.ConfigureLogging(convention));
+                              .ConfigureDovetail(rb => rb.ConfigureLogging(convention.Object));
 
-        A.CallTo(() => convention.Invoke(A<IDovetailContext>._, A<ILoggingBuilder>._)).MustHaveHappened();
+        convention.Invoke(Any(), Any()).WasCalled();
     }
 
     [Test]
     public async Task Should_Build_The_Host_Correctly()
     {
-        var @delegate = A.Fake<HostCreatedJointDelegate<IHost>>();
+        var @delegate = Mock.OfDelegate<HostCreatedJointDelegate<IHost>>();
         using var host = await Host
                               .CreateApplicationBuilder()
-                              .ConfigureDovetail(z => z.ConfigureHostCreated(@delegate));
+                              .ConfigureDovetail(z => z.ConfigureHostCreated(@delegate.Object));
 
-        A.CallTo(() => @delegate.Invoke(A<IDovetailContext>._, A<IHost>._)).MustHaveHappened();
-        host.Services.ShouldNotBeNull();
+        @delegate.Invoke(Any(), Any()).WasCalled();
+        await host.Services.Should().NotBeNull();
     }
 
     //    [Test]

@@ -17,7 +17,7 @@ namespace Joinery.Dovetail.Serilog.Tests;
 ///     still does, because the Serilog logger forwards what it writes to the providers in the container, and the Serilog sinks get the events
 ///     as well.
 /// </summary>
-public class SerilogOpenTelemetryTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class SerilogOpenTelemetryTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task The_OpenTelemetry_Logging_Provider_Exports_The_Records_Written_Through_A_Generic_Logger()
@@ -30,15 +30,15 @@ public class SerilogOpenTelemetryTests() : AutoFakeTest<TestRecord>(TestRecord.C
                             .ConfigureLoggerProvider((_, builder) => builder.AddInMemoryExporter(exported))
         );
 
-        host.Services.GetRequiredService<ILoggerFactory>().ShouldBeOfType<SerilogLoggerFactory>();
+        await Assert.That(host.Services.GetRequiredService<ILoggerFactory>()).IsTypeOf<SerilogLoggerFactory>();
         host.Services.GetRequiredService<ILogger<SerilogOpenTelemetryTests>>().LogWarning("Hello {Name}", "Dovetail");
         host.Services.GetRequiredService<LoggerProvider>().ForceFlush();
 
-        var record = exported.ShouldHaveSingleItem("the record is exported once");
-        record.Body.ShouldBe("Hello {Name}");
-        record.LogLevel.ShouldBe(LogLevel.Warning);
-        record.CategoryName.ShouldBe(typeof(SerilogOpenTelemetryTests).FullName);
-        CapturingSink.Named(sinkName).Events.ShouldHaveSingleItem("and written to Serilog's sink once");
+        var record = await exported.Should().HaveSingleItem().Because("the record is exported once");
+        await record.Body.Should().BeEqualTo("Hello {Name}");
+        await record.LogLevel.Should().BeEqualTo(LogLevel.Warning);
+        await record.CategoryName.Should().BeEqualTo(typeof(SerilogOpenTelemetryTests).FullName);
+        await CapturingSink.Named(sinkName).Events.Should().HaveSingleItem().Because("and written to Serilog's sink once");
     }
 
     [Test]
@@ -50,10 +50,10 @@ public class SerilogOpenTelemetryTests() : AutoFakeTest<TestRecord>(TestRecord.C
         host.Services.GetRequiredService<SerilogILogger>().ForContext<SerilogOpenTelemetryTests>().Error(new InvalidOperationException("Broken"), "It broke");
         host.Services.GetRequiredService<LoggerProvider>().ForceFlush();
 
-        var record = exported.ShouldHaveSingleItem();
-        record.Body.ShouldBe("It broke");
-        record.LogLevel.ShouldBe(LogLevel.Error);
-        record.Exception.ShouldBeOfType<InvalidOperationException>().Message.ShouldBe("Broken");
+        var record = await exported.Should().HaveSingleItem();
+        await record.Body.Should().BeEqualTo("It broke");
+        await record.LogLevel.Should().BeEqualTo(LogLevel.Error);
+        await ( await Assert.That(record.Exception).IsTypeOf<InvalidOperationException>() ).Message.Should().BeEqualTo("Broken");
     }
 
     [Test]
@@ -62,6 +62,6 @@ public class SerilogOpenTelemetryTests() : AutoFakeTest<TestRecord>(TestRecord.C
         List<LogRecord> exported = [];
         using var host = await BuildAsync(configure: rb => rb.ConfigureLoggerProvider((_, builder) => builder.AddInMemoryExporter(exported)));
 
-        host.Services.GetServices<ILoggerProvider>().Select(provider => provider.GetType().Name).ShouldBe(["OpenTelemetryLoggerProvider",]);
+        await host.Services.GetServices<ILoggerProvider>().Select(provider => provider.GetType().Name).Should().BeEquivalentTo(["OpenTelemetryLoggerProvider",], CollectionOrdering.Matching);
     }
 }

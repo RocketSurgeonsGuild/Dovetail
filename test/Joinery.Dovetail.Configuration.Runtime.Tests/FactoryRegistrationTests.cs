@@ -23,8 +23,8 @@ public sealed class FactoryRegistrationTests
         await using var provider = services.BuildServiceProvider();
 
         var server = provider.GetRequiredService<IOptions<ServerRecord>>().Value;
-        server.Host.ShouldBe("example.org");
-        server.Port.ShouldBe(8080);
+        await server.Host.Should().BeEqualTo("example.org");
+        await server.Port.Should().BeEqualTo(8080);
     }
 
     [Test]
@@ -42,15 +42,15 @@ public sealed class FactoryRegistrationTests
         services.AddDovetailConfigurationOptions("Server", Noted(ServerRecord.Create, "created by Server"));
         services.AddDovetailConfigurationOptions("Defaults:Server", Noted(ServerRecord.Create, "created by Defaults:Server"));
 
-        services.Count(descriptor => descriptor.ServiceType == typeof(IOptionsFactory<ServerRecord>)).ShouldBe(1);
+        await services.Count(descriptor => descriptor.ServiceType == typeof(IOptionsFactory<ServerRecord>)).Should().BeEqualTo(1);
         await using var provider = services.BuildServiceProvider();
 
         // The first registration wins, and nothing is merged from the second section.
         var server = provider.GetRequiredService<IOptions<ServerRecord>>().Value;
-        server.Host.ShouldBe("localhost");
-        server.Port.ShouldBe(8080);
-        server.Tags.ShouldBe(["c"]);
-        server.Note.ShouldBe("created by Server");
+        await server.Host.Should().BeEqualTo("localhost");
+        await server.Port.Should().BeEqualTo(8080);
+        await server.Tags.Should().BeEquivalentTo(["c"], CollectionOrdering.Matching);
+        await server.Note.Should().BeEqualTo("created by Server");
     }
 
     [Test]
@@ -66,13 +66,13 @@ public sealed class FactoryRegistrationTests
         await using var provider = services.BuildServiceProvider();
 
         var server = provider.GetRequiredService<IOptions<ServerRecord>>().Value;
-        server.Tags.ShouldBe(["configured"]);
-        server.Note.ShouldBe("post-configured");
+        await server.Tags.Should().BeEquivalentTo(["configured"], CollectionOrdering.Matching);
+        await server.Note.Should().BeEqualTo("post-configured");
 
         configuration["Server:Port"] = "0";
         using var scope = provider.CreateScope();
-        var exception = Should.Throw<OptionsValidationException>(() => scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<ServerRecord>>().Value);
-        exception.Failures.ShouldBe(["Port must be between 1 and 65535, but was 0."]);
+        var exception = await ( (Func<object?>)( () => scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<ServerRecord>>().Value ) ).Should().Throw<OptionsValidationException>();
+        await exception.Failures.Should().BeEquivalentTo(["Port must be between 1 and 65535, but was 0."], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -83,10 +83,10 @@ public sealed class FactoryRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        var exception = Should.Throw<InvalidOperationException>(() => provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().Get("tenant-a"));
-        exception.Message.ShouldContain(nameof(ServerRecord));
-        exception.Message.ShouldContain("tenant-a");
-        provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().CurrentValue.Host.ShouldBe("example.org");
+        var exception = await ( (Action)( () => provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().Get("tenant-a") ) ).Should().Throw<InvalidOperationException>();
+        await exception.Message.Should().Contain(nameof(ServerRecord));
+        await exception.Message.Should().Contain("tenant-a");
+        await provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().CurrentValue.Host.Should().BeEqualTo("example.org");
     }
 
     [Test]
@@ -99,8 +99,8 @@ public sealed class FactoryRegistrationTests
         await using var provider = services.BuildServiceProvider();
 
         var monitor = provider.GetRequiredService<IOptionsMonitor<ServerRecord>>();
-        monitor.CurrentValue.Port.ShouldBe(8080);
-        ReadSnapshot(provider).Port.ShouldBe(8080);
+        await monitor.CurrentValue.Port.Should().BeEqualTo(8080);
+        await ReadSnapshot(provider).Port.Should().BeEqualTo(8080);
 
         var changes = new List<string?>();
         using var subscription = monitor.OnChange((_, name) => changes.Add(name));
@@ -108,10 +108,10 @@ public sealed class FactoryRegistrationTests
         configuration["Server:Port"] = "9090";
         configuration.Reload();
 
-        changes.ShouldBe([Options.DefaultName]);
-        monitor.CurrentValue.Host.ShouldBe("example.org");
-        monitor.CurrentValue.Port.ShouldBe(9090);
-        ReadSnapshot(provider).Port.ShouldBe(9090);
+        await changes.Should().BeEquivalentTo([Options.DefaultName], CollectionOrdering.Matching);
+        await monitor.CurrentValue.Host.Should().BeEqualTo("example.org");
+        await monitor.CurrentValue.Port.Should().BeEqualTo(9090);
+        await ReadSnapshot(provider).Port.Should().BeEqualTo(9090);
     }
 
     [Test]
@@ -124,7 +124,7 @@ public sealed class FactoryRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IOptions<ServerRecord>>().Value.ShouldBeSameAs(registered);
+        await provider.GetRequiredService<IOptions<ServerRecord>>().Value.Should().BeSameReferenceAs(registered);
     }
 
     [Test]
@@ -137,7 +137,7 @@ public sealed class FactoryRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IOptions<ServerRecord>>().Value.ShouldBeSameAs(registered);
+        await provider.GetRequiredService<IOptions<ServerRecord>>().Value.Should().BeSameReferenceAs(registered);
     }
 
     [Test]
@@ -152,8 +152,8 @@ public sealed class FactoryRegistrationTests
 
         using var host = builder.Build();
 
-        var exception = await Should.ThrowAsync<OptionsValidationException>(() => host.StartAsync());
-        exception.Failures.ShouldBe(["A server needs a port."]);
+        var exception = await ( (Func<Task>)( () => host.StartAsync() ) ).Should().Throw<OptionsValidationException>();
+        await exception.Failures.Should().BeEquivalentTo(["A server needs a port."], CollectionOrdering.Matching);
     }
 
     private static Func<IConfiguration, ServerRecord> Noted(Func<IConfiguration, ServerRecord> create, string note) =>

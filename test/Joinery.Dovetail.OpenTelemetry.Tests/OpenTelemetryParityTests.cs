@@ -52,7 +52,7 @@ public class OpenTelemetryParityTests
                                    )
                                );
 
-        host.Services.GetRequiredService<BaseJointMarker>().ShouldBeSameAs(marker);
+        await host.Services.GetRequiredService<BaseJointMarker>().Should().BeSameReferenceAs(marker);
 
         // The providers listen to activity sources and meters from when they are first resolved.
         var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
@@ -70,9 +70,9 @@ public class OpenTelemetryParityTests
         meterProvider.ForceFlush();
         loggerProvider.ForceFlush();
 
-        exportedActivities.ShouldContain(activity => activity.DisplayName == "base-span");
-        exportedMetrics.ShouldContain(metric => metric.Name == "base.counter");
-        exportedLogs.ShouldContain(record => record.Body == "base-log");
+        await exportedActivities.Should().Contain(activity => activity.DisplayName == "base-span");
+        await exportedMetrics.Should().Contain(metric => metric.Name == "base.counter");
+        await exportedLogs.Should().Contain(record => record.Body == "base-log");
     }
 
     // IOpenTelemetryAsyncConvention / OpenTelemetryAsyncConvention -> IOpenTelemetryAsyncJoint / OpenTelemetryAsyncJointDelegate
@@ -99,7 +99,7 @@ public class OpenTelemetryParityTests
                                    cancellation.Token
                                );
 
-        received.ShouldBe(cancellation.Token);
+        await received.Should().BeEqualTo(cancellation.Token);
 
         var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
         using (var source = new ActivitySource(name))
@@ -107,7 +107,7 @@ public class OpenTelemetryParityTests
 
         tracerProvider.ForceFlush();
 
-        exportedActivities.ShouldContain(activity => activity.DisplayName == "async-span");
+        await exportedActivities.Should().Contain(activity => activity.DisplayName == "async-span");
     }
 
     // [ExportConvention] class : IOpenTelemetryAsyncConvention -> [DovetailExport] class : IOpenTelemetryAsyncJoint
@@ -121,8 +121,8 @@ public class OpenTelemetryParityTests
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.Set(telemetry), cancellation.Token);
 
-        telemetry.AsyncCancellationToken.ShouldBe(cancellation.Token);
-        host.Services.GetService<TracerProvider>().ShouldNotBeNull("the exported async joint should have turned tracing on");
+        await telemetry.AsyncCancellationToken.Should().BeEqualTo(cancellation.Token);
+        await host.Services.GetService<TracerProvider>().Should().NotBeNull().Because("the exported async joint should have turned tracing on");
     }
 
     // IOpenTelemetryMetricsConvention -> IMeterProviderBuilderJoint
@@ -138,7 +138,7 @@ public class OpenTelemetryParityTests
         meter.CreateCounter<long>("exported.counter").Add(2);
         meterProvider.ForceFlush();
 
-        telemetry.Metrics.ShouldContain(metric => metric.Name == "exported.counter");
+        await telemetry.Metrics.Should().Contain(metric => metric.Name == "exported.counter");
     }
 
     // IOpenTelemetryLoggingConvention -> ILoggerProviderBuilderJoint
@@ -152,7 +152,7 @@ public class OpenTelemetryParityTests
         host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(ExportedSourceName).LogInformation("exported-log");
         host.Services.GetRequiredService<LoggerProvider>().ForceFlush();
 
-        telemetry.Logs.ShouldContain(record => record.Body == "exported-log");
+        await telemetry.Logs.Should().Contain(record => record.Body == "exported-log");
     }
 
     // IOpenTelemetryResourceConvention -> IResourceBuilderJoint
@@ -165,9 +165,9 @@ public class OpenTelemetryParityTests
         using var host = await Host.CreateApplicationBuilder().ConfigureDovetail(rb => rb.Set(telemetry));
 
         // The exported meter, logger and async joints between them turn all three signals on.
-        host.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.ShouldContain(attribute);
-        host.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.ShouldContain(attribute);
-        host.Services.GetRequiredService<LoggerProvider>().GetResource().Attributes.ShouldContain(attribute);
+        await host.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.Should().Contain(attribute);
+        await host.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.Should().Contain(attribute);
+        await host.Services.GetRequiredService<LoggerProvider>().GetResource().Attributes.Should().Contain(attribute);
     }
 
     // The IConfiguration parameter of every LaunchPad convention -> IDovetailContext.Configuration
@@ -183,7 +183,7 @@ public class OpenTelemetryParityTests
                  .ConfigureTracerProvider((_, tracing) => tracing.AddSource("Joinery.Dovetail.OpenTelemetry.Tests.Configuration"))
         );
 
-        host.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.ShouldContain(new KeyValuePair<string, object>("deployment.environment.name", "from-configuration"));
+        await host.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.Should().Contain(new KeyValuePair<string, object>("deployment.environment.name", "from-configuration"));
     }
 
     // TelemetryConvention (ILoggingConvention: ILoggingBuilder.AddOpenTelemetry()) -> WithLogging(), which every logger joint calls
@@ -197,18 +197,18 @@ public class OpenTelemetryParityTests
                               .ConfigureDovetail(rb => rb.ConfigureLoggerProvider((_, logging) => logging.AddInMemoryExporter(exportedLogs)));
 
         // The OpenTelemetry provider is an ordinary ILoggerProvider of the host's logging, as ILoggingBuilder.AddOpenTelemetry() added it.
-        host.Services.GetServices<ILoggerProvider>().ShouldContain(provider => provider is OpenTelemetryLoggerProvider);
+        await host.Services.GetServices<ILoggerProvider>().Should().Contain(provider => provider is OpenTelemetryLoggerProvider);
 
         // ILogger<T> writes through ILoggerFactory, so the application's own loggers reach the exporter: category, level and structured state.
         var logger = host.Services.GetRequiredService<ILogger<OpenTelemetryParityTests>>();
         logger.LogWarning("parity {Name}", "log");
         host.Services.GetRequiredService<LoggerProvider>().ForceFlush();
 
-        var record = exportedLogs.ShouldHaveSingleItem();
-        record.CategoryName.ShouldBe(typeof(OpenTelemetryParityTests).FullName);
-        record.LogLevel.ShouldBe(LogLevel.Warning);
-        record.Body.ShouldBe("parity {Name}");
-        record.Attributes.ShouldNotBeNull().ShouldContain(attribute => attribute.Key == "Name" && Equals(attribute.Value, "log"));
+        var record = await exportedLogs.Should().HaveSingleItem();
+        await record.CategoryName.Should().BeEqualTo(typeof(OpenTelemetryParityTests).FullName);
+        await record.LogLevel.Should().BeEqualTo(LogLevel.Warning);
+        await record.Body.Should().BeEqualTo("parity {Name}");
+        await ( await record.Attributes.Should().NotBeNull() ).Should().Contain(attribute => attribute.Key == "Name" && Equals(attribute.Value, "log"));
     }
 
     // DefaultTelemetryConvention: ConfigureResource(r => r.AddTelemetrySdk().AddEnvironmentVariableDetector())
@@ -221,10 +221,10 @@ public class OpenTelemetryParityTests
         {
             var attributes = provider.GetResource().Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
 
-            attributes.ShouldContainKeyAndValue(TelemetrySdkName, "opentelemetry");
-            attributes.ShouldContainKeyAndValue(TelemetrySdkLanguage, "dotnet");
-            attributes[TelemetrySdkVersion].ShouldBeOfType<string>().ShouldNotBeNullOrWhiteSpace();
-            attributes[ServiceName].ShouldBeOfType<string>().ShouldStartWith("unknown_service");
+            await attributes.Should().ContainKeyWithValue(TelemetrySdkName, "opentelemetry");
+            await attributes.Should().ContainKeyWithValue(TelemetrySdkLanguage, "dotnet");
+            await Assert.That(await Assert.That(attributes[TelemetrySdkVersion]).IsTypeOf<string>()).IsNotNullOrWhiteSpace();
+            await ( await Assert.That(attributes[ServiceName]).IsTypeOf<string>() ).Should().StartWith("unknown_service");
         }
     }
 
@@ -248,9 +248,9 @@ public class OpenTelemetryParityTests
         {
             var attributes = provider.GetResource().Attributes.ToDictionary(attribute => attribute.Key, attribute => attribute.Value);
 
-            attributes.ShouldContainKeyAndValue(ServiceName, "from-configuration");
-            attributes.ShouldContainKeyAndValue("test.detected", "from-configuration");
-            attributes.ShouldContainKeyAndValue("deployment.environment.name", "detector");
+            await attributes.Should().ContainKeyWithValue(ServiceName, "from-configuration");
+            await attributes.Should().ContainKeyWithValue("test.detected", "from-configuration");
+            await attributes.Should().ContainKeyWithValue("deployment.environment.name", "detector");
         }
     }
 
@@ -266,7 +266,7 @@ public class OpenTelemetryParityTests
 
             foreach (var provider in Providers(host))
             {
-                provider.GetResource().Attributes.ShouldContain(new KeyValuePair<string, object>("test.detected", "from-environment"));
+                await provider.GetResource().Attributes.Should().Contain(new KeyValuePair<string, object>("test.detected", "from-environment"));
             }
         }
         finally
@@ -296,7 +296,7 @@ public class OpenTelemetryParityTests
             var expected = Providers(sdkDefault).Select(provider => Describe(provider.GetResource())).ToArray();
             var actual = Providers(withLaunchPadDefault).Select(provider => Describe(provider.GetResource())).ToArray();
 
-            actual.ShouldBe(expected);
+            await actual.Should().BeEquivalentTo(expected, CollectionOrdering.Matching);
         }
         finally
         {

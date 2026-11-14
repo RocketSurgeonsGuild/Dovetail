@@ -6,4 +6,4 @@ using Rocket.Surgery.Extensions.Testing;
 
 namespace Joinery.Dovetail.Tests;
 
-public class DovetailTests() : AutoFakeTest<TestRecord>(TestRecord.Create()) { }
+public class DovetailTests() : LoggerTest<TestRecord>(TestRecord.Create()) { }

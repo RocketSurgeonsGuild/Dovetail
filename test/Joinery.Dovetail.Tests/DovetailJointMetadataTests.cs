@@ -12,7 +12,7 @@ namespace Joinery.Dovetail.Tests;
 public class DovetailJointMetadataTests
 {
     [Test]
-    public void Does_Not_Create_The_Joint_Until_It_Is_Read_And_Creates_It_Once()
+    public async Task Does_Not_Create_The_Joint_Until_It_Is_Read_And_Creates_It_Once()
     {
         var created = 0;
         var metadata = DovetailJointMetadata.FromFactory(
@@ -25,9 +25,9 @@ public class DovetailJointMetadataTests
             DovetailCategory.Application
         );
 
-        created.ShouldBe(0);
-        metadata.Joint.ShouldBeSameAs(metadata.Joint);
-        created.ShouldBe(1);
+        await created.Should().BeEqualTo(0);
+        await metadata.Joint.Should().BeSameReferenceAs(metadata.Joint);
+        await created.Should().BeEqualTo(1);
     }
 
     [Test]
@@ -36,7 +36,7 @@ public class DovetailJointMetadataTests
         var metadata = Describe();
         var builder = DovetailContextBuilder.Create([metadata], new Dictionary<object, object> { [typeof(string)] = "from the properties" }, []);
 
-        ( await builder.CreateAsync() ).Joints.OfType<FactoryJoint>().Single().Value.ShouldBe("from the properties");
+        await ( await builder.CreateAsync() ).Joints.OfType<FactoryJoint>().Single().Value.Should().BeEqualTo("from the properties");
     }
 
     [Test]
@@ -44,7 +44,7 @@ public class DovetailJointMetadataTests
     {
         var builder = DovetailContextBuilder.Create([Describe()], new Dictionary<object, object>(), []).Set("set later");
 
-        ( await builder.CreateAsync() ).Joints.OfType<FactoryJoint>().Single().Value.ShouldBe("set later");
+        await ( await builder.CreateAsync() ).Joints.OfType<FactoryJoint>().Single().Value.Should().BeEqualTo("set later");
     }
 
     [Test]
@@ -56,37 +56,37 @@ public class DovetailJointMetadataTests
 
         await builder.CreateAsync();
 
-        ( (FactoryJoint)appended.Joint ).Value.ShouldBe("set later");
-        ( (FactoryJoint)prepended.Joint ).Value.ShouldBe("set later");
+        await ( (FactoryJoint)appended.Joint ).Value.Should().BeEqualTo("set later");
+        await ( (FactoryJoint)prepended.Joint ).Value.Should().BeEqualTo("set later");
     }
 
     [Test]
-    public void Resolves_Against_Empty_Properties_When_Read_Outside_A_Builder() => ( (FactoryJoint)Describe().Joint ).Value.ShouldBe("default");
+    public async Task Resolves_Against_Empty_Properties_When_Read_Outside_A_Builder() => await ( (FactoryJoint)Describe().Joint ).Value.Should().BeEqualTo("default");
 
     [Test]
-    public void Keeps_The_Values_The_Joint_Was_Created_With_When_It_Is_Given_To_Another_Builder()
+    public async Task Keeps_The_Values_The_Joint_Was_Created_With_When_It_Is_Given_To_Another_Builder()
     {
         var metadata = Describe();
         DovetailContextBuilder.Create([metadata], new Dictionary<object, object> { [typeof(string)] = "first" }, []);
-        ( (FactoryJoint)metadata.Joint ).Value.ShouldBe("first");
+        await ( (FactoryJoint)metadata.Joint ).Value.Should().BeEqualTo("first");
 
         DovetailContextBuilder.Create([metadata], new Dictionary<object, object> { [typeof(string)] = "second" }, []);
 
-        ( (FactoryJoint)metadata.Joint ).Value.ShouldBe("first");
+        await ( (FactoryJoint)metadata.Joint ).Value.Should().BeEqualTo("first");
     }
 
     [Test]
-    public void Fails_Each_Time_It_Is_Read_When_The_Factory_Throws()
+    public async Task Fails_Each_Time_It_Is_Read_When_The_Factory_Throws()
     {
         var metadata = DovetailJointMetadata.FromFactory(_ => throw new InvalidOperationException("nothing to create it from"), DovetailHostType.Undefined, DovetailCategory.Application);
 
-        Should.Throw<InvalidOperationException>(() => metadata.Joint);
-        Should.Throw<InvalidOperationException>(() => metadata.Joint);
+        await ( (Func<object?>)( () => metadata.Joint ) ).Should().Throw<InvalidOperationException>();
+        await ( (Func<object?>)( () => metadata.Joint ) ).Should().Throw<InvalidOperationException>();
     }
 
     [Test]
-    public void Requires_A_Factory() =>
-        Should.Throw<ArgumentNullException>(() => DovetailJointMetadata.FromFactory(null!, DovetailHostType.Undefined, DovetailCategory.Application));
+    public async Task Requires_A_Factory() =>
+        await ( (Action)( () => DovetailJointMetadata.FromFactory(null!, DovetailHostType.Undefined, DovetailCategory.Application) ) ).Should().Throw<ArgumentNullException>();
 
     private static DovetailJointMetadata Describe() => DovetailJointMetadata.FromFactory(
         services => new FactoryJoint(services.GetService(typeof(string)) as string ?? "default"),

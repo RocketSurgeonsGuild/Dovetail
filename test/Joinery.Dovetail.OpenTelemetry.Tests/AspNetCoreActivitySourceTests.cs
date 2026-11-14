@@ -29,7 +29,7 @@ public class AspNetCoreActivitySourceTests
 
         tracerProvider.ForceFlush();
 
-        exportedActivities.ShouldContain(a => a.Source.Name == "Microsoft.AspNetCore");
+        await exportedActivities.Should().Contain(a => a.Source.Name == "Microsoft.AspNetCore");
     }
 }
 #endif

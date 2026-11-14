@@ -1,4 +1,3 @@
-using FakeItEasy;
 using Joinery.Dovetail.Configuration.Json;
 using Joinery.Dovetail.Configuration.Yaml;
 using Joinery.Dovetail.Hosting.AspNetCore.Tests.Startups;
@@ -15,7 +14,7 @@ using Rocket.Surgery.Extensions.Testing;
 
 namespace Joinery.Dovetail.Hosting.AspNetCore.Tests;
 
-public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class RocketWebApplicationTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task Should_Start_Application()
@@ -33,7 +32,7 @@ public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.C
                             .GetAsync();
 
         var content = await response.Content.ReadAsStringAsync();
-        content.ShouldBe("SimpleStartup -> Configure");
+        await content.Should().BeEqualTo("SimpleStartup -> Configure");
         await host.StopAsync();
     }
 
@@ -46,51 +45,51 @@ public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(12);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(24);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(12);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(24);
 #else
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(8);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(12);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(8);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(12);
 #endif
     }
 
     [Test]
     public async Task Should_Build_The_Host_Correctly()
     {
-        var @delegate = A.Fake<HostCreatedAsyncJointDelegate<WebApplication>>();
-        var delegate2 = A.Fake<HostCreatedJointDelegate<IHost>>();
+        var @delegate = Mock.OfDelegate<HostCreatedAsyncJointDelegate<WebApplication>>();
+        var delegate2 = Mock.OfDelegate<HostCreatedJointDelegate<IHost>>();
         await using var host = await WebApplication
                                     .CreateBuilder()
-                                    .ConfigureDovetail(z => z.ConfigureHostCreated(@delegate).ConfigureHostCreated(delegate2));
+                                    .ConfigureDovetail(z => z.ConfigureHostCreated(@delegate.Object).ConfigureHostCreated(delegate2.Object));
 
-        A.CallTo(() => @delegate.Invoke(A<IDovetailContext>._, A<WebApplication>._, A<CancellationToken>._)).MustHaveHappened();
-        A.CallTo(() => delegate2.Invoke(A<IDovetailContext>._, A<IHost>._)).MustHaveHappened();
-        host.Services.ShouldNotBeNull();
+        @delegate.Invoke(Any(), Any(), Any()).WasCalled();
+        delegate2.Invoke(Any(), Any()).WasCalled();
+        await host.Services.Should().NotBeNull();
     }
 
     [Test]
     public async Task Should_ConfigureHosting()
     {
-        var convention = A.Fake<HostApplicationJointDelegate<IHostApplicationBuilder>>();
+        var convention = Mock.OfDelegate<HostApplicationJointDelegate<IHostApplicationBuilder>>();
         await using var host = await WebApplication
                                     .CreateBuilder()
-                                    .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention));
+                                    .ConfigureDovetail(rb => rb.ConfigureHostApplication(convention.Object));
 
-        A.CallTo(() => convention.Invoke(A<IDovetailContext>._, A<IHostApplicationBuilder>._)).MustHaveHappened();
+        convention.Invoke(Any(), Any()).WasCalled();
     }
 
     [Test]
     public async Task Should_ConfigureHosting_HostApplication()
     {
-        var convention = A.Fake<HostApplicationJointDelegate<WebApplicationBuilder>>();
+        var convention = Mock.OfDelegate<HostApplicationJointDelegate<WebApplicationBuilder>>();
         await using var host = await WebApplication
                                     .CreateBuilder()
                                     .ConfigureDovetail(
                                          rb => rb
-                                            .ConfigureHostApplication(convention)
+                                            .ConfigureHostApplication(convention.Object)
                                      );
 
-        A.CallTo(() => convention.Invoke(A<IDovetailContext>._, A<WebApplicationBuilder>._)).MustHaveHappened();
+        convention.Invoke(Any(), Any()).WasCalled();
     }
 
     [Test, Skip("Configuration needs to be redone")]
@@ -102,11 +101,11 @@ public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(12);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(0);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(12);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(0);
 #else
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(8);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(0);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(8);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(0);
 #endif
     }
 
@@ -120,11 +119,11 @@ public class RocketWebApplicationTests() : AutoFakeTest<TestRecord>(TestRecord.C
         var configuration = (IConfigurationRoot)host.Services.GetRequiredService<IConfiguration>();
 
 #if NET10_0_OR_GREATER
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(2);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(24);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(2);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(24);
 #else
-        configuration.Providers.OfType<JsonConfigurationProvider>().Count().ShouldBe(2);
-        configuration.Providers.OfType<YamlConfigurationProvider>().Count().ShouldBe(12);
+        await configuration.Providers.OfType<JsonConfigurationProvider>().Count().Should().BeEqualTo(2);
+        await configuration.Providers.OfType<YamlConfigurationProvider>().Count().Should().BeEqualTo(12);
 #endif
     }
 }

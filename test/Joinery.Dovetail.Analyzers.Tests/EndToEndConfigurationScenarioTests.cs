@@ -55,8 +55,8 @@ public class EndToEndConfigurationScenarioTests() : ConfigGeneratorTest()
         var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<WeatherOptionsStub>>().Value;
 
-        options.City.ShouldBe("Seattle");
-        options.PollInterval.ShouldBe("00:05:00");
+        await options.City.Should().BeEqualTo("Seattle");
+        await options.PollInterval.Should().BeEqualTo("00:05:00");
     }
 
     /// <summary>

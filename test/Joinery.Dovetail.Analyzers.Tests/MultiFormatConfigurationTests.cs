@@ -49,7 +49,7 @@ public class MultiFormatConfigurationTests() : ConfigGeneratorTest()
         """;
 
     [Test]
-    public void Should_Bind_Equivalent_Values_From_Json_Yaml_And_Toml_At_Runtime()
+    public async Task Should_Bind_Equivalent_Values_From_Json_Yaml_And_Toml_At_Runtime()
     {
         // Runtime-level equivalence check: independent of generated-class shape, the three
         // IConfigurationSource providers must produce the same bound values for the same
@@ -69,8 +69,8 @@ public class MultiFormatConfigurationTests() : ConfigGeneratorTest()
         var yamlBound = yamlConfig.GetSection("Sample").Get<SampleSection>();
         var tomlBound = tomlConfig.GetSection("Sample").Get<SampleSection>();
 
-        yamlBound.ShouldBeEquivalentTo(jsonBound);
-        tomlBound.ShouldBeEquivalentTo(jsonBound);
+        await Assert.That(yamlBound).IsEquivalentTo(jsonBound);
+        await Assert.That(tomlBound).IsEquivalentTo(jsonBound);
     }
 
     private static string WriteTempFile(string name, string contents)

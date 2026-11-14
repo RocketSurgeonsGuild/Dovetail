@@ -67,7 +67,7 @@ public class TransitiveAnalyzerTests(string targetFramework)
     /// out of every transitive consumer. Only build assets stay private now.
     /// </summary>
     [Test]
-    public void PackedDependenciesOnDovetail_DoNotExcludeAnalyzers()
+    public async Task PackedDependenciesOnDovetail_DoNotExcludeAnalyzers()
     {
         var excludes = new SortedDictionary<string, string>(StringComparer.Ordinal);
         foreach (var nupkg in Directory.EnumerateFiles(Config.NugetArtifactsDirectory, "Joinery.Dovetail.*.nupkg"))
@@ -83,8 +83,8 @@ public class TransitiveAnalyzerTests(string targetFramework)
             }
         }
 
-        excludes.ShouldNotBeEmpty();
-        excludes.Where(z => z.Value.Contains("Analyzers", StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
-        excludes.Values.ShouldAllBe(z => z == "Build");
+        await excludes.Should().NotBeEmpty();
+        await excludes.Where(z => z.Value.Contains("Analyzers", StringComparison.OrdinalIgnoreCase)).Should().BeEmpty();
+        await excludes.Values.Should().All(z => z == "Build");
     }
 }

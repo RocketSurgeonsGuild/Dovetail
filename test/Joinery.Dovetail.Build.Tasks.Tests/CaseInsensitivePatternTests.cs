@@ -8,12 +8,12 @@ namespace Joinery.Dovetail.Build.Tasks.Tests;
 public class CaseInsensitivePatternTests
 {
     [Test]
-    public void Letters_BecomeCharacterClasses_AndSyntaxCharactersAreEscaped()
+    public async Task Letters_BecomeCharacterClasses_AndSyntaxCharactersAreEscaped()
     {
-        CaseInsensitivePattern.For("Max_2").ShouldBe("^(?:[Mm][Aa][Xx]_2)$");
-        CaseInsensitivePattern.For("a.b(c)").ShouldBe(@"^(?:[Aa]\.[Bb]\([Cc]\))$");
-        CaseInsensitivePattern.For(["Url", "Retry-After"]).ShouldBe("^(?:[Uu][Rr][Ll]|[Rr][Ee][Tt][Rr][Yy]-[Aa][Ff][Tt][Ee][Rr])$");
-        CaseInsensitivePattern.For([]).ShouldBe("^(?:)$");
+        await CaseInsensitivePattern.For("Max_2").Should().BeEqualTo("^(?:[Mm][Aa][Xx]_2)$");
+        await CaseInsensitivePattern.For("a.b(c)").Should().BeEqualTo(@"^(?:[Aa]\.[Bb]\([Cc]\))$");
+        await CaseInsensitivePattern.For(["Url", "Retry-After"]).Should().BeEqualTo("^(?:[Uu][Rr][Ll]|[Rr][Ee][Tt][Rr][Yy]-[Aa][Ff][Tt][Ee][Rr])$");
+        await CaseInsensitivePattern.For([]).Should().BeEqualTo("^(?:)$");
     }
 
     [Test]
@@ -24,17 +24,17 @@ public class CaseInsensitivePatternTests
     [Arguments("x+y*", "xxyy", false)]
     [Arguments("Größe", "GRÖSSE", false)]
     [Arguments("Größe", "GRÖßE", true)]
-    public void Patterns_MatchTheirNameInAnyCase_AndNothingElse(string name, string key, bool matches) =>
-        new Regex(CaseInsensitivePattern.For(name), RegexOptions.ECMAScript).IsMatch(key).ShouldBe(matches);
+    public async Task Patterns_MatchTheirNameInAnyCase_AndNothingElse(string name, string key, bool matches) =>
+        await new Regex(CaseInsensitivePattern.For(name), RegexOptions.ECMAScript).IsMatch(key).Should().BeEqualTo(matches);
 
     [Test]
-    public void TheLookup_FindsTheKeyATwinPatternBelongsTo()
+    public async Task TheLookup_FindsTheKeyATwinPatternBelongsTo()
     {
         var lookup = new CaseInsensitivePattern.NameLookup(["Message", "Count"]);
 
-        lookup.Find("^(?:[Cc][Oo][Uu][Nn][Tt])$").ShouldBe("Count");
-        lookup.Find("^[Mm]essage$").ShouldBe("Message");
-        lookup.Find("^(?:[Nn]ame)$").ShouldBeNull();
-        lookup.Find("(unbalanced").ShouldBeNull();
+        await lookup.Find("^(?:[Cc][Oo][Uu][Nn][Tt])$").Should().BeEqualTo("Count");
+        await lookup.Find("^[Mm]essage$").Should().BeEqualTo("Message");
+        await lookup.Find("^(?:[Nn]ame)$").Should().BeNull();
+        await lookup.Find("(unbalanced").Should().BeNull();
     }
 }

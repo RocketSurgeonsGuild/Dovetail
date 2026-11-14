@@ -23,7 +23,7 @@ public class ParityTests
         var microsoft = Render.Outcome(() => parity.Microsoft(configuration));
         var dovetail = Render.Outcome(() => parity.Dovetail(configuration));
 
-        dovetail.ShouldBe(microsoft);
+        await dovetail.Should().BeEqualTo(microsoft);
         await Task.CompletedTask;
     }
 
@@ -33,16 +33,16 @@ public class ParityTests
         var configuration = Build(("Reload:Name", "first"), ("Reload:Count", "1"));
         await using var provider = Binders.DovetailServices(configuration).BuildServiceProvider();
         var monitor = provider.GetRequiredService<IOptionsMonitor<ReloadOptions>>();
-        monitor.CurrentValue.Name.ShouldBe("first");
+        await monitor.CurrentValue.Name.Should().BeEqualTo("first");
 
         var memory = (MemoryConfigurationProvider)configuration.Providers.Single();
         memory.Set("Reload:Name", "second");
         memory.Set("Reload:Count", "2");
         configuration.Reload();
 
-        monitor.CurrentValue.Name.ShouldBe("second");
-        monitor.CurrentValue.Count.ShouldBe(2);
-        provider.GetRequiredService<IOptionsSnapshot<ReloadOptions>>().Value.Name.ShouldBe("second");
+        await monitor.CurrentValue.Name.Should().BeEqualTo("second");
+        await monitor.CurrentValue.Count.Should().BeEqualTo(2);
+        await provider.GetRequiredService<IOptionsSnapshot<ReloadOptions>>().Value.Name.Should().BeEqualTo("second");
     }
 
     [Test]
@@ -55,8 +55,8 @@ public class ParityTests
         var dovetail = Render.Outcome(() => Binders.Dovetail<PosRecord>(configuration));
         var microsoftWithOtherValues = Render.Outcome(() => Build(("S:Unrelated", "x")).GetSection("S").Get<PosRecord>());
 
-        dovetail.ShouldBe(microsoftWithOtherValues);
-        dovetail.ShouldContain("has no matching config");
+        await dovetail.Should().BeEqualTo(microsoftWithOtherValues);
+        await dovetail.Should().Contain("has no matching config");
         await Task.CompletedTask;
     }
 
@@ -71,7 +71,7 @@ public class ParityTests
         var dovetail = Render.Outcome(() => Binders.Dovetail<InitOnlyClass>(configuration));
 
         // The reflection binder appends to the initial list; Dovetail binds into it too, so both keep "init" first.
-        dovetail.ShouldBe(reflection, label);
+        await dovetail.Should().BeEqualTo(reflection).Because(label);
         await Task.CompletedTask;
     }
 
@@ -85,7 +85,7 @@ public class ParityTests
         var reflection = Render.Outcome(() => Binders.Reflection<RequiredClass>(configuration.GetSection("S")));
         var dovetail = Render.Outcome(() => Binders.Dovetail<RequiredClass>(configuration));
 
-        dovetail.ShouldBe(reflection, label);
+        await dovetail.Should().BeEqualTo(reflection).Because(label);
         await Task.CompletedTask;
     }
 
@@ -97,7 +97,7 @@ public class ParityTests
         var reflection = Render.Outcome(() => Binders.Reflection<CollTarget>(configuration.GetSection("S"))!.InitOnlyList);
         var dovetail = Render.Outcome(() => Binders.Dovetail<CollTarget>(configuration).InitOnlyList);
 
-        dovetail.ShouldBe(reflection);
+        await dovetail.Should().BeEqualTo(reflection);
         await Task.CompletedTask;
     }
 

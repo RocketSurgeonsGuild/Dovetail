@@ -57,16 +57,16 @@ public class ConfigurationSchemaEndpointTests(string targetFramework)
 
         var output = await project.Run("web");
 
-        output.ShouldContain("Status=200");
-        output.ShouldContain("ContentType=application/schema+json");
-        output.ShouldContain("""Body={"type":"object","title":"sdk-test"}""");
-        output.ShouldContain("Conditional=304");
+        await output.Should().Contain("Status=200");
+        await output.Should().Contain("ContentType=application/schema+json");
+        await output.Should().Contain("""Body={"type":"object","title":"sdk-test"}""");
+        await output.Should().Contain("Conditional=304");
         var generated = ReadGeneratedJoint(project)!;
-        generated.ShouldContain("global::Joinery.Dovetail.Attributes.DovetailExport]");
-        generated.ShouldContain("IHostCreatedJoint<global::Microsoft.AspNetCore.Builder.WebApplication>");
-        generated.ShouldContain("MapDovetailConfigurationSchema(host, \"");
-        generated.ShouldContain("obj");
-        generated.ShouldContain(", null);");
+        await generated.Should().Contain("global::Joinery.Dovetail.Attributes.DovetailExport]");
+        await generated.Should().Contain("IHostCreatedJoint<global::Microsoft.AspNetCore.Builder.WebApplication>");
+        await generated.Should().Contain("MapDovetailConfigurationSchema(host, \"");
+        await generated.Should().Contain("obj");
+        await generated.Should().Contain(", null);");
     }
 
     [Test]
@@ -76,8 +76,8 @@ public class ConfigurationSchemaEndpointTests(string targetFramework)
 
         var output = await project.Run("web");
 
-        output.ShouldContain("Status=404");
-        ReadGeneratedJoint(project).ShouldBeNull();
+        await output.Should().Contain("Status=404");
+        await ReadGeneratedJoint(project).Should().BeNull();
     }
 
     [Test]
@@ -87,8 +87,8 @@ public class ConfigurationSchemaEndpointTests(string targetFramework)
 
         var output = await project.Run("web");
 
-        output.ShouldContain("Status=404");
-        ReadGeneratedJoint(project).ShouldBeNull();
+        await output.Should().Contain("Status=404");
+        await ReadGeneratedJoint(project).Should().BeNull();
     }
 
     [Test]
@@ -101,8 +101,8 @@ public class ConfigurationSchemaEndpointTests(string targetFramework)
 
         var output = await project.Run("web");
 
-        output.ShouldContain(expected);
-        ReadGeneratedJoint(project)!.ShouldContain($", \"{environments}\");");
+        await output.Should().Contain(expected);
+        await ReadGeneratedJoint(project)!.Should().Contain($", \"{environments}\");");
     }
 
     [Test]
@@ -112,10 +112,10 @@ public class ConfigurationSchemaEndpointTests(string targetFramework)
 
         var output = await project.Run("web");
 
-        output.ShouldContain("Status=200");
+        await output.Should().Contain("Status=200");
         var generated = ReadGeneratedJoint(project)!;
-        generated.ShouldContain("MapDovetailConfigurationSchema(host, null, null);");
-        generated.ShouldNotContain("obj");
+        await generated.Should().Contain("MapDovetailConfigurationSchema(host, null, null);");
+        await generated.Should().NotContain("obj");
     }
 
     private SdkTestProject CreateProject(string? endpoint, string? environments, string? sourceFallback = null)

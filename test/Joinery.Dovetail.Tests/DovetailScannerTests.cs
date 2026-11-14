@@ -1,18 +1,16 @@
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
+using Joinery.Dovetail.Tests.Fixtures;
 using Rocket.Surgery.Extensions.Testing;
-
-
 
 namespace Joinery.Dovetail.Tests;
 
-public class DovetailScannerTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class DovetailScannerTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     [Test]
     public async Task ShouldConstruct()
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
-        scanner.ShouldNotBeNull();
+        await scanner.Should().NotBeNull();
 
         var context = await DovetailContext.FromAsync(scanner);
         await Verify(context.Joints.Select(z => z.ToString()));
@@ -32,8 +30,8 @@ public class DovetailScannerTests() : AutoFakeTest<TestRecord>(TestRecord.Create
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var contribution = A.Fake<IServiceJoint>(z => z.Named("contribution"));
-        var contribution2 = A.Fake<IServiceJoint>(z => z.Named("contribution2"));
+        var contribution = new NamedServiceJoint("contribution");
+        var contribution2 = new NamedServiceJoint("contribution2");
 
         scanner.PrependJoint(contribution);
         scanner.AppendJoint(contribution2);
@@ -47,8 +45,8 @@ public class DovetailScannerTests() : AutoFakeTest<TestRecord>(TestRecord.Create
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var d1 = A.Fake<ServiceJointDelegate>(z => z.Named("d1"));
-        var d2 = A.Fake<ServiceJointDelegate>(z => z.Named("d2"));
+        var d1 = Mock.OfDelegate<ServiceJointDelegate>().Object;
+        var d2 = Mock.OfDelegate<ServiceJointDelegate>().Object;
 
         var @delegate = scanner.ConfigureServices(d1, default, null);
         var delegate2 = scanner.ConfigureServices(d2, default, null);
@@ -62,8 +60,8 @@ public class DovetailScannerTests() : AutoFakeTest<TestRecord>(TestRecord.Create
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var contribution = A.Fake<IServiceJoint>(z => z.Named("contribution"));
-        var contribution2 = A.Fake<IServiceJoint>(z => z.Named("contribution2"));
+        var contribution = new NamedServiceJoint("contribution");
+        var contribution2 = new NamedServiceJoint("contribution2");
 
         scanner.AppendJoint(contribution);
         scanner.PrependJoint(contribution2);
@@ -78,7 +76,7 @@ public class DovetailScannerTests() : AutoFakeTest<TestRecord>(TestRecord.Create
     {
         var scanner = DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []);
 
-        var contribution = A.Fake<IServiceJoint>(z => z.Named("contribution"));
+        var contribution = new NamedServiceJoint("contribution");
 
         scanner.PrependJoint(contribution);
         scanner.ExceptJoint(contribution.GetType().Assembly);

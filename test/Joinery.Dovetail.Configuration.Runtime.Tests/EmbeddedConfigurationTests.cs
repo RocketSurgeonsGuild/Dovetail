@@ -20,8 +20,8 @@ public sealed class EmbeddedConfigurationTests
     {
         var configuration = await BuildAsync(joint, embedded: true);
 
-        configuration["Sample:Name"].ShouldBe("development");
-        configuration["Sample:Count"].ShouldBe("3");
+        await configuration["Sample:Name"].Should().BeEqualTo("development");
+        await configuration["Sample:Count"].Should().BeEqualTo("3");
     }
 
     [Test]
@@ -31,7 +31,7 @@ public sealed class EmbeddedConfigurationTests
         var builder = new ConfigurationBuilder();
         joint.Register(await CreateContextAsync(embedded: false), builder);
 
-        builder.Sources.ShouldBeEmpty();
+        await builder.Sources.Should().BeEmpty();
     }
 
     [Test]
@@ -41,7 +41,7 @@ public sealed class EmbeddedConfigurationTests
         var builder = new ConfigurationBuilder();
         joint.Register(await CreateContextAsync(embedded: true), builder);
 
-        builder.Sources.ShouldBeEmpty();
+        await builder.Sources.Should().BeEmpty();
     }
 
     [Test]
@@ -49,7 +49,7 @@ public sealed class EmbeddedConfigurationTests
     {
         var configuration = await BuildAsync(new JsonAppSettingsConfiguration(), embedded: true);
 
-        configuration["Generated:Name"].ShouldBe("development");
+        await configuration["Generated:Name"].Should().BeEqualTo("development");
     }
 
     [Test]
@@ -57,19 +57,19 @@ public sealed class EmbeddedConfigurationTests
     {
         var configuration = await BuildAsync(new JsonAppSettingsConfiguration(), embedded: false, environmentName: "Production");
 
-        configuration["Generated:Name"].ShouldBe("project");
+        await configuration["Generated:Name"].Should().BeEqualTo("project");
     }
 
     [Test]
-    public void OpenResource_PrefersEarlierNames_AndMatchesBySuffix()
+    public async Task OpenResource_PrefersEarlierNames_AndMatchesBySuffix()
     {
         var assembly = typeof(EmbeddedConfigurationTests).Assembly;
 
         using var exact = DovetailEmbeddedConfiguration.OpenResource(assembly, "Missing.json", "appsettings.json");
-        exact.ShouldNotBeNull();
+        await exact.Should().NotBeNull();
         using var suffix = DovetailEmbeddedConfiguration.OpenResource(assembly, "appsettings.local.json");
-        suffix.ShouldNotBeNull();
-        DovetailEmbeddedConfiguration.OpenResource(assembly, "settings.json").ShouldBeNull();
+        await suffix.Should().NotBeNull();
+        await DovetailEmbeddedConfiguration.OpenResource(assembly, "settings.json").Should().BeNull();
     }
 
     [Test]
@@ -77,13 +77,11 @@ public sealed class EmbeddedConfigurationTests
     {
         var names = DovetailEmbeddedConfiguration.GetConventionalFileNames(await CreateContextAsync(embedded: false), "yaml", "yml");
 
-        names.ShouldBe(
-            [
+        await names.Should().BeEquivalentTo([
                 "appsettings.yaml", "appsettings.yml", "Sample.yaml", "Sample.yml",
                 "appsettings.Development.yaml", "appsettings.Development.yml", "Sample.Development.yaml", "Sample.Development.yml",
                 "appsettings.local.yaml", "appsettings.local.yml", "Sample.local.yaml", "Sample.local.yml",
-            ]
-        );
+            ], CollectionOrdering.Matching);
     }
 
     public static IEnumerable<Func<IConfigurationJoint>> EmbeddedJoints()

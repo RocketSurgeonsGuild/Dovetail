@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using Autofac;
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +8,7 @@ using static Joinery.Dovetail.Autofac.Tests.AutofacFixtures;
 
 namespace Joinery.Dovetail.Autofac.Tests;
 
-public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
+public class AutofacWebApplicationTests : LoggerTest<TestRecord>
 {
     [Test]
     public async Task ConstructTheContainerAndRegisterWithCore()
@@ -19,15 +17,15 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                            .CreateBuilder()
                            .ConfigureDovetail(
                                 rb => rb
-                                     .ConfigureAutofac((context, container) => container.RegisterInstance(A.Fake<IAbc>()))
-                                     .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                     .ConfigureAutofac((context, container) => container.RegisterInstance(IAbc.Mock().Object))
+                                     .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
-        items.ResolveOptional<IAbc>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc2>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc3>().ShouldBeNull();
-        items.ResolveOptional<IAbc4>().ShouldBeNull();
+        await items.ResolveOptional<IAbc>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc2>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc3>().Should().BeNull();
+        await items.ResolveOptional<IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -39,18 +37,18 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                                 rb => rb
                                      .ConfigureAutofac((context, container) =>
                                                        {
-                                                           container.RegisterInstance(A.Fake<IAbc>());
-                                                           container.RegisterInstance(A.Fake<IAbc4>());
+                                                           container.RegisterInstance(IAbc.Mock().Object);
+                                                           container.RegisterInstance(IAbc4.Mock().Object);
                                                        }
                                       )
-                                     .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                     .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
-        items.ResolveOptional<IAbc>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc2>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc3>().ShouldBeNull();
-        items.ResolveOptional<IAbc4>().ShouldNotBeNull();
+        await items.ResolveOptional<IAbc>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc2>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc3>().Should().BeNull();
+        await items.ResolveOptional<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -63,15 +61,15 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                                      .ConfigureAutofac(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc3>());
-                                              container.RegisterInstance(A.Fake<IAbc4>());
+                                              container.RegisterInstance(IAbc3.Mock().Object);
+                                              container.RegisterInstance(IAbc4.Mock().Object);
                                           }
                                       )
                             );
 
         var items = builder.GetLifetimeScope();
-        items.ResolveOptional<IAbc3>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc4>().ShouldNotBeNull();
+        await items.ResolveOptional<IAbc3>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -84,19 +82,19 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                                      .ConfigureAutofac(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc>());
+                                              container.RegisterInstance(IAbc.Mock().Object);
                                           }
                                       )
-                                        .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                        .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
 
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -109,19 +107,19 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                                      .ConfigureAutofac(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc>());
-                                              container.RegisterInstance(A.Fake<IAbc4>());
+                                              container.RegisterInstance(IAbc.Mock().Object);
+                                              container.RegisterInstance(IAbc4.Mock().Object);
                                           }
                                       )
-                                        .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                        .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -134,16 +132,16 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                                      .ConfigureAutofac(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc3>());
-                                              container.RegisterInstance(A.Fake<IAbc4>());
+                                              container.RegisterInstance(IAbc3.Mock().Object);
+                                              container.RegisterInstance(IAbc4.Mock().Object);
                                           }
                                       )
                             );
 
         var items = builder.GetLifetimeScope();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc3>().ShouldNotBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc3>().Should().NotBeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -154,10 +152,10 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                            .ConfigureDovetail();
 
         var items = builder.GetLifetimeScope();
-        items.ResolveOptional<IAbc>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc2>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc3>().ShouldBeNull();
-        items.ResolveOptional<IAbc4>().ShouldBeNull();
+        await items.ResolveOptional<IAbc>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc2>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc3>().Should().BeNull();
+        await items.ResolveOptional<IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -168,12 +166,12 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                            .ConfigureDovetail();
 
         var items = builder.GetLifetimeScope();
-        items.ResolveOptional<IAbc>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc2>().ShouldNotBeNull();
-        items.ResolveOptional<IAbc3>().ShouldBeNull();
-        items.ResolveOptional<IAbc4>().ShouldBeNull();
-        items.ResolveOptional<IOtherAbc3>().ShouldNotBeNull();
-        items.ResolveOptional<IOtherAbc3>().ShouldNotBeNull();
+        await items.ResolveOptional<IAbc>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc2>().Should().NotBeNull();
+        await items.ResolveOptional<IAbc3>().Should().BeNull();
+        await items.ResolveOptional<IAbc4>().Should().BeNull();
+        await items.ResolveOptional<IOtherAbc3>().Should().NotBeNull();
+        await items.ResolveOptional<IOtherAbc3>().Should().NotBeNull();
     }
 
     [Test]
@@ -183,8 +181,8 @@ public class AutofacWebApplicationTests : AutoFakeTest<TestRecord>
                            .CreateApplicationBuilder([])
                            .ConfigureDovetail();
 
-        builder.GetLifetimeScope().ShouldNotBeNull();
+        await builder.GetLifetimeScope().Should().NotBeNull();
     }
 
-    public AutofacWebApplicationTests() : base(TestRecord.Create()) => AutoFake.Provide<DiagnosticSource>(new DiagnosticListener("Test"));
+    public AutofacWebApplicationTests() : base(TestRecord.Create()) { }
 }

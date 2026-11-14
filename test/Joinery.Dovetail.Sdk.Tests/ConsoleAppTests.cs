@@ -59,7 +59,7 @@ public class ConsoleAppTests(string targetFramework)
 
         var output = await project.Run("app", "greet --name Dovetail");
 
-        output.ShouldContain("Greeting=Hello Dovetail");
+        await output.Should().Contain("Greeting=Hello Dovetail");
     }
 
     [Test]
@@ -96,7 +96,7 @@ public class ConsoleAppTests(string targetFramework)
 
         var output = await project.Run("app", "greet --name Dovetail");
 
-        output.ShouldContain("Greeting=Howdy Dovetail");
+        await output.Should().Contain("Greeting=Howdy Dovetail");
     }
 
     [Test]
@@ -120,6 +120,6 @@ public class ConsoleAppTests(string targetFramework)
 
         var output = await project.Run("app");
 
-        output.ShouldContain("Custom entry point");
+        await output.Should().Contain("Custom entry point");
     }
 }
