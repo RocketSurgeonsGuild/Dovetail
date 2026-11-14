@@ -20,14 +20,14 @@ public class LibrarySchemaTests
             )!
         );
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        document["type"]!.GetValue<string>().ShouldBe("object");
-        document["properties"]!.AsObject().Select(z => z.Key).ShouldBe(["Greetings", "Shared"]);
-        document["definitions"]!.AsObject().Select(z => z.Key).ShouldBe(["Greetings.Endpoint", "Greetings.Server", "Shared.Http.Retry"]);
-        SchemaAssert.Objects(document).ShouldAllBe(z => !z.ContainsKey("propertyNames"));
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await document["type"]!.GetValue<string>().Should().BeEqualTo("object");
+        await document["properties"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(["Greetings", "Shared"], CollectionOrdering.Matching);
+        await document["definitions"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(["Greetings.Endpoint", "Greetings.Server", "Shared.Http.Retry"], CollectionOrdering.Matching);
+        await SchemaAssert.Objects(document).Should().All(z => !z.ContainsKey("propertyNames"));
         await Verify(json, "json");
     }
 
     [Test]
-    public void ALibraryWithoutSections_HasNoSegment() => ConfigurationSchemaDocument.CreateLibrarySchema([]).ShouldBeNull();
+    public async Task ALibraryWithoutSections_HasNoSegment() => await ConfigurationSchemaDocument.CreateLibrarySchema([]).Should().BeNull();
 }

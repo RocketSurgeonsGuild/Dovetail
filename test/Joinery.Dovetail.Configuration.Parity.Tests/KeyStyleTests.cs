@@ -170,14 +170,15 @@ public class KeyStyleTests
 
         var bound = Binders.Dovetail<CamelStyled>(configuration);
 
-        bound.DisplayName.ShouldBe("shown");
-        bound.InnerObject.RetryCount.ShouldBe(4);
-        bound.InnerObject.HostName.ShouldBe("inner-host");
-        bound.RecordMember.ShouldBe(new CamelRecord("record-host", 8080));
-        bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).ShouldBe([("first", 1), ("second", 2)]);
+        await bound.DisplayName.Should().BeEqualTo("shown");
+        await bound.InnerObject.RetryCount.Should().BeEqualTo(4);
+        await bound.InnerObject.HostName.Should().BeEqualTo("inner-host");
+        await bound.RecordMember.Should().BeEqualTo(new CamelRecord("record-host", 8080));
+        await bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).Should().BeEquivalentTo([("first", 1), ("second", 2)], CollectionOrdering.Matching);
         // Dictionary keys are data: they keep the case they were written in.
-        bound.TenantLimits.ShouldBe(new Dictionary<string, int> { ["AcmeCorp"] = 3 });
-        bound.LegacyName.ShouldBe("legacy");
+        await bound.TenantLimits.Should().HaveCount(1);
+        await bound.TenantLimits.Should().ContainKeyWithValue("AcmeCorp", 3);
+        await bound.LegacyName.Should().BeEqualTo("legacy");
         await Task.CompletedTask;
     }
 
@@ -201,14 +202,16 @@ public class KeyStyleTests
 
         var bound = Binders.Dovetail<DashStyled>(configuration);
 
-        bound.DisplayName.ShouldBe("shown");
-        bound.InnerObject.RetryCount.ShouldBe(4);
-        bound.InnerObject.HostName.ShouldBe("inner-host");
-        bound.RecordMember.ShouldBe(new DashRecord("record-host", 8080));
-        bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).ShouldBe([("first", 1), ("second", 2)]);
+        await bound.DisplayName.Should().BeEqualTo("shown");
+        await bound.InnerObject.RetryCount.Should().BeEqualTo(4);
+        await bound.InnerObject.HostName.Should().BeEqualTo("inner-host");
+        await bound.RecordMember.Should().BeEqualTo(new DashRecord("record-host", 8080));
+        await bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).Should().BeEquivalentTo([("first", 1), ("second", 2)], CollectionOrdering.Matching);
         // Dictionary keys are data: neither restyled nor split.
-        bound.TenantLimits.ShouldBe(new Dictionary<string, int> { ["AcmeCorp"] = 3, ["beta-corp"] = 5 });
-        bound.LegacyName.ShouldBe("legacy");
+        await bound.TenantLimits.Should().HaveCount(2);
+        await bound.TenantLimits.Should().ContainKeyWithValue("AcmeCorp", 3);
+        await bound.TenantLimits.Should().ContainKeyWithValue("beta-corp", 5);
+        await bound.LegacyName.Should().BeEqualTo("legacy");
         await Task.CompletedTask;
     }
 
@@ -226,10 +229,10 @@ public class KeyStyleTests
 
         var bound = Binders.Dovetail<CamelStyled>(configuration);
 
-        bound.DisplayName.ShouldBe("shown");
-        bound.InnerObject.RetryCount.ShouldBe(4);
-        bound.RecordMember.ShouldBe(new CamelRecord("record-host", 8080));
-        bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).ShouldBe([("first", 1)]);
+        await bound.DisplayName.Should().BeEqualTo("shown");
+        await bound.InnerObject.RetryCount.Should().BeEqualTo(4);
+        await bound.RecordMember.Should().BeEqualTo(new CamelRecord("record-host", 8080));
+        await bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).Should().BeEquivalentTo([("first", 1)], CollectionOrdering.Matching);
         await Task.CompletedTask;
     }
 
@@ -248,12 +251,12 @@ public class KeyStyleTests
 
         var bound = Binders.Dovetail<DashStyled>(configuration);
 
-        bound.DisplayName.ShouldBeNull();
-        bound.InnerObject.RetryCount.ShouldBe(0);
-        bound.RecordMember.ShouldBeNull();
-        bound.ItemList.ShouldBeEmpty();
+        await bound.DisplayName.Should().BeNull();
+        await bound.InnerObject.RetryCount.Should().BeEqualTo(0);
+        await bound.RecordMember.Should().BeNull();
+        await bound.ItemList.Should().BeEmpty();
         // An explicit [ConfigurationKeyName] is used verbatim, not restyled.
-        bound.LegacyName.ShouldBeNull();
+        await bound.LegacyName.Should().BeNull();
         await Task.CompletedTask;
     }
 
@@ -277,14 +280,16 @@ public class KeyStyleTests
 
         var bound = Binders.Dovetail<UnderscoreStyled>(configuration);
 
-        bound.DisplayName.ShouldBe("shown");
-        bound.InnerObject.RetryCount.ShouldBe(4);
-        bound.InnerObject.HostName.ShouldBe("inner-host");
-        bound.RecordMember.ShouldBe(new UnderscoreRecord("record-host", 8080));
-        bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).ShouldBe([("first", 1), ("second", 2)]);
+        await bound.DisplayName.Should().BeEqualTo("shown");
+        await bound.InnerObject.RetryCount.Should().BeEqualTo(4);
+        await bound.InnerObject.HostName.Should().BeEqualTo("inner-host");
+        await bound.RecordMember.Should().BeEqualTo(new UnderscoreRecord("record-host", 8080));
+        await bound.ItemList.Select(z => (z.ItemName, z.ItemWeight)).Should().BeEquivalentTo([("first", 1), ("second", 2)], CollectionOrdering.Matching);
         // Dictionary keys are data: neither restyled nor split.
-        bound.TenantLimits.ShouldBe(new Dictionary<string, int> { ["AcmeCorp"] = 3, ["beta_corp"] = 5 });
-        bound.LegacyName.ShouldBe("legacy");
+        await bound.TenantLimits.Should().HaveCount(2);
+        await bound.TenantLimits.Should().ContainKeyWithValue("AcmeCorp", 3);
+        await bound.TenantLimits.Should().ContainKeyWithValue("beta_corp", 5);
+        await bound.LegacyName.Should().BeEqualTo("legacy");
         await Task.CompletedTask;
     }
 
@@ -305,11 +310,11 @@ public class KeyStyleTests
 
         var bound = Binders.Dovetail<UnderscoreStyled>(configuration);
 
-        bound.DisplayName.ShouldBeNull();
-        bound.InnerObject.RetryCount.ShouldBe(0);
-        bound.RecordMember.ShouldBeNull();
-        bound.ItemList.ShouldBeEmpty();
-        bound.LegacyName.ShouldBeNull();
+        await bound.DisplayName.Should().BeNull();
+        await bound.InnerObject.RetryCount.Should().BeEqualTo(0);
+        await bound.RecordMember.Should().BeNull();
+        await bound.ItemList.Should().BeEmpty();
+        await bound.LegacyName.Should().BeNull();
         await Task.CompletedTask;
     }
 
@@ -334,14 +339,14 @@ public class KeyStyleTests
             if (style == "Undefined")
             {
                 var bound = Binders.Dovetail<UndefinedLower>(configuration);
-                (bound.myKey, bound.inner.waitTime, bound.itemList.ShouldHaveSingleItem().itemName).ShouldBe(("value", 7, "first"), $"casing {index}");
-                Binders.Dovetail<UndefinedLowerRecord>(configuration).ShouldBe(new UndefinedLowerRecord("record-host", 8080), $"casing {index}");
+                await (bound.myKey, bound.inner.waitTime, bound.itemList.Count, bound.itemList[0].itemName).Should().BeEqualTo(("value", 7, 1, "first")).Because($"casing {index}");
+                await Binders.Dovetail<UndefinedLowerRecord>(configuration).Should().BeEqualTo(new UndefinedLowerRecord("record-host", 8080)).Because($"casing {index}");
             }
             else
             {
                 var bound = Binders.Dovetail<PascalLower>(configuration);
-                (bound.myKey, bound.inner.waitTime, bound.itemList.ShouldHaveSingleItem().itemName).ShouldBe(("value", 7, "first"), $"casing {index}");
-                Binders.Dovetail<PascalLowerRecord>(configuration).ShouldBe(new PascalLowerRecord("record-host", 8080), $"casing {index}");
+                await (bound.myKey, bound.inner.waitTime, bound.itemList.Count, bound.itemList[0].itemName).Should().BeEqualTo(("value", 7, 1, "first")).Because($"casing {index}");
+                await Binders.Dovetail<PascalLowerRecord>(configuration).Should().BeEqualTo(new PascalLowerRecord("record-host", 8080)).Because($"casing {index}");
             }
         }
 
@@ -353,7 +358,7 @@ public class KeyStyleTests
     {
         var configuration = Build(("DerivedUnderscore:max_connections", "7"), ("derived_underscore:max_connections", "5"), ("derived-underscore:max_connections", "9"));
 
-        Binders.Dovetail<DerivedUnderscoreSettings>(configuration).MaxConnections.ShouldBe(5);
+        await Binders.Dovetail<DerivedUnderscoreSettings>(configuration).MaxConnections.Should().BeEqualTo(5);
         await Task.CompletedTask;
     }
 
@@ -363,7 +368,7 @@ public class KeyStyleTests
         // The suffix is removed first: DerivedDashSettings -> DerivedDash -> derived-dash, so the Pascal-case section is another one.
         var configuration = Build(("DerivedDash:max-connections", "7"), ("derived-dash:max-connections", "5"));
 
-        Binders.Dovetail<DerivedDashSettings>(configuration).MaxConnections.ShouldBe(5);
+        await Binders.Dovetail<DerivedDashSettings>(configuration).MaxConnections.Should().BeEqualTo(5);
         await Task.CompletedTask;
     }
 

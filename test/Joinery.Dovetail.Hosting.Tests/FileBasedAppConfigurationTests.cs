@@ -23,7 +23,7 @@ public class FileBasedAppConfigurationTests
 
             using var host = await Host.CreateApplicationBuilder().ConfigureDovetail();
 
-            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("entry-point");
+            await host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("entry-point");
         }
         finally
         {
@@ -52,7 +52,7 @@ public class FileBasedAppConfigurationTests
 
             using var host = await builder.ConfigureDovetail();
 
-            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("setting");
+            await host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("setting");
         }
         finally
         {
@@ -79,7 +79,7 @@ public class FileBasedAppConfigurationTests
 
             using var host = await builder.ConfigureDovetail();
 
-            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("setting");
+            await host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("setting");
         }
         finally
         {
@@ -100,7 +100,7 @@ public class FileBasedAppConfigurationTests
 
             using var host = await Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { ContentRootPath = contentRoot.FullName, }).ConfigureDovetail();
 
-            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("content-root");
+            await host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("content-root");
         }
         finally
         {
@@ -126,7 +126,7 @@ public class FileBasedAppConfigurationTests
 
             using var host = await builder.ConfigureDovetail();
 
-            host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].ShouldBe("base-path");
+            await host.Services.GetRequiredService<IConfiguration>()["Dovetail:FromFile"].Should().BeEqualTo("base-path");
         }
         finally
         {
@@ -148,7 +148,7 @@ public class FileBasedAppConfigurationTests
         {
             using var host = await Host.CreateApplicationBuilder().ConfigureDovetail();
 
-            host.Services.GetRequiredService<IConfiguration>().ShouldNotBeNull();
+            await host.Services.GetRequiredService<IConfiguration>().Should().NotBeNull();
         }
         finally
         {

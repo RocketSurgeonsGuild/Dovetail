@@ -35,8 +35,8 @@ public sealed class FileReloadRegistrationTests
 
                 var greetings = provider.GetRequiredService<IOptionsMonitor<GreetingsOptions>>();
                 var servers = provider.GetRequiredService<IOptionsMonitor<ServerRecord>>();
-                greetings.CurrentValue.Message.ShouldBe("initial");
-                servers.CurrentValue.Port.ShouldBe(8080);
+                await greetings.CurrentValue.Message.Should().BeEqualTo("initial");
+                await servers.CurrentValue.Port.Should().BeEqualTo(8080);
 
                 var greetingsChanged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 var serversChanged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -59,11 +59,11 @@ public sealed class FileReloadRegistrationTests
 
                 await Task.WhenAll(greetingsChanged.Task, serversChanged.Task).WaitAsync(TimeSpan.FromSeconds(15));
 
-                greetings.CurrentValue.Message.ShouldBe("updated");
-                servers.CurrentValue.Port.ShouldBe(9090);
+                await greetings.CurrentValue.Message.Should().BeEqualTo("updated");
+                await servers.CurrentValue.Port.Should().BeEqualTo(9090);
                 using var scope = provider.CreateScope();
-                scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<GreetingsOptions>>().Value.Message.ShouldBe("updated");
-                scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<ServerRecord>>().Value.Port.ShouldBe(9090);
+                await scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<GreetingsOptions>>().Value.Message.Should().BeEqualTo("updated");
+                await scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<ServerRecord>>().Value.Port.Should().BeEqualTo(9090);
             }
             finally
             {

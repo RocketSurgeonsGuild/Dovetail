@@ -1,5 +1,4 @@
 using Autofac;
-using FakeItEasy;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,14 +22,14 @@ public static class AutofacFixtures
     [DovetailExport]
     public class AbcDovetail : IAutofacJoint, IServiceJoint
     {
-        public void Register(IDovetailContext context, ContainerBuilder builder) => builder.RegisterInstance(A.Fake<IAbc>());
+        public void Register(IDovetailContext context, ContainerBuilder builder) => builder.RegisterInstance(IAbc.Mock().Object);
 
-        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(A.Fake<IAbc2>());
+        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(IAbc2.Mock().Object);
     }
 
     [DovetailExport]
     public class OtherDovetail : IServiceJoint
     {
-        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(A.Fake<IOtherAbc3>());
+        public void Register(IDovetailContext context, IServiceCollection services) => services.AddSingleton(IOtherAbc3.Mock().Object);
     }
 }

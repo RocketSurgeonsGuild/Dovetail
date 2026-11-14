@@ -15,8 +15,9 @@ public class VsCodeSettingsEditorTests
     private static EditorSettingsMappings Mappings(string project)
     {
         var root = Path.Combine(Path.GetTempPath(), "dovetail-repo");
-        EditorSettingsMappings.TryCreate(root, Path.Combine(root, project), Path.Combine(root, project, "obj", "appsettings.schema.json"), out var mappings, out var error).ShouldBeTrue(error);
-        return mappings!;
+        return EditorSettingsMappings.TryCreate(root, Path.Combine(root, project), Path.Combine(root, project, "obj", "appsettings.schema.json"), out var mappings, out var error)
+            ? mappings!
+            : throw new InvalidOperationException(error);
     }
 
     private static byte[] Bytes(string text, bool bom = false) => bom ? [0xEF, 0xBB, 0xBF, .. new UTF8Encoding(false).GetBytes(text)] : new UTF8Encoding(false).GetBytes(text);
@@ -27,7 +28,7 @@ public class VsCodeSettingsEditorTests
     private static string Edit(string text, EditorSettingsMappings? mappings = null)
     {
         var result = VsCodeSettingsEditor.Apply(Bytes(text), mappings ?? Host);
-        result.Status.ShouldBe(EditorSettingsStatus.Updated, result.Reason);
+        if (result.Status != EditorSettingsStatus.Updated) throw new InvalidOperationException($"Expected {EditorSettingsStatus.Updated} but was {result.Status}: {result.Reason}");
         var updated = new UTF8Encoding(false).GetString(result.Content);
         Parse(updated);
         return updated;
@@ -35,36 +36,35 @@ public class VsCodeSettingsEditorTests
 
     private static JsonDocument Parse(string text) => JsonDocument.Parse(text, new() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
 
-    private static void ShouldBeUnchanged(string text, EditorSettingsMappings? mappings = null)
+    private static async Task ShouldBeUnchanged(string text, EditorSettingsMappings? mappings = null)
     {
         var original = Bytes(text);
         var result = VsCodeSettingsEditor.Apply(original, mappings ?? Host);
-        result.Status.ShouldBe(EditorSettingsStatus.Unchanged, result.Reason);
-        result.Content.ShouldBe(original);
+        await result.Status.Should().BeEqualTo(EditorSettingsStatus.Unchanged).Because(result.Reason);
+        await result.Content.Should().BeEquivalentTo(original, CollectionOrdering.Matching);
     }
 
-    private static void ShouldBeUnsafe(string text, string reason)
+    private static async Task ShouldBeUnsafe(string text, string reason)
     {
         var result = VsCodeSettingsEditor.Apply(Bytes(text), Host);
-        result.Status.ShouldBe(EditorSettingsStatus.Unsafe);
-        result.Reason.ShouldContain(reason);
-        result.Content.ShouldBeEmpty();
+        await result.Status.Should().BeEqualTo(EditorSettingsStatus.Unsafe);
+        await result.Reason.Should().Contain(reason);
+        await result.Content.Should().BeEmpty();
     }
 
     /// <summary>
     ///     Asserts that the document maps the host once in each of the three settings.
     /// </summary>
-    private static void ShouldMap(string text, EditorSettingsMappings mappings)
+    private static async Task ShouldMap(string text, EditorSettingsMappings mappings)
     {
         using var document = Parse(text);
         var root = document.RootElement;
-        root.GetProperty("json.schemas").EnumerateArray()
+        await root.GetProperty("json.schemas").EnumerateArray()
             .Where(z => z.ValueKind == JsonValueKind.Object)
-            .Count(z => z.GetProperty("url").GetString() == mappings.SchemaUrl && z.GetProperty("fileMatch").EnumerateArray().Any(f => f.GetString() == mappings.JsonFileMatch))
-            .ShouldBe(1);
+            .Count(z => z.GetProperty("url").GetString() == mappings.SchemaUrl && z.GetProperty("fileMatch").EnumerateArray().Any(f => f.GetString() == mappings.JsonFileMatch)).Should().BeEqualTo(1);
         var yaml = root.GetProperty("yaml.schemas").GetProperty(mappings.SchemaUrl).EnumerateArray().Select(z => z.GetString()).ToArray();
-        yaml.ShouldBe(mappings.YamlGlobs, ignoreOrder: true);
-        root.GetProperty("evenBetterToml.schema.associations").GetProperty(mappings.TomlPattern).GetString().ShouldBe(mappings.SchemaUrl);
+        await yaml.Should().BeEquivalentTo(mappings.YamlGlobs);
+        await root.GetProperty("evenBetterToml.schema.associations").GetProperty(mappings.TomlPattern).GetString().Should().BeEqualTo(mappings.SchemaUrl);
     }
 
     private const string HostEntries = """
@@ -86,49 +86,49 @@ public class VsCodeSettingsEditorTests
         """;
 
     [Test]
-    public void MissingFile_IsCreatedWithTheThreeMappings()
+    public async Task MissingFile_IsCreatedWithTheThreeMappings()
     {
         var result = VsCodeSettingsEditor.Apply(null, Host);
 
-        result.Status.ShouldBe(EditorSettingsStatus.Updated);
-        new UTF8Encoding(false).GetString(result.Content).ShouldBe(HostEntries);
+        await result.Status.Should().BeEqualTo(EditorSettingsStatus.Updated);
+        await new UTF8Encoding(false).GetString(result.Content).Should().BeEqualTo(HostEntries);
     }
 
     [Test]
     [Arguments("")]
     [Arguments("  \n\n")]
     [Arguments("\t")]
-    public void EmptyFile_GetsTheThreeMappings(string text) => Edit(text).ShouldBe(HostEntries);
+    public async Task EmptyFile_GetsTheThreeMappings(string text) => await Edit(text).Should().BeEqualTo(HostEntries);
 
     [Test]
-    public void EmptyFileWithCrLf_GetsCrLf()
+    public async Task EmptyFileWithCrLf_GetsCrLf()
     {
         var updated = Edit("\r\n");
 
-        updated.ShouldBe(HostEntries.Replace("\n", "\r\n"));
+        await updated.Should().BeEqualTo(HostEntries.Replace("\n", "\r\n"));
     }
 
     [Test]
-    public void EmptyFileWithABom_KeepsTheBom()
+    public async Task EmptyFileWithABom_KeepsTheBom()
     {
         var result = VsCodeSettingsEditor.Apply(Bytes("", bom: true), Host);
 
-        result.Content.Take(3).ShouldBe(new byte[] { 0xEF, 0xBB, 0xBF });
-        new UTF8Encoding(false).GetString(result.Content[3..]).ShouldBe(HostEntries);
+        await result.Content.Take(3).Should().BeEquivalentTo(new byte[] { 0xEF, 0xBB, 0xBF }, CollectionOrdering.Matching);
+        await new UTF8Encoding(false).GetString(result.Content[3..]).Should().BeEqualTo(HostEntries);
     }
 
     [Test]
-    public void FileWithOnlyComments_KeepsThemAndAddsTheDocument()
+    public async Task FileWithOnlyComments_KeepsThemAndAddsTheDocument()
     {
-        Edit("// my settings\n").ShouldBe("// my settings\n" + HostEntries);
-        Edit("/* none yet */").ShouldBe("/* none yet */\n" + HostEntries);
+        await Edit("// my settings\n").Should().BeEqualTo("// my settings\n" + HostEntries);
+        await Edit("/* none yet */").Should().BeEqualTo("/* none yet */\n" + HostEntries);
     }
 
     [Test]
-    public void EmptyObject_GetsTheMappings() => Edit("{}").ShouldBe(HostEntries.TrimEnd('\n'));
+    public async Task EmptyObject_GetsTheMappings() => await Edit("{}").Should().BeEqualTo(HostEntries.TrimEnd('\n'));
 
     [Test]
-    public void ExistingSettings_ComeFirstAndKeepEverything()
+    public async Task ExistingSettings_ComeFirstAndKeepEverything()
     {
         const string original = """
             {
@@ -143,8 +143,7 @@ public class VsCodeSettingsEditorTests
 
         var updated = Edit(original);
 
-        updated.ShouldBe(
-            """
+        await updated.Should().BeEqualTo("""
             {
               // The editor
               "editor.fontSize": 14, /* big */
@@ -165,64 +164,63 @@ public class VsCodeSettingsEditorTests
                 "^.+/src/Host/appsettings.*\\.toml$": "./src/Host/obj/appsettings.schema.json"
               },
             }
-            """
-        );
+            """);
     }
 
     [Test]
-    public void LastSettingWithoutTrailingComma_GetsOneAndKeepsItsTrailingComment()
+    public async Task LastSettingWithoutTrailingComma_GetsOneAndKeepsItsTrailingComment()
     {
         var updated = Edit("{\n  \"a\": 1 // keep me\n}\n");
 
-        updated.ShouldStartWith("{\n  \"a\": 1, // keep me\n  \"json.schemas\": [");
-        updated.ShouldEndWith("\n  }\n}\n");
-        ShouldMap(updated, Host);
+        await updated.Should().StartWith("{\n  \"a\": 1, // keep me\n  \"json.schemas\": [");
+        await updated.Should().EndWith("\n  }\n}\n");
+        await ShouldMap(updated, Host);
     }
 
     [Test]
-    public void FourSpaceAndTabIndentation_IsFollowed()
+    public async Task FourSpaceAndTabIndentation_IsFollowed()
     {
         var spaces = Edit("{\n    \"a\": 1\n}\n");
-        spaces.ShouldContain("\n    \"json.schemas\": [\n        {\n            \"fileMatch\"");
+        await spaces.Should().Contain("\n    \"json.schemas\": [\n        {\n            \"fileMatch\"");
 
         var tabs = Edit("{\n\t\"a\": 1\n}\n");
-        tabs.ShouldContain("\n\t\"json.schemas\": [\n\t\t{\n\t\t\t\"fileMatch\"");
-        tabs.ShouldNotContain("  ");
+        await tabs.Should().Contain("\n\t\"json.schemas\": [\n\t\t{\n\t\t\t\"fileMatch\"");
+        await tabs.Should().NotContain("  ");
     }
 
     [Test]
-    public void CrLfLineEndings_AreKept()
+    public async Task CrLfLineEndings_AreKept()
     {
         var original = "{\r\n  // comment\r\n  \"a\": 1,\r\n}\r\n";
 
         var updated = Edit(original);
 
-        updated.ShouldStartWith("{\r\n  // comment\r\n  \"a\": 1,\r\n  \"json.schemas\"");
-        updated.Replace("\r\n", "").ShouldNotContain("\n");
-        ShouldMap(updated, Host);
+        await updated.Should().StartWith("{\r\n  // comment\r\n  \"a\": 1,\r\n  \"json.schemas\"");
+        await updated.Replace("\r\n", "").Should().NotContain("\n");
+        await ShouldMap(updated, Host);
     }
 
     [Test]
-    public void ByteOrderMark_IsKept()
+    public async Task ByteOrderMark_IsKept()
     {
         var result = VsCodeSettingsEditor.Apply(Bytes("{\n  \"a\": 1\n}\n", bom: true), Host);
 
-        result.Status.ShouldBe(EditorSettingsStatus.Updated);
-        result.Content.Take(3).ShouldBe(new byte[] { 0xEF, 0xBB, 0xBF });
-        result.Content.Skip(3).Take(3).ShouldNotBe(new byte[] { 0xEF, 0xBB, 0xBF });
-        ShouldMap(new UTF8Encoding(false).GetString(result.Content[3..]), Host);
+        await result.Status.Should().BeEqualTo(EditorSettingsStatus.Updated);
+        await result.Content.Take(3).Should().BeEquivalentTo(new byte[] { 0xEF, 0xBB, 0xBF }, CollectionOrdering.Matching);
+        await result.Content.Skip(3).Take(3).SequenceEqual(new byte[] { 0xEF, 0xBB, 0xBF }).Should().BeFalse();
+        await ShouldMap(new UTF8Encoding(false).GetString(result.Content[3..]), Host);
     }
 
     [Test]
-    public void SingleLineFile_StaysCompact()
+    public async Task SingleLineFile_StaysCompact()
     {
         var updated = Edit("""{ "a": 1 }""");
 
-        updated.ShouldBe("""{ "a": 1, "json.schemas": [{ "fileMatch": ["/src/Host/appsettings*.json"], "url": "./src/Host/obj/appsettings.schema.json" }], "yaml.schemas": { "./src/Host/obj/appsettings.schema.json": ["src/Host/appsettings*.yaml", "src/Host/appsettings*.yml"] }, "evenBetterToml.schema.associations": { "^.+/src/Host/appsettings.*\\.toml$": "./src/Host/obj/appsettings.schema.json" } }""");
+        await updated.Should().BeEqualTo("""{ "a": 1, "json.schemas": [{ "fileMatch": ["/src/Host/appsettings*.json"], "url": "./src/Host/obj/appsettings.schema.json" }], "yaml.schemas": { "./src/Host/obj/appsettings.schema.json": ["src/Host/appsettings*.yaml", "src/Host/appsettings*.yml"] }, "evenBetterToml.schema.associations": { "^.+/src/Host/appsettings.*\\.toml$": "./src/Host/obj/appsettings.schema.json" } }""");
     }
 
     [Test]
-    public void ExistingJsonSchemasWithOtherEntries_GetOneMoreAndKeepThem()
+    public async Task ExistingJsonSchemasWithOtherEntries_GetOneMoreAndKeepThem()
     {
         const string original = """
             {
@@ -240,7 +238,7 @@ public class VsCodeSettingsEditorTests
 
         var updated = Edit(original);
 
-        updated.ShouldContain("""
+        await updated.Should().Contain("""
                 // somebody else's
                 {
                   "fileMatch": ["/package.json"],
@@ -252,20 +250,18 @@ public class VsCodeSettingsEditorTests
                 },
               ],
             """);
-        updated.ShouldContain(
-            "  \"yaml.schemas\": {\n"
+        await updated.Should().Contain("  \"yaml.schemas\": {\n"
           + "    \"./src/Host/obj/appsettings.schema.json\": [\"src/Host/appsettings*.yaml\", \"src/Host/appsettings*.yml\"]\n"
-          + "  },\n"
-        );
-        updated.ShouldContain("""{ "^x$": "./x.json", "^.+/src/Host/appsettings.*\\.toml$": "./src/Host/obj/appsettings.schema.json" }""");
-        ShouldMap(updated, Host);
+          + "  },\n");
+        await updated.Should().Contain("""{ "^x$": "./x.json", "^.+/src/Host/appsettings.*\\.toml$": "./src/Host/obj/appsettings.schema.json" }""");
+        await ShouldMap(updated, Host);
     }
 
     [Test]
-    public void AlreadyMapped_IsLeftByteForByte()
+    public async Task AlreadyMapped_IsLeftByteForByte()
     {
-        ShouldBeUnchanged(HostEntries);
-        ShouldBeUnchanged("""
+        await ShouldBeUnchanged(HostEntries);
+        await ShouldBeUnchanged("""
             // tweaked by hand
             {
                 "json.schemas": [ { "url": "./src/Host/obj/appsettings.schema.json", "fileMatch": [ "/other/*.json", "/src/Host/appsettings*.json" ] } ],
@@ -278,7 +274,7 @@ public class VsCodeSettingsEditorTests
     }
 
     [Test]
-    public void ExistingDovetailEntries_AreCompletedInPlace()
+    public async Task ExistingDovetailEntries_AreCompletedInPlace()
     {
         const string original = """
             {
@@ -299,8 +295,7 @@ public class VsCodeSettingsEditorTests
 
         var updated = Edit(original);
 
-        updated.ShouldBe(
-            """
+        await updated.Should().BeEqualTo("""
             {
               "json.schemas": [
                 {
@@ -315,12 +310,11 @@ public class VsCodeSettingsEditorTests
                 "^.+/src/Host/appsettings.*\\.toml$": "./src/Host/obj/appsettings.schema.json"
               }
             }
-            """
-        );
+            """);
     }
 
     [Test]
-    public void DovetailEntryWithoutFileMatch_GetsOne()
+    public async Task DovetailEntryWithoutFileMatch_GetsOne()
     {
         var updated = Edit("""
             {
@@ -332,24 +326,24 @@ public class VsCodeSettingsEditorTests
             }
             """);
 
-        updated.ShouldContain("""
+        await updated.Should().Contain("""
                   "url": "./src/Host/obj/appsettings.schema.json",
                   "fileMatch": ["/src/Host/appsettings*.json"]
             """);
-        ShouldMap(updated, Host);
+        await ShouldMap(updated, Host);
     }
 
     [Test]
-    public void YamlEntryAsASingleString_BecomesAnArrayWithTheStringKept()
+    public async Task YamlEntryAsASingleString_BecomesAnArrayWithTheStringKept()
     {
         var updated = Edit("""{ "yaml.schemas": { "./src/Host/obj/appsettings.schema.json": "src/Host/appsettings*.yaml" } }""");
 
-        updated.ShouldContain("""["src/Host/appsettings*.yaml", "src/Host/appsettings*.yml"]""");
-        ShouldMap(updated, Host);
+        await updated.Should().Contain("""["src/Host/appsettings*.yaml", "src/Host/appsettings*.yml"]""");
+        await ShouldMap(updated, Host);
     }
 
     [Test]
-    public void EmptyArraysAndObjects_AreFilled()
+    public async Task EmptyArraysAndObjects_AreFilled()
     {
         var updated = Edit("""
             {
@@ -360,12 +354,12 @@ public class VsCodeSettingsEditorTests
             }
             """);
 
-        ShouldMap(updated, Host);
-        updated.ShouldContain("/* none */");
+        await ShouldMap(updated, Host);
+        await updated.Should().Contain("/* none */");
     }
 
     [Test]
-    public void AnotherHostsEntries_AreNeverTouched()
+    public async Task AnotherHostsEntries_AreNeverTouched()
     {
         var other = Mappings("src/Other");
         var first = Edit("""
@@ -377,52 +371,52 @@ public class VsCodeSettingsEditorTests
 
         var both = Edit(first);
 
-        both.ShouldStartWith("// two hosts, one file\n{\n  \"editor.tabSize\": 2,\n  \"json.schemas\": [\n    {\n      \"fileMatch\": [\"/src/Other/appsettings*.json\"],\n      \"url\": \"./src/Other/obj/appsettings.schema.json\"\n    },\n");
-        both.ShouldContain("    \"./src/Other/obj/appsettings.schema.json\": [\"src/Other/appsettings*.yaml\", \"src/Other/appsettings*.yml\"],\n");
-        ShouldMap(both, other);
-        ShouldMap(both, Host);
+        await both.Should().StartWith("// two hosts, one file\n{\n  \"editor.tabSize\": 2,\n  \"json.schemas\": [\n    {\n      \"fileMatch\": [\"/src/Other/appsettings*.json\"],\n      \"url\": \"./src/Other/obj/appsettings.schema.json\"\n    },\n");
+        await both.Should().Contain("    \"./src/Other/obj/appsettings.schema.json\": [\"src/Other/appsettings*.yaml\", \"src/Other/appsettings*.yml\"],\n");
+        await ShouldMap(both, other);
+        await ShouldMap(both, Host);
         using var document = Parse(both);
-        document.RootElement.GetProperty("json.schemas").GetArrayLength().ShouldBe(2);
-        document.RootElement.GetProperty("yaml.schemas").EnumerateObject().Count().ShouldBe(2);
-        document.RootElement.GetProperty("yaml.schemas").GetProperty(OtherUrl).GetArrayLength().ShouldBe(2);
-        document.RootElement.GetProperty("evenBetterToml.schema.associations").EnumerateObject().Count().ShouldBe(2);
+        await document.RootElement.GetProperty("json.schemas").GetArrayLength().Should().BeEqualTo(2);
+        await document.RootElement.GetProperty("yaml.schemas").EnumerateObject().Count().Should().BeEqualTo(2);
+        await document.RootElement.GetProperty("yaml.schemas").GetProperty(OtherUrl).GetArrayLength().Should().BeEqualTo(2);
+        await document.RootElement.GetProperty("evenBetterToml.schema.associations").EnumerateObject().Count().Should().BeEqualTo(2);
 
         // Each host keeps finding only its own entries.
-        ShouldBeUnchanged(both, other);
-        ShouldBeUnchanged(both);
+        await ShouldBeUnchanged(both, other);
+        await ShouldBeUnchanged(both);
     }
 
     [Test]
-    public void ProjectAtTheSettingsDirectory_MapsTheFilesNextToIt()
+    public async Task ProjectAtTheSettingsDirectory_MapsTheFilesNextToIt()
     {
         var root = Path.Combine(Path.GetTempPath(), "dovetail-repo");
-        EditorSettingsMappings.TryCreate(root, root, Path.Combine(root, "obj", "appsettings.schema.json"), out var mappings, out _).ShouldBeTrue();
+        await EditorSettingsMappings.TryCreate(root, root, Path.Combine(root, "obj", "appsettings.schema.json"), out var mappings, out _).Should().BeTrue();
 
-        mappings!.SchemaUrl.ShouldBe("./obj/appsettings.schema.json");
-        mappings.JsonFileMatch.ShouldBe("/appsettings*.json");
-        mappings.YamlGlobs.ShouldBe(["appsettings*.yaml", "appsettings*.yml"]);
-        mappings.TomlPattern.ShouldBe("^.+/appsettings.*\\.toml$");
+        await mappings!.SchemaUrl.Should().BeEqualTo("./obj/appsettings.schema.json");
+        await mappings.JsonFileMatch.Should().BeEqualTo("/appsettings*.json");
+        await mappings.YamlGlobs.Should().BeEquivalentTo(["appsettings*.yaml", "appsettings*.yml"], CollectionOrdering.Matching);
+        await mappings.TomlPattern.Should().BeEqualTo("^.+/appsettings.*\\.toml$");
     }
 
     [Test]
-    public void DotsAndMetacharactersInTheProjectPath_AreEscapedInTheTomlPattern()
+    public async Task DotsAndMetacharactersInTheProjectPath_AreEscapedInTheTomlPattern()
     {
         var root = Path.Combine(Path.GetTempPath(), "dovetail-repo");
-        EditorSettingsMappings.TryCreate(root, Path.Combine(root, "My.App+x"), Path.Combine(root, "My.App+x", "obj", "appsettings.schema.json"), out var mappings, out _).ShouldBeTrue();
+        await EditorSettingsMappings.TryCreate(root, Path.Combine(root, "My.App+x"), Path.Combine(root, "My.App+x", "obj", "appsettings.schema.json"), out var mappings, out _).Should().BeTrue();
 
-        mappings!.TomlPattern.ShouldBe("^.+/My\\.App\\+x/appsettings.*\\.toml$");
+        await mappings!.TomlPattern.Should().BeEqualTo("^.+/My\\.App\\+x/appsettings.*\\.toml$");
     }
 
     [Test]
-    public void PathsOutsideTheSettingsDirectory_CantBeMapped()
+    public async Task PathsOutsideTheSettingsDirectory_CantBeMapped()
     {
         var root = Path.Combine(Path.GetTempPath(), "dovetail-repo", "nested");
         var outside = Path.Combine(Path.GetTempPath(), "dovetail-repo", "project");
 
-        EditorSettingsMappings.TryCreate(root, outside, Path.Combine(outside, "obj", "appsettings.schema.json"), out var mappings, out var error).ShouldBeFalse();
+        await EditorSettingsMappings.TryCreate(root, outside, Path.Combine(outside, "obj", "appsettings.schema.json"), out var mappings, out var error).Should().BeFalse();
 
-        mappings.ShouldBeNull();
-        error.ShouldContain("isn't below");
+        await mappings.Should().BeNull();
+        await error.Should().Contain("isn't below");
     }
 
     [Test]
@@ -443,29 +437,29 @@ public class VsCodeSettingsEditorTests
     [Arguments("{ \"yaml.schemas\": { \"./src/Host/obj/appsettings.schema.json\": 5 } }", "unexpected value")]
     [Arguments("{ \"evenBetterToml.schema.associations\": { \"^.+/src/Host/appsettings.*\\\\.toml$\": [] } }", "unexpected value")]
     [Arguments("{ \"json.schemas\": [ { \"url\": \"./src/Host/obj/appsettings.schema.json\", \"fileMatch\": \"/x\" } ] }", "unexpected \"fileMatch\"")]
-    public void UnparsableOrUnexpectedFile_IsRejectedWithoutContent(string text, string reason) => ShouldBeUnsafe(text, reason);
+    public async Task UnparsableOrUnexpectedFile_IsRejectedWithoutContent(string text, string reason) => await ShouldBeUnsafe(text, reason);
 
     [Test]
-    public void NonUtf8File_IsRejected()
+    public async Task NonUtf8File_IsRejected()
     {
         var utf16 = new byte[] { 0xFF, 0xFE, (byte)'{', 0, (byte)'}', 0 };
-        VsCodeSettingsEditor.Apply(utf16, Host).Status.ShouldBe(EditorSettingsStatus.Unsafe);
+        await VsCodeSettingsEditor.Apply(utf16, Host).Status.Should().BeEqualTo(EditorSettingsStatus.Unsafe);
 
         var invalid = new byte[] { (byte)'{', 0xC3, 0x28, (byte)'}' };
-        VsCodeSettingsEditor.Apply(invalid, Host).Status.ShouldBe(EditorSettingsStatus.Unsafe);
+        await VsCodeSettingsEditor.Apply(invalid, Host).Status.Should().BeEqualTo(EditorSettingsStatus.Unsafe);
     }
 
     [Test]
-    public void DeeplyNestedFile_IsRejectedRatherThanOverflowing() =>
-        ShouldBeUnsafe(new string('[', 5000) + new string(']', 5000), "nested too deeply");
+    public async Task DeeplyNestedFile_IsRejectedRatherThanOverflowing() =>
+        await ShouldBeUnsafe(new string('[', 5000) + new string(']', 5000), "nested too deeply");
 
     [Test]
-    public void StringsWithEscapesAndUnicode_AreUnderstood()
+    public async Task StringsWithEscapesAndUnicode_AreUnderstood()
     {
         var updated = Edit("""{ "a": "line\nbreak é \" } ] // not a comment", "b": -1.5e+3 }""");
 
-        updated.ShouldStartWith("""{ "a": "line\nbreak é \" } ] // not a comment", "b": -1.5e+3, "json.schemas": """);
-        ShouldMap(updated, Host);
+        await updated.Should().StartWith("""{ "a": "line\nbreak é \" } ] // not a comment", "b": -1.5e+3, "json.schemas": """);
+        await ShouldMap(updated, Host);
     }
 
     [Test]
@@ -477,14 +471,14 @@ public class VsCodeSettingsEditorTests
     [Arguments("{\r\n\t\"a\": [1, 2,],\r\n\t\"yaml.schemas\": {\r\n\t},\r\n}\r\n")]
     [Arguments("{ \"json.schemas\": [ ], \"yaml.schemas\": { \"./src/Host/obj/appsettings.schema.json\": \"src/Host/appsettings*.yml\" } }")]
     [Arguments("// c\n{\n  /* c */ \"json.schemas\": [\n    1,\n    \"two\"\n  ]\n}\n")]
-    public void ApplyingTwice_ChangesNothingTheSecondTime(string text)
+    public async Task ApplyingTwice_ChangesNothingTheSecondTime(string text)
     {
         var first = Edit(text);
 
-        ShouldMap(first, Host);
-        ShouldBeUnchanged(first);
+        await ShouldMap(first, Host);
+        await ShouldBeUnchanged(first);
     }
 
     [Test]
-    public void Snippet_IsTheDocumentThatWouldBeCreated() => Host.ToSnippet().ShouldBe(HostEntries);
+    public async Task Snippet_IsTheDocumentThatWouldBeCreated() => await Host.ToSnippet().Should().BeEqualTo(HostEntries);
 }

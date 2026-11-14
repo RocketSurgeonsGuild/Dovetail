@@ -25,8 +25,8 @@ public sealed class MutableOptionsRegistrationTests
         await using var provider = services.BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptions<GreetingsOptions>>().Value;
-        options.Message.ShouldBe("Hello");
-        options.Recipients.ShouldBe(["Ada", "Grace"]);
+        await options.Message.Should().BeEqualTo("Hello");
+        await options.Recipients.Should().BeEquivalentTo(["Ada", "Grace"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -39,7 +39,7 @@ public sealed class MutableOptionsRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Message.ShouldBe("from the provider");
+        await provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Message.Should().BeEqualTo("from the provider");
     }
 
     [Test]
@@ -52,8 +52,8 @@ public sealed class MutableOptionsRegistrationTests
         await using var provider = services.BuildServiceProvider();
 
         var monitor = provider.GetRequiredService<IOptionsMonitor<GreetingsOptions>>();
-        monitor.CurrentValue.Message.ShouldBe("initial");
-        ReadSnapshot(provider).Message.ShouldBe("initial");
+        await monitor.CurrentValue.Message.Should().BeEqualTo("initial");
+        await ReadSnapshot(provider).Message.Should().BeEqualTo("initial");
 
         var changes = new List<string?>();
         using var subscription = monitor.OnChange((_, name) => changes.Add(name));
@@ -62,11 +62,11 @@ public sealed class MutableOptionsRegistrationTests
         configuration["Greetings:Recipients:0"] = "Grace";
         configuration.Reload();
 
-        changes.ShouldBe([Options.DefaultName]);
-        monitor.CurrentValue.Message.ShouldBe("updated");
+        await changes.Should().BeEquivalentTo([Options.DefaultName], CollectionOrdering.Matching);
+        await monitor.CurrentValue.Message.Should().BeEqualTo("updated");
         // A reload creates a new instance, so the list holds the new items only.
-        monitor.CurrentValue.Recipients.ShouldBe(["Grace"]);
-        ReadSnapshot(provider).Message.ShouldBe("updated");
+        await monitor.CurrentValue.Recipients.Should().BeEquivalentTo(["Grace"], CollectionOrdering.Matching);
+        await ReadSnapshot(provider).Message.Should().BeEqualTo("updated");
     }
 
     [Test]
@@ -83,13 +83,13 @@ public sealed class MutableOptionsRegistrationTests
 
         // The created instance comes first, whatever the order of registration; configure actions then run on it.
         var options = provider.GetRequiredService<IOptions<GreetingsOptions>>().Value;
-        options.Recipients.ShouldBe(["Ada", "configured before", "configured after"]);
-        options.Message.ShouldBe("post-configured");
+        await options.Recipients.Should().BeEquivalentTo(["Ada", "configured before", "configured after"], CollectionOrdering.Matching);
+        await options.Message.Should().BeEqualTo("post-configured");
 
         services.PostConfigure<GreetingsOptions>(options => options.Message = "");
         await using var failing = services.BuildServiceProvider();
-        var exception = Should.Throw<OptionsValidationException>(() => failing.GetRequiredService<IOptions<GreetingsOptions>>().Value);
-        exception.Failures.ShouldBe(["A greeting needs a message."]);
+        var exception = await ( (Func<object?>)( () => failing.GetRequiredService<IOptions<GreetingsOptions>>().Value ) ).Should().Throw<OptionsValidationException>();
+        await exception.Failures.Should().BeEquivalentTo(["A greeting needs a message."], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -104,16 +104,16 @@ public sealed class MutableOptionsRegistrationTests
 
         using var host = builder.Build();
 
-        var exception = await Should.ThrowAsync<OptionsValidationException>(() => host.StartAsync());
-        exception.Failures.ShouldBe(["A greeting needs a message."]);
+        var exception = await ( (Func<Task>)( () => host.StartAsync() ) ).Should().Throw<OptionsValidationException>();
+        await exception.Failures.Should().BeEquivalentTo(["A greeting needs a message."], CollectionOrdering.Matching);
     }
 
     [Test]
-    public void Create_RejectsAnEmptySectionPath()
+    public async Task Create_RejectsAnEmptySectionPath()
     {
         var services = new ServiceCollection();
 
-        Should.Throw<ArgumentException>(() => services.AddDovetailConfigurationOptions("", GreetingsOptions.Create));
+        await ( (Action)( () => services.AddDovetailConfigurationOptions("", GreetingsOptions.Create) ) ).Should().Throw<ArgumentException>();
     }
 
     private static GreetingsOptions ReadSnapshot(IServiceProvider provider)

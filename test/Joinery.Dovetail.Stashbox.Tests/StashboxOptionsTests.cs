@@ -10,7 +10,7 @@ using Stashbox.Exceptions;
 
 namespace Joinery.Dovetail.Stashbox.Tests;
 
-public class StashboxOptionsTests : AutoFakeTest<TestRecord>
+public class StashboxOptionsTests : LoggerTest<TestRecord>
 {
     [Test]
     public async Task ConfigureContainer_IsApplied()
@@ -19,7 +19,7 @@ public class StashboxOptionsTests : AutoFakeTest<TestRecord>
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.Set(new StashboxOptions { ConfigureContainer = config => config.WithUnknownTypeResolution() }));
 
-        host.Services.GetService<Unregistered>().ShouldNotBeNull();
+        await host.Services.GetService<Unregistered>().Should().NotBeNull();
     }
 
     [Test]
@@ -29,7 +29,7 @@ public class StashboxOptionsTests : AutoFakeTest<TestRecord>
                               .CreateApplicationBuilder()
                               .ConfigureDovetail();
 
-        host.Services.GetService<Unregistered>().ShouldBeNull();
+        await host.Services.GetService<Unregistered>().Should().BeNull();
     }
 
     [Test]
@@ -39,14 +39,13 @@ public class StashboxOptionsTests : AutoFakeTest<TestRecord>
                               .CreateApplicationBuilder()
                               .ConfigureDovetail(rb => rb.Set(new StashboxOptions { ValidateOnBuild = true, }));
 
-        host.Services.GetService<IStashboxContainer>().ShouldNotBeNull();
+        await host.Services.GetService<IStashboxContainer>().Should().NotBeNull();
     }
 
     [Test]
     public async Task ValidateOnBuild_UnresolvableDependency_Throws()
     {
-        ( await Should.ThrowAsync<AggregateException>(
-            async () =>
+        await ( await ( (Func<Task>)( async () =>
             {
                 using var host = await Host
                                       .CreateApplicationBuilder()
@@ -55,8 +54,7 @@ public class StashboxOptionsTests : AutoFakeTest<TestRecord>
                                                 .Set(new StashboxOptions { ValidateOnBuild = true, })
                                                 .ConfigureStashbox((_, container) => container.Register<NeedsUnregistered>())
                                        );
-            }
-        ) ).Message.ShouldContain(nameof(NeedsUnregistered));
+            } ) ).Should().Throw<AggregateException>() ).Message.Should().Contain(nameof(NeedsUnregistered));
     }
 
     [Test]
@@ -65,7 +63,7 @@ public class StashboxOptionsTests : AutoFakeTest<TestRecord>
         using var host = await CreateBuilder(Environments.Development)
                               .ConfigureDovetail(rb => rb.ConfigureServices((_, services) => RegisterCaptiveDependency(services)));
 
-        Should.Throw<LifetimeValidationFailedException>(host.Services.GetRequiredService<SingletonService>);
+        await ( (Action)( () => host.Services.GetRequiredService<SingletonService>() ) ).Should().Throw<LifetimeValidationFailedException>();
     }
 
     [Test]
@@ -74,7 +72,7 @@ public class StashboxOptionsTests : AutoFakeTest<TestRecord>
         using var host = await CreateBuilder(Environments.Production)
                               .ConfigureDovetail(rb => rb.ConfigureServices((_, services) => RegisterCaptiveDependency(services)));
 
-        host.Services.GetRequiredService<SingletonService>().ShouldNotBeNull();
+        await host.Services.GetRequiredService<SingletonService>().Should().NotBeNull();
     }
 
     [Test]
@@ -87,7 +85,7 @@ public class StashboxOptionsTests : AutoFakeTest<TestRecord>
                                         .ConfigureServices((_, services) => RegisterCaptiveDependency(services))
                                );
 
-        host.Services.GetRequiredService<SingletonService>().ShouldNotBeNull();
+        await host.Services.GetRequiredService<SingletonService>().Should().NotBeNull();
     }
 
     public StashboxOptionsTests() : base(TestRecord.Create(LogEventLevel.Information)) { }

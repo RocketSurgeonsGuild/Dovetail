@@ -135,15 +135,15 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
 
         var schema = ReadSchema(project);
         var section = SerilogSection(schema);
-        section["$ref"].ShouldNotBeNull();
+        await section["$ref"].Should().NotBeNull();
         var keys = Keys(schema, section);
-        keys.ShouldBe(ReadKeys, ignoreOrder: true);
+        await keys.Should().BeEquivalentTo(ReadKeys);
 
         // The fragment's definitions are in the host schema, SchemaStore's next to them, and the host's own section is still there.
-        schema["definitions"]!.AsObject().Select(z => z.Key).ShouldContain(SchemaStoreDefinition);
-        schema["definitions"]!.AsObject().Select(z => z.Key).ShouldContain("Serilog.MinimumLevelObject");
-        DovetailPart(schema)["properties"]!.AsObject().Select(z => z.Key).ShouldBe(["App", "Serilog"], ignoreOrder: true);
-        project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").ShouldBe(project.ReadFile(HostSchema));
+        await schema["definitions"]!.AsObject().Select(z => z.Key).Should().Contain(SchemaStoreDefinition);
+        await schema["definitions"]!.AsObject().Select(z => z.Key).Should().Contain("Serilog.MinimumLevelObject");
+        await DovetailPart(schema)["properties"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(["App", "Serilog"]);
+        await project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 
     [Test]
@@ -153,14 +153,14 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
 
         var schema = ReadSchema(project);
 
-        schema["$schema"]!.GetValue<string>().ShouldBe("http://json-schema.org/draft-07/schema#");
+        await schema["$schema"]!.GetValue<string>().Should().BeEqualTo("http://json-schema.org/draft-07/schema#");
         // Every reference is local and resolves (a dangling one in the merge would silently accept anything).
         var references = Objects(schema).Select(z => z["$ref"]).OfType<JsonValue>().Select(z => z.GetValue<string>()).ToArray();
-        references.ShouldNotBeEmpty();
+        await references.Should().NotBeEmpty();
         foreach (var reference in references)
         {
-            reference.ShouldStartWith("#/", customMessage: $"{reference} is not a local reference");
-            SchemaInstanceValidator.Resolve(schema, reference).ShouldNotBeNull($"{reference} doesn't resolve");
+            await reference.Should().StartWith("#/").Because($"{reference} is not a local reference");
+            await SchemaInstanceValidator.Resolve(schema, reference).Should().NotBeNull().Because($"{reference} doesn't resolve");
         }
 
         // Dovetail's patterns (SchemaStore's are checked by its own tests) are ECMA-262.
@@ -171,10 +171,10 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         }
 
         var patterns = Objects(dovetail).SelectMany(Patterns).ToArray();
-        patterns.ShouldNotBeEmpty();
+        await patterns.Should().NotBeEmpty();
         foreach (var pattern in patterns)
         {
-            Should.NotThrow(() => new Regex(pattern, RegexOptions.ECMAScript), $"{pattern} isn't an ECMA-262 pattern");
+            await Assert.That(() => new Regex(pattern, RegexOptions.ECMAScript)).ThrowsNothing().Because($"{pattern} isn't an ECMA-262 pattern");
         }
     }
 
@@ -189,21 +189,21 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
 
         foreach (var configuration in new[] { SupportedConfiguration, MinimumLevelAsLevelName, })
         {
-            whole.Validate(configuration).ShouldBeEmpty();
-            fragment.Validate(configuration).ShouldBeEmpty();
+            await whole.Validate(configuration).Should().BeEmpty();
+            await fragment.Validate(configuration).Should().BeEmpty();
         }
 
         foreach (var (name, configuration) in InvalidConfigurations)
         {
-            whole.IsValid(configuration).ShouldBeFalse($"{name}, in the host schema");
+            await whole.IsValid(configuration).Should().BeFalse().Because($"{name}, in the host schema");
             // Without SchemaStore's part: the merged fragment is what rejects it.
-            fragment.IsValid(configuration).ShouldBeFalse($"{name}, in the merged fragment");
+            await fragment.IsValid(configuration).Should().BeFalse().Because($"{name}, in the merged fragment");
         }
 
         // The merge closes the section on the keys it lists, so every key of the wider format is flagged, whatever its value.
         foreach (var key in UnreadKeys)
         {
-            fragment.IsValid($$"""{ "Serilog": { "{{key}}": {} } }""").ShouldBeFalse($"{key}, in the merged fragment");
+            await fragment.IsValid($$"""{ "Serilog": { "{{key}}": {} } }""").Should().BeFalse().Because($"{key}, in the merged fragment");
         }
     }
 
@@ -217,11 +217,11 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
         // The host's own section is there, so the schema is built from the fragments; Serilog's isn't one of them. (SchemaStore's
         // part has a Serilog definition of its own, which is not what is looked at.)
         var dovetail = DovetailPart(schema)["properties"]!.AsObject().Select(z => z.Key).ToArray();
-        dovetail.ShouldBe(["App"]);
-        schema["definitions"]!.AsObject().Select(z => z.Key).Where(z => z.StartsWith("Serilog", StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
-        project.ReadFile(HostSchema).ShouldNotContain("Joinery.Dovetail.Serilog");
+        await dovetail.Should().BeEquivalentTo(["App"], CollectionOrdering.Matching);
+        await schema["definitions"]!.AsObject().Select(z => z.Key).Where(z => z.StartsWith("Serilog", StringComparison.OrdinalIgnoreCase)).Should().BeEmpty();
+        await project.ReadFile(HostSchema).Should().NotContain("Joinery.Dovetail.Serilog");
         // Without the library's fragment, a configuration only SchemaStore's rules cover is left to them.
-        FragmentOnly(schema).IsValid("""{ "Serilog": { "MinimumLevel": 2 } }""").ShouldBeTrue();
+        await FragmentOnly(schema).IsValid("""{ "Serilog": { "MinimumLevel": 2 } }""").Should().BeTrue();
     }
 
     private static IEnumerable<JsonObject> Objects(JsonNode? node)

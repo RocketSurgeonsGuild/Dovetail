@@ -33,9 +33,9 @@ public class ConfigurationSchemaEditorSettingsTests
 
         await project.BuildProject("host");
 
-        File.Exists(Path.Combine(project.Directory, "host/obj/appsettings.schema.json")).ShouldBeTrue();
-        Directory.Exists(Path.Combine(project.Directory, ".vscode")).ShouldBeFalse();
-        Directory.Exists(Path.Combine(project.Directory, "host", ".vscode")).ShouldBeFalse();
+        await File.Exists(Path.Combine(project.Directory, "host/obj/appsettings.schema.json")).Should().BeTrue();
+        await Directory.Exists(Path.Combine(project.Directory, ".vscode")).Should().BeFalse();
+        await Directory.Exists(Path.Combine(project.Directory, "host", ".vscode")).Should().BeFalse();
     }
 
     [Test]
@@ -47,20 +47,20 @@ public class ConfigurationSchemaEditorSettingsTests
 
         var settings = RepositorySettings(project);
         var text = File.ReadAllText(settings);
-        text.ShouldContain($"\"url\": {HostSchemaUrl}");
-        text.ShouldContain($"\"yaml.schemas\": {{\n    {HostSchemaUrl}: [\"host/appsettings*.yaml\", \"host/appsettings*.yml\"]");
-        text.ShouldContain("\"evenBetterToml.schema.associations\"");
-        text.ShouldContain("\"/host/appsettings*.json\"");
-        project.Warnings("host").ShouldNotContain(z => z.Contains("settings.json", StringComparison.Ordinal));
-        Directory.Exists(Path.Combine(project.Directory, "host", ".vscode")).ShouldBeFalse();
+        await text.Should().Contain($"\"url\": {HostSchemaUrl}");
+        await text.Should().Contain($"\"yaml.schemas\": {{\n    {HostSchemaUrl}: [\"host/appsettings*.yaml\", \"host/appsettings*.yml\"]");
+        await text.Should().Contain("\"evenBetterToml.schema.associations\"");
+        await text.Should().Contain("\"/host/appsettings*.json\"");
+        await project.Warnings("host").Should().All(z => !z.Contains("settings.json", StringComparison.Ordinal));
+        await Directory.Exists(Path.Combine(project.Directory, "host", ".vscode")).Should().BeFalse();
 
         var written = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         File.SetLastWriteTimeUtc(settings, written);
 
         await project.BuildProject("host", "-p:DovetailScaffoldEditorSettings=true");
 
-        File.GetLastWriteTimeUtc(settings).ShouldBe(written);
-        File.ReadAllText(settings).ShouldBe(text);
+        await File.GetLastWriteTimeUtc(settings).Should().BeEqualTo(written);
+        await File.ReadAllText(settings).Should().BeEqualTo(text);
     }
 
     [Test]
@@ -72,9 +72,9 @@ public class ConfigurationSchemaEditorSettingsTests
         await project.BuildProject("host", "-p:DovetailScaffoldEditorSettings=true");
 
         var text = File.ReadAllText(RepositorySettings(project));
-        text.ShouldStartWith("{\r\n\t// my editor\r\n\t\"editor.fontSize\": 14, /* big */\r\n\t\"json.schemas\": [");
-        text.ShouldContain($"\"url\": {HostSchemaUrl}");
-        text.Replace("\r\n", "").ShouldNotContain("\n");
+        await text.Should().StartWith("{\r\n\t// my editor\r\n\t\"editor.fontSize\": 14, /* big */\r\n\t\"json.schemas\": [");
+        await text.Should().Contain($"\"url\": {HostSchemaUrl}");
+        await text.Replace("\r\n", "").Should().NotContain("\n");
     }
 
     [Test]
@@ -84,14 +84,14 @@ public class ConfigurationSchemaEditorSettingsTests
 
         await project.BuildProject("host", "-p:DovetailScaffoldEditorSettings=true -p:DovetailEditorSettingsDirectory=..");
 
-        File.ReadAllText(RepositorySettings(project)).ShouldContain($"\"url\": {HostSchemaUrl}");
+        await File.ReadAllText(RepositorySettings(project)).Should().Contain($"\"url\": {HostSchemaUrl}");
 
         // No .git entry anywhere below the temp directory, so the project directory is the default.
         File.Delete(RepositorySettings(project));
         await project.BuildProject("host", "-p:DovetailScaffoldEditorSettings=true");
 
         var local = Path.Combine(project.Directory, "host", ".vscode", "settings.json");
-        File.ReadAllText(local).ShouldContain("\"url\": \"./obj/appsettings.schema.json\"");
+        await File.ReadAllText(local).Should().Contain("\"url\": \"./obj/appsettings.schema.json\"");
     }
 
     [Test]
@@ -105,7 +105,7 @@ public class ConfigurationSchemaEditorSettingsTests
         await project.BuildProject("lib", "-p:DovetailScaffoldEditorSettings=true");
         await project.BuildProject("host", "-p:DovetailScaffoldEditorSettings=true -p:DovetailConfigurationSchema=false");
 
-        Directory.Exists(Path.Combine(project.Directory, ".vscode")).ShouldBeFalse();
+        await Directory.Exists(Path.Combine(project.Directory, ".vscode")).Should().BeFalse();
     }
 
     [Test]
@@ -117,10 +117,10 @@ public class ConfigurationSchemaEditorSettingsTests
 
         await project.BuildProject("host", "-p:DovetailScaffoldEditorSettings=true");
 
-        File.ReadAllText(RepositorySettings(project)).ShouldBe(unparsable);
-        var warning = project.Warnings("host").Where(z => z.Contains("left", StringComparison.Ordinal) && z.Contains("settings.json", StringComparison.Ordinal)).ToArray().ShouldHaveSingleItem();
-        warning.ShouldContain("\"json.schemas\": [");
-        warning.ShouldContain(HostSchemaUrl);
+        await File.ReadAllText(RepositorySettings(project)).Should().BeEqualTo(unparsable);
+        var warning = await project.Warnings("host").Where(z => z.Contains("left", StringComparison.Ordinal) && z.Contains("settings.json", StringComparison.Ordinal)).ToArray().Should().HaveSingleItem();
+        await warning.Should().Contain("\"json.schemas\": [");
+        await warning.Should().Contain(HostSchemaUrl);
     }
 
     [Test]
@@ -134,8 +134,8 @@ public class ConfigurationSchemaEditorSettingsTests
         {
             await project.BuildProject("host", "-p:DovetailScaffoldEditorSettings=true");
 
-            File.ReadAllText(settings).ShouldBe("{ \"a\": 1 }");
-            project.Warnings("host").Where(z => z.Contains("read-only", StringComparison.Ordinal)).ToArray().ShouldHaveSingleItem();
+            await File.ReadAllText(settings).Should().BeEqualTo("{ \"a\": 1 }");
+            await project.Warnings("host").Where(z => z.Contains("read-only", StringComparison.Ordinal)).ToArray().Should().HaveSingleItem();
         }
         finally
         {

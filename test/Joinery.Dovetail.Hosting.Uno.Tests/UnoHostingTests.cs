@@ -24,9 +24,9 @@ public class UnoHostingTests
     {
         using var host = await new TestApplicationBuilder().ConfigureDovetail();
 
-        host.Services.GetService<FromApplicationBuilderJoint>().ShouldNotBeNull();
-        host.Services.GetService<FromHostBuilderJoint>().ShouldNotBeNull();
-        Observed.CreatedHost.ShouldBeSameAs(host);
+        await host.Services.GetService<FromApplicationBuilderJoint>().Should().NotBeNull();
+        await host.Services.GetService<FromHostBuilderJoint>().Should().NotBeNull();
+        await Observed.CreatedHost.Should().BeSameReferenceAs(host);
     }
 
     [Test]
@@ -34,7 +34,7 @@ public class UnoHostingTests
     {
         using var host = await new TestApplicationBuilder().ConfigureDovetail(rb => rb.ConfigureServices((_, services) => services.AddSingleton(new Marker())));
 
-        host.Services.GetService<Marker>().ShouldNotBeNull();
+        await host.Services.GetService<Marker>().Should().NotBeNull();
     }
 
     [Test]
@@ -45,8 +45,8 @@ public class UnoHostingTests
 
         using var host = await builder.ConfigureDovetail();
 
-        Observed.EnvironmentName.ShouldBe("Staging");
-        host.Services.GetRequiredService<IConfiguration>()["Uno:Name"].ShouldBe("staging");
+        await Observed.EnvironmentName.Should().BeEqualTo("Staging");
+        await host.Services.GetRequiredService<IConfiguration>()["Uno:Name"].Should().BeEqualTo("staging");
     }
 
     [Test]
@@ -57,8 +57,8 @@ public class UnoHostingTests
 
         using var host = await builder.ConfigureDovetail(rb => rb.Set("EnvironmentName", "Custom"));
 
-        Observed.EnvironmentName.ShouldBe("Custom");
-        host.Services.GetRequiredService<IConfiguration>()["Uno:Name"].ShouldBe("base");
+        await Observed.EnvironmentName.Should().BeEqualTo("Custom");
+        await host.Services.GetRequiredService<IConfiguration>()["Uno:Name"].Should().BeEqualTo("base");
     }
 
     [Test]
@@ -74,8 +74,8 @@ public class UnoHostingTests
         using var host = await builder.ConfigureDovetail();
         var configuration = host.Services.GetRequiredService<IConfiguration>();
 
-        configuration["Uno:Name"].ShouldBe("base");
-        configuration["Uno:Only"].ShouldBe("uno");
+        await configuration["Uno:Name"].Should().BeEqualTo("base");
+        await configuration["Uno:Only"].Should().BeEqualTo("uno");
     }
 
     [Test]
@@ -86,7 +86,7 @@ public class UnoHostingTests
 
         using var host = await builder.ConfigureDovetail();
 
-        Observed.ServiceJointSawHostRegistrations.ShouldBeTrue();
+        await Observed.ServiceJointSawHostRegistrations.Should().BeTrue();
     }
 
     [Test]
@@ -97,8 +97,8 @@ public class UnoHostingTests
 
         using var host = await builder.ConfigureDovetail();
 
-        host.Services.GetService<IStashboxContainer>().ShouldNotBeNull();
-        host.Services.GetService<RegisteredByTheHost>().ShouldNotBeNull();
+        await host.Services.GetService<IStashboxContainer>().Should().NotBeNull();
+        await host.Services.GetService<RegisteredByTheHost>().Should().NotBeNull();
     }
 
     /// <summary>
@@ -115,7 +115,7 @@ public class UnoHostingTests
         using (var source = new ActivitySource(ActivitySourceName))
         using (source.StartActivity(name)) { }
 
-        RecordingProcessor.Ended.ShouldContain(name);
+        await RecordingProcessor.Ended.Should().Contain(name);
     }
 
     /// <summary>
@@ -132,7 +132,7 @@ public class UnoHostingTests
         meter.CreateCounter<long>(name).Add(3);
         host.Services.GetRequiredService<MeterProvider>().ForceFlush();
 
-        ExportedMetrics.ShouldContain(metric => metric.Name == name && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
+        await ExportedMetrics.Should().Contain(metric => metric.Name == name && metric.MetricPoints.Sum(point => point.GetSumLong()) == 3);
     }
 
     /// <summary>
@@ -144,8 +144,8 @@ public class UnoHostingTests
         using var host = await new TestApplicationBuilder().ConfigureDovetail();
 
         var attribute = new KeyValuePair<string, object>(ResourceAttribute, "uno");
-        host.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.ShouldContain(attribute);
-        host.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.ShouldContain(attribute);
+        await host.Services.GetRequiredService<TracerProvider>().GetResource().Attributes.Should().Contain(attribute);
+        await host.Services.GetRequiredService<MeterProvider>().GetResource().Attributes.Should().Contain(attribute);
     }
 
     private sealed class Marker;

@@ -15,7 +15,7 @@ namespace Joinery.Dovetail.OpenTelemetry.Tests;
 ///     <see cref="DovetailContextBuilder" />, and observe effects through the OpenTelemetry in-memory exporter
 ///     (and, for Serilog, through the applied part itself) rather than asserting on internal state.
 /// </summary>
-public class OpenTelemetryCompositionTests() : AutoFakeTest<TestRecord>(TestRecord.Create())
+public class OpenTelemetryCompositionTests() : LoggerTest<TestRecord>(TestRecord.Create())
 {
     // tasks.md 5.1
     [Test]
@@ -43,11 +43,11 @@ public class OpenTelemetryCompositionTests() : AutoFakeTest<TestRecord>(TestReco
         using var source = new ActivitySource(sourceName);
         using (var activity = source.StartActivity("dryioc-composition-span"))
         {
-            activity.ShouldNotBeNull("the tracer part should have subscribed the source through the DryIoc-backed service provider");
+            await activity.Should().NotBeNull().Because("the tracer part should have subscribed the source through the DryIoc-backed service provider");
         }
 
         tracerProvider.ForceFlush();
 
-        exportedActivities.ShouldContain(a => a.DisplayName == "dryioc-composition-span");
+        await exportedActivities.Should().Contain(a => a.DisplayName == "dryioc-composition-span");
     }
 }

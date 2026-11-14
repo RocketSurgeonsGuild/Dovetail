@@ -23,7 +23,7 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
     {
         var result = await ApplicationWithSpecular().Build().GenerateAsync(TestContext.CancellationToken);
 
-        Problems(result).ShouldBeEmpty();
+        await Problems(result).Should().BeEmpty();
         await Verify(result);
     }
 
@@ -41,8 +41,8 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
 
         var result = await builder.Build().GenerateAsync(TestContext.CancellationToken);
 
-        GeneratedSource(result, ImportsHint).ShouldContain(SeedingCall);
-        Problems(result).ShouldBeEmpty();
+        await GeneratedSource(result, ImportsHint).Should().Contain(SeedingCall);
+        await Problems(result).Should().BeEmpty();
     }
 
     [Test]
@@ -52,10 +52,10 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
 
         // A generator doesn't see what another one adds, so the provider can't be found as a type while generating. Detecting it
         // that way would never fire in a real build, which is why the seeding keys off the reference and SpecularEmitProvider.
-        result.InputCompilation.GetTypeByMetadataName("SpecularProvider").ShouldBeNull();
-        result.FinalCompilation.GetTypeByMetadataName("SpecularProvider").ShouldNotBeNull();
-        GeneratedSource(result, ImportsHint).ShouldContain(SeedingCall);
-        Problems(result).ShouldBeEmpty();
+        await result.InputCompilation.GetTypeByMetadataName("SpecularProvider").Should().BeNull();
+        await result.FinalCompilation.GetTypeByMetadataName("SpecularProvider").Should().NotBeNull();
+        await GeneratedSource(result, ImportsHint).Should().Contain(SeedingCall);
+        await Problems(result).Should().BeEmpty();
     }
 
     [Test]
@@ -67,9 +67,9 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         var imports = GeneratedSource(result, ImportsHint);
-        imports.ShouldContain("DovetailHostType.UnitTest");
-        imports.ShouldContain(SeedingCall);
-        Problems(result).ShouldBeEmpty();
+        await imports.Should().Contain("DovetailHostType.UnitTest");
+        await imports.Should().Contain(SeedingCall);
+        await Problems(result).Should().BeEmpty();
     }
 
     [Test]
@@ -97,9 +97,9 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        GeneratedSource(result, ImportsHint).ShouldContain(SeedingCall);
+        await GeneratedSource(result, ImportsHint).Should().Contain(SeedingCall);
         // Specular's own generated provider names itself the same way, so the only warning this can pin down is the one the seeding would add.
-        Problems(result).Where(z => z.Location.SourceTree?.FilePath.EndsWith(ImportsHint, StringComparison.Ordinal) == true).ShouldBeEmpty();
+        await Problems(result).Where(z => z.Location.SourceTree?.FilePath.EndsWith(ImportsHint, StringComparison.Ordinal) == true).Should().BeEmpty();
     }
 
     [Test]
@@ -111,9 +111,9 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        GeneratedSource(result, ImportsHint).ShouldNotContain("Specular");
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
-        Problems(result).ShouldBeEmpty();
+        await GeneratedSource(result, ImportsHint).Should().NotContain("Specular");
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await Problems(result).Should().BeEmpty();
         await Verify(result);
     }
 
@@ -126,10 +126,10 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        GeneratedSource(result, ImportsHint).ShouldNotContain("Specular");
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
+        await GeneratedSource(result, ImportsHint).Should().NotContain("Specular");
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
         // No provider exists to name, so seeding one anyway would fail the build here.
-        Problems(result).ShouldBeEmpty();
+        await Problems(result).Should().BeEmpty();
     }
 
     [Test]
@@ -140,8 +140,8 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        HasGeneratedSource(result, ImportsHint).ShouldBeFalse();
-        Problems(result).ShouldBeEmpty();
+        await HasGeneratedSource(result, ImportsHint).Should().BeFalse();
+        await Problems(result).Should().BeEmpty();
     }
 
     [Test]
@@ -162,8 +162,8 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        GeneratedSource(result, ImportsHint).ShouldNotContain("Specular");
-        Problems(result).ShouldBeEmpty();
+        await GeneratedSource(result, ImportsHint).Should().NotContain("Specular");
+        await Problems(result).Should().BeEmpty();
     }
 
     private const string ExportedJoint = """

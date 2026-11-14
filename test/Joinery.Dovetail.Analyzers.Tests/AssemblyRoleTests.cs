@@ -41,7 +41,7 @@ public class AssemblyRoleTests() : GeneratorTest()
 
         var result = await builder.Build().GenerateAsync(TestContext.CancellationToken);
 
-        GeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").ShouldContain(expected);
+        await GeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").Should().Contain(expected);
     }
 
     [Test]
@@ -56,7 +56,7 @@ public class AssemblyRoleTests() : GeneratorTest()
 
         var result = await builder.Build().GenerateAsync(TestContext.CancellationToken);
 
-        HasGeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").ShouldBe(generated);
+        await HasGeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").Should().BeEqualTo(generated);
     }
 
     [Test]
@@ -72,10 +72,10 @@ public class AssemblyRoleTests() : GeneratorTest()
 
         // The Exports class is always emitted, so this assembly's own Imports keeps picking up its joints...
         var exports = GeneratedSource(result, "Exported_Dovetails.g.cs");
-        exports.ShouldContain("class Exports");
-        GeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").ShouldContain("Exports.Rivet()");
+        await exports.Should().Contain("class Exports");
+        await GeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").Should().Contain("Exports.Rivet()");
         // ...but only the Dovetail.Export.* metadata makes referencing assemblies import them.
-        exports.Contains("\"Dovetail.Export.ClassName\"", StringComparison.Ordinal).ShouldBe(advertised);
+        await exports.Contains("\"Dovetail.Export.ClassName\"", StringComparison.Ordinal).Should().BeEqualTo(advertised);
     }
 
     [Test]
@@ -90,11 +90,11 @@ public class AssemblyRoleTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        HasGeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").ShouldBe(generated);
-        HasGeneratedSource(result, "Exported_Dovetails.g.cs").ShouldBe(generated);
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Any(z => z.Id == "DT0006").ShouldBe(!generated);
+        await HasGeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").Should().BeEqualTo(generated);
+        await HasGeneratedSource(result, "Exported_Dovetails.g.cs").Should().BeEqualTo(generated);
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Any(z => z.Id == "DT0006").Should().BeEqualTo(!generated);
         // Either way the project still compiles: what's generated from C# 12 on is valid there, and nothing is generated before it.
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
     }
 
     private static bool HasGeneratedSource(GeneratorTestResults result, string hintName) =>

@@ -1,6 +1,4 @@
-using System.Diagnostics;
 using DryIoc;
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +8,7 @@ using static Joinery.Dovetail.DryIoc.Tests.DryIocFixtures;
 
 namespace Joinery.Dovetail.DryIoc.Tests;
 
-public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
+public class DryIocCommandLineTests : LoggerTest<TestRecord>
 {
     [Test]
     public async Task ConstructTheContainerAndRegisterWithCore()
@@ -22,17 +20,17 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                                      .ConfigureDryIoc(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc>());
+                                              container.RegisterInstance(IAbc.Mock().Object);
                                           }
                                       )
-                                     .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                     .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
     }
 
     [Test]
@@ -45,18 +43,18 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                                      .ConfigureDryIoc(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc>());
-                                              container.RegisterInstance(A.Fake<IAbc4>());
+                                              container.RegisterInstance(IAbc.Mock().Object);
+                                              container.RegisterInstance(IAbc4.Mock().Object);
                                           }
                                       )
-                                     .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                     .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
     }
 
     [Test]
@@ -69,15 +67,15 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                                      .ConfigureDryIoc(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc3>());
-                                              container.RegisterInstance(A.Fake<IAbc4>());
+                                              container.RegisterInstance(IAbc3.Mock().Object);
+                                              container.RegisterInstance(IAbc4.Mock().Object);
                                           }
                                       )
                             );
 
         var items = builder.GetLifetimeScope();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
     }
 
     [Test]
@@ -90,19 +88,19 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                                      .ConfigureDryIoc(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc>());
+                                              container.RegisterInstance(IAbc.Mock().Object);
                                           }
                                       )
-                                     .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                     .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
 
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -115,19 +113,19 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                                      .ConfigureDryIoc(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc>());
-                                              container.RegisterInstance(A.Fake<IAbc4>());
+                                              container.RegisterInstance(IAbc.Mock().Object);
+                                              container.RegisterInstance(IAbc4.Mock().Object);
                                           }
                                       )
-                                     .ConfigureServices((context, services) => services.AddSingleton(A.Fake<IAbc2>()))
+                                     .ConfigureServices((context, services) => services.AddSingleton(IAbc2.Mock().Object))
                             );
 
         var items = builder.GetLifetimeScope();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -140,16 +138,16 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                                      .ConfigureDryIoc(
                                           (context, container) =>
                                           {
-                                              container.RegisterInstance(A.Fake<IAbc3>());
-                                              container.RegisterInstance(A.Fake<IAbc4>());
+                                              container.RegisterInstance(IAbc3.Mock().Object);
+                                              container.RegisterInstance(IAbc4.Mock().Object);
                                           }
                                       )
                             );
 
         var items = builder.GetLifetimeScope();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<IAbc3>().ShouldNotBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc3>().Should().NotBeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -160,10 +158,10 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                            .ConfigureDovetail();
 
         var items = builder.GetLifetimeScope();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
     }
 
     [Test]
@@ -174,12 +172,12 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                            .ConfigureDovetail();
 
         var items = builder.GetLifetimeScope();
-        items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldBeNull();
-        items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
-        items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).ShouldNotBeNull();
+        await items.Resolve<IAbc>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc2>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IAbc4>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().BeNull();
+        await items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
+        await items.Resolve<IOtherAbc3>(IfUnresolved.ReturnDefaultIfNotRegistered).Should().NotBeNull();
     }
 
     [Test]
@@ -189,9 +187,8 @@ public class DryIocCommandLineTests : AutoFakeTest<TestRecord>
                               .CreateApplicationBuilder([])
                               .ConfigureDovetail();
 
-        host.Services.GetRequiredService<IContainer>().ShouldNotBeNull();
+        await host.Services.GetRequiredService<IContainer>().Should().NotBeNull();
     }
 
-    public DryIocCommandLineTests() : base(TestRecord.Create(LogEventLevel.Information)) =>
-        AutoFake.Provide<DiagnosticSource>(new DiagnosticListener("Test"));
+    public DryIocCommandLineTests() : base(TestRecord.Create(LogEventLevel.Information)) { }
 }

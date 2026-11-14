@@ -30,7 +30,7 @@ public class ImplicitUsingTests(string targetFramework)
                    .Property("ImplicitUsings", "enable")
             );
 
-        ( await project.EvaluateItemIdentities("lib", "Using") ).ShouldContain("Joinery.Dovetail");
+        await ( await project.EvaluateItemIdentities("lib", "Using") ).Should().Contain("Joinery.Dovetail");
     }
 
     [Test]
@@ -45,7 +45,7 @@ public class ImplicitUsingTests(string targetFramework)
                .ItemInclude("PackageReference", include: "Joinery.Dovetail", metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail") })
         );
 
-        ( await project.EvaluateItemIdentities("lib", "Using") ).ShouldContain("Joinery.Dovetail");
+        await ( await project.EvaluateItemIdentities("lib", "Using") ).Should().Contain("Joinery.Dovetail");
     }
 
     [Test]
@@ -64,7 +64,7 @@ public class ImplicitUsingTests(string targetFramework)
                 )
         );
 
-        ( await project.EvaluateItemIdentities("app", "Using") ).ShouldNotContain("Joinery.Dovetail");
+        await ( await project.EvaluateItemIdentities("app", "Using") ).Should().NotContain("Joinery.Dovetail");
     }
 
     [Test]
@@ -83,8 +83,8 @@ public class ImplicitUsingTests(string targetFramework)
 
         var usings = await project.EvaluateItemIdentities("app", "Using");
 
-        usings.ShouldContain("Microsoft.Extensions.DependencyInjection");
-        usings.ShouldContain("Microsoft.Extensions.Hosting");
+        await usings.Should().Contain("Microsoft.Extensions.DependencyInjection");
+        await usings.Should().Contain("Microsoft.Extensions.Hosting");
     }
 
     [Test]
@@ -103,8 +103,8 @@ public class ImplicitUsingTests(string targetFramework)
         var usings = await project.EvaluateItemIdentities("app", "Using");
 
         // Nothing provides the namespace, and a global using of a missing namespace doesn't compile.
-        usings.ShouldContain("Microsoft.Extensions.DependencyInjection");
-        usings.ShouldNotContain("Microsoft.Extensions.Hosting");
+        await usings.Should().Contain("Microsoft.Extensions.DependencyInjection");
+        await usings.Should().NotContain("Microsoft.Extensions.Hosting");
     }
 
     [Test]
@@ -122,7 +122,7 @@ public class ImplicitUsingTests(string targetFramework)
 
         var usings = await project.EvaluateItemIdentities("lib", "Using");
 
-        usings.ShouldNotContain("Microsoft.Extensions.DependencyInjection");
-        usings.ShouldNotContain("Microsoft.Extensions.Hosting");
+        await usings.Should().NotContain("Microsoft.Extensions.DependencyInjection");
+        await usings.Should().NotContain("Microsoft.Extensions.Hosting");
     }
 }

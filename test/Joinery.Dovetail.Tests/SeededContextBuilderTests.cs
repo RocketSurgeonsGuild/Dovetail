@@ -19,7 +19,7 @@ public class SeededContextBuilderTests
 
         await Seed(DovetailContextBuilder.Create([], new Dictionary<object, object>(), [])).AppendJoint(joint).CreateAsync();
 
-        joint.Seen.ShouldBeSameAs(Generated);
+        await joint.Seen.Should().BeSameReferenceAs(Generated);
     }
 
     [Test]
@@ -33,7 +33,7 @@ public class SeededContextBuilderTests
              .AppendJoint(joint)
              .CreateAsync();
 
-        joint.Seen.ShouldBeSameAs(explicitProvider);
+        await joint.Seen.Should().BeSameReferenceAs(explicitProvider);
     }
 
     [Test]
@@ -46,7 +46,7 @@ public class SeededContextBuilderTests
              .AppendJoint(joint)
              .CreateAsync();
 
-        joint.Seen.ShouldBeSameAs(explicitProvider);
+        await joint.Seen.Should().BeSameReferenceAs(explicitProvider);
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class SeededContextBuilderTests
              .AppendJoint(new SetsTheProvider(explicitProvider), joint)
              .CreateAsync();
 
-        joint.Seen.ShouldBeSameAs(explicitProvider);
+        await joint.Seen.Should().BeSameReferenceAs(explicitProvider);
     }
 
     private static readonly SeededProvider Generated = new("generated");

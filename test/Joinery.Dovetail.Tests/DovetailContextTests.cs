@@ -1,4 +1,3 @@
-using FakeItEasy;
 using Joinery.Dovetail.Infrastructure;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +10,7 @@ using Serilog.Events;
 namespace Joinery.Dovetail.Tests;
 
 public class DovetailContextTests
-    () : AutoFakeTest<TestRecord>(TestRecord.Create(LogEventLevel.Information))
+    () : LoggerTest<TestRecord>(TestRecord.Create(LogEventLevel.Information))
 {
     [Test]
     public async Task GetAStronglyTypedValue()
@@ -19,7 +18,7 @@ public class DovetailContextTests
         var builder = DovetailContextBuilder.Create([], new DovetailDictionary(), []);
         var container = await DovetailContext.FromAsync(builder);
         container.Set("abc");
-        container.Get<string>().ShouldBe("abc");
+        await container.Get<string>().Should().BeEqualTo("abc");
     }
 
     [Test]
@@ -28,40 +27,40 @@ public class DovetailContextTests
         var builder = DovetailContextBuilder.Create([], new DovetailDictionary(), []);
         var container = await DovetailContext.FromAsync(builder);
         container.Set("abc");
-        container.Get<string>().ShouldBe("abc");
+        await container.Get<string>().Should().BeEqualTo("abc");
     }
 
     [Test]
     public async Task AddDovetails()
     {
         var contextBuilder = DovetailContextBuilder.Create([], new DovetailDictionary(), []);
-        var convention = A.Fake<IServiceJoint>(z => z.Named("Dovetail"));
-        contextBuilder.PrependJoint(convention);
+        var convention = IServiceJoint.Mock();
+        contextBuilder.PrependJoint(convention.Object);
         var conventions = await DovetailContext.FromAsync(contextBuilder);
         await new ServiceCollection().ApplyService(conventions);
-        A.CallTo(() => convention.Register(conventions, A<IServiceCollection>._)).MustHaveHappenedOnceExactly();
+        convention.Register(Is(conventions), Any()).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task Setups()
     {
         var contextBuilder = DovetailContextBuilder.Create([], new DovetailDictionary(), []);
-        var convention = A.Fake<ISetupJoint>();
-        contextBuilder.PrependJoint(convention);
+        var convention = ISetupJoint.Mock();
+        contextBuilder.PrependJoint(convention.Object);
 
         var context = await DovetailContext.FromAsync(contextBuilder);
-        A.CallTo(() => convention.Register(context)).MustHaveHappenedOnceExactly();
+        convention.Register(Is(context)).WasCalled(Times.Once);
     }
 
     [Test]
     public async Task Setups_With_Delegate()
     {
         var contextBuilder = DovetailContextBuilder.Create([], new DovetailDictionary(), []);
-        var convention = A.Fake<SetupJointDelegate>();
-        contextBuilder.ConfigureSetup(convention);
+        var convention = Mock.OfDelegate<SetupJointDelegate>();
+        contextBuilder.ConfigureSetup(convention.Object);
 
         var context = await DovetailContext.FromAsync(contextBuilder);
-        A.CallTo(() => convention(context)).MustHaveHappenedOnceExactly();
+        convention.Invoke(Is(context)).WasCalled(Times.Once);
     }
 
     [Test]
@@ -72,16 +71,16 @@ public class DovetailContextTests
                             .Set<IConfiguration>(new ConfigurationBuilder().Build());
         var context = await DovetailContext.FromAsync(contextBuilder);
         var servicesCollection = new ServiceCollection()
-                                      .AddSingleton(A.Fake<IAbc>())
-                                      .AddSingleton(A.Fake<IAbc2>());
+                                      .AddSingleton(IAbc.Mock().Object)
+                                      .AddSingleton(IAbc2.Mock().Object);
 
         await servicesCollection.ApplyService(context);
 
         var sp = servicesCollection.BuildServiceProvider();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -95,15 +94,15 @@ public class DovetailContextTests
         var collection = new ServiceCollection();
         await collection.ApplyService(context);
 
-        collection.AddSingleton(A.Fake<IAbc>());
-        collection.AddSingleton(A.Fake<IAbc2>());
-        collection.AddSingleton(A.Fake<IAbc4>());
+        collection.AddSingleton(IAbc.Mock().Object);
+        collection.AddSingleton(IAbc2.Mock().Object);
+        collection.AddSingleton(IAbc4.Mock().Object);
 
         var sp = collection.BuildServiceProvider();
-        sp.GetService<IAbc>().ShouldNotBeNull();
-        sp.GetService<IAbc2>().ShouldNotBeNull();
-        sp.GetService<IAbc3>().ShouldBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc>().Should().NotBeNull();
+        await sp.GetService<IAbc2>().Should().NotBeNull();
+        await sp.GetService<IAbc3>().Should().BeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -116,14 +115,14 @@ public class DovetailContextTests
 
         var collection = new ServiceCollection();
         await collection.ApplyService(context);
-        collection.AddSingleton(A.Fake<IAbc3>());
-        collection.AddSingleton(A.Fake<IAbc4>());
+        collection.AddSingleton(IAbc3.Mock().Object);
+        collection.AddSingleton(IAbc4.Mock().Object);
 
         var sp = collection.BuildServiceProvider();
-        sp.GetService<IAbc>().ShouldBeNull();
-        sp.GetService<IAbc2>().ShouldBeNull();
-        sp.GetService<IAbc3>().ShouldNotBeNull();
-        sp.GetService<IAbc4>().ShouldNotBeNull();
+        await sp.GetService<IAbc>().Should().BeNull();
+        await sp.GetService<IAbc2>().Should().BeNull();
+        await sp.GetService<IAbc3>().Should().NotBeNull();
+        await sp.GetService<IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -139,16 +138,16 @@ public class DovetailContextTests
         await servicesCollection.ApplyService(context);
 
         var items = servicesCollection.BuildServiceProvider();
-        items.GetService<IAbc>().ShouldNotBeNull();
-        items.GetService<IAbc2>().ShouldNotBeNull();
-        items.GetService<IAbc3>().ShouldBeNull();
-        items.GetService<IAbc4>().ShouldBeNull();
+        await items.GetService<IAbc>().Should().NotBeNull();
+        await items.GetService<IAbc2>().Should().NotBeNull();
+        await items.GetService<IAbc3>().Should().BeNull();
+        await items.GetService<IAbc4>().Should().BeNull();
     }
 
     [Test]
     public async Task ShouldConstructTheDovetailInjectingTheValues()
     {
-        var data = A.Fake<IInjectData>();
+        var data = IInjectData.Mock().Object;
         var builder = DovetailContextBuilder
                      .Create([], new DovetailDictionary(), [])
                      .AppendJoint<InjectableDovetail>()
@@ -157,14 +156,13 @@ public class DovetailContextTests
         var context = await DovetailContext.FromAsync(builder);
         var collection = new ServiceCollection();
         await collection.ApplyService(context);
-        collection.ShouldContain(z => z.ServiceType == typeof(IInjectData));
+        await collection.Should().Contain(z => z.ServiceType == typeof(IInjectData));
     }
 
     [Test]
     public async Task ShouldConstructTheDovetailInjectingTheValuesIfOptional()
     {
-        AutoFake.Provide<IDictionary<object, object?>>(new DovetailDictionary());
-        var data = A.Fake<IInjectData>();
+        var data = IInjectData.Mock().Object;
         var builder = DovetailContextBuilder
                      .Create([], new DovetailDictionary(), [])
                      .AppendJoint<OptionalInjectableDovetail>()
@@ -173,7 +171,7 @@ public class DovetailContextTests
         var context = ( await DovetailContext.FromAsync(builder) ).Set(data);
         var collection = new ServiceCollection();
         await collection.ApplyService(context);
-        collection.ShouldContain(z => z.ServiceType == typeof(IInjectData));
+        await collection.Should().Contain(z => z.ServiceType == typeof(IInjectData));
     }
 
     [Test]
@@ -184,7 +182,7 @@ public class DovetailContextTests
                      .AppendJoint<InjectableDovetail>()
                      .Set<IConfiguration>(new ConfigurationBuilder().Build());
         var a = () => DovetailContext.FromAsync(builder).AsTask();
-        await a.ShouldThrowAsync<InvalidOperationException>();
+        await a.Should().Throw<InvalidOperationException>();
     }
 
     [Test]
@@ -195,8 +193,8 @@ public class DovetailContextTests
                      .AppendJoint<OptionalInjectableDovetail>()
                      .Set<IConfiguration>(new ConfigurationBuilder().Build());
         var context = await DovetailContext.FromAsync(builder);
-        var a = () => new ServiceCollection().ApplyService(context).AsTask();
-        await a.ShouldNotThrowAsync();
+        Task a() => new ServiceCollection().ApplyService(context).AsTask();
+        await Assert.That(a).ThrowsNothing();
     }
 
     public interface IAbc;
@@ -217,8 +215,8 @@ public class DovetailContextTests
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            services.AddSingleton(A.Fake<IAbc>());
-            services.AddSingleton(A.Fake<IAbc2>());
+            services.AddSingleton(IAbc.Mock().Object);
+            services.AddSingleton(IAbc2.Mock().Object);
         }
     }
 

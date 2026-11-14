@@ -468,16 +468,16 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
         foreach (var section in new[] { "Blank", "BlankRecord" })
         {
             using var document = JsonDocument.Parse(Fragments(result)[section]);
             var properties = document.RootElement.GetProperty("properties");
             var name = properties.GetProperty("Name");
-            name.TryGetProperty("default", out _).ShouldBeFalse(section);
-            ( name.TryGetProperty("description", out var description) ? description.GetString() ?? "" : "" ).ShouldNotContain("Default:", Case.Sensitive, section);
-            properties.GetProperty("Greeting").GetProperty("default").GetString().ShouldBe("Hi", section);
-            properties.GetProperty("Greeting").GetProperty("description").GetString()!.ShouldContain("Default: Hi.", Case.Sensitive, section);
+            await name.TryGetProperty("default", out _).Should().BeFalse().Because(section);
+            await ( name.TryGetProperty("description", out var description) ? description.GetString() ?? "" : "" ).Should().NotContain("Default:").Because(section);
+            await properties.GetProperty("Greeting").GetProperty("default").GetString().Should().BeEqualTo("Hi").Because(section);
+            await properties.GetProperty("Greeting").GetProperty("description").GetString()!.Should().Contain("Default: Hi.").Because(section);
         }
     }
 
@@ -503,13 +503,13 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         // Two assembly attributes for different types must compile (the attribute has to allow several uses on the assembly).
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
         var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
-        diagnostics.Select(z => z.Id).ShouldBe(["DT0015"]);
-        diagnostics[0].GetMessage(CultureInfo.InvariantCulture).ShouldBe("'Sample.TwiceOptions' is configured more than once; a type can have only one [DovetailConfiguration]");
+        await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0015"], CollectionOrdering.Matching);
+        await diagnostics[0].GetMessage(CultureInfo.InvariantCulture).Should().BeEqualTo("'Sample.TwiceOptions' is configured more than once; a type can have only one [DovetailConfiguration]");
         // The assembly attribute is the one reported, and only the class declaration produces a fragment.
-        diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).ShouldContain("\"Second\"");
-        Fragments(result).Keys.ShouldBe(["First", "Elsewhere"], ignoreOrder: true);
+        await diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).Should().Contain("\"Second\"");
+        await Fragments(result).Keys.Should().BeEquivalentTo(["First", "Elsewhere"]);
     }
 
     [Test]
@@ -530,11 +530,11 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
         var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
-        diagnostics.Select(z => z.Id).ShouldBe(["DT0015"]);
+        await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0015"], CollectionOrdering.Matching);
         // The first declaration wins and the repeat produces nothing.
-        Fragments(result).Keys.ShouldBe(["First"]);
+        await Fragments(result).Keys.Should().BeEquivalentTo(["First"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -597,13 +597,13 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
         using var shapes = JsonDocument.Parse(Fragments(result)["Shapes"]);
         var definitions = shapes.RootElement.GetProperty("definitions");
-        definitions.GetProperty("Sample.IShape").GetProperty("properties").EnumerateObject().Select(z => z.Name).ShouldBe(["Sides"]);
-        definitions.GetProperty("Sample.Base").GetProperty("properties").EnumerateObject().Select(z => z.Name).ShouldBe(["Name"]);
-        shapes.RootElement.GetProperty("properties").EnumerateObject().Select(z => z.Name).ShouldBe(["Shape", "Item"], ignoreOrder: true);
+        await definitions.GetProperty("Sample.IShape").GetProperty("properties").EnumerateObject().Select(z => z.Name).Should().BeEquivalentTo(["Sides"], CollectionOrdering.Matching);
+        await definitions.GetProperty("Sample.Base").GetProperty("properties").EnumerateObject().Select(z => z.Name).Should().BeEquivalentTo(["Name"], CollectionOrdering.Matching);
+        await shapes.RootElement.GetProperty("properties").EnumerateObject().Select(z => z.Name).Should().BeEquivalentTo(["Shape", "Item"]);
     }
 
     [Test]
@@ -628,8 +628,8 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         var text = Describe(result);
-        text.ShouldContain("## Quiet");
-        text.ShouldNotContain("DT0014");
+        await text.Should().Contain("## Quiet");
+        await text.Should().NotContain("DT0014");
     }
 
     [Test]
@@ -649,8 +649,8 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
-        diagnostics.ShouldContain(z => z.Id == "DT0009");
-        diagnostics.ShouldAllBe(z => z.Location.SourceTree != null);
+        await diagnostics.Should().Contain(z => z.Id == "DT0009");
+        await diagnostics.Should().All(z => z.Location.SourceTree != null);
     }
 
     /// <summary>
@@ -677,12 +677,12 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         // The binder stops at a generic nesting depth as well, and what it generates still compiles.
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
         var fragments = Fragments(result);
         using var deep = JsonDocument.Parse(fragments["Deep"]);
-        deep.RootElement.GetProperty("definitions").EnumerateObject().Count().ShouldBe(13);
-        fragments["Deep"].Length.ShouldBeLessThan(10_000);
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Select(z => z.Id).ShouldBe(["DT0012"]);
+        await deep.RootElement.GetProperty("definitions").EnumerateObject().Count().Should().BeEqualTo(13);
+        await fragments["Deep"].Length.Should().BeLessThan(10_000);
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0012"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -728,13 +728,16 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         var steps = driver.GetRunResult().Results.Single().TrackedSteps;
         foreach (var name in new[] { "dovetail:configuration_classes", "dovetail:configuration_sections" })
         {
+            var reasons = new List<IncrementalStepRunReason>();
             foreach (var step in steps[name])
             {
                 foreach (var (_, reason) in step.Outputs)
                 {
-                    reason.ShouldBeOneOf([IncrementalStepRunReason.Cached, IncrementalStepRunReason.Unchanged], name);
+                    reasons.Add(reason);
                 }
             }
+
+            await reasons.Should().All(z => z is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged).Because(name);
         }
     }
 
@@ -844,14 +847,14 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
         var fragments = Fragments(result);
         // Ordinary C# names are Pascal case already, so Undefined and Pascal spell the same keys. That is also why the Nested type
         // they share is not a conflict: the binder reads the same keys either way.
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
-        fragments["Explicit"].ShouldBe(fragments["Default"].Replace("\"title\":\"Default\"", "\"title\":\"Explicit\"", StringComparison.Ordinal));
-        fragments["Default"].ShouldContain("\"RetryCount\"");
-        fragments["Default"].ShouldContain("\"WaitTime\"");
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await fragments["Explicit"].Should().BeEqualTo(fragments["Default"].Replace("\"title\":\"Default\"", "\"title\":\"Explicit\"", StringComparison.Ordinal));
+        await fragments["Default"].Should().Contain("\"RetryCount\"");
+        await fragments["Default"].Should().Contain("\"WaitTime\"");
     }
 
     [Test]
@@ -886,10 +889,10 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
         var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
-        diagnostics.Select(z => z.Id).ShouldBe(["DT0016"]);
-        Fragments(result).Keys.ShouldBe(["First"]);
+        await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0016"], CollectionOrdering.Matching);
+        await Fragments(result).Keys.Should().BeEquivalentTo(["First"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -911,9 +914,9 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
-        Fragments(result).Keys.ShouldBe(["http_client", "Explicit:Section"], ignoreOrder: true);
-        Fragments(result)["http_client"].ShouldContain("\"max_connections\"");
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
+        await Fragments(result).Keys.Should().BeEquivalentTo(["http_client", "Explicit:Section"]);
+        await Fragments(result)["http_client"].Should().Contain("\"max_connections\"");
     }
 
     [Test]
@@ -940,18 +943,15 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
         var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
-        diagnostics.Select(z => z.Id).ShouldBe(["DT0016"]);
-        diagnostics[0].Severity.ShouldBe(DiagnosticSeverity.Error);
-        diagnostics[0].GetMessage(CultureInfo.InvariantCulture)
-                      .ShouldBe(
-                           "'Sample.RetryOptions' is bound with more than one key style; use the same KeyStyle for every section that reaches it, or give the shared type [ConfigurationKeyName] attributes"
-                       );
+        await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0016"], CollectionOrdering.Matching);
+        await diagnostics[0].Severity.Should().BeEqualTo(DiagnosticSeverity.Error);
+        await diagnostics[0].GetMessage(CultureInfo.InvariantCulture).Should().BeEqualTo("'Sample.RetryOptions' is bound with more than one key style; use the same KeyStyle for every section that reaches it, or give the shared type [ConfigurationKeyName] attributes");
         // The later declaration is the one reported, and it produces nothing; the earlier ones, and a later one in the same style, still do.
-        diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).ShouldContain("\"Second\"");
-        Fragments(result).Keys.ShouldBe(["First", "Third"], ignoreOrder: true);
-        result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).ShouldContain("Dovetail_ConfigurationOptions.g.cs");
+        await diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).Should().Contain("\"Second\"");
+        await Fragments(result).Keys.Should().BeEquivalentTo(["First", "Third"]);
+        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().Contain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -985,9 +985,9 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
-        result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.ShouldBeEmpty();
-        Fragments(result).Keys.ShouldBe(["A", "B", "C"], ignoreOrder: true);
+        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await Fragments(result).Keys.Should().BeEquivalentTo(["A", "B", "C"]);
     }
 
     /// <summary>The raw schema fragments in the compilation, by section.</summary>
@@ -1004,7 +1004,8 @@ public class ConfigurationSchemaTests() : GeneratorTest()
     private static string Describe(GeneratorTestResults result)
     {
         // The generator's own DT errors are part of what's verified below; only compiler errors mean broken generated code.
-        result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ShouldBeEmpty();
+        var compileErrors = result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ToArray();
+        if (compileErrors.Length > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, compileErrors.Select(z => z.ToString())));
 
         const string prefix = "Dovetail.ConfigurationSchema.v1:";
         var options = new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };

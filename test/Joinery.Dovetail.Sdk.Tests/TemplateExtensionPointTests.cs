@@ -27,13 +27,13 @@ public class TemplateExtensionPointTests(string targetFramework)
         await project.BuildProject("transitive");
         await project.BuildProject("direct");
 
-        EmittedTemplates(project, "direct").ShouldBe(["DirectOnly"]);
-        EmittedTemplates(project, "middle").ShouldBe(["DirectOnly"]);
+        await EmittedTemplates(project, "direct").Should().BeEquivalentTo(["DirectOnly"], CollectionOrdering.Matching);
+        await EmittedTemplates(project, "middle").Should().BeEquivalentTo(["DirectOnly"], CollectionOrdering.Matching);
 
         // transitive really did receive the package, so receiving nothing is the mode's doing and not a project that never saw it.
-        File.Exists(Path.Combine(project.Directory, "transitive", "bin", "Debug", targetFramework, $"{ShipperId}.dll")).ShouldBeTrue();
-        ( await project.EvaluateItemIdentities("transitive", "DovetailTemplate") ).ShouldContain("DirectOnly");
-        EmittedTemplates(project, "transitive").ShouldBeEmpty();
+        await File.Exists(Path.Combine(project.Directory, "transitive", "bin", "Debug", targetFramework, $"{ShipperId}.dll")).Should().BeTrue();
+        await ( await project.EvaluateItemIdentities("transitive", "DovetailTemplate") ).Should().Contain("DirectOnly");
+        await EmittedTemplates(project, "transitive").Should().BeEmpty();
     }
 
     /// <summary>
@@ -51,10 +51,10 @@ public class TemplateExtensionPointTests(string targetFramework)
         await project.BuildProject("transitive");
         await project.BuildProject("direct");
 
-        EmittedTemplates(project, "direct").ShouldBe(["Plain"]);
-        EmittedTemplates(project, "middle").ShouldBe(["Plain"]);
-        ( await project.EvaluateItemIdentities("transitive", "DovetailTemplate") ).ShouldNotContain("Plain");
-        EmittedTemplates(project, "transitive").ShouldBeEmpty();
+        await EmittedTemplates(project, "direct").Should().BeEquivalentTo(["Plain"], CollectionOrdering.Matching);
+        await EmittedTemplates(project, "middle").Should().BeEquivalentTo(["Plain"], CollectionOrdering.Matching);
+        await ( await project.EvaluateItemIdentities("transitive", "DovetailTemplate") ).Should().NotContain("Plain");
+        await EmittedTemplates(project, "transitive").Should().BeEmpty();
     }
 
     /// <summary>
@@ -78,9 +78,9 @@ public class TemplateExtensionPointTests(string targetFramework)
 
         // Both are applications, so the SDK detects the generic host in each; the library has no host.
         string[] application = ["ForTheGenericHost", "Referenced", "RequiredAssemblyReferenced"];
-        EmittedTemplates(project, "direct").ShouldBe(application);
-        EmittedTemplates(project, "transitive").ShouldBe(application);
-        EmittedTemplates(project, "middle").ShouldBe(["Referenced", "RequiredAssemblyReferenced"]);
+        await EmittedTemplates(project, "direct").Should().BeEquivalentTo(application, CollectionOrdering.Matching);
+        await EmittedTemplates(project, "transitive").Should().BeEquivalentTo(application, CollectionOrdering.Matching);
+        await EmittedTemplates(project, "middle").Should().BeEquivalentTo(["Referenced", "RequiredAssemblyReferenced"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -110,9 +110,9 @@ public class TemplateExtensionPointTests(string targetFramework)
 
         await project.BuildProject("transitive");
 
-        EmittedTemplates(project, "direct").ShouldBe(["InRepository"]);
-        EmittedTemplates(project, "transitive").ShouldBeEmpty();
-        EmittedTemplates(project, "shipper").ShouldBeEmpty();
+        await EmittedTemplates(project, "direct").Should().BeEquivalentTo(["InRepository"], CollectionOrdering.Matching);
+        await EmittedTemplates(project, "transitive").Should().BeEmpty();
+        await EmittedTemplates(project, "shipper").Should().BeEmpty();
     }
 
     private sealed record Template(string Name, string Attributes = "");
@@ -149,7 +149,7 @@ public class TemplateExtensionPointTests(string targetFramework)
         }
 
         var shipper = await project.PackToLocalFeed("shipper");
-        shipper.Files.ShouldContain($"{assetFolder}/{ShipperId}.targets");
+        await shipper.Files.Should().Contain($"{assetFolder}/{ShipperId}.targets");
 
         var reference = new Dictionary<string, string?> { ["Version"] = shipper.Version };
         var middle = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework).ItemInclude("PackageReference", shipper.PackageId, metadata: reference);

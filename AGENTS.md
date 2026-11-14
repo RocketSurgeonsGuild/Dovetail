@@ -46,8 +46,8 @@ Generated code is verified against committed snapshots in `test/Analyzers.Tests/
 **Test**:
 
 - Framework: TUnit on Microsoft.Testing.Platform (not VSTest)
-- Test classes inherit `AutoFakeTest<TUnitTestRecord>` from `Rocket.Surgery.Extensions.Testing.TUnit`
-- Mocks: FakeItEasy · Assertions: Shouldly · Snapshots: Verify.TUnit
+- Test classes inherit `LoggerTest<TestRecord>` from `Rocket.Surgery.Extensions.Testing.TUnit`
+- Mocks: TUnit.Mocks · Assertions: TUnit Should syntax (`TUnit.Assertions.Should`) · Snapshots: Verify.TUnit
 - Run all: `dotnet test`
 - Run single: `dotnet run --project test/<Project> -- --treenode-filter "*/..."`
 - Accept snapshots: `dotnet verify accept`

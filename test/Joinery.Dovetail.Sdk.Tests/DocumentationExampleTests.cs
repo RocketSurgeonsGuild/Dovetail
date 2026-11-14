@@ -51,9 +51,9 @@ public class DocumentationExampleTests(string targetFramework)
     public async Task EveryJointOnTheDocsSite_CompilesAgainstTheInterfacesThePackagesGenerate()
     {
         var examples = DocumentationCodeBlock.All().Where(z => z.ImplementsAJoint && z.ExcerptOf is null).ToArray();
-        examples.ShouldNotBeEmpty();
+        await examples.Should().NotBeEmpty();
         // The page the examples were wrong on: if the extraction stops finding its joints, the test would pass without compiling them.
-        examples.Select(z => z.Path).ShouldContain("docs/src/content/docs/concepts/defining-joints.md");
+        await examples.Select(z => z.Path).Should().Contain("docs/src/content/docs/concepts/defining-joints.md");
 
         using var project = CreateProject();
         project.AddFile("worker/ExampleTypes.cs", ExampleTypes);

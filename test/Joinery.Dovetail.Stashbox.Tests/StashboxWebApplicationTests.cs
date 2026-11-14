@@ -1,4 +1,3 @@
-using FakeItEasy;
 using Joinery.Dovetail.Joints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +7,7 @@ using Stashbox;
 
 namespace Joinery.Dovetail.Stashbox.Tests;
 
-public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
+public class StashboxWebApplicationTests : LoggerTest<TestRecord>
 {
     [Test]
     public async Task ConstructTheContainerAndRegisterWithCore()
@@ -20,17 +19,17 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                               .ConfigureStashbox(
                                                    (context, container) =>
                                                    {
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc>());
+                                                       container.RegisterInstance(StashboxFixtures.IAbc.Mock().Object);
                                                    }
                                                )
-                                              .ConfigureServices((context, services) => services.AddSingleton(A.Fake<StashboxFixtures.IAbc2>()))
+                                              .ConfigureServices((context, services) => services.AddSingleton(StashboxFixtures.IAbc2.Mock().Object))
                                      );
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
-        items.ResolveOrDefault<StashboxFixtures.IAbc>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc2>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc3>().ShouldBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc4>().ShouldBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc2>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc3>().Should().BeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -43,18 +42,18 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                               .ConfigureStashbox(
                                                    (context, container) =>
                                                    {
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc>());
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc4>());
+                                                       container.RegisterInstance(StashboxFixtures.IAbc.Mock().Object);
+                                                       container.RegisterInstance(StashboxFixtures.IAbc4.Mock().Object);
                                                    }
                                                )
-                                              .ConfigureServices((context, services) => services.AddSingleton(A.Fake<StashboxFixtures.IAbc2>()))
+                                              .ConfigureServices((context, services) => services.AddSingleton(StashboxFixtures.IAbc2.Mock().Object))
                                      );
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
-        items.ResolveOrDefault<StashboxFixtures.IAbc>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc2>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc3>().ShouldBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc4>().ShouldNotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc2>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc3>().Should().BeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -67,15 +66,15 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                               .ConfigureStashbox(
                                                    (context, container) =>
                                                    {
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc3>());
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc4>());
+                                                       container.RegisterInstance(StashboxFixtures.IAbc3.Mock().Object);
+                                                       container.RegisterInstance(StashboxFixtures.IAbc4.Mock().Object);
                                                    }
                                                )
                                      );
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
-        items.ResolveOrDefault<StashboxFixtures.IAbc3>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc4>().ShouldNotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc3>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -88,19 +87,19 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                               .ConfigureStashbox(
                                                    (context, container) =>
                                                    {
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc>());
+                                                       container.RegisterInstance(StashboxFixtures.IAbc.Mock().Object);
                                                    }
                                                )
-                                              .ConfigureServices((context, services) => services.AddSingleton(A.Fake<StashboxFixtures.IAbc2>()))
+                                              .ConfigureServices((context, services) => services.AddSingleton(StashboxFixtures.IAbc2.Mock().Object))
                                      );
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
 
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<StashboxFixtures.IAbc>().ShouldNotBeNull();
-        sp.GetService<StashboxFixtures.IAbc2>().ShouldNotBeNull();
-        sp.GetService<StashboxFixtures.IAbc3>().ShouldBeNull();
-        sp.GetService<StashboxFixtures.IAbc4>().ShouldBeNull();
+        await sp.GetService<StashboxFixtures.IAbc>().Should().NotBeNull();
+        await sp.GetService<StashboxFixtures.IAbc2>().Should().NotBeNull();
+        await sp.GetService<StashboxFixtures.IAbc3>().Should().BeNull();
+        await sp.GetService<StashboxFixtures.IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -113,19 +112,19 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                               .ConfigureStashbox(
                                                    (context, container) =>
                                                    {
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc>());
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc4>());
+                                                       container.RegisterInstance(StashboxFixtures.IAbc.Mock().Object);
+                                                       container.RegisterInstance(StashboxFixtures.IAbc4.Mock().Object);
                                                    }
                                                )
-                                              .ConfigureServices((context, services) => services.AddSingleton(A.Fake<StashboxFixtures.IAbc2>()))
+                                              .ConfigureServices((context, services) => services.AddSingleton(StashboxFixtures.IAbc2.Mock().Object))
                                      );
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<StashboxFixtures.IAbc>().ShouldNotBeNull();
-        sp.GetService<StashboxFixtures.IAbc2>().ShouldNotBeNull();
-        sp.GetService<StashboxFixtures.IAbc3>().ShouldBeNull();
-        sp.GetService<StashboxFixtures.IAbc4>().ShouldNotBeNull();
+        await sp.GetService<StashboxFixtures.IAbc>().Should().NotBeNull();
+        await sp.GetService<StashboxFixtures.IAbc2>().Should().NotBeNull();
+        await sp.GetService<StashboxFixtures.IAbc3>().Should().BeNull();
+        await sp.GetService<StashboxFixtures.IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -138,16 +137,16 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                               .ConfigureStashbox(
                                                    (context, container) =>
                                                    {
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc3>());
-                                                       container.RegisterInstance(A.Fake<StashboxFixtures.IAbc4>());
+                                                       container.RegisterInstance(StashboxFixtures.IAbc3.Mock().Object);
+                                                       container.RegisterInstance(StashboxFixtures.IAbc4.Mock().Object);
                                                    }
                                                )
                                      );
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
         var sp = items.Resolve<IServiceProvider>();
-        sp.GetService<StashboxFixtures.IAbc3>().ShouldNotBeNull();
-        sp.GetService<StashboxFixtures.IAbc4>().ShouldNotBeNull();
+        await sp.GetService<StashboxFixtures.IAbc3>().Should().NotBeNull();
+        await sp.GetService<StashboxFixtures.IAbc4>().Should().NotBeNull();
     }
 
     [Test]
@@ -158,10 +157,10 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                     .ConfigureDovetail();
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
-        items.ResolveOrDefault<StashboxFixtures.IAbc>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc2>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc3>().ShouldBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc4>().ShouldBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc2>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc3>().Should().BeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc4>().Should().BeNull();
     }
 
     [Test]
@@ -172,12 +171,12 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                     .ConfigureDovetail();
 
         var items = host.Services.GetRequiredService<IDependencyResolver>();
-        items.ResolveOrDefault<StashboxFixtures.IAbc>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc2>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc3>().ShouldBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IAbc4>().ShouldBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IOtherAbc3>().ShouldNotBeNull();
-        items.ResolveOrDefault<StashboxFixtures.IOtherAbc3>().ShouldNotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc2>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc3>().Should().BeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IAbc4>().Should().BeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IOtherAbc3>().Should().NotBeNull();
+        await items.ResolveOrDefault<StashboxFixtures.IOtherAbc3>().Should().NotBeNull();
     }
 
     [Test]
@@ -188,9 +187,8 @@ public class StashboxWebApplicationTests : AutoFakeTest<TestRecord>
                                     .ConfigureDovetail();
 
         var container = host.Services.GetRequiredService<IStashboxContainer>();
-        container.ShouldNotBeNull();
+        await container.Should().NotBeNull();
     }
 
-    public StashboxWebApplicationTests() : base(TestRecord.Create(LogEventLevel.Information)) =>
-        AutoFake.Provide<IDictionary<object, object?>>(new Dictionary<object, object?>());
+    public StashboxWebApplicationTests() : base(TestRecord.Create(LogEventLevel.Information)) { }
 }

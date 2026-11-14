@@ -27,7 +27,7 @@ public class HostLifecycleTests
                .OnHostStopped(_ => moments.Add("stopped"))
         );
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -68,7 +68,7 @@ public class HostLifecycleTests
                 )
         );
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -109,7 +109,7 @@ public class HostLifecycleTests
                 )
         );
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     [Test]
@@ -122,7 +122,7 @@ public class HostLifecycleTests
         await host.StopAsync(CancellationToken);
 
         // The host's root scope, so it resolves what the host registered.
-        received.ShouldNotBeNull().GetRequiredService<IHostEnvironment>().ShouldBeSameAs(host.Services.GetRequiredService<IHostEnvironment>());
+        await ( await received.Should().NotBeNull() ).GetRequiredService<IHostEnvironment>().Should().BeSameReferenceAs(host.Services.GetRequiredService<IHostEnvironment>());
     }
 
     [Test]
@@ -152,7 +152,7 @@ public class HostLifecycleTests
                 )
         );
 
-        finished.Order().ShouldBe(["first", "second"]);
+        await finished.Order().Should().BeEquivalentTo(["first", "second"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -165,10 +165,10 @@ public class HostLifecycleTests
                               .OnHostStarting(_ => ran = true)
                               .ConfigureDovetail();
 
-        var exception = await Should.ThrowAsync<InvalidOperationException>(host.StartAsync(CancellationToken));
+        var exception = await ( (Func<Task>)( () => host.StartAsync(CancellationToken) ) ).Should().Throw<InvalidOperationException>();
 
-        exception.Message.ShouldBe("boom");
-        ran.ShouldBeTrue();
+        await exception.Message.Should().BeEqualTo("boom");
+        await ran.Should().BeTrue();
     }
 
     [Test]
@@ -186,7 +186,7 @@ public class HostLifecycleTests
                                )
                               .ConfigureDovetail();
 
-        await Should.ThrowAsync<OperationCanceledException>(host.StartAsync(cancellation.Token));
+        await ( (Func<Task>)( () => host.StartAsync(cancellation.Token) ) ).Should().Throw<OperationCanceledException>();
     }
 
     /// <summary>
@@ -219,7 +219,7 @@ public class HostLifecycleTests
         await host.StartAsync(CancellationToken);
         await host.StopAsync(CancellationToken);
 
-        moments.ShouldBe(AllMoments);
+        await moments.Should().BeEquivalentTo(AllMoments, CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -242,7 +242,7 @@ public class HostLifecycleTests
         await host.StartAsync(CancellationToken);
         await host.StopAsync(CancellationToken);
 
-        moments.ShouldBe(["started", "stopped"]);
+        await moments.Should().BeEquivalentTo(["started", "stopped"], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -254,20 +254,20 @@ public class HostLifecycleTests
         builder.Services.OnHostStarted(_ => moments.Add("services"));
         builder.OnHostStopped(_ => moments.Add("stopped"));
 
-        builder.Services.Count(IsHostLifecycleService).ShouldBe(1);
+        await builder.Services.Count(IsHostLifecycleService).Should().BeEqualTo(1);
 
         await RunAsync(builder);
 
-        moments.ShouldBe(["builder", "services", "stopped"]);
+        await moments.Should().BeEquivalentTo(["builder", "services", "stopped"], CollectionOrdering.Matching);
     }
 
     [Test]
-    public void WithoutHandlers_AddsNothing()
+    public async Task WithoutHandlers_AddsNothing()
     {
         var builder = Host.CreateApplicationBuilder();
 
-        builder.Services.Count(IsHostLifecycleService).ShouldBe(0);
-        builder.Services.Count(static descriptor => descriptor.ServiceType == typeof(HostLifecycleRegistration)).ShouldBe(0);
+        await builder.Services.Count(IsHostLifecycleService).Should().BeEqualTo(0);
+        await builder.Services.Count(static descriptor => descriptor.ServiceType == typeof(HostLifecycleRegistration)).Should().BeEqualTo(0);
     }
 
     private static bool IsHostLifecycleService(ServiceDescriptor descriptor) =>

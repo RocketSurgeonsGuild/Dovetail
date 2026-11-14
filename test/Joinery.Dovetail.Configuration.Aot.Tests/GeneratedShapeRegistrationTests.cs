@@ -25,8 +25,8 @@ public sealed class GeneratedShapeRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Message.ShouldBe("Hello");
-        provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().CurrentValue.ShouldBe(new ServerRecord("example.org", 8080));
+        await provider.GetRequiredService<IOptions<GreetingsOptions>>().Value.Message.Should().BeEqualTo("Hello");
+        await provider.GetRequiredService<IOptionsMonitor<ServerRecord>>().CurrentValue.Should().BeEqualTo(new ServerRecord("example.org", 8080));
     }
 
     [Test]
@@ -37,7 +37,7 @@ public sealed class GeneratedShapeRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        Should.Throw<OptionsValidationException>(() => provider.GetRequiredService<IOptions<GreetingsOptions>>().Value);
+        await ( (Func<object?>)( () => provider.GetRequiredService<IOptions<GreetingsOptions>>().Value ) ).Should().Throw<OptionsValidationException>();
     }
 
     // The calls the generator emits into IServiceJoint.Register: static calls, and ValidateOnStart

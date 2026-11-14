@@ -11,11 +11,11 @@ public class DovetailConfigurationSchemaEndpointTests
     private const string Schema = """{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"Greetings":{"type":"object"}}}""";
 
     [Test]
-    public void PublicContract_MatchesTheDocumentedRouteFileAndMediaType()
+    public async Task PublicContract_MatchesTheDocumentedRouteFileAndMediaType()
     {
-        DovetailConfigurationSchemaEndpointExtensions.RoutePattern.ShouldBe(RoutePattern);
-        DovetailConfigurationSchemaEndpointExtensions.SchemaFileName.ShouldBe(SchemaFileName);
-        DovetailConfigurationSchemaEndpointExtensions.SchemaMediaType.ShouldBe("application/schema+json");
+        await DovetailConfigurationSchemaEndpointExtensions.RoutePattern.Should().BeEqualTo(RoutePattern);
+        await DovetailConfigurationSchemaEndpointExtensions.SchemaFileName.Should().BeEqualTo(SchemaFileName);
+        await DovetailConfigurationSchemaEndpointExtensions.SchemaMediaType.Should().BeEqualTo("application/schema+json");
     }
 
     [Test]
@@ -27,11 +27,11 @@ public class DovetailConfigurationSchemaEndpointTests
 
         using var response = await app.GetTestClient().GetAsync(RoutePattern);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        response.Content.Headers.ContentType!.MediaType.ShouldBe("application/schema+json");
-        ( await response.Content.ReadAsStringAsync() ).ShouldBe(Schema);
-        response.Headers.ETag.ShouldNotBeNull();
-        response.Headers.CacheControl!.NoCache.ShouldBeTrue();
+        await response.StatusCode.Should().BeEqualTo(HttpStatusCode.OK);
+        await response.Content.Headers.ContentType!.MediaType.Should().BeEqualTo("application/schema+json");
+        await ( await response.Content.ReadAsStringAsync() ).Should().BeEqualTo(Schema);
+        await response.Headers.ETag.Should().NotBeNull();
+        await response.Headers.CacheControl!.NoCache.Should().BeTrue();
     }
 
     [Test]
@@ -44,8 +44,8 @@ public class DovetailConfigurationSchemaEndpointTests
 
         using var response = await app.GetTestClient().GetAsync(RoutePattern);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        ( await response.Content.ReadAsStringAsync() ).ShouldBe(Schema);
+        await response.StatusCode.Should().BeEqualTo(HttpStatusCode.OK);
+        await ( await response.Content.ReadAsStringAsync() ).Should().BeEqualTo(Schema);
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class DovetailConfigurationSchemaEndpointTests
 
         using var response = await app.GetTestClient().GetAsync(RoutePattern);
 
-        ( await response.Content.ReadAsStringAsync() ).ShouldBe(Schema);
+        await ( await response.Content.ReadAsStringAsync() ).Should().BeEqualTo(Schema);
     }
 
     [Test]
@@ -71,7 +71,7 @@ public class DovetailConfigurationSchemaEndpointTests
 
         using var response = await app.GetTestClient().GetAsync(RoutePattern);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        await response.StatusCode.Should().BeEqualTo(HttpStatusCode.NotFound);
     }
 
     [Test]
@@ -82,12 +82,12 @@ public class DovetailConfigurationSchemaEndpointTests
         await using var app = await StartAsync(output.Path);
         var client = app.GetTestClient();
         using var before = await client.GetAsync(RoutePattern);
-        before.StatusCode.ShouldBe(HttpStatusCode.OK);
+        await before.StatusCode.Should().BeEqualTo(HttpStatusCode.OK);
 
         File.Delete(Path.Combine(output.Path, SchemaFileName));
 
         using var after = await client.GetAsync(RoutePattern);
-        after.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        await after.StatusCode.Should().BeEqualTo(HttpStatusCode.NotFound);
     }
 
     [Test]
@@ -104,9 +104,9 @@ public class DovetailConfigurationSchemaEndpointTests
         request.Headers.IfNoneMatch.Add(eTag);
         using var second = await client.SendAsync(request);
 
-        second.StatusCode.ShouldBe(HttpStatusCode.NotModified);
-        ( await second.Content.ReadAsStringAsync() ).ShouldBeEmpty();
-        second.Headers.ETag.ShouldBe(eTag);
+        await second.StatusCode.Should().BeEqualTo(HttpStatusCode.NotModified);
+        await ( await second.Content.ReadAsStringAsync() ).Should().BeEmpty();
+        await second.Headers.ETag.Should().BeEqualTo(eTag);
     }
 
     [Test]
@@ -125,9 +125,9 @@ public class DovetailConfigurationSchemaEndpointTests
         request.Headers.IfNoneMatch.Add(staleETag);
         using var second = await client.SendAsync(request);
 
-        second.StatusCode.ShouldBe(HttpStatusCode.OK);
-        ( await second.Content.ReadAsStringAsync() ).ShouldBe(updated);
-        second.Headers.ETag.ShouldNotBe(staleETag);
+        await second.StatusCode.Should().BeEqualTo(HttpStatusCode.OK);
+        await ( await second.Content.ReadAsStringAsync() ).Should().BeEqualTo(updated);
+        await second.Headers.ETag.Should().NotBeEqualTo(staleETag);
     }
 
     [Test]
@@ -149,8 +149,8 @@ public class DovetailConfigurationSchemaEndpointTests
 
         using var response = await app.GetTestClient().GetAsync(RoutePattern);
 
-        response.StatusCode.ShouldBe(expected);
-        if (expected == HttpStatusCode.OK) ( await response.Content.ReadAsStringAsync() ).ShouldBe(Schema);
+        await response.StatusCode.Should().BeEqualTo(expected);
+        if (expected == HttpStatusCode.OK) await ( await response.Content.ReadAsStringAsync() ).Should().BeEqualTo(Schema);
     }
 
     [Test]
@@ -160,8 +160,8 @@ public class DovetailConfigurationSchemaEndpointTests
         builder.WebHost.UseTestServer();
         await using var app = builder.Build();
 
-        app.MapDovetailConfigurationSchema(environments: "Development").ShouldBeNull();
-        app.MapDovetailConfigurationSchema(environments: "Production").ShouldNotBeNull();
+        await app.MapDovetailConfigurationSchema(environments: "Development").Should().BeNull();
+        await app.MapDovetailConfigurationSchema(environments: "Production").Should().NotBeNull();
     }
 
     [Test]
@@ -173,7 +173,7 @@ public class DovetailConfigurationSchemaEndpointTests
 
         using var response = await app.GetTestClient().PostAsync(RoutePattern, new StringContent(""));
 
-        response.StatusCode.ShouldBe(HttpStatusCode.MethodNotAllowed);
+        await response.StatusCode.Should().BeEqualTo(HttpStatusCode.MethodNotAllowed);
     }
 
     private static async Task<WebApplication> StartAsync(

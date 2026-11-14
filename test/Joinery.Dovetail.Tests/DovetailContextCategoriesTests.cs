@@ -23,7 +23,7 @@ public class DovetailContextCategoriesTests
     {
         var context = await Create([]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint), nameof(ApplicationJoint)], ignoreOrder: true);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint), nameof(ApplicationJoint)]);
     }
 
     [Test]
@@ -31,7 +31,7 @@ public class DovetailContextCategoriesTests
     {
         foreach (var categories in new DovetailCategory[][] { [], [Core], [Application], [Other], ["Nobody"], [Application, Other] })
         {
-            Resolved(await Create(categories)).ShouldContain(nameof(CoreJoint), $"for [{string.Join(", ", Array.ConvertAll(categories, z => z.ToString()))}]");
+            await Resolved(await Create(categories)).Should().Contain(nameof(CoreJoint)).Because($"for [{string.Join(", ", Array.ConvertAll(categories, z => z.ToString()))}]");
         }
     }
 
@@ -40,7 +40,7 @@ public class DovetailContextCategoriesTests
     {
         var context = await Create([Core]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint)]);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint)], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -48,7 +48,7 @@ public class DovetailContextCategoriesTests
     {
         var context = await Create([Application]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint), nameof(ApplicationJoint)], ignoreOrder: true);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint), nameof(ApplicationJoint)]);
     }
 
     [Test]
@@ -56,7 +56,7 @@ public class DovetailContextCategoriesTests
     {
         var context = await Create([Other]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint), nameof(OtherJoint)], ignoreOrder: true);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint), nameof(OtherJoint)]);
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public class DovetailContextCategoriesTests
     {
         var context = await Create([Core, Application]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint), nameof(ApplicationJoint)], ignoreOrder: true);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint), nameof(ApplicationJoint)]);
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class DovetailContextCategoriesTests
     {
         var context = await Create([Core, Application, Other]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint), nameof(ApplicationJoint), nameof(OtherJoint)], ignoreOrder: true);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint), nameof(ApplicationJoint), nameof(OtherJoint)]);
     }
 
     [Test]
@@ -84,7 +84,7 @@ public class DovetailContextCategoriesTests
     {
         var context = await Create(["Nobody"]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint)]);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint)], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -93,7 +93,7 @@ public class DovetailContextCategoriesTests
         // A different instance with the same name, as one built from a string would be.
         var context = await Create([new DovetailCategory("Other")]);
 
-        Resolved(context).ShouldBe([nameof(CoreJoint), nameof(OtherJoint)], ignoreOrder: true);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint), nameof(OtherJoint)]);
     }
 
     [Test]
@@ -103,7 +103,7 @@ public class DovetailContextCategoriesTests
                            .Create(Metadata(), new Dictionary<object, object>(), DovetailHostType.Live, [Application])
                            .CreateAsync();
 
-        Resolved(context).ShouldBe([nameof(CoreJoint), nameof(ApplicationJoint)], ignoreOrder: true);
+        await Resolved(context).Should().BeEquivalentTo([nameof(CoreJoint), nameof(ApplicationJoint)]);
     }
 
     [Test]
@@ -125,9 +125,9 @@ public class DovetailContextCategoriesTests
               )
              .CreateAsync();
 
-        core.Registered.ShouldBeTrue();
-        application.Registered.ShouldBeFalse();
-        other.Registered.ShouldBeTrue();
+        await core.Registered.Should().BeTrue();
+        await application.Registered.Should().BeFalse();
+        await other.Registered.Should().BeTrue();
     }
 
     [Test]
@@ -144,8 +144,8 @@ public class DovetailContextCategoriesTests
             var builder = DovetailContextBuilder.Create(Metadata(), new Dictionary<object, object>(), given);
             var context = await builder.CreateAsync();
 
-            builder.Categories.Select(z => z.ToString()).ShouldBe(reported, ignoreOrder: true);
-            context.Categories.Select(z => z.ToString()).ShouldBe(reported, ignoreOrder: true);
+            await builder.Categories.Select(z => z.ToString()).Should().BeEquivalentTo(reported);
+            await context.Categories.Select(z => z.ToString()).Should().BeEquivalentTo(reported);
         }
     }
 
@@ -156,27 +156,27 @@ public class DovetailContextCategoriesTests
                          .Create([], new Dictionary<object, object>(), [Application])
                          .AppendJoint(new UndeclaredJoint(), new DeclaredCoreJoint());
 
-        Resolved(await application.CreateAsync()).ShouldBe([nameof(UndeclaredJoint), nameof(DeclaredCoreJoint)], ignoreOrder: true);
+        await Resolved(await application.CreateAsync()).Should().BeEquivalentTo([nameof(UndeclaredJoint), nameof(DeclaredCoreJoint)]);
 
         var other = DovetailContextBuilder
                    .Create([], new Dictionary<object, object>(), [Other])
                    .AppendJoint(new UndeclaredJoint(), new DeclaredCoreJoint());
 
-        Resolved(await other.CreateAsync()).ShouldBe([nameof(DeclaredCoreJoint)]);
+        await Resolved(await other.CreateAsync()).Should().BeEquivalentTo([nameof(DeclaredCoreJoint)], CollectionOrdering.Matching);
     }
 
     /// <summary>
     ///     The diagnostics (and the Mermaid diagrams built on them) resolve the joints the same way.
     /// </summary>
     [Test]
-    public void The_Diagnostic_Metadata_Loads_The_Same_Joints_As_The_Context()
+    public async Task The_Diagnostic_Metadata_Loads_The_Same_Joints_As_The_Context()
     {
         var builder = DovetailContextBuilder.Create(Metadata(), new Dictionary<object, object>(), []);
 
-        builder.GetDiagnosticMetadata().Select(z => z.Category).ShouldBe(["Core", "Application"], ignoreOrder: true);
-        builder.GetDiagnosticMetadata(Core).Select(z => z.Category).ShouldBe(["Core"]);
-        builder.GetDiagnosticMetadata(Other).Select(z => z.Category).ShouldBe(["Core", "Other"], ignoreOrder: true);
-        builder.GetDiagnosticMetadata(Application, Other).Select(z => z.Category).ShouldBe(["Core", "Application", "Other"], ignoreOrder: true);
+        await builder.GetDiagnosticMetadata().Select(z => z.Category).Should().BeEquivalentTo(["Core", "Application"]);
+        await builder.GetDiagnosticMetadata(Core).Select(z => z.Category).Should().BeEquivalentTo(["Core"], CollectionOrdering.Matching);
+        await builder.GetDiagnosticMetadata(Other).Select(z => z.Category).Should().BeEquivalentTo(["Core", "Other"]);
+        await builder.GetDiagnosticMetadata(Application, Other).Select(z => z.Category).Should().BeEquivalentTo(["Core", "Application", "Other"]);
     }
 
     private static ValueTask<IDovetailContext> Create(IEnumerable<DovetailCategory> categories) =>

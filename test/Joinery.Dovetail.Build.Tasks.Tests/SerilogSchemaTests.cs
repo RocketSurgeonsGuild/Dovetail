@@ -37,13 +37,14 @@ public class SerilogSchemaTests
     private static IReadOnlyList<ConfigurationSchemaFragment> ReadFragments() =>
         ConfigurationSchemaFragments.Read([typeof(SerilogJoint).Assembly.Location], _ => { });
 
-    private static JsonObject ApplicationSchema(bool strict = true, bool includeSchemaStore = false) =>
-        SchemaAssert.ShouldBeWellFormed(
+    private static async Task<JsonObject> ApplicationSchema(bool strict = true, bool includeSchemaStore = false) =>
+        await SchemaAssert.ShouldBeWellFormed(
             ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema(ReadFragments(), strict, includeSchemaStore))
         );
 
     /// <summary>Our fragment alone, through the application schema without SchemaStore.</summary>
-    private static SchemaInstanceValidator Validator(bool strict = true) => new(ApplicationSchema(strict));
+    private static SchemaInstanceValidator Validator(bool strict = true) =>
+        new(JsonNode.Parse(ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema(ReadFragments(), strict, includeSchemaStore: false)))!);
 
     /// <summary>SchemaStore's appsettings schema alone. Its patterns use .NET-style named groups, which ECMA-262 lacks.</summary>
     private static SchemaInstanceValidator SchemaStoreValidator()
@@ -72,13 +73,13 @@ public class SerilogSchemaTests
     private static string Config(string serilogSection) => "{\"Serilog\": {" + serilogSection + "}}";
 
     [Test]
-    public void TheAssembly_DeclaresExactlyTheSerilogFragment()
+    public async Task TheAssembly_DeclaresExactlyTheSerilogFragment()
     {
         var fragments = ReadFragments();
 
-        fragments.Count.ShouldBe(1);
-        fragments[0].Path.ShouldBe(["Serilog"]);
-        fragments[0].Source.ShouldBe("Joinery.Dovetail.Serilog");
+        await fragments.Count.Should().BeEqualTo(1);
+        await fragments[0].Path.Should().BeEquivalentTo(["Serilog"], CollectionOrdering.Matching);
+        await fragments[0].Source.Should().BeEqualTo("Joinery.Dovetail.Serilog");
     }
 
     [Test]
@@ -86,9 +87,9 @@ public class SerilogSchemaTests
     {
         var json = ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateLibrarySchema(ReadFragments())!);
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
-        document["properties"]!.AsObject().Select(z => z.Key).ShouldBe(["Serilog"]);
-        SchemaAssert.Objects(document).ShouldAllBe(z => !z.ContainsKey("propertyNames"));
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
+        await document["properties"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(["Serilog"], CollectionOrdering.Matching);
+        await SchemaAssert.Objects(document).Should().All(z => !z.ContainsKey("propertyNames"));
         await Verify(json, "json");
     }
 
@@ -97,19 +98,19 @@ public class SerilogSchemaTests
     {
         var json = ConfigurationSchemaDocument.Serialize(ConfigurationSchemaDocument.CreateApplicationSchema(ReadFragments(), strict: true, includeSchemaStore: false));
 
-        var document = SchemaAssert.ShouldBeWellFormed(json);
+        var document = await SchemaAssert.ShouldBeWellFormed(json);
         var closed = SchemaAssert.DovetailDefinitions(document).Where(z => z.Value!["propertyNames"] is not null).Select(z => z.Key).ToArray();
 
         // The section's own keys: the one it reads.
         var section = SchemaAssert.DovetailDefinitions(document).Single(z => z.Key == "Serilog.Settings").Value!.AsObject();
-        section["properties"]!.AsObject().Select(z => z.Key).ShouldBe(["MinimumLevel"]);
-        section["propertyNames"].ShouldNotBeNull();
-        closed.ShouldContain("Serilog.MinimumLevelObject");
+        await section["properties"]!.AsObject().Select(z => z.Key).Should().BeEquivalentTo(["MinimumLevel"], CollectionOrdering.Matching);
+        await section["propertyNames"].Should().NotBeNull();
+        await closed.Should().Contain("Serilog.MinimumLevelObject");
         await Verify(json, "json");
     }
 
     [Test]
-    public void TheEveryKeyHasACaseInsensitiveTwin_BuiltTheWayTheWriterBuildsIt()
+    public async Task TheEveryKeyHasACaseInsensitiveTwin_BuiltTheWayTheWriterBuildsIt()
     {
         var definitions = ReadFragments().Single().Schema["definitions"]!.AsObject();
 
@@ -127,32 +128,34 @@ public class SerilogSchemaTests
                 patternKeys.Add(patternProperty.Key);
             }
 
-            patternKeys.ShouldBe(patterns, $"{definition.Key}'s patternProperties");
+            await patternKeys.Should().BeEquivalentTo(patterns, CollectionOrdering.Matching).Because($"{definition.Key}'s patternProperties");
         }
     }
 
     [Test]
-    public void TheLevels_AreSerilogsLevels_AndSchemaStoresLevelsWithoutOff()
+    public async Task TheLevels_AreSerilogsLevels_AndSchemaStoresLevelsWithoutOff()
     {
         var ours = ReadFragments().Single().Schema["definitions"]!.AsObject();
         var theirs = SchemaStoreSerilog();
         var oursLevels = ours["Level"]!["enum"]!.AsArray().Select(z => z!.GetValue<string>()).ToArray();
 
         // The names of LogEventLevel, which is what the section is parsed to. SchemaStore also lists Off, which Serilog has no level for.
-        oursLevels.ShouldBe(Enum.GetNames<LogEventLevel>());
-        oursLevels.ShouldBe(theirs["SerilogLogEventLevel"]!["enum"]!.AsArray().Select(z => z!.GetValue<string>()).Where(z => z != "Off"));
-        ours["Level"]!["type"]!.ToJsonString().ShouldBe(theirs["SerilogLogEventLevel"]!["type"]!.ToJsonString());
+        await oursLevels.Should().BeEquivalentTo(Enum.GetNames<LogEventLevel>(), CollectionOrdering.Matching);
+        await oursLevels.Should().BeEquivalentTo(theirs["SerilogLogEventLevel"]!["enum"]!.AsArray().Select(z => z!.GetValue<string>()).Where(z => z != "Off"), CollectionOrdering.Matching);
+        await ours["Level"]!["type"]!.ToJsonString().Should().BeEqualTo(theirs["SerilogLogEventLevel"]!["type"]!.ToJsonString());
     }
 
     [Test]
-    public void TheSectionIsPartOfTheHostSchema_WithOrWithoutSchemaStore()
+    public async Task TheSectionIsPartOfTheHostSchema_WithOrWithoutSchemaStore()
     {
         foreach (var includeSchemaStore in new[] { false, true, })
         {
-            var document = ApplicationSchema(includeSchemaStore: includeSchemaStore);
+            var document = await ApplicationSchema(includeSchemaStore: includeSchemaStore);
 
-            SchemaAssert.DovetailPart(document)["properties"]!.AsObject().ShouldContainKey("Serilog");
-            document["definitions"]!["Serilog.Settings"].ShouldNotBeNull()["properties"]!["MinimumLevel"]!["oneOf"].ShouldNotBeNull();
+            await SchemaAssert.DovetailPart(document)["properties"]!.AsObject().ContainsKey("Serilog").Should().BeTrue();
+            var settings = document["definitions"]!["Serilog.Settings"];
+            await settings.Should().NotBeNull();
+            await settings!["properties"]!["MinimumLevel"]!["oneOf"].Should().NotBeNull();
         }
     }
 
@@ -199,7 +202,7 @@ public class SerilogSchemaTests
 
     [Test]
     [MethodDataSource(nameof(AgreementCases))]
-    public void SchemaStoresRulesAndOurs_GiveEachConfigurationTheSameVerdict(string name, string section, bool valid)
+    public async Task SchemaStoresRulesAndOurs_GiveEachConfigurationTheSameVerdict(string name, string section, bool valid)
     {
         var instance = Config(section);
 
@@ -207,9 +210,9 @@ public class SerilogSchemaTests
         var ours = Validator().Validate(instance);
         var host = HostValidator().Validate(instance);
 
-        ( schemaStore.Count == 0 ).ShouldBe(valid, $"{name}, SchemaStore's schema: {string.Join("; ", schemaStore)}");
-        ( ours.Count == 0 ).ShouldBe(valid, $"{name}, Dovetail's fragment: {string.Join("; ", ours)}");
-        ( host.Count == 0 ).ShouldBe(valid, $"{name}, the host schema: {string.Join("; ", host)}");
+        await ( schemaStore.Count == 0 ).Should().BeEqualTo(valid).Because($"{name}, SchemaStore's schema: {string.Join("; ", schemaStore)}");
+        await ( ours.Count == 0 ).Should().BeEqualTo(valid).Because($"{name}, Dovetail's fragment: {string.Join("; ", ours)}");
+        await ( host.Count == 0 ).Should().BeEqualTo(valid).Because($"{name}, the host schema: {string.Join("; ", host)}");
     }
 
     /// <summary>
@@ -243,78 +246,78 @@ public class SerilogSchemaTests
 
     [Test]
     [MethodDataSource(nameof(NotReadCases))]
-    public void WhatIsNotRead_IsValidToSchemaStore_ButNotToUs(string name, string section)
+    public async Task WhatIsNotRead_IsValidToSchemaStore_ButNotToUs(string name, string section)
     {
         var instance = Config(section);
 
-        SchemaStoreValidator().Validate(instance).ShouldBeEmpty($"{name}, SchemaStore's schema");
-        Validator().IsValid(instance).ShouldBeFalse($"{name}, Dovetail's fragment");
-        HostValidator().IsValid(instance).ShouldBeFalse($"{name}, the host schema");
+        await SchemaStoreValidator().Validate(instance).Should().BeEmpty().Because($"{name}, SchemaStore's schema");
+        await Validator().IsValid(instance).Should().BeFalse().Because($"{name}, Dovetail's fragment");
+        await HostValidator().IsValid(instance).Should().BeFalse().Because($"{name}, the host schema");
     }
 
     [Test]
-    public void KeyCasing_IsTheOneDifferenceFromSchemaStore_AndTheHostSchemaStillFollowsIt()
+    public async Task KeyCasing_IsTheOneDifferenceFromSchemaStore_AndTheHostSchemaStillFollowsIt()
     {
         // Configuration keys ignore case, so the fragment accepts any casing of its keys (a twin for each); SchemaStore's schema
         // lists them case-sensitively with additionalProperties: false. Both apply in the host schema, so SchemaStore decides.
         var instance = Config(""" "minimumlevel": { "default": "Debug", "OVERRIDE": { "System": "Error" } } """);
         var wrongValue = Config(""" "minimumlevel": 2 """);
 
-        Validator().IsValid(instance).ShouldBeTrue();
-        SchemaStoreValidator().IsValid(instance).ShouldBeFalse();
-        HostValidator().IsValid(instance).ShouldBeFalse();
-        Validator().IsValid(wrongValue).ShouldBeFalse();
+        await Validator().IsValid(instance).Should().BeTrue();
+        await SchemaStoreValidator().IsValid(instance).Should().BeFalse();
+        await HostValidator().IsValid(instance).Should().BeFalse();
+        await Validator().IsValid(wrongValue).Should().BeFalse();
     }
 
     [Test]
-    public void FlatKeys_AreAcceptedBySchemaStore_ButClosedOutByDovetailsStrictness()
+    public async Task FlatKeys_AreAcceptedBySchemaStore_ButClosedOutByDovetailsStrictness()
     {
         // "WriteTo:Async" and "Enrich:0" are documented Serilog syntax and SchemaStore lists patterns for them. The strict
         // merge closes the section with the names it knows, so they are flagged unless strictness is off.
         var instance = Config(""" "WriteTo:Async": { "Name": "Async" }, "Enrich:0": "FromLogContext", "Enrich:Machine": { "Name": "WithMachineName" } """);
 
-        SchemaStoreValidator().IsValid(instance).ShouldBeTrue();
-        Validator().IsValid(instance).ShouldBeFalse();
-        HostValidator().IsValid(instance).ShouldBeFalse();
-        Validator(strict: false).IsValid(instance).ShouldBeTrue();
+        await SchemaStoreValidator().IsValid(instance).Should().BeTrue();
+        await Validator().IsValid(instance).Should().BeFalse();
+        await HostValidator().IsValid(instance).Should().BeFalse();
+        await Validator(strict: false).IsValid(instance).Should().BeTrue();
     }
 
     [Test]
-    public void TheKeysThatAreNotRead_AreFlaggedByTheStrictSchema_AndAcceptedWhenStrictnessIsOff()
+    public async Task TheKeysThatAreNotRead_AreFlaggedByTheStrictSchema_AndAcceptedWhenStrictnessIsOff()
     {
         var strict = Validator();
         var open = Validator(strict: false);
 
         foreach (var (key, value) in KeysThatAreNotRead)
         {
-            strict.IsValid(Config($"\"{key}\": {value}")).ShouldBeFalse(key);
+            await strict.IsValid(Config($"\"{key}\": {value}")).Should().BeFalse().Because(key);
             // Whatever the casing of the key.
-            strict.IsValid(Config($"\"{key.ToUpperInvariant()}\": {value}")).ShouldBeFalse(key.ToUpperInvariant());
-            open.IsValid(Config($"\"{key}\": {value}")).ShouldBeTrue(key);
+            await strict.IsValid(Config($"\"{key.ToUpperInvariant()}\": {value}")).Should().BeFalse().Because(key.ToUpperInvariant());
+            await open.IsValid(Config($"\"{key}\": {value}")).Should().BeTrue().Because(key);
         }
     }
 
     [Test]
-    public void TheMinimumLevel_IsAcceptedByEverySchema_AndASectionKeyBesidesItIsNot()
+    public async Task TheMinimumLevel_IsAcceptedByEverySchema_AndASectionKeyBesidesItIsNot()
     {
         var minimumLevel = """ "MinimumLevel": { "Default": "Debug", "Override": { "Microsoft": "Warning" } } """;
 
         foreach (var validator in new[] { Validator(), HostValidator(), SchemaStoreValidator(), })
         {
-            validator.Validate(Config(minimumLevel)).ShouldBeEmpty();
-            validator.IsValid(Config(minimumLevel + ", \"MinimumLevell\": \"Debug\"")).ShouldBeFalse();
+            await validator.Validate(Config(minimumLevel)).Should().BeEmpty();
+            await validator.IsValid(Config(minimumLevel + ", \"MinimumLevell\": \"Debug\"")).Should().BeFalse();
         }
     }
 
     [Test]
-    public void TheSchemaIsOpenWhenStrictnessIsOff_ExceptForTheValuesItModels()
+    public async Task TheSchemaIsOpenWhenStrictnessIsOff_ExceptForTheValuesItModels()
     {
         // Without strictness no key is closed (typos pass), but a wrong value is still wrong.
         var validator = Validator(strict: false);
 
-        validator.IsValid(Config(""" "Minimum": "Debug" """)).ShouldBeTrue();
-        validator.IsValid(Config(""" "MinimumLevel": { "Defualt": "Debug" } """)).ShouldBeTrue();
-        validator.IsValid(Config(""" "MinimumLevel": 2 """)).ShouldBeFalse();
-        validator.IsValid(Config(""" "MinimumLevel": { "Default": "Not a level" } """)).ShouldBeFalse();
+        await validator.IsValid(Config(""" "Minimum": "Debug" """)).Should().BeTrue();
+        await validator.IsValid(Config(""" "MinimumLevel": { "Defualt": "Debug" } """)).Should().BeTrue();
+        await validator.IsValid(Config(""" "MinimumLevel": 2 """)).Should().BeFalse();
+        await validator.IsValid(Config(""" "MinimumLevel": { "Default": "Not a level" } """)).Should().BeFalse();
     }
 }

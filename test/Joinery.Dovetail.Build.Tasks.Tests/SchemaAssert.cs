@@ -12,32 +12,32 @@ internal static class SchemaAssert
     ///     What every file the tasks write has to be: a valid draft-07 schema (checked against the meta-schema), whose local
     ///     <c>$ref</c>s all resolve, that references nothing remote, and whose Dovetail patterns are valid ECMA-262.
     /// </summary>
-    public static JsonObject ShouldBeWellFormed(string json)
+    public static async Task<JsonObject> ShouldBeWellFormed(string json)
     {
-        ShouldBeValidDraft07(json);
+        await ShouldBeValidDraft07(json);
         var document = JsonNode.Parse(json)!.AsObject();
         foreach (var reference in References(document))
         {
-            reference.ShouldStartWith("#", customMessage: $"{reference} is not a local reference");
-            Resolve(document, reference).ShouldNotBeNull($"{reference} doesn't resolve");
+            await reference.Should().StartWith("#").Because($"{reference} is not a local reference");
+            await Resolve(document, reference).Should().NotBeNull().Because($"{reference} doesn't resolve");
         }
 
         foreach (var pattern in DovetailPatterns(document))
         {
-            Should.NotThrow(() => new Regex(pattern, RegexOptions.ECMAScript), $"{pattern} isn't an ECMA-262 pattern");
+            await Assert.That(() => new Regex(pattern, RegexOptions.ECMAScript)).ThrowsNothing().Because($"{pattern} isn't an ECMA-262 pattern");
         }
 
         return document;
     }
 
-    public static void ShouldBeValidDraft07(string json)
+    public static async Task ShouldBeValidDraft07(string json)
     {
         // Corvus checks "format": "regex" for a pattern with a stricter dialect than ECMA-262 and rejects valid ones (\d in
         // Dovetail's own, named groups in SchemaStore's), failing the schemas around them too. Every pattern of Dovetail's is
         // checked as an ECMAScript regular expression by ShouldBeWellFormed instead, so neutralize them here.
         var result = Draft7Schema.Parse(NeutralizePatterns(json)).Validate(ValidationContext.ValidContext, ValidationLevel.Detailed);
         var failures = result.Results.Where(z => !z.Valid).Select(z => $"{z.Location}: {z.Message}").ToArray();
-        failures.ShouldBeEmpty(string.Join(Environment.NewLine, failures));
+        await failures.Should().BeEmpty().Because(string.Join(Environment.NewLine, failures));
     }
 
     private static string NeutralizePatterns(string json)
