@@ -40,7 +40,8 @@ jobs:
               continue-on-error: true
               uses: actions/download-artifact@v8
               with:
-                  name: test data
+                  # The solution's test data and each sdk-tests job's ("test data sdk <framework>"), each in its own folder.
+                  pattern: test data*
                   path: artifacts/tests/
                   run-id: ${{ github.event.workflow_run.id }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}

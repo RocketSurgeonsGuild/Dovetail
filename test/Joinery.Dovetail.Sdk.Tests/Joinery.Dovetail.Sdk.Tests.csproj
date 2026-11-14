@@ -47,7 +47,11 @@
     <_DovetailSrcProject Include="$(MSBuildThisFileDirectory)..\..\src\**\*.csproj" />
   </ItemGroup>
 
-  <Target Name="PackDovetailSourcePackages" BeforeTargets="Build">
+  <!--
+      CI's solution job sets SkipDovetailSourcePackages=true: these tests run in jobs of their own (the sdk-tests matrix in
+      .github/workflows/build.yml), so its build need not pack src for them.
+  -->
+  <Target Name="PackDovetailSourcePackages" BeforeTargets="Build" Condition="'$(SkipDovetailSourcePackages)' != 'true'">
     <!--
         Each target framework's inner build asks for the packages. Route every request to one call without a
         TargetFramework: MSBuild caches it, so the packages are built once per build rather than once (and
