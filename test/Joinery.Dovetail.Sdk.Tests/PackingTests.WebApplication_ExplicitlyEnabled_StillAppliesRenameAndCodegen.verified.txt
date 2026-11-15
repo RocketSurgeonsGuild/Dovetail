@@ -90,6 +90,9 @@
     ],
     GeneratedFiles: [
       Dovetail.YamlConfiguration.g.cs,
+      DovetailConfigurationYaml.YamlBrowserJoint.g.cs,
+      DovetailConfigurationYaml.YamlEmbeddedJoint.g.cs,
+      DovetailConfigurationYaml.YamlJoint.g.cs,
       DovetailContextBuilder.g.cs,
       DovetailHost.WebApplication.g.cs,
       DovetailHosting.DovetailConfigurationSchemaEndpointExtensions.g.cs,

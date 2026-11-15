@@ -20,6 +20,8 @@
     </ItemGroup>
     <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail/build/Joinery.Dovetail.targets" />
     <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Hosting/build/Joinery.Dovetail.Hosting.targets" />
+    <!-- The yaml joints are templates, written only into the test projects that reference Joinery.Dovetail.Configuration.Yaml. -->
+    <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Configuration.Yaml/build/Joinery.Dovetail.Configuration.Yaml.targets" />
     <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.InRepo.targets" />
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 </Project>
