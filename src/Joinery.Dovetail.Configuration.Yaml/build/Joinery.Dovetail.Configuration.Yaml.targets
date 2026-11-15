@@ -4,4 +4,23 @@
         <_BlazorYamlConfigurationFiles Include="wwwroot\appsettings*.yaml" />
         <AssemblyMetadata Include="BlazorConfigurationFile" Value="@(_BlazorYamlConfigurationFiles -> '%(Filename)%(Extension)')" />
     </ItemGroup>
+
+    <!--
+        The joints that add the yaml configuration files, shipped as templates (Joinery.Dovetail.Templates.targets) rather than compiled
+        into this package. A joint compiled here would be exported to every application through every library that references the
+        package; as templates they are only written into the assemblies that import joints, applications (Exe, WinExe or an Android
+        app, which the .NET for Android SDK rewrites to a Library) and test projects, so each application loads its yaml files once.
+        Joinery.Dovetail only writes a template into a project that runs the Dovetail generator and references this package.
+    -->
+    <ItemGroup Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true'">
+        <_DovetailYamlJoint Include="YamlJoint" />
+        <_DovetailYamlJoint Include="YamlBrowserJoint" />
+        <_DovetailYamlJoint Include="YamlEmbeddedJoint" />
+        <DovetailTemplate
+            Include="@(_DovetailYamlJoint)"
+            File="$(MSBuildThisFileDirectory)%(Identity).cs.template"
+            Package="Joinery.Dovetail.Configuration.Yaml"
+            OutputPrefix="DovetailConfigurationYaml"
+        />
+    </ItemGroup>
 </Project>
