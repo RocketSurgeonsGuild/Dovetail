@@ -4,6 +4,15 @@
 
   We're already intrusive enough because we're loaded transitively in the first place... but that's part of the charm?! 🙃
   -->
+  <!--
+      Capabilities a package can test for before relying on them. DovetailTemplateMetadataTokens: every metadata value of a
+      DovetailTemplate replaces {Name} and __Name__ in the template (Joinery.Dovetail.Templates.targets). Set from the props so a
+      package's targets, imported later, see it when they declare their items. Keep build/ and buildTransitive/ in step: package
+      consumers only get buildTransitive/.
+  -->
+  <PropertyGroup>
+    <DovetailTemplateMetadataTokens>true</DovetailTemplateMetadataTokens>
+  </PropertyGroup>
   <ItemGroup Condition="'$(ImplicitUsings)' == 'true' Or '$(ImplicitUsings)' == 'enable'">
     <Using Include="Joinery.Dovetail" />
   </ItemGroup>

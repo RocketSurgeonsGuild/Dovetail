@@ -45,7 +45,7 @@ Pack both files, under `build/` (imported by NuGet into projects that reference 
 | `DirectReferenceOnly`  | `true` limits the template to projects with a direct reference to `Package`. Requires `Package`.                                                                                                        |
 | `References`           | Semicolon-separated assembly names (file names without extension). Every one must be among the project's resolved references.                                                                           |
 | `Hosts`                | Semicolon-separated host names. At least one must be declared by the project: the host model that `Joinery.Dovetail.Sdk` detects (`HostApplication`, `WebApplication`, `WebAssembly`, `Maui` or `Uno`). |
-| `HostName`, `HostType` | When `HostType` is set, `{HostName}` and `{HostType}` in the template are replaced, so one template can be declared once per host model under different names.                                          |
+| `HostName`, `HostType` | When `HostType` is set, they replace their tokens like any other metadata, so one template can be declared once per host model under different names. `HostName` alone replaces nothing.                |
 | `OutputPrefix`         | The generated file is `<prefix>.<name>.g.cs`; the default prefix is `DovetailTemplate`.                                                                                                                 |
 
 Every gate you set has to pass. A project that doesn't run the Dovetail source generator gets no templates. The
@@ -76,7 +76,40 @@ yours, and `DirectReferenceOnly` to the ones that reference it themselves.
   (`References`), and your package then depends on none of it.
 - Make the types `internal` and `[Embedded]`, so an assembly never sees the copy a referenced assembly emitted for itself. A
   template may also declare joints (`[DovetailExport]`), which the Dovetail source generator picks up like any other.
-- A template must not contain backslashes: MSBuild rewrites them to forward slashes on Linux and macOS when it writes the file.
+- Backslashes in a template are written as they are.
+
+## Fill in values from metadata
+
+Every metadata value of a `DovetailTemplate`, your own metadata included, replaces `{Name}` and `__Name__` in the template, where
+`Name` is the metadata's name. Declare one template under several names with different values and you get one file per name: a joint
+per client, say, from a template your package ships once.
+
+```xml
+<ItemGroup Condition="'$(DovetailTemplateMetadataTokens)' == 'true'">
+  <DovetailTemplate Include="Contoso.RocketsClient" File="$(MSBuildThisFileDirectory)ClientJoint.cs.template" ClientName="RocketsClient" Namespace="MyApp.Rockets" />
+  <DovetailTemplate Include="Contoso.LaunchClient" File="$(MSBuildThisFileDirectory)ClientJoint.cs.template" ClientName="LaunchClient" Namespace="MyApp.Launch" />
+</ItemGroup>
+```
+
+```csharp
+namespace __Namespace__;
+
+internal static partial class __ClientName__Joint
+{
+    // Registers {ClientName}.
+}
+```
+
+- `__Name__` is an identifier, so the template stays valid C# that an editor and an analyzer can read. Use `{Name}` where an
+  identifier isn't needed.
+- A token no metadata fills, or whose metadata is empty, is left as it is.
+- `Include` names the generated file and is what the gates are keyed on, so it has to be unique across packages; `OutputPrefix`
+  does not change that. Prefix the names you make up with your package's (`Contoso.RocketsClient`) and pass the bare name as metadata.
+- `DovetailTemplateMetadataTokens` is `true` wherever Dovetail expands these tokens. An older Dovetail replaces only `{HostName}` and
+  `{HostType}`, so declare token-bearing templates under that condition and a project on an older Dovetail gets nothing rather than a
+  file that doesn't compile.
+
+The [`DovetailTemplate` reference](../../reference/dovetail-template/#tokens) has the full rule.
 
 ## When the metadata isn't enough
 
@@ -102,4 +135,5 @@ only these items are written, so a copy of the list that a package keeps for its
 
 The Dovetail SDK tests show how to prove a template's gates: pack a package that ships the template, reference it from a project
 that declares the reference and from one that only receives it transitively, build, and read which `DovetailTemplate.*.g.cs` files
-landed in each project's `obj/` (`test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs`).
+landed in each project's `obj/` (`test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs`). The same tests read what a
+template's tokens were replaced with.

@@ -115,7 +115,97 @@ public class TemplateExtensionPointTests(string targetFramework)
         await EmittedTemplates(project, "shipper").Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Every metadata value of a template, custom metadata included, replaces <c>{Name}</c> and <c>__Name__</c> in it, which is how a
+    /// package that can't reference Dovetail (Chirograph) puts a client's name and namespace into a joint. <c>__Name__</c> keeps the
+    /// template valid C#: here it names the namespace and the class, so the project only compiles if it is replaced. A token no metadata
+    /// fills is left as it is, and so is <c>{HostName}</c> without a <c>HostType</c>, as before.
+    /// </summary>
+    [Test]
+    public async Task MetadataValues_ReplaceTheirTokens_InBothForms()
+    {
+        using var project = CreateRepositoryScaffold(
+            "Client",
+            """
+            namespace __Namespace__;
+
+            internal static class __ClientName__ { }
+            // {ClientName} in {Namespace}, from {OutputPrefix}, gated on {References}
+            // {Unknown} __Unknown__ {HostName} {}
+            """,
+            """<DovetailTemplate Include="Chirograph.RocketsClient" File="$(MSBuildThisFileDirectory)Client.cs.template" OutputPrefix="Chirograph" References="Joinery.Dovetail" HostName="Mine" ClientName="RocketsClient" Namespace="MyApp.Rockets" />"""
+        );
+
+        await project.BuildProject("app");
+
+        await EmittedFile(project, "app", "Chirograph.Chirograph.RocketsClient.g.cs").Should().BeEqualTo(
+            $$"""
+            namespace MyApp.Rockets;
+
+            internal static class RocketsClient { }
+            // RocketsClient in MyApp.Rockets, from Chirograph, gated on Joinery.Dovetail
+            // {Unknown} __Unknown__ {HostName} {}{{Environment.NewLine}}
+            """.ReplaceLineEndings()
+        );
+    }
+
+    /// <summary>
+    /// One template declared under two names, each with its own values, is written twice: one joint per client from a single file. The
+    /// names carry the package's prefix, since a name has to be unique across every package a project references.
+    /// </summary>
+    [Test]
+    public async Task OneFile_DeclaredUnderTwoNames_IsWrittenOncePerName_WithItsOwnValues()
+    {
+        using var project = CreateRepositoryScaffold(
+            "Client",
+            "namespace __Namespace__;" + Environment.NewLine + "internal static class __ClientName__ { }",
+            """<DovetailTemplate Include="Chirograph.RocketsClient" File="$(MSBuildThisFileDirectory)Client.cs.template" ClientName="RocketsClient" Namespace="MyApp.Rockets" />""",
+            """<DovetailTemplate Include="Chirograph.LaunchClient" File="$(MSBuildThisFileDirectory)Client.cs.template" ClientName="LaunchClient" Namespace="MyApp.Launch" />"""
+        );
+
+        await project.BuildProject("app");
+
+        await EmittedTemplates(project, "app").Should().BeEquivalentTo(["Chirograph.LaunchClient", "Chirograph.RocketsClient"], CollectionOrdering.Matching);
+        await EmittedFile(project, "app", "DovetailTemplate.Chirograph.RocketsClient.g.cs").Should().Contain("namespace MyApp.Rockets;" + Environment.NewLine + "internal static class RocketsClient { }");
+        await EmittedFile(project, "app", "DovetailTemplate.Chirograph.LaunchClient.g.cs").Should().Contain("namespace MyApp.Launch;" + Environment.NewLine + "internal static class LaunchClient { }");
+    }
+
+    /// <summary>
+    /// A package that reaches projects on an older Dovetail, which replaces only <c>{HostName}</c> and <c>{HostType}</c>, declares its
+    /// token-bearing templates on <c>DovetailTemplateMetadataTokens</c>. Package consumers get Dovetail's <c>buildTransitive/</c> props,
+    /// so this reads it from a project that references the Dovetail packages, as a package's targets would see it.
+    /// </summary>
+    [Test]
+    public async Task TheCapabilityProperty_TellsPackagesThatMetadataTokensAreExpanded()
+    {
+        using var project = CreateRepositoryScaffold("Unused", "", []);
+
+        var evaluation = await project.Evaluate("app", "-getProperty:DovetailTemplateMetadataTokens -getProperty:TargetFramework");
+
+        await evaluation.GetProperty("Properties").GetProperty("DovetailTemplateMetadataTokens").GetString().Should().BeEqualTo("true");
+    }
+
     private sealed record Template(string Name, string Attributes = "");
+
+    /// <summary>
+    /// An application, <c>app</c>, whose <c>Directory.Build.targets</c> declares <paramref name="declarations" /> next to one template
+    /// file, <paramref name="templateName" /><c>.cs.template</c>. The Dovetail SDK applies to it, so it runs the generator.
+    /// </summary>
+    private SdkTestProject CreateRepositoryScaffold(string templateName, string templateSource, params string[] declarations)
+    {
+        var project = new SdkTestProject();
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
+           .AddFile("Directory.Build.targets", $"<Project><ItemGroup>{string.Join(Environment.NewLine, declarations)}</ItemGroup></Project>")
+           .AddFile($"{templateName}.cs.template", templateSource.ReplaceLineEndings());
+        project
+           .AddProject("app/app.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe"), track: false)
+           .AddFile("app/Program.cs", "System.Console.WriteLine(\"hello\");");
+        return project;
+    }
+
+    private string EmittedFile(SdkTestProject project, string relativePath, string fileName) =>
+        File.ReadAllText(Path.Combine(project.Directory, relativePath, "obj", "Debug", targetFramework, fileName));
 
     private static string Declare(Template template) =>
         $"""<DovetailTemplate Include="{template.Name}" File="$(MSBuildThisFileDirectory){template.Name}.cs.template" Package="{ShipperId}" {template.Attributes}/>""";

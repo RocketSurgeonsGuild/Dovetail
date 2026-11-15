@@ -9,9 +9,7 @@
     a template on.
 
     DovetailTemplate item (Include is the template's name, unique across packages; it names the generated file):
-      File                - Required. Full path of the template, usually $(MSBuildThisFileDirectory)Name.cs.template. Templates must
-                            not contain backslashes: WriteLinesToFile writes them through item specs, which MSBuild rewrites to
-                            forward slashes on Linux and macOS.
+      File                - Required. Full path of the template, usually $(MSBuildThisFileDirectory)Name.cs.template.
       Package             - The id of the package that ships the template. The template is only emitted into a project that
                             references it: the package's assembly (named after the package) is among the resolved references,
                             or, with DirectReferenceOnly, the project declares a reference to it itself.
@@ -23,9 +21,14 @@
       Hosts               - Semicolon-separated DovetailHost names, at least one of which the project must declare: the host model,
                             as Joinery.Dovetail.Sdk detects it (HostApplication, WebApplication, WebAssembly, Maui, Uno). These are
                             the hosts declared when the templates resolve, before a package narrows them.
-      HostName, HostType  - Replace {HostName} and {HostType} in the template (when HostType is set), so one template can be
-                            emitted once per host model under different names.
+      HostName, HostType  - Replace their tokens (below) only when HostType is set, so one template can be emitted once per host
+                            model under different names.
       OutputPrefix        - Prefix of the generated file name, Prefix.Name.g.cs (default: DovetailTemplate).
+
+    Tokens: every non-empty metadata value of the item, the metadata above and any the package adds itself (ClientName="X"),
+    replaces {Name} and __Name__ in the template, in one pass; names compare ignoring case. __Name__ keeps a template valid C# where
+    an identifier goes. A token no metadata fills is left as it is. DovetailTemplateMetadataTokens (Joinery.Dovetail.props) is true
+    wherever this file expands them, so a package can declare token-bearing templates only for a Dovetail that does.
 
     Every gate has to pass. A project that doesn't run the Dovetail source generator gets no templates, since they are meant to be
     joints and [Embedded] helpers it defines or discovers.
@@ -41,6 +44,51 @@
   <PropertyGroup>
     <_DovetailTemplatesTargetsImported>true</_DovetailTemplatesTargetsImported>
   </PropertyGroup>
+
+  <!--
+      Writes one template with its tokens replaced. Inline because MSBuild has no way to list an item's custom metadata, and so that
+      writing templates needs no task assembly; the output is what WriteLinesToFile wrote before (UTF-8 without a BOM, a trailing new
+      line, untouched when unchanged), except that backslashes now survive.
+  -->
+  <UsingTask TaskName="_DovetailExpandTemplate" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Template ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <File ParameterType="System.String" Required="true" />
+      <HostName ParameterType="System.String" />
+      <HostType ParameterType="System.String" />
+      <OutputFile ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (DictionaryEntry entry in Template.CloneCustomMetadata())
+        {
+            var value = (string)entry.Value;
+            if (!string.IsNullOrEmpty(value)) values[(string)entry.Key] = value;
+        }
+        values.Remove("HostName");
+        values.Remove("HostType");
+        if (!string.IsNullOrEmpty(HostType))
+        {
+            values["HostType"] = HostType;
+            if (!string.IsNullOrEmpty(HostName)) values["HostName"] = HostName;
+        }
+
+        var expanded = Regex.Replace(
+            System.IO.File.ReadAllText(File),
+            @"\{(?<name>[A-Za-z_]\w*)\}|__(?<name>[A-Za-z]\w*?)__",
+            match => values.TryGetValue(match.Groups["name"].Value, out var value) ? value : match.Value
+        );
+        var content = expanded + Environment.NewLine;
+        if (!System.IO.File.Exists(OutputFile) || System.IO.File.ReadAllText(OutputFile) != content)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+            System.IO.File.WriteAllText(OutputFile, content, new UTF8Encoding(false));
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
 
   <!-- DovetailTemplate item metadata schema -->
   <ItemDefinitionGroup>
@@ -129,17 +177,16 @@
       Text="Dovetail: the template '%(DovetailEmittedTemplate.Identity)' names a file that doesn't exist: '%(DovetailEmittedTemplate.File)'."
     />
     <PropertyGroup>
-      <_DovetailTemplateContent>$([System.IO.File]::ReadAllText('%(DovetailEmittedTemplate.File)'))</_DovetailTemplateContent>
-      <_DovetailTemplateContent Condition="'%(DovetailEmittedTemplate.HostType)' != ''">$(_DovetailTemplateContent.Replace('{HostName}', '%(DovetailEmittedTemplate.HostName)').Replace('{HostType}', '%(DovetailEmittedTemplate.HostType)'))</_DovetailTemplateContent>
       <_DovetailTemplatePrefix>%(DovetailEmittedTemplate.OutputPrefix)</_DovetailTemplatePrefix>
       <_DovetailTemplatePrefix Condition="'$(_DovetailTemplatePrefix)' == ''">DovetailTemplate</_DovetailTemplatePrefix>
       <_DovetailTemplateOutputFile>$(IntermediateOutputPath)$(_DovetailTemplatePrefix).%(DovetailEmittedTemplate.Identity).g.cs</_DovetailTemplateOutputFile>
     </PropertyGroup>
-    <WriteLinesToFile
-      File="$(_DovetailTemplateOutputFile)"
-      Lines="$([MSBuild]::Escape($(_DovetailTemplateContent)))"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true"
+    <_DovetailExpandTemplate
+      Template="@(DovetailEmittedTemplate)"
+      File="%(DovetailEmittedTemplate.File)"
+      HostName="%(DovetailEmittedTemplate.HostName)"
+      HostType="%(DovetailEmittedTemplate.HostType)"
+      OutputFile="$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(_DovetailTemplateOutputFile)'))"
     />
     <ItemGroup>
       <Compile Include="$(_DovetailTemplateOutputFile)" />

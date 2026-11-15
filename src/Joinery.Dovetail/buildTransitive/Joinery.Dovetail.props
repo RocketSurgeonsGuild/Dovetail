@@ -1,3 +1,12 @@
 <Project>
   <!-- <Import Project="$(MSBuildThisFileDirectory)../build/Joinery.Dovetail.ProjectConfiguration.props" /> -->
+  <!--
+      Capabilities a package can test for before relying on them. DovetailTemplateMetadataTokens: every metadata value of a
+      DovetailTemplate replaces {Name} and __Name__ in the template (Joinery.Dovetail.Templates.targets). Set from the props so a
+      package's targets, imported later, see it when they declare their items. Keep build/ and buildTransitive/ in step: package
+      consumers only get buildTransitive/.
+  -->
+  <PropertyGroup>
+    <DovetailTemplateMetadataTokens>true</DovetailTemplateMetadataTokens>
+  </PropertyGroup>
 </Project>
