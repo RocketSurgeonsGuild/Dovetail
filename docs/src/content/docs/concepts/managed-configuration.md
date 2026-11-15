@@ -344,6 +344,7 @@ Hosts are test projects (`IsTestProject`) and applications (detected by Joinery.
 | `DovetailConfigurationSchemaStrict`             | `true`   | `false` leaves Dovetail's sections open (no `propertyNames`) in the host file.                                                                                          |
 | `DovetailConfigurationSchemaIncludeSchemaStore` | `true`   | `false` leaves SchemaStore's schema out of the host file.                                                                                                               |
 | `DovetailEmbedConfiguration`                    | detected | `true` for hosts that embed their configuration (Joinery.Dovetail.Sdk sets it for MAUI and Uno): the schema stays in `obj/`, with no copy to the output and no publish. |
+| `DovetailConfigurationSchemaCopyToOutput`       | `true`   | `false` keeps the host file in `obj/`: no copy to the output and no publish. Dovetail sets it for hosts that embed their configuration.                                 |
 | `DovetailConfigurationSchemaRequired`           | `false`  | `true` lists required members in `required`. The generator reads this one, so it changes the fragments in every project; the MSBuild targets don't use it.              |
 
 ```xml

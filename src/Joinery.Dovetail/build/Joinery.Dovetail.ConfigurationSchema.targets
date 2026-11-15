@@ -6,7 +6,7 @@
       Hosts (applications and test projects) merge their own fragments and those of every assembly they reference into
       $(BaseIntermediateOutputPath)appsettings.schema.json, a stable path editors can point at. It is strict (each Dovetail
       section and the object types it uses accept only their keys, ignoring case), embeds SchemaStore's appsettings schema, and is
-      copied to the output directory and always published, except by hosts that embed their configuration (MAUI, Uno). A host
+      copied to the output directory and always published, unless DovetailConfigurationSchemaCopyToOutput is false. A host
       that targets several frameworks writes that file from its first one and $(IntermediateOutputPath)appsettings.schema.json
       from the others.
 
@@ -16,9 +16,14 @@
 
     Properties:
       DovetailConfigurationSchema=false                    no schema files at all.
-      DovetailConfigurationSchemaHost=true|false           overrides which projects are hosts: by default test projects
-                                                           (IsTestProject), and applications (Joinery.Dovetail.Sdk's detection, or
-                                                           OutputType Exe/WinExe or an Android app without the SDK).
+      DovetailConfigurationSchemaHost=true|false           which projects are hosts. Left empty, test projects (IsTestProject) and
+                                                           applications (OutputType Exe/WinExe, or an Android app) are. Joinery.Dovetail.targets
+                                                           sets it from Joinery.Dovetail.Sdk's application detection for every
+                                                           project but test projects.
+      DovetailConfigurationSchemaCopyToOutput=false        keeps a host's file in obj/: not copied to the output directory or
+                                                           published. Joinery.Dovetail.targets sets it for hosts that embed their
+                                                           configuration (DovetailEmbedConfiguration=true: MAUI, Uno).
+      DovetailConfigurationReferenceDocumentation=false    doesn't pass referenced packages' XML documentation to the generator.
       DovetailConfigurationSchemaStrict=false              leaves Dovetail's sections open (no propertyNames) in the host file.
       DovetailConfigurationSchemaIncludeSchemaStore=false  leaves SchemaStore's appsettings schema out of the host file.
 
@@ -33,6 +38,12 @@
     <_DovetailConfigurationSchemaTargetsDirectory>$(MSBuildThisFileDirectory)</_DovetailConfigurationSchemaTargetsDirectory>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Read by the generator's configuration schema pipeline. -->
+    <CompilerVisibleProperty Include="DovetailConfigurationSchemaRequired" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DovetailReferenceDocumentation" />
+  </ItemGroup>
+
   <!-- In-repo builds register these from src/Joinery.Dovetail.Build.Tasks instead (Joinery.Dovetail.Build.Tasks.InRepo.targets). -->
   <UsingTask TaskName="Joinery.Dovetail.Build.Tasks.MergeConfigurationSchema" AssemblyFile="$(MSBuildThisFileDirectory)tasks/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll" Condition="'$(_DovetailBuildTasksAssembly)' == ''" />
   <UsingTask TaskName="Joinery.Dovetail.Build.Tasks.WriteConfigurationSchemaSegment" AssemblyFile="$(MSBuildThisFileDirectory)tasks/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll" Condition="'$(_DovetailBuildTasksAssembly)' == ''" />
@@ -45,7 +56,6 @@
     <PropertyGroup>
       <_DovetailConfigurationSchemaIsHost>$(DovetailConfigurationSchemaHost)</_DovetailConfigurationSchemaIsHost>
       <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == '' and '$(IsTestProject)' == 'true'">true</_DovetailConfigurationSchemaIsHost>
-      <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == ''">$(_DovetailApplicationDetected)</_DovetailConfigurationSchemaIsHost>
       <_DovetailConfigurationSchemaIsHost Condition="'$(_DovetailConfigurationSchemaIsHost)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true')">true</_DovetailConfigurationSchemaIsHost>
 
       <_DovetailConfigurationSchemaRole>None</_DovetailConfigurationSchemaRole>
@@ -68,9 +78,8 @@
       <_DovetailConfigurationSchemaStrict Condition="'$(DovetailConfigurationSchemaStrict)' == 'false'">false</_DovetailConfigurationSchemaStrict>
       <_DovetailConfigurationSchemaIncludeSchemaStore>true</_DovetailConfigurationSchemaIncludeSchemaStore>
       <_DovetailConfigurationSchemaIncludeSchemaStore Condition="'$(DovetailConfigurationSchemaIncludeSchemaStore)' == 'false'">false</_DovetailConfigurationSchemaIncludeSchemaStore>
-      <!-- Hosts that embed their configuration have no files on disk: the schema stays in obj/ for editors. -->
       <_DovetailConfigurationSchemaCopy>false</_DovetailConfigurationSchemaCopy>
-      <_DovetailConfigurationSchemaCopy Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host' and '$(DovetailEmbedConfiguration)' != 'true'">true</_DovetailConfigurationSchemaCopy>
+      <_DovetailConfigurationSchemaCopy Condition="'$(_DovetailConfigurationSchemaRole)' == 'Host' and '$(DovetailConfigurationSchemaCopyToOutput)' != 'false'">true</_DovetailConfigurationSchemaCopy>
 
       <_DovetailConfigurationSchemaTasksAssembly>$(_DovetailBuildTasksAssembly)</_DovetailConfigurationSchemaTasksAssembly>
       <_DovetailConfigurationSchemaTasksAssembly Condition="'$(_DovetailConfigurationSchemaTasksAssembly)' == ''">$(_DovetailConfigurationSchemaTargetsDirectory)tasks/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll</_DovetailConfigurationSchemaTasksAssembly>
@@ -202,6 +211,25 @@
   <Target Name="_DovetailConfigurationSchemaPackFile" DependsOnTargets="_DovetailComputeConfigurationSchema" Returns="@(_DovetailConfigurationSchemaPackFile)">
     <ItemGroup Condition="'$(_DovetailConfigurationSchemaRole)' == 'Library' and Exists('$(_DovetailLibraryConfigurationSchemaFile)')">
       <_DovetailConfigurationSchemaPackFile Include="$(_DovetailLibraryConfigurationSchemaFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+      Descriptions for configuration types from packages ([assembly: DovetailConfiguration<T>("Section")]) come from the
+      packages' XML documentation files: the compiler loads no docs for references, and analyzers can't read files. Pass the doc
+      file next to each package reference to the generator, which reads only the ones for the types it describes. Targeting
+      packs are left out (framework types aren't configuration types, and their docs run to tens of megabytes).
+      This has to run before GenerateMSBuildEditorConfigFileCore writes the AdditionalFiles metadata into the generated
+      editorconfig (GenerateMSBuildEditorConfigFile itself is empty; its DependsOnTargets run before any BeforeTargets hook).
+      Opt out with DovetailConfigurationReferenceDocumentation=false.
+  -->
+  <Target Name="_DovetailConfigurationReferenceDocumentation"
+          BeforeTargets="GenerateMSBuildEditorConfigFileCore"
+          DependsOnTargets="ResolveAssemblyReferences"
+          Condition="'$(DovetailConfigurationReferenceDocumentation)' != 'false'">
+    <ItemGroup>
+      <_DovetailReferenceDocumentation Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferencePath.NuGetPackageId)' != '' and '%(ReferencePath.FrameworkReferenceName)' == ''" />
+      <AdditionalFiles Include="@(_DovetailReferenceDocumentation)" Condition="Exists('%(_DovetailReferenceDocumentation.Identity)')" DovetailReferenceDocumentation="true" />
     </ItemGroup>
   </Target>
 

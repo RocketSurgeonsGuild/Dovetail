@@ -33,7 +33,7 @@ completion: the file doesn't exist before then.
 
 If a project that isn't detected as an application should merge a schema, or an application shouldn't, set
 `DovetailConfigurationSchemaHost` to `true` or `false`. The other properties (`DovetailConfigurationSchema`,
-`DovetailConfigurationSchemaStrict`, `DovetailConfigurationSchemaIncludeSchemaStore`, `DovetailEmbedConfiguration` and
+`DovetailConfigurationSchemaStrict`, `DovetailConfigurationSchemaIncludeSchemaStore`, `DovetailEmbedConfiguration`, `DovetailConfigurationSchemaCopyToOutput` and
 `DovetailConfigurationSchemaRequired`) are described under [the schema](../concepts/managed-configuration#the-schema).
 
 ## Visual Studio Code
