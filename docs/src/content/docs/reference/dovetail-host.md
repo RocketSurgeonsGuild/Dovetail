@@ -138,7 +138,7 @@ only, with `where TShell : Microsoft.UI.Xaml.UIElement, new()`.
 ### A host the SDK declares
 
 For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp`
-(`src/Sdks/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets`):
+(`src/Sdks/Sdk/Sdk/Joinery.Dovetail.HostDetection.targets`):
 
 ```xml
 <DovetailHost Include="Maui"

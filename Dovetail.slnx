@@ -108,15 +108,15 @@
   <Folder Name="/src/Sdks/">
     <File Path="src/Sdks/Directory.Build.props" />
     <File Path="src/Sdks/Directory.Build.targets" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk/Joinery.Dovetail.Sdk.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.Aspire.AppHost/Joinery.Dovetail.Sdk.Aspire.AppHost.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.BlazorWebAssembly/Joinery.Dovetail.Sdk.BlazorWebAssembly.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.Console/Joinery.Dovetail.Sdk.Console.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.Razor/Joinery.Dovetail.Sdk.Razor.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.Web/Joinery.Dovetail.Sdk.Web.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.WebAssembly/Joinery.Dovetail.Sdk.WebAssembly.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.WindowsDesktop/Joinery.Dovetail.Sdk.WindowsDesktop.csproj" />
-    <Project Path="src/Sdks/Joinery.Dovetail.Sdk.Worker/Joinery.Dovetail.Sdk.Worker.csproj" />
+    <Project Path="src/Sdks/Sdk/Joinery.Dovetail.Sdk.csproj" />
+    <Project Path="src/Sdks/Aspire.AppHost/Joinery.Dovetail.Sdk.Aspire.AppHost.csproj" />
+    <Project Path="src/Sdks/BlazorWebAssembly/Joinery.Dovetail.Sdk.BlazorWebAssembly.csproj" />
+    <Project Path="src/Sdks/Console/Joinery.Dovetail.Sdk.Console.csproj" />
+    <Project Path="src/Sdks/Razor/Joinery.Dovetail.Sdk.Razor.csproj" />
+    <Project Path="src/Sdks/Web/Joinery.Dovetail.Sdk.Web.csproj" />
+    <Project Path="src/Sdks/WebAssembly/Joinery.Dovetail.Sdk.WebAssembly.csproj" />
+    <Project Path="src/Sdks/WindowsDesktop/Joinery.Dovetail.Sdk.WindowsDesktop.csproj" />
+    <Project Path="src/Sdks/Worker/Joinery.Dovetail.Sdk.Worker.csproj" />
   </Folder>
   <Folder Name="/src/Joinery.Dovetail.Analyzers.supports/">
     <Project Path="src/Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.0.csproj" />
