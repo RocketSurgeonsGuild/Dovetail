@@ -138,7 +138,7 @@ internal static class Config
                 writer.WriteStartObject();
                 writer.WritePropertyName("Name");
                 writer.WriteValue(item.Name);
-                foreach (var value in item.Children.OfType<Metadata>().OrderBy(z => z.Name))
+                foreach (var value in GetSortedMetadata(item))
                 {
                     // MSBuild synthesizes %(Link) for out-of-cone items based on a string-prefix
                     // comparison between the item's full path and the project directory; macOS's
@@ -221,7 +221,7 @@ internal static class Config
             {
                 writer.WritePropertyName(item.Name);
                 writer.WriteStartObject();
-                foreach (var value in item.Children.OfType<Metadata>().OrderBy(z => z.Name))
+                foreach (var value in GetSortedMetadata(item))
                 {
                     // MSBuild synthesizes %(Link) for out-of-cone items based on a string-prefix
                     // comparison between the item's full path and the project directory; macOS's
@@ -243,6 +243,9 @@ internal static class Config
             writer.WriteEndObject();
         }
     }
+
+    // Sorted here rather than in the loops that write each item: ZA0601 flags a LINQ call inside a loop.
+    private static IEnumerable<Metadata> GetSortedMetadata(Item item) => item.Children.OfType<Metadata>().OrderBy(z => z.Name);
 
     private static IEnumerable<Item> GetItemGroup(ProjectEvaluation project, string name)
     {
