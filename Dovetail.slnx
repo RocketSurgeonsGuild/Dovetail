@@ -106,6 +106,7 @@
     <Project Path="src/Joinery.Dovetail.Hosting/Joinery.Dovetail.Hosting.csproj" />
     <Project Path="src/Joinery.Dovetail.Sdk/Joinery.Dovetail.Sdk.csproj" />
     <Project Path="src/Joinery.Dovetail.Sdk.Console/Joinery.Dovetail.Sdk.Console.csproj" />
+    <Project Path="src/Joinery.Dovetail.Templates.Tasks/Joinery.Dovetail.Templates.Tasks.csproj" />
   </Folder>
   <Folder Name="/src/Joinery.Dovetail.Analyzers.supports/">
     <Project Path="src/Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.0.csproj" />
@@ -124,6 +125,7 @@
     <Project Path="test/Joinery.Dovetail.Build.Tasks.Tests/Joinery.Dovetail.Build.Tasks.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Configuration.Runtime.Tests/Joinery.Dovetail.Configuration.Runtime.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Sdk.Tests/Joinery.Dovetail.Sdk.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Templates.Tasks.Tests/Joinery.Dovetail.Templates.Tasks.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Tests/Joinery.Dovetail.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Mermaid.Tests/Joinery.Dovetail.Mermaid.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.ModularPipelines.Tests/Joinery.Dovetail.ModularPipelines.Tests.csproj" />

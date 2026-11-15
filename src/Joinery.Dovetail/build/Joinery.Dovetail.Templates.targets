@@ -46,49 +46,14 @@
   </PropertyGroup>
 
   <!--
-      Writes one template with its tokens replaced. Inline because MSBuild has no way to list an item's custom metadata, and so that
-      writing templates needs no task assembly; the output is what WriteLinesToFile wrote before (UTF-8 without a BOM, a trailing new
-      line, untouched when unchanged), except that backslashes now survive.
+      Writes one template with its tokens replaced (src/Joinery.Dovetail.Templates.Tasks). In-repo builds register it from that
+      project's output instead (Joinery.Dovetail.Templates.Tasks.InRepo.targets).
   -->
-  <UsingTask TaskName="_DovetailExpandTemplate" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <Template ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
-      <File ParameterType="System.String" Required="true" />
-      <HostName ParameterType="System.String" />
-      <HostType ParameterType="System.String" />
-      <OutputFile ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.Text.RegularExpressions" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (DictionaryEntry entry in Template.CloneCustomMetadata())
-        {
-            var value = (string)entry.Value;
-            if (!string.IsNullOrEmpty(value)) values[(string)entry.Key] = value;
-        }
-        values.Remove("HostName");
-        values.Remove("HostType");
-        if (!string.IsNullOrEmpty(HostType))
-        {
-            values["HostType"] = HostType;
-            if (!string.IsNullOrEmpty(HostName)) values["HostName"] = HostName;
-        }
-
-        var expanded = Regex.Replace(
-            System.IO.File.ReadAllText(File),
-            @"\{(?<name>[A-Za-z_]\w*)\}|__(?<name>[A-Za-z]\w*?)__",
-            match => values.TryGetValue(match.Groups["name"].Value, out var value) ? value : match.Value
-        );
-        var content = expanded + Environment.NewLine;
-        if (!System.IO.File.Exists(OutputFile) || System.IO.File.ReadAllText(OutputFile) != content)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
-            System.IO.File.WriteAllText(OutputFile, content, new UTF8Encoding(false));
-        }
-      ]]></Code>
-    </Task>
-  </UsingTask>
+  <UsingTask
+    TaskName="Joinery.Dovetail.Templates.Tasks.ExpandTemplate"
+    AssemblyFile="$(MSBuildThisFileDirectory)tasks/netstandard2.0/Joinery.Dovetail.Templates.Tasks.dll"
+    Condition="'$(_DovetailTemplatesTasksAssembly)' == ''"
+  />
 
   <!-- DovetailTemplate item metadata schema -->
   <ItemDefinitionGroup>
@@ -181,7 +146,7 @@
       <_DovetailTemplatePrefix Condition="'$(_DovetailTemplatePrefix)' == ''">DovetailTemplate</_DovetailTemplatePrefix>
       <_DovetailTemplateOutputFile>$(IntermediateOutputPath)$(_DovetailTemplatePrefix).%(DovetailEmittedTemplate.Identity).g.cs</_DovetailTemplateOutputFile>
     </PropertyGroup>
-    <_DovetailExpandTemplate
+    <ExpandTemplate
       Template="@(DovetailEmittedTemplate)"
       File="%(DovetailEmittedTemplate.File)"
       HostName="%(DovetailEmittedTemplate.HostName)"

@@ -46,6 +46,11 @@
     -->
     <None Include="../Joinery.Dovetail.Build.Tasks/bin/$(Configuration)/netstandard2.0/Joinery.Dovetail.Build.Tasks.dll" Pack="true" PackagePath="build/tasks/netstandard2.0" Visible="false" />
     <None Include="../Joinery.Dovetail.Build.Tasks/THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/" Visible="false" />
+    <!--
+        The task build/Joinery.Dovetail.Templates.targets writes templates with. The in-repo wiring
+        (Joinery.Dovetail.Templates.Tasks.InRepo.targets) builds Joinery.Dovetail.Templates.Tasks before this project.
+    -->
+    <None Include="../Joinery.Dovetail.Templates.Tasks/bin/$(Configuration)/netstandard2.0/Joinery.Dovetail.Templates.Tasks.dll" Pack="true" PackagePath="build/tasks/netstandard2.0" Visible="false" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Joinery.Dovetail.Mermaid" />
