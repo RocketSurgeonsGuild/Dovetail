@@ -37,7 +37,7 @@ Pin the version in `global.json` under `msbuild-sdks`, or put it in the attribut
 | `Aspire.AppHost.Sdk`                  | `Joinery.Dovetail.Sdk.Aspire.AppHost`    | Aspire AppHost projects                               |
 
 `Joinery.Dovetail.Sdk.Console` is not a mirror: it is `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for
-[console applications](/guides/console-apps/).
+[console applications](../../guides/console-apps/).
 
 ## What a Dovetail SDK does
 
@@ -51,7 +51,7 @@ both yourself:
 ```
 
 So the project builds exactly as it did with the Microsoft SDK. On top of that, `Joinery.Dovetail.Sdk` detects the host from what the
-Microsoft SDK set (see [DovetailHost](/reference/dovetail-host/)), adds the Dovetail packages the project needs, and emits the
+Microsoft SDK set (see [DovetailHost](../../reference/dovetail-host/)), adds the Dovetail packages the project needs, and emits the
 bootstrapping.
 
 The others work the same way. `Microsoft.NET.Sdk.WindowsDesktop` has been unnecessary since .NET 5 (the SDK warns `NETSDK1137`):
