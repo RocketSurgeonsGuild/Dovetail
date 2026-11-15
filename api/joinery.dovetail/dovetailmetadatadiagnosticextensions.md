@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.5.4-beta.15`
+- Version: `0.5.4-beta.16`
 - Namespace: `Joinery.Dovetail.Diagnostics`
 - Target framework: `net10.0`
 
