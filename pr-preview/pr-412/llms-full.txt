@@ -2244,7 +2244,7 @@ return await {HelperName}.Configure(builder{BuildExpression}, contextBuilder, ca
 
 [Section titled “A host the SDK declares”](#a-host-the-sdk-declares)
 
-For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp` (`src/Sdks/Sdk/Sdk/Joinery.Dovetail.HostDetection.targets`):
+For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp` (`src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets`):
 
 ```xml
 <DovetailHost Include="Maui"

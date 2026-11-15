@@ -630,7 +630,7 @@ ConfigureDovetail(this {HostBuilderType} builder, DovetailContextBuilder context
 ```c#
 return await {HelperName}.Configure(builder{BuildExpression}, contextBuilder, cancellationToken);
 ```
- `UseDovetail` has the same forms on the builder only and returns the `{HostType}` itself. `ConfigureDovetail<TShell>` has them on the builder only, with `where TShell : Microsoft.UI.Xaml.UIElement, new()`. ## Examples [Section titled “Examples”](#examples) ### A host the SDK declares [Section titled “A host the SDK declares”](#a-host-the-sdk-declares) For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp` (`src/Sdks/Sdk/Sdk/Joinery.Dovetail.HostDetection.targets`): 
+ `UseDovetail` has the same forms on the builder only and returns the `{HostType}` itself. `ConfigureDovetail<TShell>` has them on the builder only, with `where TShell : Microsoft.UI.Xaml.UIElement, new()`. ## Examples [Section titled “Examples”](#examples) ### A host the SDK declares [Section titled “A host the SDK declares”](#a-host-the-sdk-declares) For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp` (`src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets`): 
 ```xml
 <DovetailHost Include="Maui"
               HostBuilderType="global::Microsoft.Maui.Hosting.MauiAppBuilder"

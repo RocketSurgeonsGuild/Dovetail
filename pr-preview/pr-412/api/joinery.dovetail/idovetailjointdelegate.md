@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-412/api/joinery.dovetail.md)
-- Version: `0.5.4-pr.20`
+- Version: `0.5.4-pr.21`
 - Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
 
