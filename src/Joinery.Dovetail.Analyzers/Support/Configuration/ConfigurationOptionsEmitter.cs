@@ -20,35 +20,32 @@ internal sealed record ConfigurationOptions(
 internal sealed record ConfigurationValidator(string TypeName, EquatableArray<string> OptionsTypeNames);
 
 /// <summary>
-///     Emits the joint that registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline, and the
-///     reflection-free binder it uses. The joint is a private class nested in the assembly's exports class, which lists it
-///     with the other joints this assembly exports.
+///     Emits <c>OptionaryConfigurationOptions.AddOptionaryConfigurationOptions(services)</c>, which registers this assembly's
+///     <c>[DovetailConfiguration]</c> types with the options pipeline, and the reflection-free binder it uses. The class is
+///     internal and lives in the project's <c>RootNamespace</c> (the global namespace when that is empty), so a library can call
+///     it from its own extension method and Dovetail's exported joint can call it by a name it knows without reading this output.
 /// </summary>
 internal static class ConfigurationOptionsEmitter
 {
-    public const string JointClassName = "DovetailConfigurationOptions";
+    public const string ClassName = "OptionaryConfigurationOptions";
+    public const string MethodName = "AddOptionaryConfigurationOptions";
     private const string BinderClassName = "DovetailConfigurationBinder";
 
-    /// <summary>The generated file, or <see langword="null" /> when no section registers options.</summary>
-    /// <param name="exports">The assembly's exports class, which the joint is nested in.</param>
+    /// <summary>The generated file. The method is there even when no section registers options, so that its callers always compile.</summary>
+    /// <param name="rootNamespace">The <c>RootNamespace</c> build property, used verbatim; empty or whitespace is the global namespace.</param>
     /// <param name="registrations">The sections that register options.</param>
     /// <param name="validators">The assembly's <c>[OptionsValidator]</c> classes.</param>
     /// <param name="zeroAllocExtensions">
     ///     The class ZeroAlloc.Validation.Options generates <c>ValidateWithZeroAlloc()</c> into, or <see langword="null" /> when
     ///     Dovetail leaves ZeroAlloc.Validation's registrations to the project.
     /// </param>
-    public static string? Emit(
-        DovetailConfigurationData exports,
+    public static string Emit(
+        string? rootNamespace,
         EquatableArray<ConfigurationOptions> registrations,
         EquatableArray<ConfigurationValidator> validators,
         string? zeroAllocExtensions = null
     )
     {
-        if (registrations.IsEmpty)
-        {
-            return null;
-        }
-
         var index = new BindingTypeIndex(registrations.SelectMany(z => z.Types));
         var methods = new BindingMethods(index);
         var roots = new Dictionary<TypeRef, ObjectSpec>();
@@ -64,7 +61,7 @@ internal static class ConfigurationOptionsEmitter
             }
         }
 
-        var hasNamespace = exports.Namespace is { Length: > 0 };
+        var hasNamespace = !string.IsNullOrWhiteSpace(rootNamespace);
         var writer = new SourceWriter();
         writer.WriteLine(
             """
@@ -80,15 +77,12 @@ internal static class ConfigurationOptionsEmitter
         );
         if (hasNamespace)
         {
-            writer.WriteLine($"namespace {exports.Namespace}");
+            writer.WriteLine($"namespace {rootNamespace}");
             writer.WriteLine("{");
             writer.Indentation++;
         }
 
-        var attributes = Helpers.CompilerGeneratedAttributes.NormalizeWhitespace().ToFullString();
-        writer.WriteLine($"public static partial class {exports.ClassName}");
-        writer.WriteLine("{");
-        writer.Indentation++;
+        var attributes = ConfigurationHelpers.CompilerGeneratedAttributes.NormalizeWhitespace().ToFullString();
         writer.WriteLine(
             $$"""
             /// <summary>
@@ -96,9 +90,13 @@ internal static class ConfigurationOptionsEmitter
             ///     without reflection.
             /// </summary>
             {{attributes}}
-            private sealed class {{JointClassName}} : global::Joinery.Dovetail.Joints.IServiceJoint
+            internal static class {{ClassName}}
             {
-                public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
+                /// <summary>
+                ///     Registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline. Every registration is a
+                ///     <c>TryAdd</c>, so calling it more than once is harmless.
+                /// </summary>
+                internal static global::Microsoft.Extensions.DependencyInjection.IServiceCollection {{MethodName}}(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
                 {
             """
         );
@@ -125,6 +123,7 @@ internal static class ConfigurationOptionsEmitter
             );
         }
 
+        writer.WriteLine("return services;");
         writer.Indentation -= 2;
         writer.WriteLine(
             """
@@ -132,11 +131,24 @@ internal static class ConfigurationOptionsEmitter
             }
             """
         );
-        writer.Indentation--;
-        writer.WriteLine("}");
-        writer.WriteLine();
 
-        var version = registrations[0].Version;
+        if (roots.Count > 0)
+        {
+            writer.WriteLine();
+            WriteBinder(writer, index, methods, registrations[0].Version, roots, attributes);
+        }
+
+        if (hasNamespace)
+        {
+            writer.Indentation--;
+            writer.WriteLine("}");
+        }
+
+        return writer.ToString();
+    }
+
+    private static void WriteBinder(SourceWriter writer, BindingTypeIndex index, BindingMethods methods, BinderVersion version, Dictionary<TypeRef, ObjectSpec> roots, string attributes)
+    {
         writer.WriteLine(
             $"""
             /// <summary>Binds configuration to this assembly's <c>[DovetailConfiguration]</c> types the way Microsoft's configuration binding source generator (version {( (int)version ).ToString(CultureInfo.InvariantCulture)}) does.</summary>
@@ -159,13 +171,6 @@ internal static class ConfigurationOptionsEmitter
         );
         writer.Indentation--;
         writer.WriteLine("}");
-        if (hasNamespace)
-        {
-            writer.Indentation--;
-            writer.WriteLine("}");
-        }
-
-        return writer.ToString();
     }
 
     private static string Registration(ConfigurationOptions registration, ObjectSpec root, string? zeroAllocExtensions)

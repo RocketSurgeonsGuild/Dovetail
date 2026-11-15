@@ -62,7 +62,8 @@
     }
   ],
   GeneratorDiagnostics: {
-    Joinery.Dovetail.DovetailAttributesGenerator: [
+    Joinery.Dovetail.DovetailAttributesGenerator: [],
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: [
       {
         Id: DT0018,
         Title: ZeroAlloc options validation skipped,

@@ -7,22 +7,24 @@
 // Suppress warnings about [Obsolete] member usage in generated code.
 #pragma warning disable CS0612, CS0618
 
-public static partial class Exports
+/// <summary>
+///     Registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline, bound from configuration
+///     without reflection.
+/// </summary>
+[System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+internal static class OptionaryConfigurationOptions
 {
     /// <summary>
-    ///     Registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline, bound from configuration
-    ///     without reflection.
+    ///     Registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline. Every registration is a
+    ///     <c>TryAdd</c>, so calling it more than once is harmless.
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    private sealed class DovetailConfigurationOptions : global::Joinery.Dovetail.Joints.IServiceJoint
+    internal static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOptionaryConfigurationOptions(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
-        public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
-        {
-            global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.DeclaredOptions>(services, "Declared", static configuration => DovetailConfigurationBinder.CreateSample__DeclaredOptions(configuration));
-            global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.DeclaredRecord>(services, "DeclaredRecord", static configuration => DovetailConfigurationBinder.CreateSample__DeclaredRecord(configuration));
-            global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.PascalOptions>(services, "Pascal", static configuration => DovetailConfigurationBinder.CreateSample__PascalOptions(configuration));
-            global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.PascalRecord>(services, "PascalRecord", static configuration => DovetailConfigurationBinder.CreateSample__PascalRecord(configuration));
-        }
+        global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.DeclaredOptions>(services, "Declared", static configuration => DovetailConfigurationBinder.CreateSample__DeclaredOptions(configuration));
+        global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.DeclaredRecord>(services, "DeclaredRecord", static configuration => DovetailConfigurationBinder.CreateSample__DeclaredRecord(configuration));
+        global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.PascalOptions>(services, "Pascal", static configuration => DovetailConfigurationBinder.CreateSample__PascalOptions(configuration));
+        global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.PascalRecord>(services, "PascalRecord", static configuration => DovetailConfigurationBinder.CreateSample__PascalRecord(configuration));
+        return services;
     }
 }
 
@@ -412,6 +414,15 @@ public static partial class Exports
     public static IEnumerable<IDovetailJointMetadata> Rivet()
     {
         yield return new DovetailJointMetadata(new DovetailConfigurationOptions(), DovetailHostType.Undefined, DovetailCategory.Application);
+    }
+
+    /// <summary>
+    /// Registers this assembly's [DovetailConfiguration] types with the options pipeline.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    private sealed class DovetailConfigurationOptions : global::Joinery.Dovetail.Joints.IServiceJoint
+    {
+        public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) => global::OptionaryConfigurationOptions.AddOptionaryConfigurationOptions(services);
     }
 }
 #pragma warning restore CA1002, CA1034, CA1822, CS0105, CS1573, CS8602, CS8603, CS8618, CS8669

@@ -1,7 +1,8 @@
 ﻿{
   FinalDiagnostics: [],
   GeneratorDiagnostics: {
-    Joinery.Dovetail.DovetailAttributesGenerator: []
+    Joinery.Dovetail.DovetailAttributesGenerator: [],
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: []
   },
   GlobalOptions: {
     build_property.DovetailExportClassName: Exports,

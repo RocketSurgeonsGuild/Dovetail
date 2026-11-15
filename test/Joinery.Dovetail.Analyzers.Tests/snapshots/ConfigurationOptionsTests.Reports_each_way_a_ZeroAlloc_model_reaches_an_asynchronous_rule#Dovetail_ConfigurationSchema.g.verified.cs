@@ -1,4 +1,4 @@
-﻿//HintName: Joinery.Dovetail.Analyzers/Joinery.Dovetail.DovetailAttributesGenerator/Dovetail_ConfigurationSchema.g.cs
+﻿//HintName: Joinery.Dovetail.Analyzers/Joinery.Dovetail.Support.Configuration.ConfigurationGenerator/Dovetail_ConfigurationSchema.g.cs
 #nullable enable
 #pragma warning disable CA1002, CA1034, CA1822, CS0105, CS1573, CS8602, CS8603, CS8618, CS8669
 [assembly: System.Reflection.AssemblyMetadata("Dovetail.ConfigurationSchema.v1:ArrayRule", "{\"type\":\"object\",\"title\":\"ArrayRule\",\"properties\":{\"Tenants\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"allOf\":[{\"$ref\":\"#/definitions/Sample.TenantOptions\"}]}}},\"patternProperties\":{\"^(?:[Tt][Ee][Nn][Aa][Nn][Tt][Ss])$\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"allOf\":[{\"$ref\":\"#/definitions/Sample.TenantOptions\"}]}}},\"definitions\":{\"Sample.TenantOptions\":{\"properties\":{\"Name\":{\"type\":\"string\"}},\"patternProperties\":{\"^(?:[Nn][Aa][Mm][Ee])$\":{\"type\":\"string\"}}}}}")]

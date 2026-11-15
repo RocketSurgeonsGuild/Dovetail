@@ -127,7 +127,7 @@ internal sealed class ModelBuilder
                 if (index.TryGetTypeSpec(TypeRef.From(type), out var spec) && spec is ObjectSpec root && !index.CanInstantiate(root))
                 {
                     builder.Report(
-                        Diagnostics.UnsupportedConfigurationConstructor,
+                        ConfigurationDiagnostics.UnsupportedConfigurationConstructor,
                         builder._declarationLocation,
                         type.ToDisplayString(),
                         root.InitFailureReason ?? "the configuration binder can't create it"
@@ -138,7 +138,7 @@ internal sealed class ModelBuilder
                     var validateWithZeroAlloc = ZeroAllocOptionsValidation.Applies(type, compilation, out var asyncRule);
                     if (asyncRule is not null)
                     {
-                        builder.Report(Diagnostics.ZeroAllocAsyncOptionsValidation, builder._declarationLocation, type.ToDisplayString(), asyncRule);
+                        builder.Report(ConfigurationDiagnostics.ZeroAllocAsyncOptionsValidation, builder._declarationLocation, type.ToDisplayString(), asyncRule);
                     }
 
                     options = new(result.Path, result.ValidateOnStart, TypeRef.From(type), version, types, validateWithZeroAlloc);
@@ -148,7 +148,7 @@ internal sealed class ModelBuilder
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // A bug here mustn't take down the rest of the generator (Imports, Exports) with it.
-            builder.Report(Diagnostics.ConfigurationSchemaFailed, builder._declarationLocation, type?.ToDisplayString() ?? "?", exception.GetType().Name + ": " + exception.Message);
+            builder.Report(ConfigurationDiagnostics.ConfigurationSchemaFailed, builder._declarationLocation, type?.ToDisplayString() ?? "?", exception.GetType().Name + ": " + exception.Message);
         }
 
         return new(
@@ -184,7 +184,7 @@ internal sealed class ModelBuilder
         _rootTypeName = type.ToDisplayString();
         if (InvalidTypeReason(type) is { } reason)
         {
-            Report(Diagnostics.InvalidConfigurationType, _declarationLocation ?? LocationOf(type), _rootTypeName, reason);
+            Report(ConfigurationDiagnostics.InvalidConfigurationType, _declarationLocation ?? LocationOf(type), _rootTypeName, reason);
             return null;
         }
 
@@ -193,7 +193,7 @@ internal sealed class ModelBuilder
         var path = section ?? KeyNaming.Apply(stripped, _keyStyle);
         if (InvalidSectionReason(path, section is null) is { } sectionReason)
         {
-            Report(Diagnostics.InvalidConfigurationSection, _declarationLocation ?? LocationOf(type), path, _rootTypeName, sectionReason);
+            Report(ConfigurationDiagnostics.InvalidConfigurationSection, _declarationLocation ?? LocationOf(type), path, _rootTypeName, sectionReason);
             return null;
         }
 
@@ -264,7 +264,7 @@ internal sealed class ModelBuilder
             {
                 _reportedTooLarge = true;
                 Report(
-                    Diagnostics.ConfigurationTypeTooLarge,
+                    ConfigurationDiagnostics.ConfigurationTypeTooLarge,
                     LocationOf(viaMember),
                     _rootTypeName,
                     MaxDefinitions.ToString(CultureInfo.InvariantCulture),
@@ -315,7 +315,7 @@ internal sealed class ModelBuilder
 
             if (keys.TryGetValue(member.Key, out var existing))
             {
-                Report(Diagnostics.ConfigurationKeyCollision, LocationOf(member.Property), existing, MemberName(member.Property), member.Key);
+                Report(ConfigurationDiagnostics.ConfigurationKeyCollision, LocationOf(member.Property), existing, MemberName(member.Property), member.Key);
                 continue;
             }
 
@@ -367,7 +367,7 @@ internal sealed class ModelBuilder
     {
         if (reportAt is not null)
         {
-            Report(Diagnostics.UnsupportedConfigurationConstructor, reportAt, type.ToDisplayString(), reason);
+            Report(ConfigurationDiagnostics.UnsupportedConfigurationConstructor, reportAt, type.ToDisplayString(), reason);
         }
     }
 
@@ -454,7 +454,7 @@ internal sealed class ModelBuilder
         var node = BuildType(member.Property.Type, member.Property);
         if (node is null)
         {
-            Report(Diagnostics.UnsupportedConfigurationMember, LocationOf(member.Property), MemberName(member.Property), member.Property.Type.ToDisplayString());
+            Report(ConfigurationDiagnostics.UnsupportedConfigurationMember, LocationOf(member.Property), MemberName(member.Property), member.Property.Type.ToDisplayString());
             return null;
         }
 
@@ -785,7 +785,7 @@ internal sealed class ModelBuilder
     private SchemaNode Inexpressible(SchemaNode node, AttributeData attribute, Member member, string reason)
     {
         Report(
-            Diagnostics.InexpressibleConfigurationAnnotation,
+            ConfigurationDiagnostics.InexpressibleConfigurationAnnotation,
             attribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation() ?? LocationOf(member.Property),
             "[" + ( attribute.AttributeClass?.Name is { } name && name.EndsWith("Attribute", StringComparison.Ordinal) ? name[..^9] : attribute.AttributeClass?.Name ) + "]",
             MemberName(member.Property),

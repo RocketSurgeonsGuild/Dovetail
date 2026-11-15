@@ -43,7 +43,8 @@
         Message: Joint 'A' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
         Category: Dovetail
       }
-    ]
+    ],
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: []
   },
   GlobalOptions: {
     build_property.DovetailExportClassName: Exports,

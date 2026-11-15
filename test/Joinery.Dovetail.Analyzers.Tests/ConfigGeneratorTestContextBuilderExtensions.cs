@@ -42,5 +42,5 @@ internal static class ConfigGeneratorTestContextBuilderExtensions
         return builder;
     }
 
-    private static IEnumerable<Type> GetAllGenerators() => [typeof(DovetailAttributesGenerator)];
+    private static IEnumerable<Type> GetAllGenerators() => [typeof(DovetailAttributesGenerator), typeof(Support.Configuration.ConfigurationGenerator)];
 }

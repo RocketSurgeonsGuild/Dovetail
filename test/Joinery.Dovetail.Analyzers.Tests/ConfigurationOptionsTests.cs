@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using Joinery.Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Options;
@@ -8,8 +9,8 @@ using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 namespace Joinery.Dovetail.Analyzers.Tests;
 
 /// <summary>
-///     The options registration <c>[DovetailConfiguration]</c> produces: a joint the assembly exports, and the reflection-free
-///     binder it uses, generated with the rules of the configuration binding source generator version the compilation's
+///     The options registration <c>[DovetailConfiguration]</c> produces: <c>AddOptionaryConfigurationOptions</c>, which the joint the
+///     assembly exports calls, and the reflection-free binder it uses, generated with the rules of the configuration binding source generator version the compilation's
 ///     Microsoft.Extensions.Configuration.Binder reference asks for. Each snapshot shows the generated file and how the
 ///     exports list the joint; the generated code must compile.
 /// </summary>
@@ -145,7 +146,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
         var compilation = result.InputCompilation;
         var parseOptions = (CSharpParseOptions)compilation.SyntaxTrees.First().Options;
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            [new DovetailAttributesGenerator().AsSourceGenerator()],
+            [new ConfigurationGenerator().AsSourceGenerator()],
             parseOptions: parseOptions,
             driverOptions: new(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true)
         );
@@ -251,7 +252,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
-        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().Contain("Dovetail_ConfigurationOptions.g.cs");
+        await result.Results[typeof(ConfigurationGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().Contain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -336,7 +337,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
-        var binderSource = result.Results[typeof(DovetailAttributesGenerator)]
+        var binderSource = result.Results[typeof(ConfigurationGenerator)]
                                  .SyntaxTrees.Single(z => Path.GetFileName(z.FilePath) == "Dovetail_ConfigurationOptions.g.cs")
                                  .ToString();
         var schema = result.FinalCompilation.Assembly.GetAttributes()
@@ -369,32 +370,8 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        await result.Results[typeof(DovetailAttributesGenerator)]
+        await result.Results[typeof(ConfigurationGenerator)]
               .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}").Should().BeEquivalentTo(["DT0011: 'Sample.RefOptions' can't be created from configuration because its constructor parameters can't be in, out or ref ('value')"], CollectionOrdering.Matching);
-        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().NotContain("Dovetail_ConfigurationOptions.g.cs");
-    }
-
-    [Test]
-    public async Task Registers_nothing_without_options()
-    {
-        var result = await WithBinder(11)
-                          .AddSources(
-                               Usings
-                             + """
-                               namespace Sample;
-
-                               [DovetailConfiguration(RegisterOptions = false)]
-                               public class SchemaOnlyOptions
-                               {
-                                   public string? Value { get; set; }
-                               }
-                               """
-                           )
-                          .Build()
-                          .GenerateAsync(TestContext.CancellationToken);
-
-        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
-        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().NotContain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -405,7 +382,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
         var compilation = result.InputCompilation;
         var parseOptions = (CSharpParseOptions)compilation.SyntaxTrees.First().Options;
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            [new DovetailAttributesGenerator().AsSourceGenerator()],
+            [new ConfigurationGenerator().AsSourceGenerator()],
             parseOptions: parseOptions,
             driverOptions: new(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true)
         );
@@ -545,7 +522,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
-        await result.Results[typeof(DovetailAttributesGenerator)]
+        await result.Results[typeof(ConfigurationGenerator)]
               .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}").Should().BeEquivalentTo([
                        "DT0018: 'Sample.TenantsOptions' isn't validated with ZeroAlloc.Validation when its options are read, because 'Sample.TenantOptions.Name' has an asynchronous rule and options validation is synchronous",
                    ], CollectionOrdering.Matching);
@@ -844,7 +821,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
         """;
 
     private static string GeneratedOptions(GeneratorTestResults result) =>
-        result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Single(z => Path.GetFileName(z.FilePath) == "Dovetail_ConfigurationOptions.g.cs").ToString();
+        result.Results[typeof(ConfigurationGenerator)].SyntaxTrees.Single(z => Path.GetFileName(z.FilePath) == "Dovetail_ConfigurationOptions.g.cs").ToString();
 
     /// <summary>
     ///     The test compilation, referencing the assemblies the generated code uses, and a stand-in for
@@ -866,18 +843,23 @@ public class ConfigurationOptionsTests() : GeneratorTest()
             )
            .ToMetadataReference();
 
-    /// <summary>The generated options file and the exports that list its joint; the generated code must compile.</summary>
+    /// <summary>The generated options file and the exports that list the joint calling it; the generated code must compile.</summary>
     private static string Describe(GeneratorTestResults result)
     {
         var compileErrors = result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ToArray();
         if (compileErrors.Length > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, compileErrors.Select(z => z.ToString())));
 
-        var generated = result.Results[typeof(DovetailAttributesGenerator)];
+        var generated = result.Results[typeof(ConfigurationGenerator)];
         var text = new StringBuilder();
-        foreach (var name in new[] { "Dovetail_ConfigurationOptions.g.cs", "Exported_Dovetails.g.cs" })
+        // The options file comes from the configuration generator, the exports that list its joint from the joint generator.
+        foreach (var (name, trees) in new[]
+                 {
+                     ("Dovetail_ConfigurationOptions.g.cs", generated.SyntaxTrees),
+                     ("Exported_Dovetails.g.cs", result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees),
+                 })
         {
             text.AppendLine("## " + name);
-            text.AppendLine(generated.SyntaxTrees.SingleOrDefault(z => Path.GetFileName(z.FilePath) == name)?.ToString() ?? "(none)");
+            text.AppendLine(trees.SingleOrDefault(z => Path.GetFileName(z.FilePath) == name)?.ToString() ?? "(none)");
         }
 
         text.AppendLine("## Diagnostics");

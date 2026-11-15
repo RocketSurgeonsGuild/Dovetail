@@ -1,5 +1,4 @@
 using Joinery.Dovetail.Support;
-using Joinery.Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -68,7 +67,9 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                              .WithTrackingName("dovetail:language_version");
         var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
 
-        var hasConfigurationOptions = ConfigurationSchemaPipeline.Register(context, supportedLanguageVersion, msBuildConfig);
+        // Any [DovetailConfiguration] declaration means the configuration generator emits the registration method, so the exports
+        // list a joint that calls it. Found here rather than read from that generator, which this one doesn't depend on.
+        var hasConfigurationOptions = ConfigurationOptionsJoint.HasDeclarations(context);
 
         context.RegisterSourceOutput(
             languageVersion,

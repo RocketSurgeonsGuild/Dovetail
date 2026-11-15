@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Joinery.Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
@@ -504,7 +505,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
 
         // Two assembly attributes for different types must compile (the attribute has to allow several uses on the assembly).
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
-        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        var diagnostics = result.Results[typeof(ConfigurationGenerator)].Diagnostics;
         await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0015"], CollectionOrdering.Matching);
         await diagnostics[0].GetMessage(CultureInfo.InvariantCulture).Should().BeEqualTo("'Sample.TwiceOptions' is configured more than once; a type can have only one [DovetailConfiguration]");
         // The assembly attribute is the one reported, and only the class declaration produces a fragment.
@@ -531,7 +532,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
-        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        var diagnostics = result.Results[typeof(ConfigurationGenerator)].Diagnostics;
         await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0015"], CollectionOrdering.Matching);
         // The first declaration wins and the repeat produces nothing.
         await Fragments(result).Keys.Should().BeEquivalentTo(["First"], CollectionOrdering.Matching);
@@ -598,7 +599,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await result.Results[typeof(ConfigurationGenerator)].Diagnostics.Should().BeEmpty();
         using var shapes = JsonDocument.Parse(Fragments(result)["Shapes"]);
         var definitions = shapes.RootElement.GetProperty("definitions");
         await definitions.GetProperty("Sample.IShape").GetProperty("properties").EnumerateObject().Select(z => z.Name).Should().BeEquivalentTo(["Sides"], CollectionOrdering.Matching);
@@ -648,7 +649,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .Build()
                           .GenerateAsync(TestContext.CancellationToken);
 
-        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        var diagnostics = result.Results[typeof(ConfigurationGenerator)].Diagnostics;
         await diagnostics.Should().Contain(z => z.Id == "DT0009");
         await diagnostics.Should().All(z => z.Location.SourceTree != null);
     }
@@ -682,7 +683,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         using var deep = JsonDocument.Parse(fragments["Deep"]);
         await deep.RootElement.GetProperty("definitions").EnumerateObject().Count().Should().BeEqualTo(13);
         await fragments["Deep"].Length.Should().BeLessThan(10_000);
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0012"], CollectionOrdering.Matching);
+        await result.Results[typeof(ConfigurationGenerator)].Diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0012"], CollectionOrdering.Matching);
     }
 
     /// <summary>
@@ -715,7 +716,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         var compilation = result.InputCompilation;
         var parseOptions = (CSharpParseOptions)compilation.SyntaxTrees.First().Options;
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            [new DovetailAttributesGenerator().AsSourceGenerator()],
+            [new ConfigurationGenerator().AsSourceGenerator()],
             parseOptions: parseOptions,
             driverOptions: new(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true)
         );
@@ -851,7 +852,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         var fragments = Fragments(result);
         // Ordinary C# names are Pascal case already, so Undefined and Pascal spell the same keys. That is also why the Nested type
         // they share is not a conflict: the binder reads the same keys either way.
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await result.Results[typeof(ConfigurationGenerator)].Diagnostics.Should().BeEmpty();
         await fragments["Explicit"].Should().BeEqualTo(fragments["Default"].Replace("\"title\":\"Default\"", "\"title\":\"Explicit\"", StringComparison.Ordinal));
         await fragments["Default"].Should().Contain("\"RetryCount\"");
         await fragments["Default"].Should().Contain("\"WaitTime\"");
@@ -890,7 +891,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
-        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        var diagnostics = result.Results[typeof(ConfigurationGenerator)].Diagnostics;
         await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0016"], CollectionOrdering.Matching);
         await Fragments(result).Keys.Should().BeEquivalentTo(["First"], CollectionOrdering.Matching);
     }
@@ -944,14 +945,14 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).Should().BeEmpty();
-        var diagnostics = result.Results[typeof(DovetailAttributesGenerator)].Diagnostics;
+        var diagnostics = result.Results[typeof(ConfigurationGenerator)].Diagnostics;
         await diagnostics.Select(z => z.Id).Should().BeEquivalentTo(["DT0016"], CollectionOrdering.Matching);
         await diagnostics[0].Severity.Should().BeEqualTo(DiagnosticSeverity.Error);
         await diagnostics[0].GetMessage(CultureInfo.InvariantCulture).Should().BeEqualTo("'Sample.RetryOptions' is bound with more than one key style; use the same KeyStyle for every section that reaches it, or give the shared type [ConfigurationKeyName] attributes");
         // The later declaration is the one reported, and it produces nothing; the earlier ones, and a later one in the same style, still do.
         await diagnostics[0].Location.SourceTree!.ToString().Substring(diagnostics[0].Location.SourceSpan.Start, diagnostics[0].Location.SourceSpan.Length).Should().Contain("\"Second\"");
         await Fragments(result).Keys.Should().BeEquivalentTo(["First", "Third"]);
-        await result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().Contain("Dovetail_ConfigurationOptions.g.cs");
+        await result.Results[typeof(ConfigurationGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().Contain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -986,7 +987,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await result.Results[typeof(ConfigurationGenerator)].Diagnostics.Should().BeEmpty();
         await Fragments(result).Keys.Should().BeEquivalentTo(["A", "B", "C"]);
     }
 
@@ -1022,7 +1023,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         }
 
         text.AppendLine("## Diagnostics");
-        foreach (var diagnostic in result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.OrderBy(z => z.Location.SourceSpan.Start).ThenBy(z => z.Id, StringComparer.Ordinal))
+        foreach (var diagnostic in result.Results[typeof(ConfigurationGenerator)].Diagnostics.OrderBy(z => z.Location.SourceSpan.Start).ThenBy(z => z.Id, StringComparer.Ordinal))
         {
             text.AppendLine($"{diagnostic.Id} {diagnostic.Severity} line {diagnostic.Location.GetLineSpan().StartLinePosition.Line + 1}: {diagnostic.GetMessage(CultureInfo.InvariantCulture)}");
         }

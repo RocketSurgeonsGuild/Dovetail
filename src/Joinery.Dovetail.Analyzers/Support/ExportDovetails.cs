@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Text;
-using Joinery.Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -29,7 +28,7 @@ internal static class ExportDovetails
                                 SeparatedList(
                                     new[]
                                     {
-                                        Argument(ObjectCreationExpression(IdentifierName(ConfigurationOptionsEmitter.JointClassName)).WithArgumentList(ArgumentList())),
+                                        Argument(ObjectCreationExpression(IdentifierName(ConfigurationOptionsJoint.JointClassName)).WithArgumentList(ArgumentList())),
                                         Argument(_hostTypeUndefined),
                                         Argument(_categoryApplication),
                                     }
@@ -140,7 +139,8 @@ internal static class ExportDovetails
                 )
                .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.PartialKeyword)))
                .WithMembers(
-                    SingletonList<MemberDeclarationSyntax>(
+                    List(
+                        [
                         MethodDeclaration(
                                 GenericName(Identifier("IEnumerable"))
                                    .WithTypeArgumentList(
@@ -151,7 +151,9 @@ internal static class ExportDovetails
                            .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword)))
                            .WithParameterList(ParameterList())
                            .WithBody(helperClassBody)
-                           .WithLeadingTrivia(GetXmlSummary("The conventions exports from this assembly"))
+                           .WithLeadingTrivia(GetXmlSummary("The conventions exports from this assembly")),
+                        ..  hasConfigurationOptions ? new[] { ConfigurationOptionsJoint.Declaration(msBuildConfig.RootNamespace) } : [] ,
+                        ]
                     )
                 );
 
