@@ -39,7 +39,8 @@
         Message: The indicated symbol could not be handled correctly,
         Category: Dovetail
       }
-    ]
+    ],
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: []
   },
   GlobalOptions: {
     build_property.DovetailExportClassName: Exports,

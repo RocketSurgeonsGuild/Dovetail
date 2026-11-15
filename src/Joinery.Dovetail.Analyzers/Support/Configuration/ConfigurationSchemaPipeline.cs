@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Text;
 using Joinery.Dovetail.Support.Configuration.Binding;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -21,49 +22,24 @@ internal static class ConfigurationSchemaPipeline
     /// <summary>Marks the XML documentation files of package references, which Dovetail's targets pass in as additional files.</summary>
     private const string ReferenceDocumentationMetadata = "build_metadata.AdditionalFiles.DovetailReferenceDocumentation";
 
-    /// <summary>Registers the schema and options outputs; the result says whether this assembly exports an options joint.</summary>
-    public static IncrementalValueProvider<bool> Register(
-        IncrementalGeneratorInitializationContext context,
-        IncrementalValueProvider<bool> supportedLanguageVersion,
-        IncrementalValueProvider<MsBuildConfig> msBuildConfig
-    )
+    /// <summary>Registers the schema and options outputs.</summary>
+    public static void Register(IncrementalGeneratorInitializationContext context)
     {
-        var classDeclarations = context
-                               .SyntaxProvider
-                               .ForAttributeWithMetadataName(
-                                    AttributeMetadataName,
-                                    static (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax,
-                                    static (syntaxContext, cancellationToken) => syntaxContext
-                                                                               .Attributes
-                                                                               .Select(
-                                                                                    z => ModelBuilder.Build(
-                                                                                        z,
-                                                                                        (INamedTypeSymbol)syntaxContext.TargetSymbol,
-                                                                                        syntaxContext.SemanticModel.Compilation,
-                                                                                        cancellationToken
-                                                                                    )
-                                                                                )
-                                                                               .ToEquatableArray()
-                                )
-                               .WithTrackingName("dovetail:configuration_classes");
+        // The generated code uses C# 12 syntax (collection expressions). Below it nothing is generated; the joint generator's
+        // DT0006 says why.
+        var supportedLanguageVersion = context.ParseOptionsProvider.Select(
+            static (options, _) => options is not CSharpParseOptions csharp || csharp.LanguageVersion >= LanguageVersion.CSharp12
+        );
 
-        // Assembly attributes target the compilation unit: [assembly: DovetailConfiguration<T>("Section")].
-        var assemblyDeclarations = context
-                                  .SyntaxProvider
-                                  .ForAttributeWithMetadataName(
-                                       GenericAttributeMetadataName,
-                                       static (node, _) => node is CompilationUnitSyntax,
-                                       static (syntaxContext, cancellationToken) => syntaxContext
-                                                                                  .Attributes
-                                                                                  .Select(z => ModelBuilder.Build(z, null, syntaxContext.SemanticModel.Compilation, cancellationToken))
-                                                                                  .ToEquatableArray()
-                                   )
-                                  .WithTrackingName("dovetail:configuration_assembly");
+        // The class the options joint is nested in: the assembly's exports class.
+        var exports = context.AnalyzerConfigOptionsProvider.Select(
+            static (options, _) => new ConfigurationExports(
+                options.GlobalOptions.GetBuildProperty("DovetailExportNamespace", s => s) ?? ConfigurationExports.NotDefined,
+                options.GlobalOptions.GetBuildProperty("DovetailExportClassName", s => s) ?? ConfigurationExports.NotDefined
+            )
+        );
 
-        var declarations = classDeclarations
-                          .Collect()
-                          .Combine(assemblyDeclarations.Collect())
-                          .Select(static (pair, _) => RejectRepeatedTypes(pair.Left.Concat(pair.Right).SelectMany(z => z)).ToEquatableArray());
+        var declarations = Declarations(context);
 
         // Sections carry no source positions, so an edit that only moves code leaves them equal and everything after cached.
         var sections = declarations.Select(static (declarations, _) => declarations.Select(z => z.Section).OfType<ConfigurationSection>().ToEquatableArray());
@@ -117,12 +93,12 @@ internal static class ConfigurationSchemaPipeline
         );
 
         context.RegisterSourceOutput(
-            options.Combine(validators).Combine(zeroAllocExtensions).Combine(msBuildConfig).Combine(supportedLanguageVersion),
+            options.Combine(validators).Combine(zeroAllocExtensions).Combine(exports).Combine(supportedLanguageVersion),
             static (production, input) =>
             {
-                var (((registrations, validators), zeroAllocExtensions), msBuildConfig) = input.Left;
+                var (((registrations, validators), zeroAllocExtensions), exports) = input.Left;
                 if (input.Right
-                 && ConfigurationOptionsEmitter.Emit(msBuildConfig.ExportConfiguration, registrations, validators, zeroAllocExtensions) is { } source)
+                 && ConfigurationOptionsEmitter.Emit(exports, registrations, validators, zeroAllocExtensions) is { } source)
                 {
                     production.AddSource("Dovetail_ConfigurationOptions.g.cs", source);
                 }
@@ -141,8 +117,53 @@ internal static class ConfigurationSchemaPipeline
                 }
             }
         );
+    }
 
-        return options.Select(static (options, _) => !options.IsEmpty);
+    /// <summary>
+    ///     Whether this assembly registers options, which is when its exports class lists the options joint. The joint generator
+    ///     reads it; it builds the same declarations as <see cref="Register" />.
+    /// </summary>
+    public static IncrementalValueProvider<bool> HasOptions(IncrementalGeneratorInitializationContext context) =>
+        Declarations(context).Select(static (declarations, _) => declarations.Any(z => z.Options is not null));
+
+    private static IncrementalValueProvider<EquatableArray<ConfigurationDeclaration>> Declarations(IncrementalGeneratorInitializationContext context)
+    {
+        var classDeclarations = context
+                               .SyntaxProvider
+                               .ForAttributeWithMetadataName(
+                                    AttributeMetadataName,
+                                    static (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax,
+                                    static (syntaxContext, cancellationToken) => syntaxContext
+                                                                               .Attributes
+                                                                               .Select(
+                                                                                    z => ModelBuilder.Build(
+                                                                                        z,
+                                                                                        (INamedTypeSymbol)syntaxContext.TargetSymbol,
+                                                                                        syntaxContext.SemanticModel.Compilation,
+                                                                                        cancellationToken
+                                                                                    )
+                                                                                )
+                                                                               .ToEquatableArray()
+                                )
+                               .WithTrackingName("dovetail:configuration_classes");
+
+        // Assembly attributes target the compilation unit: [assembly: DovetailConfiguration<T>("Section")].
+        var assemblyDeclarations = context
+                                  .SyntaxProvider
+                                  .ForAttributeWithMetadataName(
+                                       GenericAttributeMetadataName,
+                                       static (node, _) => node is CompilationUnitSyntax,
+                                       static (syntaxContext, cancellationToken) => syntaxContext
+                                                                                  .Attributes
+                                                                                  .Select(z => ModelBuilder.Build(z, null, syntaxContext.SemanticModel.Compilation, cancellationToken))
+                                                                                  .ToEquatableArray()
+                                   )
+                                  .WithTrackingName("dovetail:configuration_assembly");
+
+        return classDeclarations
+                          .Collect()
+                          .Combine(assemblyDeclarations.Collect())
+                          .Select(static (pair, _) => RejectRepeatedTypes(pair.Left.Concat(pair.Right).SelectMany(z => z)).ToEquatableArray());
     }
 
     /// <summary>
@@ -163,13 +184,13 @@ internal static class ConfigurationSchemaPipeline
         {
             if (declaration.TypeName is not null && !seen.Add(declaration.TypeName))
             {
-                yield return new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationTypeDeclaredTwice, null, declaration.TypeName) with { Location = declaration.Location } }.ToEquatableArray());
+                yield return new(null, new[] { DiagnosticInfo.Create(ConfigurationDiagnostics.ConfigurationTypeDeclaredTwice, null, declaration.TypeName) with { Location = declaration.Location } }.ToEquatableArray());
                 continue;
             }
 
             if (declaration is { Options: { } options } && ConflictingKeyType(options, boundKeys) is { } conflict)
             {
-                yield return new(null, new[] { DiagnosticInfo.Create(Diagnostics.ConfigurationKeyStyleConflict, null, conflict) with { Location = declaration.Location } }.ToEquatableArray());
+                yield return new(null, new[] { DiagnosticInfo.Create(ConfigurationDiagnostics.ConfigurationKeyStyleConflict, null, conflict) with { Location = declaration.Location } }.ToEquatableArray());
                 continue;
             }
 
@@ -316,7 +337,7 @@ internal static class ConfigurationSchemaPipeline
                      .OrderBy(z => z.Path, StringComparer.OrdinalIgnoreCase)
                      .ThenBy(z => z.TypeName, StringComparer.Ordinal);
         var unit = CompilationUnit()
-                  .WithAttributeLists(List(ordered.Select(z => Helpers.AddAssemblyAttribute(MetadataPrefix + z.Path, JsonSchemaWriter.Write(z, includeRequired)))))
+                  .WithAttributeLists(List(ordered.Select(z => ConfigurationHelpers.AddAssemblyAttribute(MetadataPrefix + z.Path, JsonSchemaWriter.Write(z, includeRequired)))))
                   .AddSharedTrivia();
         production.AddSource("Dovetail_ConfigurationSchema.g.cs", unit.NormalizeWhitespace().GetText(Encoding.UTF8));
     }

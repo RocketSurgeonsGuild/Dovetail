@@ -1,0 +1,33 @@
+﻿{
+  FinalDiagnostics: [],
+  GeneratorDiagnostics: {
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: []
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: 
+  },
+  References: [
+    FluentValidation.dll,
+    Joinery.Dovetail.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.Configuration.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.Options.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.Collections.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Linq.dll,
+    System.Private.CoreLib.dll,
+    System.Runtime.dll
+  ]
+}

@@ -68,7 +68,8 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                              .WithTrackingName("dovetail:language_version");
         var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
 
-        var hasConfigurationOptions = ConfigurationSchemaPipeline.Register(context, supportedLanguageVersion, msBuildConfig);
+        // ConfigurationGenerator emits the options joint; the exports list it when this assembly registers options.
+        var hasConfigurationOptions = ConfigurationSchemaPipeline.HasOptions(context);
 
         context.RegisterSourceOutput(
             languageVersion,

@@ -16,6 +16,13 @@ internal sealed record ConfigurationOptions(
     bool ValidateWithZeroAlloc = false
 );
 
+/// <summary>The assembly's exports class (<c>DovetailExportNamespace</c>, <c>DovetailExportClassName</c>), which the options joint is nested in.</summary>
+internal sealed record ConfigurationExports(string Namespace, string ClassName)
+{
+    /// <summary>What an unset build property reads as; the joint generator uses the same value.</summary>
+    public const string NotDefined = "##??NOT DEFINED??##";
+}
+
 /// <summary>An <c>[OptionsValidator]</c> class and the options types it validates.</summary>
 internal sealed record ConfigurationValidator(string TypeName, EquatableArray<string> OptionsTypeNames);
 
@@ -38,7 +45,7 @@ internal static class ConfigurationOptionsEmitter
     ///     Dovetail leaves ZeroAlloc.Validation's registrations to the project.
     /// </param>
     public static string? Emit(
-        DovetailConfigurationData exports,
+        ConfigurationExports exports,
         EquatableArray<ConfigurationOptions> registrations,
         EquatableArray<ConfigurationValidator> validators,
         string? zeroAllocExtensions = null
@@ -85,7 +92,7 @@ internal static class ConfigurationOptionsEmitter
             writer.Indentation++;
         }
 
-        var attributes = Helpers.CompilerGeneratedAttributes.NormalizeWhitespace().ToFullString();
+        var attributes = ConfigurationHelpers.CompilerGeneratedAttributes.NormalizeWhitespace().ToFullString();
         writer.WriteLine($"public static partial class {exports.ClassName}");
         writer.WriteLine("{");
         writer.Indentation++;
