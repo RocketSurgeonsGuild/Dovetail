@@ -1,0 +1,30 @@
+<Project>
+  <!--
+      Joinery.Dovetail.Sdk.Worker is Microsoft.NET.Sdk.Worker with Dovetail. A project swaps the one for the other and changes nothing else:
+
+          <Project Sdk="Joinery.Dovetail.Sdk.Worker">
+
+      with the version under msbuild-sdks in global.json, or in the attribute (Joinery.Dovetail.Sdk.Worker/1.2.3). It takes the Microsoft SDK's place
+      rather than going next to it.
+
+      Worker services. Joinery.Dovetail.Sdk detects a HostApplication host from UsingMicrosoftNETSdkWorker.
+
+      Microsoft.NET.Sdk.Worker comes first. It brings Microsoft.NET.Sdk and sets UsingMicrosoftNETSdk, so Joinery.Dovetail.Sdk, chained after it, adds
+      Dovetail alone: the same imports, in the same order, as <Sdk Name="Joinery.Dovetail.Sdk" /> next to Microsoft.NET.Sdk.Worker. A project that
+      already gets Joinery.Dovetail.Sdk that way (in a Directory.Build.props, say) does not get it twice.
+  -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Worker" />
+
+  <!-- DovetailSdkVersion, generated when the SDK is packed. Imported after the Microsoft SDK, so a Directory.Build.props can set it first. -->
+  <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
+  <!--
+      Joinery.Dovetail.Sdk registers its host detection in CustomAfterMicrosoftCommonTargets: when that is already there, a
+      Directory.Build.props (or another SDK) applied it, and the mirror leaves it out.
+  -->
+  <PropertyGroup Condition="!$(CustomAfterMicrosoftCommonTargets.Contains('Joinery.Dovetail.HostDetection.targets'))">
+    <!-- Sdk.targets chains the same version and makes the same choice, whatever the project body sets in between. -->
+    <_DovetailMirrorChainsDovetailSdk>true</_DovetailMirrorChainsDovetailSdk>
+    <_DovetailMirrorDovetailSdkVersion>$(DovetailSdkVersion)</_DovetailMirrorDovetailSdkVersion>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Joinery.Dovetail.Sdk" Version="$(_DovetailMirrorDovetailSdkVersion)" Condition="'$(_DovetailMirrorChainsDovetailSdk)' == 'true'" />
+</Project>

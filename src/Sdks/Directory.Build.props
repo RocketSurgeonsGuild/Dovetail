@@ -1,0 +1,24 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <!--
+      Every project in this folder is an MSBuild SDK package: its Sdk/ folder is the package, and it builds no assembly. Joinery.Dovetail.Sdk
+      wraps Microsoft.NET.Sdk; Joinery.Dovetail.Sdk.{Name} wraps Microsoft.NET.Sdk.{Name} (see Directory.Build.targets), so a project
+      swaps Sdk="Microsoft.NET.Sdk.Web" for Sdk="Joinery.Dovetail.Sdk.Web" and gets Dovetail with nothing else to change.
+      DovetailSdkPackage tells src/Directory.Build.targets to leave out what a library gets (the analyzer reference, the schema).
+  -->
+  <PropertyGroup>
+    <DovetailSdkPackage>true</DovetailSdkPackage>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <PackageType>MSBuildSdk</PackageType>
+    <NoBuildOutput>true</NoBuildOutput>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PackageTags>$(PackageTags);sdk;msbuild</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Sdk/**" />
+    <None Include="Sdk/**" Pack="true" PackagePath="Sdk/" />
+    <Using Remove="**" />
+  </ItemGroup>
+</Project>

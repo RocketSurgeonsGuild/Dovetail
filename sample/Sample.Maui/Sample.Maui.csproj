@@ -28,7 +28,7 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 
-        <!-- What the Dovetail SDK's MAUI detection sets (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets); samples reference src directly. -->
+        <!-- What the Dovetail SDK's MAUI detection sets (see src/Sdks/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets); samples reference src directly. -->
         <DovetailEmbedConfiguration>true</DovetailEmbedConfiguration>
     </PropertyGroup>
 

@@ -62,6 +62,9 @@ internal static class Config
         {
             ["DovetailMicrosoftExtensionsHostingVersion"] = "{microsoft-extensions-hosting-version}",
             ["DovetailOpenTelemetryExtensionsHostingVersion"] = "{opentelemetry-extensions-hosting-version}",
+            // The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost imports, written into its Packages.props the same way.
+            ["DovetailAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
+            ["_DovetailMirrorAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
         }.ToFrozenDictionary();
 
         private static readonly IReadOnlyCollection<string> PropertiesToWrite =
@@ -262,6 +265,8 @@ internal static class Config
 
     public static FrozenSet<string> AllPropertyNames => field ??= Directory.EnumerateFiles(Path.Combine(RootDirectory, "src"), "*.props", SearchOption.AllDirectories)
         .Concat(Directory.EnumerateFiles(Path.Combine(RootDirectory, "src"), "*.targets", SearchOption.AllDirectories))
+        // How the SDK packages themselves are built and packed, which no consumer imports.
+        .Where(z => Path.GetDirectoryName(z) != Path.Combine(RootDirectory, "src", "Sdks"))
         .SelectMany(z => XDocument.Parse(File.ReadAllText(z)).Document!.Descendants("PropertyGroup")
             .SelectMany(z => z.Elements().Select(e => e.Name.LocalName))
             .Distinct()

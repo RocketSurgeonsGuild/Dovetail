@@ -1,20 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <PackageType>MSBuildSdk</PackageType>
-    <NoBuildOutput>true</NoBuildOutput>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <IncludeSymbols>false</IncludeSymbols>
-    <ImplicitUsings>disable</ImplicitUsings>
     <PackageDescription>MSBuild SDK for Dovetail — auto-selects packages and emits bootstrapping based on host SDK</PackageDescription>
-    <PackageTags>$(PackageTags);sdk;msbuild</PackageTags>
+    <PackageTags>$(PackageTags);microsoft.net.sdk</PackageTags>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Sdk/**" />
-    <None Include="Sdk/**" Pack="true" PackagePath="Sdk/" />
-    <Using Remove="**" />
-  </ItemGroup>
 
   <!--
       Every Dovetail package ships at the same version, so the SDK adds each one at $(DovetailVersion), which defaults to the

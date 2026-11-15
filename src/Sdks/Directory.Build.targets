@@ -1,0 +1,58 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!--
+      No symbols package: there is no assembly. Set here rather than in Directory.Build.props, because Rocket.Surgery.MSBuild.SourceLink's
+      props (imported from the package references, after Directory.Build.props) turn IncludeSymbols on.
+  -->
+  <PropertyGroup>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <!--
+      The Microsoft SDK mirrors: a project that sets DovetailMicrosoftSdk (Joinery.Dovetail.Sdk.Web sets Microsoft.NET.Sdk.Web) is that
+      SDK with Joinery.Dovetail.Sdk chained after it. Its Sdk/Sdk.props imports the Microsoft SDK, then Joinery.Dovetail.Sdk at
+      $(DovetailSdkVersion); its Sdk/Sdk.targets does the same with the targets.
+
+      DovetailSdkVersion defaults to the mirror's own version (every Dovetail package ships at one version), which is only known when the
+      mirror is packed, so Sdk/Packages.props is written then rather than kept in the repository, as in Joinery.Dovetail.Sdk. An application
+      that sets DovetailSdkVersion (in a Directory.Build.props, which the Microsoft SDK imports first) chains that version instead.
+  -->
+  <PropertyGroup Condition="'$(DovetailMicrosoftSdk)' != ''">
+    <PackageDescription Condition="'$(PackageDescription)' == ''">$(DovetailMicrosoftSdk) with Dovetail: a drop-in replacement for the Microsoft SDK that chains Joinery.Dovetail.Sdk, which detects the host, adds the Dovetail packages and emits the bootstrapping</PackageDescription>
+    <PackageTags>$(PackageTags);$(DovetailMicrosoftSdk)</PackageTags>
+  </PropertyGroup>
+
+  <!--
+      A Microsoft SDK that comes from NuGet (Aspire.AppHost.Sdk) has to be imported at a version. The mirror names the property it reads
+      that version from in DovetailMicrosoftSdkVersionProperty, and Packages.props sets it to the version Directory.Packages.props pins.
+  -->
+  <Target Name="_DovetailMirrorGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack" Condition="'$(DovetailMicrosoftSdk)' != ''">
+    <PropertyGroup>
+      <_DovetailMirrorPackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailMirrorPackagesProps>
+      <_DovetailMirrorMicrosoftSdkVersion Condition="'$(DovetailMicrosoftSdkVersionProperty)' != ''">@(PackageVersion->WithMetadataValue('Identity', '$(DovetailMicrosoftSdk)')->'%(Version)')</_DovetailMirrorMicrosoftSdkVersion>
+    </PropertyGroup>
+    <Error
+      Condition="'$(DovetailMicrosoftSdkVersionProperty)' != '' and '$(_DovetailMirrorMicrosoftSdkVersion)' == ''"
+      Text="Directory.Packages.props pins no version of $(DovetailMicrosoftSdk), which $(PackageId) imports."
+    />
+    <ItemGroup>
+      <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
+      <_DovetailMirrorPackagesPropsLine Include="&lt;Project&gt;" />
+      <_DovetailMirrorPackagesPropsLine Include="&lt;!-- Generated when $(PackageId) is packed. Each version is only set when the application has not set it already. --&gt;" />
+      <_DovetailMirrorPackagesPropsLine Include="&lt;PropertyGroup&gt;" />
+      <_DovetailMirrorPackagesPropsLine Include="&lt;DovetailSdkVersion Condition=&quot;%27%24(DovetailSdkVersion)%27 == %27%27&quot;&gt;$(Version)&lt;/DovetailSdkVersion&gt;" />
+      <_DovetailMirrorPackagesPropsLine
+        Condition="'$(DovetailMicrosoftSdkVersionProperty)' != ''"
+        Include="&lt;$(DovetailMicrosoftSdkVersionProperty) Condition=&quot;%27%24($(DovetailMicrosoftSdkVersionProperty))%27 == %27%27&quot;&gt;$(_DovetailMirrorMicrosoftSdkVersion)&lt;/$(DovetailMicrosoftSdkVersionProperty)&gt;"
+      />
+      <_DovetailMirrorPackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
+      <_DovetailMirrorPackagesPropsLine Include="&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_DovetailMirrorPackagesProps)" Lines="@(_DovetailMirrorPackagesPropsLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <None Include="$(_DovetailMirrorPackagesProps)" Pack="true" PackagePath="Sdk" />
+      <FileWrites Include="$(_DovetailMirrorPackagesProps)" />
+    </ItemGroup>
+  </Target>
+</Project>
