@@ -1,23 +1,18 @@
 using Joinery.Dovetail.Attributes;
-using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-// Exports is generated: a formatter that runs without the generator can neither resolve it nor suggest simplifying its name, so the
-// fully qualified reference would flip between IDE0002 and a removed using on every automatic lint run.
-#pragma warning disable IDE0002
-
 namespace Joinery.Dovetail.Configuration.Aot.Tests;
 
 /// <summary>
-///     The joint and binder Dovetail's generator emits for these types compile under the trimming and AOT analyzers (with IL2026,
-///     IL3050 and IL2091 as errors), and bind through the options pipeline.
+///     The registration method and binder generated for these types (<c>AddOptionaryConfigurationOptions</c>) compile under the
+///     trimming and AOT analyzers (with IL2026, IL3050 and IL2091 as errors), and bind through the options pipeline.
 /// </summary>
-public sealed class GeneratedJointTests
+public sealed class GeneratedRegistrationTests
 {
     [Test]
-    public async Task Generated_joint_binds_without_reflection()
+    public async Task Generated_registration_binds_without_reflection()
     {
         var services = new ServiceCollection()
            .AddSingleton<IConfiguration>(
@@ -35,10 +30,7 @@ public sealed class GeneratedJointTests
                     )
                    .Build()
             );
-        foreach (var joint in global::Joinery.Dovetail.Configuration.Aot.Tests.Rivets.Exports.Joints().Select(z => z.Joint).OfType<IServiceJoint>())
-        {
-            joint.Register(null!, services);
-        }
+        services.AddOptionaryConfigurationOptions();
 
         await using var provider = services.BuildServiceProvider();
 

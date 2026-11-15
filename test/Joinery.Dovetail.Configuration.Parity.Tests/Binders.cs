@@ -1,11 +1,6 @@
-using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-
-// Exports is generated: a formatter that runs without the generator can neither resolve it nor suggest simplifying its name, so the
-// fully qualified reference would flip between IDE0002 and a removed using on every automatic lint run.
-#pragma warning disable IDE0002
 
 namespace Joinery.Dovetail.Configuration.Parity.Tests;
 
@@ -13,8 +8,9 @@ namespace Joinery.Dovetail.Configuration.Parity.Tests;
 internal static class Binders
 {
     /// <summary>
-    ///     Binds through the joint this assembly exports, as an application does: every <c>[DovetailConfiguration]</c> section is
-    ///     registered, and <typeparamref name="T" /> is read from <see cref="IOptions{TOptions}" />.
+    ///     Binds through the registration method generated for this assembly (<c>AddOptionaryConfigurationOptions</c>), as an
+    ///     application does: every <c>[DovetailConfiguration]</c> section is registered, and <typeparamref name="T" /> is read from
+    ///     <see cref="IOptions{TOptions}" />.
     /// </summary>
     public static T Dovetail<T>(IConfiguration configuration) where T : class
     {
@@ -26,11 +22,7 @@ internal static class Binders
     {
         var services = new ServiceCollection();
         services.AddSingleton(configuration);
-        foreach (var joint in global::Joinery.Dovetail.Configuration.Parity.Tests.Rivets.Exports.Joints().Select(z => z.Joint).OfType<IServiceJoint>())
-        {
-            joint.Register(null!, services);
-        }
-
+        services.AddOptionaryConfigurationOptions();
         return services;
     }
 

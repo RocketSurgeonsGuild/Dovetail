@@ -1,0 +1,30 @@
+﻿{
+  FinalDiagnostics: [],
+  GeneratorDiagnostics: {
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: []
+  },
+  GlobalOptions: {
+    build_property.DovetailExportNamespace: Sample.Exports,
+    build_property.RootNamespace: Sample.App
+  },
+  References: [
+    FluentValidation.dll,
+    Joinery.Dovetail.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.Configuration.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.Options.dll,
+    Microsoft.Extensions.Options.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.Collections.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Linq.dll,
+    System.Private.CoreLib.dll,
+    System.Runtime.dll
+  ]
+}

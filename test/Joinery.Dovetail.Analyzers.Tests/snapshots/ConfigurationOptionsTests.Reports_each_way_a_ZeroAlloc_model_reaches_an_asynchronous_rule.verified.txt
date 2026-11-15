@@ -62,7 +62,6 @@
     }
   ],
   GeneratorDiagnostics: {
-    Joinery.Dovetail.DovetailAttributesGenerator: [],
     Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: [
       {
         Id: DT0018,
@@ -125,14 +124,6 @@
         Category: Dovetail
       }
     ]
-  },
-  GlobalOptions: {
-    build_property.DovetailExportClassName: Exports,
-    build_property.DovetailExportMethodName: Rivet,
-    build_property.DovetailExportNamespace: ,
-    build_property.DovetailImportClassName: Imports,
-    build_property.DovetailImportMethodName: Rivet,
-    build_property.DovetailImportNamespace: 
   },
   References: [
     FluentValidation.dll,

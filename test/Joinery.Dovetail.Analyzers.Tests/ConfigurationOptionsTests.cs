@@ -9,10 +9,11 @@ using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 namespace Joinery.Dovetail.Analyzers.Tests;
 
 /// <summary>
-///     The options registration <c>[DovetailConfiguration]</c> produces: <c>AddOptionaryConfigurationOptions</c>, which the joint the
-///     assembly exports calls, and the reflection-free binder it uses, generated with the rules of the configuration binding source generator version the compilation's
-///     Microsoft.Extensions.Configuration.Binder reference asks for. Each snapshot shows the generated file and how the
-///     exports list the joint; the generated code must compile.
+///     The options registration <c>[DovetailConfiguration]</c> produces: <c>AddOptionaryConfigurationOptions</c> and the
+///     reflection-free binder it uses, generated with the rules of the configuration binding source generator version the compilation's
+///     Microsoft.Extensions.Configuration.Binder reference asks for. The configuration generator runs alone; each snapshot shows
+///     the generated options file, and the generated code must compile. The joint that calls the method is covered by
+///     <see cref="OptionsJointTests" />.
 /// </summary>
 public class ConfigurationOptionsTests() : GeneratorTest()
 {
@@ -542,7 +543,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     public async Task Calls_ValidateWithZeroAlloc_only_for_the_types_ZeroAlloc_writes_an_overload_for()
     {
         // ZeroAlloc.Validation.Options writes overloads per project, so a [Validate] class of a referenced assembly has none here.
-        var thirdParty = await Builder
+        var thirdParty = await ConfigurationBuilder
                               .WithProjectName("ThirdParty")
                               .AddReferences(typeof(IValidateOptions<>))
                               .AddSources(
@@ -828,7 +829,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
     ///     Microsoft.Extensions.Configuration.Binder at <paramref name="binder" />.0.0.0 that selects the binder rules.
     /// </summary>
     private GeneratorTestContextBuilder WithBinder(int binder) =>
-        Builder
+        ConfigurationBuilder
            .AddConfigurationOptionsReferences()
            .AddReferences(typeof(IValidateOptions<>), typeof(RangeAttribute), typeof(Uri))
            .AddReferences(BinderStandIn(binder));
@@ -851,16 +852,9 @@ public class ConfigurationOptionsTests() : GeneratorTest()
 
         var generated = result.Results[typeof(ConfigurationGenerator)];
         var text = new StringBuilder();
-        // The options file comes from the configuration generator, the exports that list its joint from the joint generator.
-        foreach (var (name, trees) in new[]
-                 {
-                     ("Dovetail_ConfigurationOptions.g.cs", generated.SyntaxTrees),
-                     ("Exported_Dovetails.g.cs", result.Results[typeof(DovetailAttributesGenerator)].SyntaxTrees),
-                 })
-        {
-            text.AppendLine("## " + name);
-            text.AppendLine(trees.SingleOrDefault(z => Path.GetFileName(z.FilePath) == name)?.ToString() ?? "(none)");
-        }
+        const string name = "Dovetail_ConfigurationOptions.g.cs";
+        text.AppendLine("## " + name);
+        text.AppendLine(generated.SyntaxTrees.SingleOrDefault(z => Path.GetFileName(z.FilePath) == name)?.ToString() ?? "(none)");
 
         text.AppendLine("## Diagnostics");
         foreach (var diagnostic in generated.Diagnostics.OrderBy(z => z.Location.SourceSpan.Start).ThenBy(z => z.Id, StringComparer.Ordinal))

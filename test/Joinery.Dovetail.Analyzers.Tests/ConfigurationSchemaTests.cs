@@ -28,7 +28,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
         """;
 
     private GeneratorTestContextBuilder WithAnnotations() =>
-        Builder.AddConfigurationOptionsReferences().AddReferences(typeof(RangeAttribute), typeof(DescriptionAttribute), typeof(TypeConverterAttribute), typeof(Uri));
+        ConfigurationBuilder.AddConfigurationOptionsReferences().AddReferences(typeof(RangeAttribute), typeof(DescriptionAttribute), typeof(TypeConverterAttribute), typeof(Uri));
 
     [Test]
     public async Task Describes_an_options_class()
@@ -264,7 +264,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
     [Test]
     public async Task Describes_types_from_referenced_assemblies_with_their_xml_docs()
     {
-        var thirdParty = await Builder
+        var thirdParty = await ConfigurationBuilder
                               .WithProjectName("ThirdParty")
                               .AddSources(
                                    """
@@ -287,7 +287,7 @@ public class ConfigurationSchemaTests() : GeneratorTest()
                               .GenerateAsync(TestContext.CancellationToken);
 
         const string documentationPath = "/packages/thirdparty/1.0.0/lib/net10.0/ThirdParty.xml";
-        var result = await Builder
+        var result = await ConfigurationBuilder
                           .AddConfigurationOptionsReferences()
                           .AddCompilationReferences(thirdParty)
                           .AddSources("[assembly: Joinery.Dovetail.Attributes.DovetailConfiguration<ThirdParty.ClientOptions>(\"Client\")]")

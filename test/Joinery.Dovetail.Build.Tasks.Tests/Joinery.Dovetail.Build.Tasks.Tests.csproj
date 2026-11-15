@@ -4,12 +4,14 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Build.Tasks\Joinery.Dovetail.Build.Tasks.csproj" />
+        <!-- Only for the exports Dovetail's generator writes into every in-repo test project (test/Directory.Build.targets). -->
         <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
-        <ProjectReference Include="..\..\src\Joinery.Dovetail.Serilog\Joinery.Dovetail.Serilog.csproj" />
         <PackageReference Include="Corvus.Json.JsonSchema.Draft7" />
     </ItemGroup>
     <ItemGroup>
         <!-- Copies of the generator's snapshots in Joinery.Dovetail.Analyzers.Tests (see GeneratorOutputTests). -->
         <None Include="generator-output/*.txt" CopyToOutputDirectory="PreserveNewest" LinkBase="generator-output" />
+        <!-- A hand-written fragment, a copy of the one Joinery.Dovetail.Serilog writes (see HandWrittenFragmentTests). -->
+        <None Include="fixtures/*.json" CopyToOutputDirectory="PreserveNewest" LinkBase="fixtures" />
     </ItemGroup>
 </Project>

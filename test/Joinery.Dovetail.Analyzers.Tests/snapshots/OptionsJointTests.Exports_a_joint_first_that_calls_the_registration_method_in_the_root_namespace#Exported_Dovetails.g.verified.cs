@@ -8,10 +8,10 @@ using Joinery.Dovetail;
 using Joinery.Dovetail.Infrastructure;
 
 [assembly: System.Reflection.AssemblyMetadata("Dovetail.Export.Property", "Export")]
-[assembly: System.Reflection.AssemblyMetadata("Dovetail.Export.Namespace", "Sample")]
+[assembly: System.Reflection.AssemblyMetadata("Dovetail.Export.Namespace", "Sample.Exports")]
 [assembly: System.Reflection.AssemblyMetadata("Dovetail.Export.ClassName", "Exports")]
 [assembly: System.Reflection.AssemblyMetadata("Dovetail.Export.MethodName", "Rivet")]
-namespace Sample
+namespace Sample.Exports
 {
     /// <summary>
     /// The class defined for exporting conventions from this assembly
@@ -25,6 +25,7 @@ namespace Sample
         public static IEnumerable<IDovetailJointMetadata> Rivet()
         {
             yield return new DovetailJointMetadata(new DovetailConfigurationOptions(), DovetailHostType.Undefined, DovetailCategory.Application);
+            yield return new DovetailJointMetadata(new Sample.OtherJoint(), DovetailHostType.Undefined, DovetailCategory.Application);
         }
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace Sample
         [System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         private sealed class DovetailConfigurationOptions : global::Joinery.Dovetail.Joints.IServiceJoint
         {
-            public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) => global::Sample.OptionaryConfigurationOptions.AddOptionaryConfigurationOptions(services);
+            public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) => global::Sample.App.OptionaryConfigurationOptions.AddOptionaryConfigurationOptions(services);
         }
     }
 }

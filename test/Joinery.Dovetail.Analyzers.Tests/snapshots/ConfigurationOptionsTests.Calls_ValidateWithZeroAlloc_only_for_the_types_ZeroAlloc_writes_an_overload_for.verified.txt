@@ -1,16 +1,7 @@
 ﻿{
   FinalDiagnostics: [],
   GeneratorDiagnostics: {
-    Joinery.Dovetail.DovetailAttributesGenerator: [],
     Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: []
-  },
-  GlobalOptions: {
-    build_property.DovetailExportClassName: Exports,
-    build_property.DovetailExportMethodName: Rivet,
-    build_property.DovetailExportNamespace: ,
-    build_property.DovetailImportClassName: Imports,
-    build_property.DovetailImportMethodName: Rivet,
-    build_property.DovetailImportNamespace: 
   },
   References: [
     <in-memory assembly>,

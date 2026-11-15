@@ -146,7 +146,7 @@ public class DerivedUnderscoreSettings
 }
 
 /// <summary>
-///     <see cref="ConfigurationKeyStyle" />: data written in the style binds through Dovetail's joint. Keys ignore case, so
+///     <see cref="ConfigurationKeyStyle" />: data written in the style binds through the generated registration method. Keys ignore case, so
 ///     camel case also reads Pascal-case data, while dash case reads different keys.
 /// </summary>
 public class KeyStyleTests

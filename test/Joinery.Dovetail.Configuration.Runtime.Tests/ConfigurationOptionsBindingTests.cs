@@ -4,18 +4,17 @@ using Joinery.Dovetail.Configuration.Yaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Tomlyn.Extensions.Configuration;
 
 namespace Joinery.Dovetail.Configuration.Runtime.Tests;
 
 /// <summary>
-///     Verifies the runtime integration surface that generated <c>IConfigurationJoint</c> implementations
-///     (see <c>openspec/changes/dovetail-managed-configuration</c>) are expected to compose with:
+///     Verifies the runtime integration surface that the generated registration method (<c>AddOptionaryConfigurationOptions</c>)
+///     (see <c>openspec/changes/dovetail-managed-configuration</c>) is expected to compose with:
 ///     <see cref="DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions{TOptions}(IServiceCollection, string, Func{IConfiguration, TOptions})" />
 ///     (with <c>CreateSample</c> standing in for the generated <c>Create…</c> method) plus the
-///     JSON/YAML/TOML runtime <see cref="IConfigurationSource" />s, exercising <see cref="IOptions{TOptions}" />
-///     resolution (task 6.3) and <see cref="IOptionsMonitor{TOptions}" /> reload-on-file-change (task 6.4)
-///     across all three supported formats.
+///     JSON and YAML runtime <see cref="IConfigurationSource" />s, exercising <see cref="IOptions{TOptions}" />
+///     resolution (task 6.3) and <see cref="IOptionsMonitor{TOptions}" /> reload-on-file-change (task 6.4).
+///     TOML, which stays in Dovetail, is covered by <c>Joinery.Dovetail.Configuration.Tests</c>.
 /// </summary>
 public sealed class ConfigurationOptionsBindingTests
 {
@@ -52,23 +51,6 @@ public sealed class ConfigurationOptionsBindingTests
             (directory, fileName) => new ConfigurationBuilder()
                                      .SetBasePath(directory)
                                      .AddYamlFile(fileName, optional: false, reloadOnChange: true)
-                                     .Build()
-        );
-    }
-
-    [Test]
-    public async Task Should_Resolve_IOptions_And_IOptionsMonitor_For_Toml()
-    {
-        await RunResolveScenarioAsync(
-            "appsettings.toml",
-            """
-            [Sample]
-            Name = "initial"
-            Count = 1
-            """,
-            (directory, fileName) => new ConfigurationBuilder()
-                                     .SetBasePath(directory)
-                                     .AddTomlFile(fileName, optional: false, reloadOnChange: true)
                                      .Build()
         );
     }
@@ -119,28 +101,6 @@ public sealed class ConfigurationOptionsBindingTests
             (directory, fileName) => new ConfigurationBuilder()
                                      .SetBasePath(directory)
                                      .AddYamlFile(fileName, optional: false, reloadOnChange: true)
-                                     .Build()
-        );
-    }
-
-    [Test]
-    public async Task Should_Reload_IOptionsMonitor_On_File_Change_For_Toml()
-    {
-        await RunReloadScenarioAsync(
-            "appsettings.toml",
-            """
-            [Sample]
-            Name = "initial"
-            Count = 1
-            """,
-            """
-            [Sample]
-            Name = "updated"
-            Count = 2
-            """,
-            (directory, fileName) => new ConfigurationBuilder()
-                                     .SetBasePath(directory)
-                                     .AddTomlFile(fileName, optional: false, reloadOnChange: true)
                                      .Build()
         );
     }

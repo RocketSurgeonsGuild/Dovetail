@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "title": "Serilog",
+  "description": "Serilog's configuration. Joinery.Dovetail.Serilog reads the minimum level and its overrides from it; sinks and enrichers are configured by Serilog joints in code.",
+  "allOf": [{ "$ref": "#/definitions/Settings" }],
+  "definitions": {
+    "Level": {
+      "type": "string",
+      "title": "Log level",
+      "description": "A Serilog log level threshold: one of Serilog's six levels, matched by name.",
+      "enum": ["Verbose", "Debug", "Information", "Warning", "Error", "Fatal"]
+    },
+    "MinimumLevelObject": {
+      "description": "The detailed form of MinimumLevel.",
+      "properties": {
+        "Default": { "description": "The minimum level for sources without an override.", "allOf": [{ "$ref": "#/definitions/Level" }] },
+        "Override": {
+          "type": "object",
+          "title": "Minimum level overrides",
+          "description": "Minimum levels per logging source: the key is a source context (a namespace or type name prefix, such as Microsoft.AspNetCore), the value a level.",
+          "additionalProperties": { "$ref": "#/definitions/Level" }
+        }
+      },
+      "patternProperties": {
+        "^(?:[Dd][Ee][Ff][Aa][Uu][Ll][Tt])$": { "description": "The minimum level for sources without an override.", "allOf": [{ "$ref": "#/definitions/Level" }] },
+        "^(?:[Oo][Vv][Ee][Rr][Rr][Ii][Dd][Ee])$": {
+          "type": "object",
+          "title": "Minimum level overrides",
+          "description": "Minimum levels per logging source: the key is a source context (a namespace or type name prefix, such as Microsoft.AspNetCore), the value a level.",
+          "additionalProperties": { "$ref": "#/definitions/Level" }
+        }
+      }
+    },
+    "Settings": {
+      "properties": {
+        "MinimumLevel": {
+          "title": "Minimum level",
+          "description": "The minimum level of events to emit: a level name, or an object with Default and Override.",
+          "oneOf": [{ "$ref": "#/definitions/Level" }, { "type": "object", "allOf": [{ "$ref": "#/definitions/MinimumLevelObject" }] }]
+        }
+      },
+      "patternProperties": {
+        "^(?:[Mm][Ii][Nn][Ii][Mm][Uu][Mm][Ll][Ee][Vv][Ee][Ll])$": {
+          "title": "Minimum level",
+          "description": "The minimum level of events to emit: a level name, or an object with Default and Override.",
+          "oneOf": [{ "$ref": "#/definitions/Level" }, { "type": "object", "allOf": [{ "$ref": "#/definitions/MinimumLevelObject" }] }]
+        }
+      }
+    }
+  }
+}

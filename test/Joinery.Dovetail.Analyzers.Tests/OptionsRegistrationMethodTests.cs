@@ -6,9 +6,9 @@ using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 namespace Joinery.Dovetail.Analyzers.Tests;
 
 /// <summary>
-///     The seam Optionary takes over: the configuration generator emits <c>OptionaryConfigurationOptions.AddOptionaryConfigurationOptions</c>
-///     in the <c>RootNamespace</c> build property, and the joint generator exports a joint, listed first, that calls it. The joint
-///     generator decides on its own whether there is anything to call, from the <c>[DovetailConfiguration]</c> declarations.
+///     The seam Optionary takes over: the configuration generator, running alone, emits
+///     <c>OptionaryConfigurationOptions.AddOptionaryConfigurationOptions</c> in the <c>RootNamespace</c> build property, or the global
+///     namespace when there is none. The joint Dovetail exports to call it is covered by <see cref="OptionsJointTests" />.
 /// </summary>
 public class OptionsRegistrationMethodTests() : GeneratorTest()
 {
@@ -29,9 +29,9 @@ public class OptionsRegistrationMethodTests() : GeneratorTest()
         """;
 
     [Test]
-    public async Task Emits_the_registration_method_in_the_root_namespace_and_a_joint_that_calls_it()
+    public async Task Emits_the_registration_method_in_the_root_namespace()
     {
-        // The exports class lives somewhere else on purpose: the method follows RootNamespace, not DovetailExportNamespace.
+        // The exports namespace is set on purpose: the method follows RootNamespace, not DovetailExportNamespace.
         var result = await Options()
                           .AddGlobalOption("build_property.RootNamespace", "Sample.App")
                           .AddGlobalOption("build_property.DovetailExportNamespace", "Sample.Exports")
@@ -99,31 +99,7 @@ public class OptionsRegistrationMethodTests() : GeneratorTest()
     }
 
     [Test]
-    public async Task Exports_the_joint_for_an_assembly_declaration()
-    {
-        var result = await Options()
-                          .AddGlobalOption("build_property.RootNamespace", "Sample")
-                          .AddSources(
-                               Usings
-                             + """
-                               [assembly: DovetailConfiguration<Sample.ExternalOptions>("External")]
-
-                               namespace Sample;
-
-                               public class ExternalOptions
-                               {
-                                   public string? Value { get; set; }
-                               }
-                               """
-                           )
-                          .Build()
-                          .GenerateAsync(TestContext.CancellationToken);
-
-        await Verify(result);
-    }
-
-    [Test]
-    public async Task Emits_neither_without_declarations()
+    public async Task Emits_no_registration_method_without_declarations()
     {
         var result = await Options()
                           .AddGlobalOption("build_property.RootNamespace", "Sample")
@@ -135,7 +111,7 @@ public class OptionsRegistrationMethodTests() : GeneratorTest()
     }
 
     [Test]
-    public async Task Emits_neither_below_CSharp12()
+    public async Task Emits_no_registration_method_below_CSharp12()
     {
         var result = await Options()
                           .AddGlobalOption("build_property.RootNamespace", "Sample")
@@ -147,7 +123,7 @@ public class OptionsRegistrationMethodTests() : GeneratorTest()
         await Verify(result);
     }
 
-    private GeneratorTestContextBuilder Options() => Builder
+    private GeneratorTestContextBuilder Options() => ConfigurationBuilder
                                                     .AddConfigurationOptionsReferences()
                                                     .AddReferences(typeof(IValidateOptions<>))
                                                     .WithDiagnosticSeverity(DiagnosticSeverity.Warning);

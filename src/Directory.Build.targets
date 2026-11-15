@@ -21,6 +21,7 @@
     <InternalsVisibleTo Include="Joinery.Dovetail.Aspire.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.Autofac.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.Configuration.Runtime.Tests" />
+    <InternalsVisibleTo Include="Joinery.Dovetail.Configuration.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.DryIoc.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.AspNetCore.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.Maui.Tests" />

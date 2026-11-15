@@ -128,12 +128,14 @@
     <File Path="test/Directory.Build.props" />
     <File Path="test/Directory.Build.targets" />
     <Project Path="test/Joinery.Dovetail.Analyzers.Tests/Joinery.Dovetail.Analyzers.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Aot.Tests/Joinery.Dovetail.Aot.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Aspire.Tests/Joinery.Dovetail.Aspire.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Autofac.Tests/Joinery.Dovetail.Autofac.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Configuration.Aot.Tests/Joinery.Dovetail.Configuration.Aot.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Configuration.Parity.Tests/Joinery.Dovetail.Configuration.Parity.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Build.Tasks.Tests/Joinery.Dovetail.Build.Tasks.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Configuration.Runtime.Tests/Joinery.Dovetail.Configuration.Runtime.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Configuration.Tests/Joinery.Dovetail.Configuration.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Sdk.Tests/Joinery.Dovetail.Sdk.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Tests/Joinery.Dovetail.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Mermaid.Tests/Joinery.Dovetail.Mermaid.Tests.csproj" />

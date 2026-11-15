@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace Joinery.Dovetail.Configuration.Aot.Tests;
 
 /// <summary>
-///     Compiles registrations shaped like the generated configuration joint's under the trimming and AOT analyzers (this project
+///     Compiles registrations shaped like the generated registration method's under the trimming and AOT analyzers (this project
 ///     is <c>IsAotCompatible</c>, with IL2026, IL3050 and IL2091 as errors), and checks that they still resolve.
 /// </summary>
 public sealed class GeneratedShapeRegistrationTests
@@ -40,7 +40,7 @@ public sealed class GeneratedShapeRegistrationTests
         await ( (Func<object?>)( () => provider.GetRequiredService<IOptions<GreetingsOptions>>().Value ) ).Should().Throw<OptionsValidationException>();
     }
 
-    // The calls the generator emits into IServiceJoint.Register: static calls, and ValidateOnStart
+    // The calls the generator emits into AddOptionaryConfigurationOptions: static calls, and ValidateOnStart
     // wrapping the returned builder. Generated code also writes global:: and every type argument; dotnet format drops them here.
     private static void Register(IServiceCollection services)
     {

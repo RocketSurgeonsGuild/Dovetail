@@ -4,7 +4,7 @@ using Joinery.Dovetail.Configuration.Yaml;
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 
-namespace Joinery.Dovetail.Configuration.Runtime.Tests;
+namespace Joinery.Dovetail.Configuration.Tests;
 
 /// <summary>
 ///     Covers loading configuration from embedded resources (<see cref="DovetailEmbeddedConfiguration" />): the per-format embedded joints, the

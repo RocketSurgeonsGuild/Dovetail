@@ -1,22 +1,21 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Joinery.Dovetail.Serilog;
-using Serilog.Events;
 
 namespace Joinery.Dovetail.Build.Tasks.Tests;
 
 /// <summary>
-///     The schema Joinery.Dovetail.Serilog ships for the <c>Serilog</c> configuration section, which it reads for the minimum level
-///     (<c>MinimumLevel</c>, as a level name or as an object with <c>Default</c> and <c>Override</c>) and nothing else: read from the real
-///     assembly's metadata like the build does, merged into an application schema, and checked against SchemaStore's <c>Serilog</c>
-///     definition, which every host schema embeds and whose level rules the fragment follows, narrowed to what is read. The tests say where
-///     the two agree and where the fragment deliberately says no (Off, level switches, and the keys that are not read).
+///     A hand-written fragment: a schema a library writes itself (as an <c>AssemblyMetadata</c> attribute) rather than one the
+///     generator emits for an options type, merged into an application schema like any other. The fixture is the fragment
+///     Joinery.Dovetail.Serilog writes for the <c>Serilog</c> section, which describes only what it reads (the minimum level, as a
+///     level name or as an object with <c>Default</c> and <c>Override</c>) and follows SchemaStore's <c>Serilog</c> definition, which
+///     every host schema embeds, narrowed to that. The tests check the merge against SchemaStore's definition: where the two agree,
+///     and where the fragment deliberately says no (Off, level switches, and the keys it does not describe).
 /// </summary>
-public class SerilogSchemaTests
+public class HandWrittenFragmentTests
 {
     private static readonly string[] Levels = ["Verbose", "Debug", "Information", "Warning", "Error", "Fatal"];
 
-    /// <summary>The keys of Serilog.Settings.Configuration's format that Joinery.Dovetail.Serilog does not read, with a value each.</summary>
+    /// <summary>The keys of Serilog.Settings.Configuration's format that the fragment does not describe, with a value each.</summary>
     private static readonly (string Key, string Value)[] KeysThatAreNotRead =
     [
         ("Using", """[ "Serilog.Sinks.Console" ]"""),
@@ -33,9 +32,9 @@ public class SerilogSchemaTests
 
     private static readonly Regex NamedGroup = new(@"\(\?<[A-Za-z]+>", RegexOptions.CultureInvariant);
 
-    /// <summary>The fragments in the Joinery.Dovetail.Serilog assembly, read as the build task reads them.</summary>
+    /// <summary>The fixture, parsed as the build task parses a fragment it reads from an assembly's metadata.</summary>
     private static IReadOnlyList<ConfigurationSchemaFragment> ReadFragments() =>
-        ConfigurationSchemaFragments.Read([typeof(SerilogJoint).Assembly.Location], _ => { });
+        [Fragments.Parse("Serilog", File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures", "Serilog.fragment.json")), "HandWritten")];
 
     private static async Task<JsonObject> ApplicationSchema(bool strict = true, bool includeSchemaStore = false) =>
         await SchemaAssert.ShouldBeWellFormed(
@@ -73,13 +72,13 @@ public class SerilogSchemaTests
     private static string Config(string serilogSection) => "{\"Serilog\": {" + serilogSection + "}}";
 
     [Test]
-    public async Task TheAssembly_DeclaresExactlyTheSerilogFragment()
+    public async Task TheFixture_IsOneFragmentForTheSerilogSection()
     {
         var fragments = ReadFragments();
 
         await fragments.Count.Should().BeEqualTo(1);
         await fragments[0].Path.Should().BeEquivalentTo(["Serilog"], CollectionOrdering.Matching);
-        await fragments[0].Source.Should().BeEqualTo("Joinery.Dovetail.Serilog");
+        await fragments[0].Source.Should().BeEqualTo("HandWritten");
     }
 
     [Test]
@@ -133,14 +132,15 @@ public class SerilogSchemaTests
     }
 
     [Test]
-    public async Task TheLevels_AreSerilogsLevels_AndSchemaStoresLevelsWithoutOff()
+    public async Task TheLevels_AreSchemaStoresLevelsWithoutOff()
     {
         var ours = ReadFragments().Single().Schema["definitions"]!.AsObject();
         var theirs = SchemaStoreSerilog();
         var oursLevels = ours["Level"]!["enum"]!.AsArray().Select(z => z!.GetValue<string>()).ToArray();
 
-        // The names of LogEventLevel, which is what the section is parsed to. SchemaStore also lists Off, which Serilog has no level for.
-        await oursLevels.Should().BeEquivalentTo(Enum.GetNames<LogEventLevel>(), CollectionOrdering.Matching);
+        // Serilog's six levels (Joinery.Dovetail.Serilog.Tests checks them against LogEventLevel). SchemaStore also lists Off,
+        // which Serilog has no level for.
+        await oursLevels.Should().BeEquivalentTo(Levels, CollectionOrdering.Matching);
         await oursLevels.Should().BeEquivalentTo(theirs["SerilogLogEventLevel"]!["enum"]!.AsArray().Select(z => z!.GetValue<string>()).Where(z => z != "Off"), CollectionOrdering.Matching);
         await ours["Level"]!["type"]!.ToJsonString().Should().BeEqualTo(theirs["SerilogLogEventLevel"]!["type"]!.ToJsonString());
     }
@@ -160,7 +160,7 @@ public class SerilogSchemaTests
     }
 
     /// <summary>
-    ///     Configurations of the keys that are read and whether they are valid. SchemaStore's schema, ours and the host schema that
+    ///     Configurations of the keys the fragment describes and whether they are valid. SchemaStore's schema, ours and the host schema that
     ///     contains both must all give that verdict.
     /// </summary>
     public static IEnumerable<(string Name, string Section, bool Valid)> AgreementCases()
@@ -216,8 +216,8 @@ public class SerilogSchemaTests
     }
 
     /// <summary>
-    ///     Configurations that SchemaStore's schema accepts (they are Serilog.Settings.Configuration's format) and that Joinery.Dovetail.Serilog
-    ///     does not read, so the fragment says no, and so does the host schema that contains both.
+    ///     Configurations that SchemaStore's schema accepts (they are Serilog.Settings.Configuration's format) and that the fragment
+    ///     does not describe, so the fragment says no, and so does the host schema that contains both.
     /// </summary>
     public static IEnumerable<(string Name, string Section)> NotReadCases()
     {

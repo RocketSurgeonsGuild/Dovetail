@@ -1,0 +1,4 @@
+[*]
+# test/.editorconfig turns these off for every test project; this one exists to report them.
+dotnet_diagnostic.IL2026.severity = warning
+dotnet_diagnostic.IL2067.severity = warning

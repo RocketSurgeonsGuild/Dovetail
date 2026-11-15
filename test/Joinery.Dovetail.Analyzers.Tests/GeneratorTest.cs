@@ -13,6 +13,15 @@ public abstract class GeneratorTest() : LoggerTest<TestRecord>(TestRecord.Create
                                                                          .AddCommonGenerators()
                                                                          .AddDovetailConfiguration("", "");
 
+    /// <summary>
+    ///     Runs the configuration generator alone, without the joint generator: what moves to Optionary is tested without the
+    ///     exports the joint generator writes around it.
+    /// </summary>
+    protected GeneratorTestContextBuilder ConfigurationBuilder { get; } = GeneratorTestContextBuilder
+                                                                         .Create()
+                                                                         .AddCommonReferences()
+                                                                         .WithGenerator<Support.Configuration.ConfigurationGenerator>();
+
     protected GeneratorTestContextBuilder WithSharedDeps() => Builder.AddSharedDeps(TestContext.CancellationToken);
 
     protected GeneratorTestContextBuilder WithGenericSharedDeps() => Builder.AddSharedGenericDeps(TestContext.CancellationToken);

@@ -5,7 +5,7 @@ using Joinery.Dovetail.Infrastructure;
 // fully qualified reference would flip between IDE0002 and a removed using on every automatic lint run.
 #pragma warning disable IDE0002
 
-namespace Joinery.Dovetail.Configuration.Aot.Tests;
+namespace Joinery.Dovetail.Aot.Tests;
 
 /// <summary>
 ///     An exported joint with constructor parameters is created by the code Dovetail's generator emits, and that code compiles in a
@@ -18,7 +18,7 @@ public sealed class GeneratedConstructorParameterTests
     public async Task Exported_joint_is_created_from_the_values_set_on_the_context_builder()
     {
         var builder = DovetailContextBuilder
-                     .Create(global::Joinery.Dovetail.Configuration.Aot.Tests.Rivets.Exports.Joints(), new Dictionary<object, object>(), DovetailHostType.UnitTest, [])
+                     .Create(global::Joinery.Dovetail.Aot.Tests.Rivets.Exports.Joints(), new Dictionary<object, object>(), DovetailHostType.UnitTest, [])
                      .Set(new GeneratedGreetingOptions("hello"))
                      .Set(3);
 
@@ -31,7 +31,7 @@ public sealed class GeneratedConstructorParameterTests
     [Test]
     public async Task Exported_joint_falls_back_to_the_defaults_of_the_parameters_the_context_builder_has_no_value_for()
     {
-        var builder = DovetailContextBuilder.Create(global::Joinery.Dovetail.Configuration.Aot.Tests.Rivets.Exports.Joints(), new Dictionary<object, object>(), DovetailHostType.UnitTest, []);
+        var builder = DovetailContextBuilder.Create(global::Joinery.Dovetail.Aot.Tests.Rivets.Exports.Joints(), new Dictionary<object, object>(), DovetailHostType.UnitTest, []);
 
         var joint = ( await builder.CreateAsync() ).Joints.OfType<GeneratedGreetingJoint>().Single();
 
@@ -43,8 +43,7 @@ public sealed class GeneratedConstructorParameterTests
 public sealed record GeneratedGreetingOptions(string Greeting);
 
 /// <summary>
-///     Every parameter is optional so that the other tests in this project, which read the joint of everything this assembly exports
-///     without a context builder, can still create it.
+///     Every parameter is optional, so the joint can also be created without a context builder value.
 /// </summary>
 [DovetailExport]
 public sealed class GeneratedGreetingJoint(GeneratedGreetingOptions? options = null, int repeat = 1) : IDovetailJoint

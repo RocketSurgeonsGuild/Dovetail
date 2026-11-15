@@ -24,16 +24,7 @@ namespace Sample
         /// </summary>
         public static IEnumerable<IDovetailJointMetadata> Rivet()
         {
-            yield return new DovetailJointMetadata(new DovetailConfigurationOptions(), DovetailHostType.Undefined, DovetailCategory.Application);
-        }
-
-        /// <summary>
-        /// Registers this assembly's [DovetailConfiguration] types with the options pipeline.
-        /// </summary>
-        [System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        private sealed class DovetailConfigurationOptions : global::Joinery.Dovetail.Joints.IServiceJoint
-        {
-            public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) => global::Sample.OptionaryConfigurationOptions.AddOptionaryConfigurationOptions(services);
+            yield return new DovetailJointMetadata(new Sample.OtherJoint(), DovetailHostType.Undefined, DovetailCategory.Application);
         }
     }
 }
