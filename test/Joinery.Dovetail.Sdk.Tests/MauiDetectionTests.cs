@@ -3,7 +3,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// Covers the MAUI branch of <c>src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets</c>. A MAUI app (<c>UseMaui</c> with
+/// Covers the MAUI branch of <c>src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets</c>. A MAUI app (<c>UseMaui</c> with
 /// <c>OutputType=Exe</c>) gets the MAUI host - not the generic host its <c>Exe</c> output type would otherwise pick - with the
 /// blocking entry points, embed-only configuration and a build-time environment name; a MAUI class library gets no host.
 /// These projects need the MAUI workload to build, so they're only evaluated.

@@ -11,12 +11,13 @@
   <UsingTask TaskName="Joinery.Dovetail.Templates.Tasks.ExpandTemplate" AssemblyFile="$(_DovetailTemplatesTasksAssembly)" TaskFactory="TaskHostFactory" />
   <!--
       Builds the task first, for every project that could emit a template (any project importing Joinery.Dovetail.Templates.targets),
-      except the task itself and the generator, which run no templates. Not a real reference: nothing compiles against it, no package
-      depends on it, and an Aspire AppHost doesn't make it a resource. AdditionalProperties is cleared so browser-wasm builds (see the
-      root Directory.Build.targets) don't build it for that runtime, into another folder.
+      except the task itself, the generator and the MSBuild SDK packages (DovetailSdkPackage), which run no templates. Not a real
+      reference: nothing compiles against it, no package depends on it, and an Aspire AppHost doesn't make it a resource.
+      AdditionalProperties is cleared so browser-wasm builds (see the root Directory.Build.targets) don't build it for that runtime,
+      into another folder.
   -->
   <ItemGroup
-    Condition="'$(MSBuildProjectName)' != 'Joinery.Dovetail.Templates.Tasks' and !$(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers')) and '@(ProjectReference->AnyHaveMetadataValue('Filename', 'Joinery.Dovetail.Templates.Tasks'))' != 'true'"
+    Condition="'$(MSBuildProjectName)' != 'Joinery.Dovetail.Templates.Tasks' and '$(DovetailSdkPackage)' != 'true' and !$(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers')) and '@(ProjectReference->AnyHaveMetadataValue('Filename', 'Joinery.Dovetail.Templates.Tasks'))' != 'true'"
   >
     <ProjectReference
       Include="$(MSBuildThisFileDirectory)Joinery.Dovetail.Templates.Tasks.csproj"
