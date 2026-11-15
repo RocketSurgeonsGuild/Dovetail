@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- The SDK this one mirrors: src/Sdks/Directory.Build.targets writes the package's description and Sdk/Packages.props from it. -->
+    <DovetailMicrosoftSdk>Microsoft.NET.Sdk.Worker</DovetailMicrosoftSdk>
+  </PropertyGroup>
+</Project>

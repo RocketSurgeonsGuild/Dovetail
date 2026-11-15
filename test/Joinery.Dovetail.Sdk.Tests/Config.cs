@@ -62,6 +62,9 @@ internal static class Config
         {
             ["DovetailMicrosoftExtensionsHostingVersion"] = "{microsoft-extensions-hosting-version}",
             ["DovetailOpenTelemetryExtensionsHostingVersion"] = "{opentelemetry-extensions-hosting-version}",
+            // The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost imports, written into its Packages.props the same way.
+            ["DovetailAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
+            ["_DovetailMirrorAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
         }.ToFrozenDictionary();
 
         private static readonly IReadOnlyCollection<string> PropertiesToWrite =
@@ -135,7 +138,7 @@ internal static class Config
                 writer.WriteStartObject();
                 writer.WritePropertyName("Name");
                 writer.WriteValue(item.Name);
-                foreach (var value in item.Children.OfType<Metadata>().OrderBy(z => z.Name))
+                foreach (var value in GetSortedMetadata(item))
                 {
                     // MSBuild synthesizes %(Link) for out-of-cone items based on a string-prefix
                     // comparison between the item's full path and the project directory; macOS's
@@ -218,7 +221,7 @@ internal static class Config
             {
                 writer.WritePropertyName(item.Name);
                 writer.WriteStartObject();
-                foreach (var value in item.Children.OfType<Metadata>().OrderBy(z => z.Name))
+                foreach (var value in GetSortedMetadata(item))
                 {
                     // MSBuild synthesizes %(Link) for out-of-cone items based on a string-prefix
                     // comparison between the item's full path and the project directory; macOS's
@@ -241,6 +244,9 @@ internal static class Config
         }
     }
 
+    // Sorted here rather than in the loops that write each item: ZA0601 flags a LINQ call inside a loop.
+    private static IEnumerable<Metadata> GetSortedMetadata(Item item) => item.Children.OfType<Metadata>().OrderBy(z => z.Name);
+
     private static IEnumerable<Item> GetItemGroup(ProjectEvaluation project, string name)
     {
         var items = project.Children.OfType<Folder>().Single(z => z.Name == "Items");
@@ -262,6 +268,8 @@ internal static class Config
 
     public static FrozenSet<string> AllPropertyNames => field ??= Directory.EnumerateFiles(Path.Combine(RootDirectory, "src"), "*.props", SearchOption.AllDirectories)
         .Concat(Directory.EnumerateFiles(Path.Combine(RootDirectory, "src"), "*.targets", SearchOption.AllDirectories))
+        // How the SDK packages themselves are built and packed, which no consumer imports.
+        .Where(z => Path.GetDirectoryName(z) != Path.Combine(RootDirectory, "src", "Sdks"))
         .SelectMany(z => XDocument.Parse(File.ReadAllText(z)).Document!.Descendants("PropertyGroup")
             .SelectMany(z => z.Elements().Select(e => e.Name.LocalName))
             .Distinct()

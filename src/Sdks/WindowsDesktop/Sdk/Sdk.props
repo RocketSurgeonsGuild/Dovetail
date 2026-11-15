@@ -1,0 +1,30 @@
+<Project>
+  <!--
+      Joinery.Dovetail.Sdk.WindowsDesktop is Microsoft.NET.Sdk.WindowsDesktop with Dovetail. A project swaps the one for the other and changes nothing else:
+
+          <Project Sdk="Joinery.Dovetail.Sdk.WindowsDesktop">
+
+      with the version under msbuild-sdks in global.json, or in the attribute (Joinery.Dovetail.Sdk.WindowsDesktop/1.2.3). It takes the Microsoft SDK's place
+      rather than going next to it.
+
+      Windows Forms and WPF projects that still name the Windows Desktop SDK. Since .NET 5 Microsoft.NET.Sdk covers them (UseWPF, UseWindowsForms), and so does Joinery.Dovetail.Sdk; this mirror is for projects that have not moved yet.
+
+      Microsoft.NET.Sdk.WindowsDesktop comes first. It brings Microsoft.NET.Sdk and sets UsingMicrosoftNETSdk, so Joinery.Dovetail.Sdk, chained after it, adds
+      Dovetail alone: the same imports, in the same order, as <Sdk Name="Joinery.Dovetail.Sdk" /> next to Microsoft.NET.Sdk.WindowsDesktop. A project that
+      already gets Joinery.Dovetail.Sdk that way (in a Directory.Build.props, say) does not get it twice.
+  -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.WindowsDesktop" />
+
+  <!-- DovetailSdkVersion, generated when the SDK is packed. Imported after the Microsoft SDK, so a Directory.Build.props can set it first. -->
+  <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
+  <!--
+      Joinery.Dovetail.Sdk registers its host detection in CustomAfterMicrosoftCommonTargets: when that is already there, a
+      Directory.Build.props (or another SDK) applied it, and the mirror leaves it out.
+  -->
+  <PropertyGroup Condition="!$(CustomAfterMicrosoftCommonTargets.Contains('Joinery.Dovetail.HostDetection.targets'))">
+    <!-- Sdk.targets chains the same version and makes the same choice, whatever the project body sets in between. -->
+    <_DovetailMirrorChainsDovetailSdk>true</_DovetailMirrorChainsDovetailSdk>
+    <_DovetailMirrorDovetailSdkVersion>$(DovetailSdkVersion)</_DovetailMirrorDovetailSdkVersion>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Joinery.Dovetail.Sdk" Version="$(_DovetailMirrorDovetailSdkVersion)" Condition="'$(_DovetailMirrorChainsDovetailSdk)' == 'true'" />
+</Project>

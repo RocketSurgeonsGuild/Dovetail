@@ -3,7 +3,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// Covers the managed-configuration opt-in in <c>src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets</c> and
+/// Covers the managed-configuration opt-in in <c>src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets</c> and
 /// <c>Joinery.Dovetail.Configuration.targets</c>: configuration stays off by default (see <see cref="HostTypeTests"/>), and is turned
 /// on by either <c>DovetailEnableConfiguration=true</c> or an explicit format flag, which injects that format's provider.
 /// </summary>

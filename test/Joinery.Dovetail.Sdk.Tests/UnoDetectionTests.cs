@@ -3,7 +3,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// Covers the Uno branch of <c>src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets</c>. An Uno app whose <c>UnoFeatures</c>
+/// Covers the Uno branch of <c>src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets</c>. An Uno app whose <c>UnoFeatures</c>
 /// include Hosting gets the Uno host - ahead of the WebAssembly branch its browserwasm head would otherwise pick - with the
 /// navigate entry points and embed-only configuration; without Hosting there's no host. Uno.Sdk itself isn't used: the
 /// properties it sets (<c>UsingUnoSdk</c>, the raw <c>UnoFeatures</c> string, and for the browserwasm head

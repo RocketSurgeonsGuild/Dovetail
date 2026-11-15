@@ -1,0 +1,99 @@
+﻿[
+  {
+    Name: app.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: {TargetFramework},
+    Properties: {
+      _DovetailApplicationDetected: true,
+      _DovetailMirrorChainsDovetailSdk: true,
+      _DovetailMirrorDovetailSdkVersion: {sdk-version},
+      AssemblyName: app,
+      BaseIntermediateOutputPath: {TempPath}sdk-tests/{id}/app/obj/,
+      BaseOutputPath: bin\,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
+      DefineConstants: TRACE;DEBUG,
+      DovetailEnableAspire: false,
+      DovetailEnableAspireTesting: false,
+      DovetailEnableAutofac: false,
+      DovetailEnableDryIoc: false,
+      DovetailEnableHosting: false,
+      DovetailEnableHostingWeb: false,
+      DovetailEnableOpenTelemetry: true,
+      DovetailEnableSerilog: false,
+      DovetailEnableStashbox: false,
+      DovetailMicrosoftExtensionsHostingVersion: {microsoft-extensions-hosting-version},
+      DovetailOpenTelemetryExtensionsHostingVersion: {opentelemetry-extensions-hosting-version},
+      DovetailSdkVersion: {sdk-version},
+      DovetailVersion: {sdk-version},
+      EnableDefaultCompileItems: false,
+      ExportDovetailAssembly: true,
+      GenerateDocumentationFile: false,
+      ImportDovetailAssembly: true,
+      IsPackable: true,
+      NoWarn: 1701;1702,
+      PackageOutputPath: bin\Debug/,
+      RootNamespace: app,
+      TargetFramework: {TargetFramework}
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Joinery.Dovetail: {
+        IsImplicitlyDefined: true
+      },
+      Joinery.Dovetail.Hosting: {
+        IsImplicitlyDefined: true
+      }
+    },
+    DovetailJoint: {},
+    DovetailHost: {
+      WebAssembly: {
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder,
+        HostType: Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost
+      }
+    },
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.webassembly/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.webassembly/{sdk-version}/Sdk/Sdk.targets,
+      {TempPath}sdk-tests/{id}/app/app.csproj,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props
+    ],
+    NoImports: [
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Joinery.Dovetail.Configuration.targets,
+            Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+        Imports: [
+          {
+            Path: Sdk.props,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.targets,
+        Imports: [
+          {
+            Path: Sdk.targets,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      }
+    ],
+    GeneratedFiles: [],
+    OutputFiles: [
+      app.runtimeconfig.dev.json,
+      app.staticwebassets.runtime.json,
+      appsettings.schema.json
+    ]
+  }
+]

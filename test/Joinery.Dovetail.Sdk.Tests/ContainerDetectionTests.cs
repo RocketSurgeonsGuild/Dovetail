@@ -3,7 +3,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// Covers the flag-gated DI container references in <c>src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets</c>: once
+/// Covers the flag-gated DI container references in <c>src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets</c>: once
 /// <c>DovetailEnable{Container}</c> is set, referencing either the container itself or its
 /// Microsoft.Extensions.DependencyInjection adapter package injects the matching Dovetail integration package.
 /// </summary>

@@ -21,7 +21,7 @@
         <ProjectReference Include="..\..\src\Joinery.Dovetail.OpenTelemetry\Joinery.Dovetail.OpenTelemetry.csproj" />
         <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
 
-        <!-- Mirrors what the Dovetail SDK's Uno detection adds (see src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets). -->
+        <!-- Mirrors what the Dovetail SDK's Uno detection adds (see src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets). -->
         <DovetailHost
             Include="Uno"
             HostBuilderType="global::Uno.Extensions.Hosting.IApplicationBuilder"
