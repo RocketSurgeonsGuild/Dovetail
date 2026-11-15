@@ -2,7 +2,7 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Aspire](/Dovetail/api/joinery.dovetail.aspire.md)
-- Version: `0.5.4-beta.16`
+- Version: `0.5.4-beta.17`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
 
