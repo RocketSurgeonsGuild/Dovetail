@@ -108,7 +108,7 @@
   <Folder Name="/src/Sdks/">
     <File Path="src/Sdks/Directory.Build.props" />
     <File Path="src/Sdks/Directory.Build.targets" />
-    <Project Path="src/Sdks/Sdk/Joinery.Dovetail.Sdk.csproj" />
+    <Project Path="src/Sdks/Dovetail/Joinery.Dovetail.Sdk.csproj" />
     <Project Path="src/Sdks/Aspire.AppHost/Joinery.Dovetail.Sdk.Aspire.AppHost.csproj" />
     <Project Path="src/Sdks/BlazorWebAssembly/Joinery.Dovetail.Sdk.BlazorWebAssembly.csproj" />
     <Project Path="src/Sdks/Console/Joinery.Dovetail.Sdk.Console.csproj" />

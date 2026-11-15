@@ -38,7 +38,7 @@ Three new packages, plus shared pieces, delivered in **one PR**:
   and `DovetailWebAssemblyHelpers.Configure` (`src/Joinery.Dovetail.Hosting.WebAssembly/RocketWebAssemblyExtensions.cs`):
   populate context builder → `DovetailContext.FromAsync` → shared configuration → `ApplyService` →
   `ServiceProviderFactoryAdapter` → host-builder joint → `Build()` → `ApplyHostCreated`.
-- **SDK detection**: `src/Sdks/Sdk/Sdk/Joinery.Dovetail.HostDetection.targets` (it runs via
+- **SDK detection**: `src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets` (it runs via
   `CustomAfterMicrosoftCommonTargets`) picks one `<When>` per project, then adds the `DovetailHost`
   item and an implicit package reference. The MAUI and Uno stubs there are wrong and get replaced (see below).
   Version properties (`DovetailHostingMauiVersion`, `DovetailHostingUnoVersion`, `DovetailStashboxVersion`)
