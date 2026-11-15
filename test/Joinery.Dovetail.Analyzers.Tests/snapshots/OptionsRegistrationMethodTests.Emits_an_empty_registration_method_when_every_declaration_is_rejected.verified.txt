@@ -1,0 +1,58 @@
+﻿{
+  FinalDiagnostics: [
+    {
+      Id: DT0011,
+      Title: Configuration type can't be constructed,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: Input0.cs: (3,1)-(3,22),
+      MessageFormat: '{0}' can't be created from configuration because {1},
+      Message: 'Sample.RefOptions' can't be created from configuration because its constructor parameters can't be in, out or ref ('value'),
+      Category: Dovetail
+    }
+  ],
+  GeneratorDiagnostics: {
+    Joinery.Dovetail.DovetailAttributesGenerator: [],
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: [
+      {
+        Id: DT0011,
+        Title: Configuration type can't be constructed,
+        Severity: Error,
+        WarningLevel: 0,
+        Location: Input0.cs: (3,1)-(3,22),
+        MessageFormat: '{0}' can't be created from configuration because {1},
+        Message: 'Sample.RefOptions' can't be created from configuration because its constructor parameters can't be in, out or ref ('value'),
+        Category: Dovetail
+      }
+    ]
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: ,
+    build_property.RootNamespace: Sample
+  },
+  References: [
+    FluentValidation.dll,
+    Joinery.Dovetail.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.Configuration.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.Options.dll,
+    Microsoft.Extensions.Options.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.Collections.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Linq.dll,
+    System.Private.CoreLib.dll,
+    System.Runtime.dll
+  ]
+}

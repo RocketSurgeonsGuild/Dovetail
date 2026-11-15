@@ -9,8 +9,8 @@ using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 namespace Joinery.Dovetail.Analyzers.Tests;
 
 /// <summary>
-///     The options registration <c>[DovetailConfiguration]</c> produces: a joint the assembly exports, and the reflection-free
-///     binder it uses, generated with the rules of the configuration binding source generator version the compilation's
+///     The options registration <c>[DovetailConfiguration]</c> produces: <c>AddOptionaryConfigurationOptions</c>, which the joint the
+///     assembly exports calls, and the reflection-free binder it uses, generated with the rules of the configuration binding source generator version the compilation's
 ///     Microsoft.Extensions.Configuration.Binder reference asks for. Each snapshot shows the generated file and how the
 ///     exports list the joint; the generated code must compile.
 /// </summary>
@@ -372,30 +372,6 @@ public class ConfigurationOptionsTests() : GeneratorTest()
 
         await result.Results[typeof(ConfigurationGenerator)]
               .Diagnostics.Select(z => $"{z.Id}: {z.GetMessage(System.Globalization.CultureInfo.InvariantCulture)}").Should().BeEquivalentTo(["DT0011: 'Sample.RefOptions' can't be created from configuration because its constructor parameters can't be in, out or ref ('value')"], CollectionOrdering.Matching);
-        await result.Results[typeof(ConfigurationGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().NotContain("Dovetail_ConfigurationOptions.g.cs");
-    }
-
-    [Test]
-    public async Task Registers_nothing_without_options()
-    {
-        var result = await WithBinder(11)
-                          .AddSources(
-                               Usings
-                             + """
-                               namespace Sample;
-
-                               [DovetailConfiguration(RegisterOptions = false)]
-                               public class SchemaOnlyOptions
-                               {
-                                   public string? Value { get; set; }
-                               }
-                               """
-                           )
-                          .Build()
-                          .GenerateAsync(TestContext.CancellationToken);
-
-        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
-        await result.Results[typeof(ConfigurationGenerator)].SyntaxTrees.Select(z => Path.GetFileName(z.FilePath)).Should().NotContain("Dovetail_ConfigurationOptions.g.cs");
     }
 
     [Test]
@@ -867,7 +843,7 @@ public class ConfigurationOptionsTests() : GeneratorTest()
             )
            .ToMetadataReference();
 
-    /// <summary>The generated options file and the exports that list its joint; the generated code must compile.</summary>
+    /// <summary>The generated options file and the exports that list the joint calling it; the generated code must compile.</summary>
     private static string Describe(GeneratorTestResults result)
     {
         var compileErrors = result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error && z.Id.StartsWith("CS", StringComparison.Ordinal)).ToArray();

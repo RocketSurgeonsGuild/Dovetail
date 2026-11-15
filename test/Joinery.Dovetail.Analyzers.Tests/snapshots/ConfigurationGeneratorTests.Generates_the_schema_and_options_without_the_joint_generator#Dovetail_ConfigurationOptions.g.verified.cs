@@ -7,19 +7,21 @@
 // Suppress warnings about [Obsolete] member usage in generated code.
 #pragma warning disable CS0612, CS0618
 
-public static partial class Exports
+/// <summary>
+///     Registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline, bound from configuration
+///     without reflection.
+/// </summary>
+[System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+internal static class OptionaryConfigurationOptions
 {
     /// <summary>
-    ///     Registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline, bound from configuration
-    ///     without reflection.
+    ///     Registers this assembly's <c>[DovetailConfiguration]</c> types with the options pipeline. Every registration is a
+    ///     <c>TryAdd</c>, so calling it more than once is harmless.
     /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-    private sealed class DovetailConfigurationOptions : global::Joinery.Dovetail.Joints.IServiceJoint
+    internal static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddOptionaryConfigurationOptions(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
     {
-        public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services)
-        {
-            global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.GreetingsOptions>(services, "Greetings", static configuration => DovetailConfigurationBinder.CreateSample__GreetingsOptions(configuration));
-        }
+        global::Joinery.Dovetail.DovetailConfigurationOptionsExtensions.AddDovetailConfigurationOptions<global::Sample.GreetingsOptions>(services, "Greetings", static configuration => DovetailConfigurationBinder.CreateSample__GreetingsOptions(configuration));
+        return services;
     }
 }
 

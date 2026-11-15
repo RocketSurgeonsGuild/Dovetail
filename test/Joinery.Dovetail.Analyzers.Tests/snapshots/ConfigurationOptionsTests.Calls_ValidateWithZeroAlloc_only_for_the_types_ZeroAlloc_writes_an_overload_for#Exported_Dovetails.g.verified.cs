@@ -24,6 +24,15 @@ public static partial class Exports
     {
         yield return new DovetailJointMetadata(new DovetailConfigurationOptions(), DovetailHostType.Undefined, DovetailCategory.Application);
     }
+
+    /// <summary>
+    /// Registers this assembly's [DovetailConfiguration] types with the options pipeline.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("Joinery.Dovetail.Analyzers", "version"), System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    private sealed class DovetailConfigurationOptions : global::Joinery.Dovetail.Joints.IServiceJoint
+    {
+        public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) => global::OptionaryConfigurationOptions.AddOptionaryConfigurationOptions(services);
+    }
 }
 #pragma warning restore CA1002, CA1034, CA1822, CS0105, CS1573, CS8602, CS8603, CS8618, CS8669
 #nullable restore

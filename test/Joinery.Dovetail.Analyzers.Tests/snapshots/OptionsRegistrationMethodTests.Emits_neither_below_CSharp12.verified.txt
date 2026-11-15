@@ -1,0 +1,58 @@
+﻿{
+  FinalDiagnostics: [
+    {
+      Id: DT0006,
+      Title: C# version too old for Dovetail source generation,
+      Severity: Warning,
+      WarningLevel: 1,
+      Location: : (0,0)-(0,0),
+      MessageFormat: Dovetail's source generator needs C# 12 or later, but this project uses C# {0}, so no Dovetail code was generated; set LangVersion to 12 or later to enable it,
+      Message: Dovetail's source generator needs C# 12 or later, but this project uses C# 11.0, so no Dovetail code was generated; set LangVersion to 12 or later to enable it,
+      Category: Dovetail
+    }
+  ],
+  GeneratorDiagnostics: {
+    Joinery.Dovetail.DovetailAttributesGenerator: [
+      {
+        Id: DT0006,
+        Title: C# version too old for Dovetail source generation,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: : (0,0)-(0,0),
+        MessageFormat: Dovetail's source generator needs C# 12 or later, but this project uses C# {0}, so no Dovetail code was generated; set LangVersion to 12 or later to enable it,
+        Message: Dovetail's source generator needs C# 12 or later, but this project uses C# 11.0, so no Dovetail code was generated; set LangVersion to 12 or later to enable it,
+        Category: Dovetail
+      }
+    ],
+    Joinery.Dovetail.Support.Configuration.ConfigurationGenerator: []
+  },
+  GlobalOptions: {
+    build_property.DovetailExportClassName: Exports,
+    build_property.DovetailExportMethodName: Rivet,
+    build_property.DovetailExportNamespace: ,
+    build_property.DovetailImportClassName: Imports,
+    build_property.DovetailImportMethodName: Rivet,
+    build_property.DovetailImportNamespace: ,
+    build_property.RootNamespace: Sample
+  },
+  References: [
+    FluentValidation.dll,
+    Joinery.Dovetail.dll,
+    Microsoft.Extensions.Configuration.Abstractions.dll,
+    Microsoft.Extensions.Configuration.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.DependencyInjection.Abstractions.dll,
+    Microsoft.Extensions.Options.dll,
+    Microsoft.Extensions.Options.dll,
+    mscorlib.dll,
+    netstandard.dll,
+    System.Collections.dll,
+    System.ComponentModel.dll,
+    System.Core.dll,
+    System.dll,
+    System.Linq.dll,
+    System.Private.CoreLib.dll,
+    System.Runtime.dll
+  ]
+}

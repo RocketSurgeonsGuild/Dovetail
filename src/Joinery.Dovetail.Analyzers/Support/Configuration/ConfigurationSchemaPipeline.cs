@@ -31,13 +31,8 @@ internal static class ConfigurationSchemaPipeline
             static (options, _) => options is not CSharpParseOptions csharp || csharp.LanguageVersion >= LanguageVersion.CSharp12
         );
 
-        // The class the options joint is nested in: the assembly's exports class.
-        var exports = context.AnalyzerConfigOptionsProvider.Select(
-            static (options, _) => new ConfigurationExports(
-                options.GlobalOptions.GetBuildProperty("DovetailExportNamespace", s => s) ?? ConfigurationExports.NotDefined,
-                options.GlobalOptions.GetBuildProperty("DovetailExportClassName", s => s) ?? ConfigurationExports.NotDefined
-            )
-        );
+        // The registration method's namespace, verbatim; Dovetail's exported joint calls it there.
+        var rootNamespace = context.AnalyzerConfigOptionsProvider.Select(static (options, _) => options.GlobalOptions.GetBuildProperty("RootNamespace", s => s));
 
         var declarations = Declarations(context);
 
@@ -47,6 +42,9 @@ internal static class ConfigurationSchemaPipeline
         var options = declarations
                      .Select(static (declarations, _) => declarations.Select(z => z.Options).OfType<ConfigurationOptions>().ToEquatableArray())
                      .WithTrackingName("dovetail:configuration_options");
+        // The method is emitted for every declaration, even one that registers nothing, because Dovetail's joint generator
+        // exports a joint calling it whenever it finds a declaration, and doesn't read what this generator made of it.
+        var hasDeclarations = declarations.Select(static (declarations, _) => !declarations.IsEmpty);
 
         // [OptionsValidator] classes for the options types are registered with them.
         var validators = context
@@ -93,14 +91,13 @@ internal static class ConfigurationSchemaPipeline
         );
 
         context.RegisterSourceOutput(
-            options.Combine(validators).Combine(zeroAllocExtensions).Combine(exports).Combine(supportedLanguageVersion),
+            options.Combine(validators).Combine(zeroAllocExtensions).Combine(rootNamespace).Combine(hasDeclarations.Combine(supportedLanguageVersion)),
             static (production, input) =>
             {
-                var (((registrations, validators), zeroAllocExtensions), exports) = input.Left;
-                if (input.Right
-                 && ConfigurationOptionsEmitter.Emit(exports, registrations, validators, zeroAllocExtensions) is { } source)
+                var (((registrations, validators), zeroAllocExtensions), rootNamespace) = input.Left;
+                if (input.Right is (true, true))
                 {
-                    production.AddSource("Dovetail_ConfigurationOptions.g.cs", source);
+                    production.AddSource("Dovetail_ConfigurationOptions.g.cs", ConfigurationOptionsEmitter.Emit(rootNamespace, registrations, validators, zeroAllocExtensions));
                 }
             }
         );
@@ -118,13 +115,6 @@ internal static class ConfigurationSchemaPipeline
             }
         );
     }
-
-    /// <summary>
-    ///     Whether this assembly registers options, which is when its exports class lists the options joint. The joint generator
-    ///     reads it; it builds the same declarations as <see cref="Register" />.
-    /// </summary>
-    public static IncrementalValueProvider<bool> HasOptions(IncrementalGeneratorInitializationContext context) =>
-        Declarations(context).Select(static (declarations, _) => declarations.Any(z => z.Options is not null));
 
     private static IncrementalValueProvider<EquatableArray<ConfigurationDeclaration>> Declarations(IncrementalGeneratorInitializationContext context)
     {
