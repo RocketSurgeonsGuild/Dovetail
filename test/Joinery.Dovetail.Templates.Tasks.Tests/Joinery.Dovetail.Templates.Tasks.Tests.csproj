@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <!--
+            The task is netstandard2.0 and runs in whatever MSBuild loads it; running it here needs MSBuild's own assemblies, which
+            Microsoft.Build.Framework/Utilities.Core 18.x ship only for net11.0 (and net472).
+        -->
+        <TargetFramework>net11.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Templates.Tasks\Joinery.Dovetail.Templates.Tasks.csproj" />
+        <!-- What the Dovetail generator every test project runs needs. -->
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <!-- The task project only compiles against MSBuild; running it here needs the assemblies MSBuild would provide. -->
+        <PackageReference Include="Microsoft.Build.Framework" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    </ItemGroup>
+</Project>

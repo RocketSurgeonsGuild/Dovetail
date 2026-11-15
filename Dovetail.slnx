@@ -104,6 +104,7 @@
     <Project Path="src/Joinery.Dovetail.Mermaid/Joinery.Dovetail.Mermaid.csproj" />
     <Project Path="src/Joinery.Dovetail.ModularPipelines/Joinery.Dovetail.ModularPipelines.csproj" />
     <Project Path="src/Joinery.Dovetail.Hosting/Joinery.Dovetail.Hosting.csproj" />
+    <Project Path="src/Joinery.Dovetail.Templates.Tasks/Joinery.Dovetail.Templates.Tasks.csproj" />
   </Folder>
   <Folder Name="/src/Sdks/">
     <File Path="src/Sdks/Directory.Build.props" />
@@ -135,6 +136,7 @@
     <Project Path="test/Joinery.Dovetail.Build.Tasks.Tests/Joinery.Dovetail.Build.Tasks.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Configuration.Runtime.Tests/Joinery.Dovetail.Configuration.Runtime.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Sdk.Tests/Joinery.Dovetail.Sdk.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Templates.Tasks.Tests/Joinery.Dovetail.Templates.Tasks.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Tests/Joinery.Dovetail.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Mermaid.Tests/Joinery.Dovetail.Mermaid.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.ModularPipelines.Tests/Joinery.Dovetail.ModularPipelines.Tests.csproj" />
