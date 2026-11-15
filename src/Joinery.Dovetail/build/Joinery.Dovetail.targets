@@ -42,11 +42,6 @@
     <CompilerVisibleProperty Include="DovetailAssignExternal"/>
     <CompilerVisibleProperty Include="ImportDovetailAssembly"/>
     <CompilerVisibleProperty Include="ExportDovetailAssembly"/>
-    <CompilerVisibleProperty Include="DovetailConfigurationSchemaRequired"/>
-    <!-- false leaves ZeroAlloc.Validation.Options' ValidateWithZeroAlloc() off the generated configuration options, as it leaves the
-         Joinery.Dovetail.ZeroAlloc.targets joints out. ZeroAlloc.Validation.Options makes ZeroAllocGeneratedAccessibility visible itself. -->
-    <CompilerVisibleProperty Include="DovetailEnableZeroAllocValidation"/>
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DovetailReferenceDocumentation"/>
 
     <CompilerVisibleProperty Include="DovetailImportNamespace"/>
     <CompilerVisibleProperty Include="DovetailImportClassName"/>
@@ -90,22 +85,20 @@
     </DovetailHost>
   </ItemDefinitionGroup>
   <!--
-      Descriptions for configuration types from packages ([assembly: DovetailConfiguration<T>("Section")]) come from the
-      packages' XML documentation files: the compiler loads no docs for references, and analyzers can't read files. Pass the doc
-      file next to each package reference to the generator, which reads only the ones for the types it describes. Targeting
-      packs are left out (framework types aren't configuration types, and their docs run to tens of megabytes).
-      This has to run before GenerateMSBuildEditorConfigFileCore writes the AdditionalFiles metadata into the generated
-      editorconfig (GenerateMSBuildEditorConfigFile itself is empty; its DependsOnTargets run before any BeforeTargets hook).
-      Opt out with DovetailConfigurationReferenceDocumentation=false.
+      The hooks Joinery.Dovetail.ConfigurationSchema.targets reads, set from what Dovetail knows about the project. A value the
+      project sets itself wins.
+        DovetailConfigurationSchemaHost          - Joinery.Dovetail.Sdk's application detection, true or false. Test projects are
+                                                   left to the schema targets, which make them hosts whatever the detection says.
+        DovetailConfigurationSchemaCopyToOutput  - false for hosts that embed their configuration (MAUI, Uno): they have no files on
+                                                   disk, so the schema stays in obj/ for editors.
+      Set in a target, just before the schema targets read them, so properties set anywhere (Directory.Build.targets included,
+      which is imported after this file) count, as they did when the schema targets read these inputs themselves.
   -->
-  <Target Name="_DovetailConfigurationReferenceDocumentation"
-          BeforeTargets="GenerateMSBuildEditorConfigFileCore"
-          DependsOnTargets="ResolveAssemblyReferences"
-          Condition="'$(DovetailConfigurationReferenceDocumentation)' != 'false'">
-    <ItemGroup>
-      <_DovetailReferenceDocumentation Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')" Condition="'%(ReferencePath.NuGetPackageId)' != '' and '%(ReferencePath.FrameworkReferenceName)' == ''" />
-      <AdditionalFiles Include="@(_DovetailReferenceDocumentation)" Condition="Exists('%(_DovetailReferenceDocumentation.Identity)')" DovetailReferenceDocumentation="true" />
-    </ItemGroup>
+  <Target Name="_DovetailConfigurationSchemaHooks" BeforeTargets="_DovetailComputeConfigurationSchema">
+    <PropertyGroup>
+      <DovetailConfigurationSchemaHost Condition="'$(DovetailConfigurationSchemaHost)' == '' and '$(IsTestProject)' != 'true'">$(_DovetailApplicationDetected)</DovetailConfigurationSchemaHost>
+      <DovetailConfigurationSchemaCopyToOutput Condition="'$(DovetailConfigurationSchemaCopyToOutput)' == '' and '$(DovetailEmbedConfiguration)' == 'true'">false</DovetailConfigurationSchemaCopyToOutput>
+    </PropertyGroup>
   </Target>
 
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Joints.targets" Condition="'$(_DovetailJointTargetsImported)' != 'true'" />

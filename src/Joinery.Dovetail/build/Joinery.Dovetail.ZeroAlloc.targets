@@ -29,6 +29,12 @@
     <_DovetailZeroAllocTargetsImported>true</_DovetailZeroAllocTargetsImported>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- false leaves ZeroAlloc.Validation.Options' ValidateWithZeroAlloc() off the generated configuration options, as it leaves the
+         joints below out. ZeroAlloc.Validation.Options makes ZeroAllocGeneratedAccessibility visible itself. -->
+    <CompilerVisibleProperty Include="DovetailEnableZeroAllocValidation" />
+  </ItemGroup>
+
   <!--
       _DovetailZeroAllocMediatorBridge items: Include is the bridge package's assembly; Method is the static With...() method that turns
       it on, which takes and returns the IMediatorBuilder.
