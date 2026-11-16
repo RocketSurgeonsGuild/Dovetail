@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/api/joinery.dovetail.serilog.md)
-- Version: `0.5.4-beta.18`
+- Version: `0.6.1-beta.1`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
