@@ -140,7 +140,7 @@ safe, so `Joinery.Dovetail.Serilog` does not depend on it. A `"WriteTo"` or `"En
 it (below). Configure them in a [Serilog joint](#the-serilog-joint) instead, in code.
 
 `Joinery.Dovetail.Serilog` ships a JSON Schema for the section, which is merged into the application's
-[`appsettings.schema.json`](../guides/editor-setup) for editor completion and validation. It describes exactly what is read:
+[`appsettings.schema.json`](./configuration-with-optionary) by Optionary, when the application references it, for editor completion and validation. It describes exactly what is read:
 `MinimumLevel`, as a level name or as an object with `Default` and `Override`. Any other key of the `Serilog` section is flagged, so
 a `WriteTo` copied from Serilog's documentation does not look as if it were working.
 
