@@ -29,6 +29,8 @@ MyLibrary/
 - The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and
   `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the
   project ignores `appsettings.local.*` (a `*.local.*` entry counts too).
+- YAML has two extensions and one joint. It requires `MyLibrary.yaml` or `MyLibrary.yml`, whichever the library has, not both,
+  and reads the environment and local layers with either extension, `.yaml` before `.yml` in each layer.
 - A file-based app (`dotnet run Build.cs`) is named after its assembly, `Build`, without the `.cs`: its `appsettings.{ext}`
   files, next to `Build.cs`, are copied to its output directory as `Build.{ext}`, with or without the Dovetail SDK. At run time,
   though, the configuration joints read the files from next to `Build.cs` (the directory the .NET SDK names in the

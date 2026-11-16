@@ -78,7 +78,7 @@
       }
     ],
     GeneratedFiles: [
-      Dovetail.YmlConfiguration.g.cs
+      Dovetail.YamlConfiguration.g.cs
     ],
     OutputFiles: [
       lib.yml

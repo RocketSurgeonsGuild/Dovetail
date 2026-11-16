@@ -44,15 +44,15 @@ internal static class ExportDovetails
         foreach (var convention in conventions)
         {
             // Only the constructors the generated code can call count: a private one is there for something else to use.
-            var callableConstructors = convention.InstanceConstructors.Where(CanBeCalled).ToArray();
-            if (callableConstructors.Length > 1)
+            var (callableConstructorCount, callableConstructor) = CallableConstructor(convention);
+            if (callableConstructorCount > 1)
             {
                 context.ReportDiagnostic(Diagnostic.Create(Diagnostics.DovetailHasToManyConstructors, convention.Locations.FirstOrDefault()));
                 continue;
             }
 
             // Left out of the exports like any other joint that is reported, so nothing else fails to compile because of it.
-            if (callableConstructors.Length == 0 && convention.InstanceConstructors.Length > 0)
+            if (callableConstructorCount == 0 && convention.InstanceConstructors.Length > 0)
             {
                 context.ReportDiagnostic(Diagnostic.Create(Diagnostics.DovetailHasNoCallableConstructor, convention.Locations.FirstOrDefault(), convention.ToDisplayString()));
                 continue;
@@ -64,7 +64,7 @@ internal static class ExportDovetails
                 continue;
             }
 
-            var createDovetail = NewDovetail(convention, callableConstructors.SingleOrDefault());
+            var createDovetail = NewDovetail(convention, callableConstructor);
 
             // What the joint declares wins; only a joint that declares nothing takes the project's default.
             var hostType = GetDeclaredHostType(convention) ?? ( msBuildConfig.IsTestProject ? _hostTypeUnitTestHost : _hostTypeUndefined );
@@ -197,7 +197,10 @@ internal static class ExportDovetails
         var attributes = new List<AttributeData>();
         for (var type = joint; type is not null; type = type.BaseType)
         {
-            attributes.AddRange(type.GetAttributes());
+            foreach (var attribute in type.GetAttributes())
+            {
+                attributes.Add(attribute);
+            }
         }
 
         foreach (var attribute in attributes)
@@ -219,11 +222,36 @@ internal static class ExportDovetails
             if (attribute.ConstructorArguments is not [{ Kind: TypedConstantKind.Enum, Type: INamedTypeSymbol enumType, Value: { } value }]) continue;
 
             // The generator doesn't reference Dovetail, so find the member the constructor argument names in the enum itself.
-            var member = enumType.GetMembers().OfType<IFieldSymbol>().FirstOrDefault(z => z.HasConstantValue && Equals(z.ConstantValue, value));
-            if (member is not null) return HostTypeExpression(member.Name);
+            if (EnumMemberName(enumType, value) is { } name) return HostTypeExpression(name);
         }
 
         return null;
+    }
+
+    /// <summary>The name of the member of <paramref name="enumType" /> whose value is <paramref name="value" />, if there is one.</summary>
+    private static string? EnumMemberName(INamedTypeSymbol enumType, object value)
+    {
+        foreach (var member in enumType.GetMembers())
+        {
+            if (member is IFieldSymbol { HasConstantValue: true } field && Equals(field.ConstantValue, value)) return field.Name;
+        }
+
+        return null;
+    }
+
+    /// <summary>How many of the joint's constructors the generated code can call, and that constructor when there is exactly one.</summary>
+    private static (int Count, IMethodSymbol? Constructor) CallableConstructor(INamedTypeSymbol convention)
+    {
+        var count = 0;
+        IMethodSymbol? callable = null;
+        foreach (var constructor in convention.InstanceConstructors)
+        {
+            if (!CanBeCalled(constructor)) continue;
+            count++;
+            callable = constructor;
+        }
+
+        return (count, count == 1 ? callable : null);
     }
 
     private static MemberAccessExpressionSyntax HostTypeExpression(string name) => MemberAccessExpression(

@@ -252,10 +252,12 @@ public class ConfigurationNameTests(string targetFramework)
                 "Dovetail.YamlConfiguration.g.cs"
             )
         );
-        await joint.Should().Contain($"""builder.AddYamlFile(files, FileName(files, "{name}.yaml", "appsettings.yaml"), optional: false""");
-        await joint.Should().Contain($$"""builder.AddYamlFile(files, FileName(files, $"{{name}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true""");
-        await joint.Should().Contain($"""builder.AddYamlFile(files, FileName(files, "{name}.local.yaml", "appsettings.local.yaml"), optional: true""");
-        await joint.Should().Contain($"""DovetailEmbeddedConfiguration.OpenResource(assembly, "{name}.yaml", "appsettings.yaml")""");
+        // One joint for .yaml and .yml: the names below are the project's, with the extension filled in at run time.
+        await joint.Should().Contain($$"""var name = FileName(files, $"{{name}}.{extension}", $"appsettings.{extension}");""");
+        await joint.Should().Contain($"""if (baseFiles.Count == 0) baseFiles.Add("{name}.yaml");""");
+        await joint.Should().Contain($$"""builder.AddYamlFile(files, FileName(files, $"{{name}}.{environmentName}.{extension}", $"appsettings.{environmentName}.{extension}"), optional: true""");
+        await joint.Should().Contain($$"""builder.AddYamlFile(files, FileName(files, $"{{name}}.local.{extension}", $"appsettings.local.{extension}"), optional: true""");
+        await joint.Should().Contain($$"""DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{name}}.{extension}", $"appsettings.{extension}")""");
     }
 
     /// <summary>The <paramref name="itemType"/> items whose file name starts with <paramref name="source"/>, by file name, with their metadata.</summary>

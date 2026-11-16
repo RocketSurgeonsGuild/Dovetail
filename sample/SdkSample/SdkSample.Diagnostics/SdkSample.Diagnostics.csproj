@@ -7,7 +7,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
   <ItemGroup>
-    <PackageReference Include="Optionary" Version="0.1.1-beta.0" />
+    <PackageReference Include="Optionary" Version="0.1.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
   </ItemGroup>
 </Project>

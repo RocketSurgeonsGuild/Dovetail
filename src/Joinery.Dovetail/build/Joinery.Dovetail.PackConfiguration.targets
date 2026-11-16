@@ -68,14 +68,20 @@
     {Name} items drops what the appsettings items already have, for a project that is itself named "appsettings".
 
     _Dovetail{Format}ConfigurationSource is the file whose existence turns a format on: appsettings.{ext}, or else {Name}.{ext}.
+
+    YAML's two extensions are one format: a base file in either (appsettings.yaml or appsettings.yml, {Name}.yaml or {Name}.yml)
+    brings in the files of both, so a library can have appsettings.yml and appsettings.Development.yaml. One generated joint reads
+    them, requiring one of the base files, not both.
   -->
   <ItemGroup>
     <_DovetailJsonConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.json" Exclude="$(MSBuildProjectDirectory)\appsettings.schema.json" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.json')" />
     <_DovetailJsonNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).json;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.json" Exclude="@(_DovetailJsonConfigurationFile);$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).schema.json;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).run.json" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).json')" />
-    <_DovetailYamlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.yaml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml')" />
-    <_DovetailYamlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.yaml" Exclude="@(_DovetailYamlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml')" />
-    <_DovetailYmlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.yml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yml')" />
-    <_DovetailYmlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.yml" Exclude="@(_DovetailYmlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml')" />
+    <_DovetailYamlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.yaml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml') or Exists('$(MSBuildProjectDirectory)\appsettings.yml')" />
+    <_DovetailYamlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml" Exclude="@(_DovetailYamlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml')" />
+    <_DovetailYamlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.yaml" Exclude="@(_DovetailYamlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml') or Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml')" />
+    <_DovetailYmlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.yml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.yaml') or Exists('$(MSBuildProjectDirectory)\appsettings.yml')" />
+    <_DovetailYmlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml" Exclude="@(_DovetailYmlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml')" />
+    <_DovetailYmlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.yml" Exclude="@(_DovetailYmlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yaml') or Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).yml')" />
     <_DovetailTomlConfigurationFile Include="$(MSBuildProjectDirectory)\appsettings*.toml" Condition="Exists('$(MSBuildProjectDirectory)\appsettings.toml')" />
     <_DovetailTomlNamedConfigurationFile Include="$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).toml;$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).*.toml" Exclude="@(_DovetailTomlConfigurationFile)" Condition="Exists('$(MSBuildProjectDirectory)\$(_DovetailConfigurationName).toml')" />
 
@@ -122,8 +128,6 @@
     <_DovetailJsonConfigurationOutputFile>$(IntermediateOutputPath)Dovetail.JsonConfiguration.g.cs</_DovetailJsonConfigurationOutputFile>
     <_DovetailYamlConfigurationTemplateFile>$(MSBuildThisFileDirectory)DovetailYamlConfiguration.cs.template</_DovetailYamlConfigurationTemplateFile>
     <_DovetailYamlConfigurationOutputFile>$(IntermediateOutputPath)Dovetail.YamlConfiguration.g.cs</_DovetailYamlConfigurationOutputFile>
-    <_DovetailYmlConfigurationTemplateFile>$(MSBuildThisFileDirectory)DovetailYmlConfiguration.cs.template</_DovetailYmlConfigurationTemplateFile>
-    <_DovetailYmlConfigurationOutputFile>$(IntermediateOutputPath)Dovetail.YmlConfiguration.g.cs</_DovetailYmlConfigurationOutputFile>
     <_DovetailTomlConfigurationTemplateFile>$(MSBuildThisFileDirectory)DovetailTomlConfiguration.cs.template</_DovetailTomlConfigurationTemplateFile>
     <_DovetailTomlConfigurationOutputFile>$(IntermediateOutputPath)Dovetail.TomlConfiguration.g.cs</_DovetailTomlConfigurationOutputFile>
   </PropertyGroup>
@@ -309,9 +313,8 @@
       <_DovetailEmitJsonConfiguration>false</_DovetailEmitJsonConfiguration>
       <_DovetailEmitJsonConfiguration Condition="'$(_DovetailJsonConfigurationSource)' != '' and '$(_DovetailJsonProviderReferenced)' == 'true' and '$(DovetailEnableJsonConfiguration)' != 'false'">true</_DovetailEmitJsonConfiguration>
       <_DovetailEmitYamlConfiguration>false</_DovetailEmitYamlConfiguration>
-      <_DovetailEmitYamlConfiguration Condition="'$(_DovetailYamlConfigurationSource)' != '' and '$(_DovetailYamlProviderReferenced)' == 'true' and '$(DovetailEnableYamlConfiguration)' != 'false'">true</_DovetailEmitYamlConfiguration>
-      <_DovetailEmitYmlConfiguration>false</_DovetailEmitYmlConfiguration>
-      <_DovetailEmitYmlConfiguration Condition="'$(_DovetailYmlConfigurationSource)' != '' and '$(_DovetailYamlProviderReferenced)' == 'true' and '$(DovetailEnableYamlConfiguration)' != 'false'">true</_DovetailEmitYmlConfiguration>
+      <!-- One joint for both extensions: it requires {Name}.yaml or {Name}.yml, whichever the project has, not both. -->
+      <_DovetailEmitYamlConfiguration Condition="('$(_DovetailYamlConfigurationSource)' != '' or '$(_DovetailYmlConfigurationSource)' != '') and '$(_DovetailYamlProviderReferenced)' == 'true' and '$(DovetailEnableYamlConfiguration)' != 'false'">true</_DovetailEmitYamlConfiguration>
       <_DovetailEmitTomlConfiguration>false</_DovetailEmitTomlConfiguration>
       <_DovetailEmitTomlConfiguration Condition="'$(_DovetailTomlConfigurationSource)' != '' and '$(_DovetailTomlProviderReferenced)' == 'true' and '$(DovetailEnableTomlConfiguration)' != 'false'">true</_DovetailEmitTomlConfiguration>
     </PropertyGroup>
@@ -322,10 +325,6 @@
     <ItemGroup Condition="'$(_DovetailEmitYamlConfiguration)' == 'true'">
       <Compile Include="$(_DovetailYamlConfigurationOutputFile)" />
       <FileWrites Include="$(_DovetailYamlConfigurationOutputFile)" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(_DovetailEmitYmlConfiguration)' == 'true'">
-      <Compile Include="$(_DovetailYmlConfigurationOutputFile)" />
-      <FileWrites Include="$(_DovetailYmlConfigurationOutputFile)" />
     </ItemGroup>
     <ItemGroup Condition="'$(_DovetailEmitTomlConfiguration)' == 'true'">
       <Compile Include="$(_DovetailTomlConfigurationOutputFile)" />
@@ -363,8 +362,8 @@
   <Target Name="_DovetailGenerateYamlConfiguration"
     BeforeTargets="CoreCompile;XamlPreCompile"
     DependsOnTargets="_DovetailComputeConfigurationEmission"
-    Condition="'$(_DovetailYamlConfigurationSource)' != ''"
-    Inputs="$(_DovetailYamlConfigurationSource);$(_DovetailYamlConfigurationTemplateFile)"
+    Condition="'$(_DovetailYamlConfigurationSource)' != '' or '$(_DovetailYmlConfigurationSource)' != ''"
+    Inputs="$(_DovetailYamlConfigurationSource);$(_DovetailYmlConfigurationSource);$(_DovetailYamlConfigurationTemplateFile)"
     Outputs="$(_DovetailYamlConfigurationOutputFile)">
     <PropertyGroup Condition="'$(_DovetailEmitYamlConfiguration)' == 'true'">
       <_DovetailYamlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailYamlConfigurationTemplateFile)'))</_DovetailYamlConfigurationContent>
@@ -374,24 +373,6 @@
       Condition="'$(_DovetailEmitYamlConfiguration)' == 'true'"
       File="$(_DovetailYamlConfigurationOutputFile)"
       Lines="$([MSBuild]::Escape($(_DovetailYamlConfigurationContent)))"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
-  </Target>
-
-  <Target Name="_DovetailGenerateYmlConfiguration"
-    BeforeTargets="CoreCompile;XamlPreCompile"
-    DependsOnTargets="_DovetailComputeConfigurationEmission"
-    Condition="'$(_DovetailYmlConfigurationSource)' != ''"
-    Inputs="$(_DovetailYmlConfigurationSource);$(_DovetailYmlConfigurationTemplateFile)"
-    Outputs="$(_DovetailYmlConfigurationOutputFile)">
-    <PropertyGroup Condition="'$(_DovetailEmitYmlConfiguration)' == 'true'">
-      <_DovetailYmlConfigurationContent>$([System.IO.File]::ReadAllText('$(_DovetailYmlConfigurationTemplateFile)'))</_DovetailYmlConfigurationContent>
-      <_DovetailYmlConfigurationContent>$(_DovetailYmlConfigurationContent.Replace('{{ProjectName}}', '$(_DovetailConfigurationName)'))</_DovetailYmlConfigurationContent>
-    </PropertyGroup>
-    <WriteLinesToFile
-      Condition="'$(_DovetailEmitYmlConfiguration)' == 'true'"
-      File="$(_DovetailYmlConfigurationOutputFile)"
-      Lines="$([MSBuild]::Escape($(_DovetailYmlConfigurationContent)))"
       Overwrite="true"
       WriteOnlyWhenDifferent="true" />
   </Target>
