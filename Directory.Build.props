@@ -8,12 +8,8 @@
         <PackageIcon>images/dovetail-icon.png</PackageIcon>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <!--
-            in package
-            Title
-            Description
-            Tags
-        -->
+        <!-- Tags every Dovetail package shares; each project appends its own with $(PackageTags);... -->
+        <PackageTags>dovetail;joinery;modularity;conventions</PackageTags>
         <LangVersion>preview</LangVersion>
         <Features>strict</Features>
         <Nullable>enable</Nullable>

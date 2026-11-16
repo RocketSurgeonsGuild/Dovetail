@@ -2,8 +2,8 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>Adds support for loading yaml configuration files</PackageDescription>
-        <PackageTags>$(PackageTags);reflection</PackageTags>
+        <PackageDescription>Configuration joint that adds appsettings.yaml (or .yml) and its environment-specific files through a YamlDotNet configuration provider, including embedded and Blazor WebAssembly wwwroot files.</PackageDescription>
+        <PackageTags>$(PackageTags);configuration;yaml;appsettings</PackageTags>
         <RootNamespace>Joinery.Dovetail.Configuration.Yaml</RootNamespace>
     </PropertyGroup>
     <ItemGroup>

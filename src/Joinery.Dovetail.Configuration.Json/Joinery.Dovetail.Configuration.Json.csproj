@@ -2,8 +2,8 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>Adds support for loading json configuration files</PackageDescription>
-        <PackageTags>$(PackageTags);reflection</PackageTags>
+        <PackageDescription>Configuration joint that adds appsettings.json and its environment-specific files, including embedded and Blazor WebAssembly wwwroot files.</PackageDescription>
+        <PackageTags>$(PackageTags);configuration;json;appsettings</PackageTags>
         <RootNamespace>Joinery.Dovetail.Configuration.Json</RootNamespace>
     </PropertyGroup>
     <ItemGroup>

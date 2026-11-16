@@ -2,11 +2,8 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
     <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-    <PackageDescription>
-      Adds support for loading configuration, services, logging, command line
-      and more via simple and easy to setup assembly attributes
-    </PackageDescription>
-    <PackageTags>$(PackageTags);reflection</PackageTags>
+    <PackageDescription>Declares an application's configuration, services and logging as joints, which a source generator finds at build time. There is no assembly scanning or runtime reflection, so Dovetail apps work with Native AOT and trimming.</PackageDescription>
+    <PackageTags>$(PackageTags);dependency-injection;configuration;logging;hosting;microsoft-extensions;source-generator;aot;trimming</PackageTags>
     <IsTrimmable>true</IsTrimmable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <RootNamespace>Joinery.Dovetail</RootNamespace>

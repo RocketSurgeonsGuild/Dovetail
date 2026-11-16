@@ -2,12 +2,8 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>
-            Adds helpers to easily bootstrap an application using conventions by
-            just using the correct extension method. This adds command line operations, additional
-            configuration, logging and service injections by convention.
-        </PackageDescription>
-        <PackageTags>$(PackageTags);hosting;generic host</PackageTags>
+        <PackageDescription>Shares test setup between projects as joints that run only when the host is a unit test host, without depending on a test framework.</PackageDescription>
+        <PackageTags>$(PackageTags);testing;unit-testing;test-host</PackageTags>
       <RootNamespace>Joinery.Dovetail.Testing</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
