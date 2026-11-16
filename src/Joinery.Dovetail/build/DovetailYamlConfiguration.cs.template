@@ -6,13 +6,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
 /// <summary>
-///     Default YAML (<c>.yaml</c>) app-settings convention for this project.
+///     Default YAML app-settings convention for this project, for files with either extension (<c>.yaml</c> or <c>.yml</c>).
 /// </summary>
 [DovetailExport]
 internal class YamlAppSettingsConfiguration : IConfigurationJoint
 {
+    // .yaml first: when a layer has both, the .yml file is added after it and wins where they disagree.
+    private static readonly string[] Extensions = { "yaml", "yml" };
+
     /// <summary>
-    ///     Adds the project's <c>{{ProjectName}}.yaml</c>, environment-specific, and local YAML app-settings files to the configuration.
+    ///     Adds the project's <c>{{ProjectName}}.yaml</c> or <c>{{ProjectName}}.yml</c>, environment-specific, and local YAML app-settings
+    ///     files to the configuration. One of the two base files is required; the other layers are optional, in either extension.
     /// </summary>
     /// <param name="context">The context.</param>
     /// <param name="builder">The <see cref="IConfigurationBuilder" /> to add the YAML sources to.</param>
@@ -23,22 +27,59 @@ internal class YamlAppSettingsConfiguration : IConfigurationJoint
         {
             // Hosts without a file system read the copies the Dovetail SDK embedded into this assembly instead.
             var assembly = typeof(YamlAppSettingsConfiguration).Assembly;
-            builder.AddYamlStream(
-                DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.yaml", "appsettings.yaml")
-             ?? throw new System.IO.FileNotFoundException($"The embedded configuration file '{{ProjectName}}.yaml' was not found in '{assembly.FullName}'.")
-            );
-            if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml") is { } environment) builder.AddYamlStream(environment);
-            if (DovetailEmbeddedConfiguration.OpenResource(assembly, "{{ProjectName}}.local.yaml", "appsettings.local.yaml") is { } local) builder.AddYamlStream(local);
+            var found = false;
+            foreach (var extension in Extensions)
+            {
+                if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.{extension}", $"appsettings.{extension}") is not { } settings) continue;
+                builder.AddYamlStream(settings);
+                found = true;
+            }
+
+            if (!found)
+            {
+                throw new System.IO.FileNotFoundException($"Neither '{{ProjectName}}.yaml' nor '{{ProjectName}}.yml' was found embedded in '{assembly.FullName}'.");
+            }
+
+            foreach (var extension in Extensions)
+            {
+                if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.{environmentName}.{extension}", $"appsettings.{environmentName}.{extension}") is { } environment) builder.AddYamlStream(environment);
+            }
+
+            foreach (var extension in Extensions)
+            {
+                if (DovetailEmbeddedConfiguration.OpenResource(assembly, $"{{ProjectName}}.local.{extension}", $"appsettings.local.{extension}") is { } local) builder.AddYamlStream(local);
+            }
+
             return;
         }
 
         // The output directory holds the files under the project's name. A file-based app reads them from next to its entry point file
-        // instead, where they keep their source names, appsettings.yaml or {{ProjectName}}.yaml.
-        // One file provider for the three files, rather than one each.
+        // instead, where they keep their source names, appsettings.{yaml,yml} or {{ProjectName}}.{yaml,yml}.
+        // One file provider for every file, rather than one each.
         var files = builder.GetFileProvider();
-        builder.AddYamlFile(files, FileName(files, "{{ProjectName}}.yaml", "appsettings.yaml"), optional: false, reloadOnChange: false);
-        builder.AddYamlFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.yaml", $"appsettings.{environmentName}.yaml"), optional: true, reloadOnChange: false);
-        builder.AddYamlFile(files, FileName(files, "{{ProjectName}}.local.yaml", "appsettings.local.yaml"), optional: true, reloadOnChange: false);
+        var baseFiles = new global::System.Collections.Generic.List<string>();
+        foreach (var extension in Extensions)
+        {
+            var name = FileName(files, $"{{ProjectName}}.{extension}", $"appsettings.{extension}");
+            if (files.GetFileInfo(name).Exists) baseFiles.Add(name);
+        }
+
+        // Neither exists: the required .yaml file reports itself missing when the configuration is built.
+        if (baseFiles.Count == 0) baseFiles.Add("{{ProjectName}}.yaml");
+        foreach (var name in baseFiles)
+        {
+            builder.AddYamlFile(files, name, optional: false, reloadOnChange: false);
+        }
+
+        foreach (var extension in Extensions)
+        {
+            builder.AddYamlFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.{extension}", $"appsettings.{environmentName}.{extension}"), optional: true, reloadOnChange: false);
+        }
+
+        foreach (var extension in Extensions)
+        {
+            builder.AddYamlFile(files, FileName(files, $"{{ProjectName}}.local.{extension}", $"appsettings.local.{extension}"), optional: true, reloadOnChange: false);
+        }
     }
 
     private static string FileName(IFileProvider files, string name, string fallback) =>

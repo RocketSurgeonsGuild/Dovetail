@@ -1,16 +1,16 @@
 using System.ComponentModel.DataAnnotations;
-using Joinery.Dovetail.Attributes;
+using Optionary;
 using Microsoft.Extensions.Configuration;
 
 namespace SdkSample.Storage;
 
 /// <summary>
 ///     How files are archived. A class with a <see langword="required" /> member and <see langword="init" />-only properties,
-///     which the options pipeline can't create on its own: Dovetail builds it with an object initializer and then binds the
+///     which the options pipeline can't create on its own: Optionary builds it with an object initializer and then binds the
 ///     rest. Its keys are in underscore case (<see cref="StorageOptions" /> uses dash case):
 ///     <c>allowed_extensions</c>, and the section is <c>archive</c>.
 /// </summary>
-[DovetailConfiguration(KeyStyle = ConfigurationKeyStyle.Underscore)]
+[Optionary(KeyStyle = ConfigurationKeyStyle.Underscore)]
 public sealed class ArchiveOptions
 {
     /// <summary>

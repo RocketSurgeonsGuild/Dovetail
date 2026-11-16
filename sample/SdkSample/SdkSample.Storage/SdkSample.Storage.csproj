@@ -5,4 +5,8 @@
 -->
 <Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+  <ItemGroup>
+    <!-- Binds the [Optionary] options types and writes their schema; Dovetail's joint registers them. -->
+    <PackageReference Include="Optionary" Version="0.1.1" />
+  </ItemGroup>
 </Project>

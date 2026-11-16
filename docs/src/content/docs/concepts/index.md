@@ -13,6 +13,7 @@ Dovetail replaces runtime reflection-based application wiring with compile-time 
   <LinkCard title="Dovetail Context" href="/concepts/joint-context/" description="The context object passed to every joint." />
   <LinkCard title="Source Generation" href="/concepts/source-generation/" description="How the Roslyn generator resolves joints at build time." />
   <LinkCard title="Unit Tests" href="/concepts/unit-tests/" description="Testing joints in isolation." />
-  <LinkCard title="Managed Configuration" href="/concepts/managed-configuration/" description="Declare configuration as code and get typed options, a reflection-free binder, and a merged JSON Schema." />
+  <LinkCard title="Configuration with Optionary" href="/concepts/configuration-with-optionary/" description="Typed options and a merged JSON Schema from Optionary, registered by a Dovetail joint." />
+  <LinkCard title="Configuration Files" href="/concepts/configuration-files/" description="Ship a library's appsettings files in JSON, YAML or TOML to every application that references it." />
   <LinkCard title="ZeroAlloc" href="/concepts/zeroalloc/" description="ZeroAlloc.Mediator and ZeroAlloc.Validation register themselves through joints written into the project." />
 </CardGrid>

@@ -90,8 +90,7 @@
     OutputFiles: [
       app.Development.json,
       app.json,
-      app.runtimeconfig.dev.json,
-      appsettings.schema.json
+      app.runtimeconfig.dev.json
     ]
   }
 ]

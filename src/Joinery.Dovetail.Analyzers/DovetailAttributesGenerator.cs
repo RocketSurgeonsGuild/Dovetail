@@ -1,5 +1,4 @@
 using Joinery.Dovetail.Support;
-using Joinery.Dovetail.Support.Configuration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -68,7 +67,9 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                              .WithTrackingName("dovetail:language_version");
         var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
 
-        var hasConfigurationOptions = ConfigurationSchemaPipeline.Register(context, supportedLanguageVersion, msBuildConfig);
+        // Optionary's generator emits the registration method whenever Optionary is referenced; when this assembly declares an
+        // [Optionary] type, the exports list a joint that calls it. Found here rather than read from Optionary's generator.
+        var hasConfigurationOptions = OptionaryJoint.HasDeclarations(context);
 
         context.RegisterSourceOutput(
             languageVersion,

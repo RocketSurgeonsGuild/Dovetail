@@ -1,5 +1,11 @@
 # Plan: Dovetail configuration → JSON Schema (code-first, merged per application)
 
+> [!NOTE]
+> Historical. This work moved to [Optionary](https://github.com/RocketSurgeonsGuild/Optionary) in Dovetail 0.7; its current plan is
+> [Optionary's migration plan](https://github.com/RocketSurgeonsGuild/Optionary/blob/main/plans/migration-from-dovetail.md), and Dovetail's
+> side is described in [Configuration with Optionary](../docs/src/content/docs/concepts/configuration-with-optionary.md). Names and
+> paths below are as they were in Dovetail.
+
 Status: design agreed (2026-10-24). PR A is on `fix/dovetail-bugs-and-analyzer-flow`. P0 is done ([results, plan changes and follow-up decisions](configuration-json-schema-p0.md)), which supersede this file where they differ. P1 and [P3](configuration-json-schema-p3.md) are done; P2 is in progress.
 
 ## Context

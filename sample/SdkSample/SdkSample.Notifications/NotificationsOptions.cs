@@ -1,15 +1,15 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Joinery.Dovetail.Attributes;
+using Optionary;
 
 namespace SdkSample.Notifications;
 
 /// <summary>
 ///     Options for the notifications this library sends. Bound from the <c>Notifications</c> section (the type name without its
 ///     <c>Options</c> suffix). It shows how the schema describes enums, durations, URIs, lists, dictionaries of nested objects
-///     and the annotations Dovetail understands.
+///     and the annotations Optionary understands.
 /// </summary>
-[DovetailConfiguration]
+[Optionary]
 public sealed class NotificationsOptions
 {
     /// <summary>

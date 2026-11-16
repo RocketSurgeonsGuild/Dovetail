@@ -29,8 +29,6 @@
         <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Toml\Joinery.Dovetail.Configuration.Toml.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <!-- The generator's key naming is internal; the tests compare it with System.Text.Json's naming policies. -->
-        <Compile Include="..\..\src\Joinery.Dovetail.Analyzers\Support\Configuration\KeyNaming.cs" Link="KeyNaming.cs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Verify.SourceGenerators" />

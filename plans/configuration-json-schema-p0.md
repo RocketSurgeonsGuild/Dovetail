@@ -1,5 +1,11 @@
 # P0: spike results for the configuration JSON Schema plan
 
+> [!NOTE]
+> Historical. This work moved to [Optionary](https://github.com/RocketSurgeonsGuild/Optionary) in Dovetail 0.7; its current plan is
+> [Optionary's migration plan](https://github.com/RocketSurgeonsGuild/Optionary/blob/main/plans/migration-from-dovetail.md), and Dovetail's
+> side is described in [Configuration with Optionary](../docs/src/content/docs/concepts/configuration-with-optionary.md). Names and
+> paths below are as they were in Dovetail.
+
 Status: S2–S5 done; S1 needs Visual Studio on Windows. See [the plan](configuration-json-schema.md).
 
 All spikes ran on Linux with SDK 11.0.100-rc.2.26504.105 (MSBuild 18.12, Roslyn 5.x), net10.0 and net11.0. The spike code lives outside the repo (`~/.cache/dovetail-spikes/<spike>/`, each with a `REPORT.md`); this file is the summary.
