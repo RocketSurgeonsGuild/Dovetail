@@ -14,7 +14,7 @@
     <NoBuildOutput>true</NoBuildOutput>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ImplicitUsings>disable</ImplicitUsings>
-    <PackageTags>$(PackageTags);sdk;msbuild</PackageTags>
+    <PackageTags>$(PackageTags);sdk;msbuild;msbuild-sdk</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Sdk/**" />

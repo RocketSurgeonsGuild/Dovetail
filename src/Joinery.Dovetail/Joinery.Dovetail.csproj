@@ -6,7 +6,7 @@
       Adds support for loading configuration, services, logging, command line
       and more via simple and easy to setup assembly attributes
     </PackageDescription>
-    <PackageTags>$(PackageTags);reflection</PackageTags>
+    <PackageTags>$(PackageTags);dependency-injection;configuration;logging;hosting;microsoft-extensions;source-generator;aot;trimming</PackageTags>
     <IsTrimmable>true</IsTrimmable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <RootNamespace>Joinery.Dovetail</RootNamespace>

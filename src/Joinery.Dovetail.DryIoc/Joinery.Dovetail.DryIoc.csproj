@@ -3,7 +3,7 @@
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
         <PackageDescription>Provides DryIoc support for a Rocket Surgery Application</PackageDescription>
-        <PackageTags>$(PackageTags);DryIoc</PackageTags>
+        <PackageTags>$(PackageTags);dryioc;dependency-injection;ioc;container</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <DovetailJoint Include="DryIoc" Namespace="Joinery.Dovetail.Joints" ParameterType="global::DryIoc.IContainer" ParameterName="container" />

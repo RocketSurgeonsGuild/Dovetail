@@ -3,7 +3,7 @@
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
         <PackageDescription>Provides Autofac support for a Rocket Surgery Application</PackageDescription>
-        <PackageTags>$(PackageTags);autofac</PackageTags>
+        <PackageTags>$(PackageTags);autofac;dependency-injection;ioc;container</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <DovetailJoint Include="Autofac" Namespace="Joinery.Dovetail.Joints" ParameterType="global::Autofac.ContainerBuilder" ParameterName="builder" />

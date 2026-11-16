@@ -4,6 +4,6 @@
     <DovetailMicrosoftSdk>Aspire.AppHost.Sdk</DovetailMicrosoftSdk>
     <!-- Aspire.AppHost.Sdk comes from NuGet, so Packages.props also pins the version Sdk.props imports it at. -->
     <DovetailMicrosoftSdkVersionProperty>DovetailAspireAppHostSdkVersion</DovetailMicrosoftSdkVersionProperty>
-    <PackageTags>$(PackageTags);aspire</PackageTags>
+    <PackageTags>$(PackageTags);aspire;dotnet-aspire;apphost</PackageTags>
   </PropertyGroup>
 </Project>

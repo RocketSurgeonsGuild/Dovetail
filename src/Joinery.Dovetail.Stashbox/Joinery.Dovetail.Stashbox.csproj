@@ -3,7 +3,7 @@
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
         <PackageDescription>Provides Stashbox support for a Rocket Surgery Application</PackageDescription>
-        <PackageTags>$(PackageTags);Stashbox</PackageTags>
+        <PackageTags>$(PackageTags);stashbox;dependency-injection;ioc;container</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <DovetailJoint Include="Stashbox" Namespace="Joinery.Dovetail.Joints" ParameterType="global::Stashbox.IStashboxContainer" ParameterName="container" />

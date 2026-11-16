@@ -6,7 +6,7 @@
       Adds support for loading configuration, services, logging, command line
       and more via simple and easy to setup assembly attributes
     </PackageDescription>
-    <PackageTags>$(PackageTags);reflection</PackageTags>
+    <PackageTags>$(PackageTags);mermaid;diagram;diagnostics;visualization</PackageTags>
     <IsTrimmable>true</IsTrimmable>
     <RootNamespace>Joinery.Dovetail</RootNamespace>
   </PropertyGroup>

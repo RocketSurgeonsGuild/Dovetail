@@ -7,7 +7,7 @@
             Applies Dovetail joints to a ModularPipelines PipelineBuilder: the configuration, service and logging joints, and the
             PipelineBuilder joint, through which a joint adds modules, options and services to the pipeline.
         </PackageDescription>
-        <PackageTags>$(PackageTags);modularpipelines;pipeline;build</PackageTags>
+        <PackageTags>$(PackageTags);modularpipelines;modular-pipelines;pipeline;build-automation;ci</PackageTags>
         <RootNamespace>Joinery.Dovetail</RootNamespace>
     </PropertyGroup>
     <ItemGroup>

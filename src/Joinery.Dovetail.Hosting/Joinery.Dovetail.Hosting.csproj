@@ -9,7 +9,7 @@
             host, ASP.NET Core, .NET MAUI, Uno Platform and Blazor WebAssembly are emitted into the application when it references
             that host's framework.
         </PackageDescription>
-        <PackageTags>$(PackageTags);hosting;generic host;aspnetcore;maui;uno;blazor;webassembly</PackageTags>
+        <PackageTags>$(PackageTags);hosting;generic-host;aspnetcore;maui;uno-platform;blazor;webassembly</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <!--

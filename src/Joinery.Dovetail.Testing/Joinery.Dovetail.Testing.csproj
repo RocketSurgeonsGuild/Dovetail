@@ -7,7 +7,7 @@
             just using the correct extension method. This adds command line operations, additional
             configuration, logging and service injections by convention.
         </PackageDescription>
-        <PackageTags>$(PackageTags);hosting;generic host</PackageTags>
+        <PackageTags>$(PackageTags);testing;unit-testing;test-host</PackageTags>
       <RootNamespace>Joinery.Dovetail.Testing</RootNamespace>
     </PropertyGroup>
     <ItemGroup>

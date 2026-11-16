@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageDescription>MSBuild SDK for Dovetail console applications: chains Joinery.Dovetail.Sdk, adds ConsoleAppFramework and writes the application's Program.cs, which builds and configures the host from the app's Dovetail joints</PackageDescription>
-    <PackageTags>$(PackageTags);console;consoleappframework</PackageTags>
+    <PackageTags>$(PackageTags);console;cli;consoleappframework</PackageTags>
   </PropertyGroup>
 
   <!--
