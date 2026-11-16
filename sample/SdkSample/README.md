@@ -39,17 +39,17 @@ The SDK could equally be applied once for every project, in a `Directory.Build.p
 ## What each library shows
 
 Every library is a plain class library in the style of `SdkSample.Greetings`: options declared with
-`[DovetailConfiguration]`, XML docs on every member, defaults in its own `appsettings.yaml` (renamed to
-`<Project>.yaml`), and an exported joint that registers a small service reading those options through
-`IOptions<T>`. Dovetail's generated binder fills the options and its generated joint loads the YAML file, so the
-joints never register the options themselves.
+[Optionary](https://github.com/RocketSurgeonsGuild/Optionary)'s `[Optionary]` (each library references the `Optionary` package), XML
+docs on every member, defaults in its own `appsettings.yaml` (renamed to `<Project>.yaml`), and an exported joint that registers a
+small service reading those options through `IOptions<T>`. Optionary's generated binder fills the options, Dovetail's generated
+joint registers them, and another generated joint loads the YAML file, so the joints never register the options themselves.
 
 | Library                   | Section(s)                       | Shows                                                                                                                                                                                                                                                                                                               |
 | ------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SdkSample.Greetings`     | `Greetings`, `Farewell`          | the basics: a class with `[Description]` and `[Range]`, and a positional record with a `<param>` description. `IGreeter`                                                                                                                                                                                            |
 | `SdkSample.Notifications` | `Notifications`                  | a plain enum and a `[Flags]` enum, `TimeSpan`, `Uri`, `List<string>`, a `Dictionary<string, ChannelOptions>` of documented nested objects with `[Range]`, `[Description]`, `[EmailAddress]` and an `[Obsolete("Use Sender instead.")]` property. `INotifier`                                                        |
 | `SdkSample.Storage`       | `Storage`, `Archive`             | the generated factory path: a positional record with constructor defaults, and a class with a `required` member and `init`-only properties. `[RegularExpression]`, a `string[]`, dash-case (`Storage`) and underscore-case (`Archive`) keys through `KeyStyle`, and `[ConfigurationKeyName("keep_days")]`. `IStore` |
-| `SdkSample.Diagnostics`   | `Diagnostics`, `Host`, `Console` | types the library doesn't own, through `[assembly: DovetailConfiguration<HostOptions>("Host")]` and `[assembly: DovetailConfiguration<ConsoleLifetimeOptions>("Console")]`, whose descriptions in the schema come from the XML docs shipped in `Microsoft.Extensions.Hosting`. `IDiagnosticsReport`                 |
+| `SdkSample.Diagnostics`   | `Diagnostics`, `Host`, `Console` | types the library doesn't own, through `[assembly: Optionary<HostOptions>("Host")]` and `[assembly: Optionary<ConsoleLifetimeOptions>("Console")]`, whose descriptions in the schema come from the XML docs shipped in `Microsoft.Extensions.Hosting`. `IDiagnosticsReport`                 |
 
 `SdkSample.Storage` shows two key styles. `StorageOptions` declares `KeyStyle = ConfigurationKeyStyle.Dash`, so its section
 is `storage` and its keys `root`, `max-file-size-mb` and `compress`. `ArchiveOptions` declares
@@ -57,7 +57,7 @@ is `storage` and its keys `root`, `max-file-size-mb` and `compress`. `ArchiveOpt
 binder reads those keys and the schema suggests them. The explicit `[ConfigurationKeyName("keep_days")]` wins over the
 `retention_days` the style would give. The other libraries keep the declared PascalCase keys.
 
-Both hosts reference all four libraries. Each host's merged `obj/appsettings.schema.json` combines the sections of
+Both hosts reference all four libraries. Each host's merged `obj/appsettings.schema.json`, which Optionary writes, combines the sections of
 every one of them (plus SchemaStore's `Logging`, `Kestrel` and the rest of the stock settings).
 [`.vscode/settings.json`](.vscode/settings.json) maps those schemas to the `appsettings*` files for JSON, YAML and
 TOML.

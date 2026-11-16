@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Joinery.Dovetail.Attributes;
+using Optionary;
 using Microsoft.Extensions.Logging;
 
 namespace SdkSample.Diagnostics;
@@ -9,7 +9,7 @@ namespace SdkSample.Diagnostics;
 ///     <c>HostOptions</c> (section <c>Host</c>) and <c>ConsoleLifetimeOptions</c> (section <c>Console</c>) from Microsoft's
 ///     packages; those two are declared in <c>AssemblyInfo.cs</c>.
 /// </summary>
-[DovetailConfiguration]
+[Optionary]
 public sealed class DiagnosticsOptions
 {
     /// <summary>

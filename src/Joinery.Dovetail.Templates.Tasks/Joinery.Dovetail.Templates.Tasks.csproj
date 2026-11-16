@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-      The MSBuild task that writes DovetailTemplate items (build/Joinery.Dovetail.Templates.targets). Like Joinery.Dovetail.Build.Tasks
-      it ships inside the Dovetail package (build/tasks/netstandard2.0, see Joinery.Dovetail.csproj) rather than as a package of its own.
-      A separate assembly because every project that emits a template runs it, while Joinery.Dovetail.Build.Tasks belongs to the
-      configuration schema (and is built only where DovetailConfigurationSchema is on); this one needs nothing but MSBuild.
+      The MSBuild task that writes DovetailTemplate items (build/Joinery.Dovetail.Templates.targets). It ships inside the Dovetail
+      package (build/tasks/netstandard2.0, see Joinery.Dovetail.csproj) rather than as a package of its own, and needs nothing but MSBuild.
   -->
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

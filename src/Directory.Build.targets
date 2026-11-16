@@ -1,14 +1,6 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
-  <!--
-      Build infrastructure rather than Dovetail consumers: no configuration schema files, which for Joinery.Dovetail.Build.Tasks would
-      also need the very tasks it builds. DovetailSdkPackage is set for every MSBuild SDK package (src/Sdks/Directory.Build.props).
-  -->
-  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Joinery.Dovetail.Build.Tasks' or '$(MSBuildProjectName)' == 'Joinery.Dovetail.Templates.Tasks' or '$(DovetailSdkPackage)' == 'true' or $(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers'))">
-    <DovetailConfigurationSchema>false</DovetailConfigurationSchema>
-  </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail/build/Joinery.Dovetail.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.InRepo.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Joinery.Dovetail.Templates.Tasks/Joinery.Dovetail.Templates.Tasks.InRepo.targets" />
   <!--
     Analyzer release tracking (RS2000-RS2008) for every analyzer/generator project:
@@ -21,7 +13,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Joinery.Dovetail.Aspire.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.Autofac.Tests" />
-    <InternalsVisibleTo Include="Joinery.Dovetail.Configuration.Runtime.Tests" />
+    <InternalsVisibleTo Include="Joinery.Dovetail.Configuration.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.DryIoc.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.AspNetCore.Tests" />
     <InternalsVisibleTo Include="Joinery.Dovetail.Hosting.Maui.Tests" />
@@ -39,7 +31,7 @@
       PrivateAssets="contentfiles;build;buildMultitargeting;buildTransitive"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false"
-      Condition="'$(MSBuildProjectName)' != 'Joinery.Dovetail' and '$(DovetailSdkPackage)' != 'true' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Build.Tasks' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Templates.Tasks' and !$(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers'))"
+      Condition="'$(MSBuildProjectName)' != 'Joinery.Dovetail' and '$(DovetailSdkPackage)' != 'true' and '$(MSBuildProjectName)' != 'Joinery.Dovetail.Templates.Tasks' and !$(MSBuildProjectName.StartsWith('Joinery.Dovetail.Analyzers'))"
     />
     <!--
       NuGet's default PrivateAssets (contentfiles;analyzers;build) would pack every integration package's dependency on

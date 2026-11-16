@@ -33,8 +33,7 @@
       Imported_Assembly_Dovetails.g.cs
     ],
     OutputFiles: [
-      app.runtimeconfig.dev.json,
-      appsettings.schema.json
+      app.runtimeconfig.dev.json
     ]
   }
 ]

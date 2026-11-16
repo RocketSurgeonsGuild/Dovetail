@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Joinery.Dovetail.Attributes;
+using Optionary;
 
 namespace SdkSample.Greetings;
 
@@ -8,7 +8,7 @@ namespace SdkSample.Greetings;
 ///     Options for the greetings this library prints. Bound from the <c>Greetings</c> section (the type name without its
 ///     <c>Options</c> suffix) and described in the application's <c>appsettings.schema.json</c>.
 /// </summary>
-[DovetailConfiguration]
+[Optionary]
 public sealed class GreetingsOptions
 {
     /// <summary>

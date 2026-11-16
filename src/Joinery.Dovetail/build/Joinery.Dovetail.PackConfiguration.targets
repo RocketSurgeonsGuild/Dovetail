@@ -63,8 +63,8 @@
     {Name} file keeps its name. When both spell the same file (say appsettings.yaml and lib.yaml), they would land on the same output
     and package path: _DovetailCheckConfigurationNameCollisions fails the build with DT0019.
 
-    Not configuration, so never included: appsettings.schema.json and {Name}.schema.json (editor schemas, see
-    Joinery.Dovetail.ConfigurationSchema.targets) and {Name}.run.json (a file-based app's launch profiles). The Exclude of the
+    Not configuration, so never included: appsettings.schema.json and {Name}.schema.json (editor schemas, which
+    Optionary writes) and {Name}.run.json (a file-based app's launch profiles). The Exclude of the
     {Name} items drops what the appsettings items already have, for a project that is itself named "appsettings".
 
     _Dovetail{Format}ConfigurationSource is the file whose existence turns a format on: appsettings.{ext}, or else {Name}.{ext}.

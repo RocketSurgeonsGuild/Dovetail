@@ -91,7 +91,6 @@
     <Project Path="src/Joinery.Dovetail.Aspire/Joinery.Dovetail.Aspire.csproj" />
     <Project Path="src/Joinery.Dovetail.Analyzers/Joinery.Dovetail.Analyzers.csproj" />
     <Project Path="src/Joinery.Dovetail.Autofac/Joinery.Dovetail.Autofac.csproj" />
-    <Project Path="src/Joinery.Dovetail.Build.Tasks/Joinery.Dovetail.Build.Tasks.csproj" />
     <Project Path="src/Joinery.Dovetail.Configuration.Json/Joinery.Dovetail.Configuration.Json.csproj" />
     <Project Path="src/Joinery.Dovetail.Configuration.Yaml/Joinery.Dovetail.Configuration.Yaml.csproj" />
     <Project Path="src/Joinery.Dovetail.Configuration.Toml/Joinery.Dovetail.Configuration.Toml.csproj" />
@@ -129,12 +128,10 @@
     <File Path="test/Directory.Build.props" />
     <File Path="test/Directory.Build.targets" />
     <Project Path="test/Joinery.Dovetail.Analyzers.Tests/Joinery.Dovetail.Analyzers.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Aot.Tests/Joinery.Dovetail.Aot.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Aspire.Tests/Joinery.Dovetail.Aspire.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Autofac.Tests/Joinery.Dovetail.Autofac.Tests.csproj" />
-    <Project Path="test/Joinery.Dovetail.Configuration.Aot.Tests/Joinery.Dovetail.Configuration.Aot.Tests.csproj" />
-    <Project Path="test/Joinery.Dovetail.Configuration.Parity.Tests/Joinery.Dovetail.Configuration.Parity.Tests.csproj" />
-    <Project Path="test/Joinery.Dovetail.Build.Tasks.Tests/Joinery.Dovetail.Build.Tasks.Tests.csproj" />
-    <Project Path="test/Joinery.Dovetail.Configuration.Runtime.Tests/Joinery.Dovetail.Configuration.Runtime.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Configuration.Tests/Joinery.Dovetail.Configuration.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Sdk.Tests/Joinery.Dovetail.Sdk.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Templates.Tasks.Tests/Joinery.Dovetail.Templates.Tasks.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Tests/Joinery.Dovetail.Tests.csproj" />

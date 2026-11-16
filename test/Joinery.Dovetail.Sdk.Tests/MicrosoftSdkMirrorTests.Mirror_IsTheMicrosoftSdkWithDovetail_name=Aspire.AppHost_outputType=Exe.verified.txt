@@ -103,8 +103,7 @@
       _AppHost.ProjectMetadata.g.cs
     ],
     OutputFiles: [
-      app.runtimeconfig.dev.json,
-      appsettings.schema.json
+      app.runtimeconfig.dev.json
     ]
   }
 ]

@@ -315,6 +315,12 @@ internal static class Config
     }
 
     /// <summary>
+    /// The Optionary version Directory.Packages.props pins: Dovetail doesn't depend on Optionary, so scaffolded applications that use
+    /// it reference this version themselves, the one the rest of the repository builds against.
+    /// </summary>
+    public static string OptionaryVersion => field ??= CentralPackageVersion("Optionary", "net10.0");
+
+    /// <summary>
     /// Resolves the version pinned for a package in the solution's central
     /// <c>Directory.Packages.props</c>, so scaffolded consumer projects that reference e.g.
     /// <c>Microsoft.Extensions.Logging</c> stay in sync with the solution's pin instead of a value

@@ -93,7 +93,6 @@
       DovetailHosting.DovetailWebAssemblyHelpers.g.cs
     ],
     OutputFiles: [
-      appsettings.schema.json,
       wasm.runtimeconfig.dev.json,
       wasm.staticwebassets.runtime.json
     ]

@@ -92,8 +92,7 @@
     GeneratedFiles: [],
     OutputFiles: [
       app.runtimeconfig.dev.json,
-      app.staticwebassets.runtime.json,
-      appsettings.schema.json
+      app.staticwebassets.runtime.json
     ]
   }
 ]

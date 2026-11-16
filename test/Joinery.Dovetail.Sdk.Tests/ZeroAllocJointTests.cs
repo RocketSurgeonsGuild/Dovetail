@@ -185,10 +185,10 @@ public class ZeroAllocJointTests(string targetFramework)
     }
 
     /// <summary>
-    ///     Joinery.Dovetail.Sdk adds ZeroAlloc.Validation.Options to a library that references ZeroAlloc.Validation, and Dovetail's
-    ///     generator calls its <c>ValidateWithZeroAlloc()</c> for the library's <c>[DovetailConfiguration]</c> types marked
-    ///     <c>[Validate]</c>: reading options that break a rule throws. <c>DovetailEnableZeroAllocValidation=false</c> leaves the
-    ///     package, and so the validation, out.
+    ///     Joinery.Dovetail.Sdk adds ZeroAlloc.Validation.Options to a library that references ZeroAlloc.Validation, and Optionary's
+    ///     generator calls its <c>ValidateWithZeroAlloc()</c> for the library's <c>[Optionary]</c> types marked <c>[Validate]</c>, which
+    ///     Dovetail's joint registers: reading options that break a rule throws. <c>DovetailEnableZeroAllocValidation=false</c> leaves
+    ///     the package out and sets <c>OptionaryZeroAllocValidation=false</c>, and so the validation is off.
     /// </summary>
     [Test]
     [Arguments(null, "invalid threw OptionsValidationException: ConnectionString: ")]
@@ -201,7 +201,8 @@ public class ZeroAllocJointTests(string targetFramework)
         // track: false - built only through the application's ProjectReference (see HostConfigurationPropagationTests).
         var lib = ProjectCreator
                  .Templates.SdkCsproj(targetFramework: targetFramework)
-                 .ItemPackageReference("ZeroAlloc.Validation", Version("ZeroAlloc.Validation"));
+                 .ItemPackageReference("ZeroAlloc.Validation", Version("ZeroAlloc.Validation"))
+                 .ItemPackageReference("Optionary", Config.OptionaryVersion);
         if (enabled is not null)
         {
             lib = lib.Property("DovetailEnableZeroAllocValidation", enabled);
@@ -212,12 +213,12 @@ public class ZeroAllocJointTests(string targetFramework)
            .AddFile(
                 "lib/DatabaseOptions.cs",
                 """
-                using Joinery.Dovetail.Attributes;
+                using Optionary;
                 using ZeroAlloc.Validation;
 
                 namespace lib;
 
-                [DovetailConfiguration, Validate]
+                [Optionary, Validate]
                 public class DatabaseOptions
                 {
                     [NotEmpty]

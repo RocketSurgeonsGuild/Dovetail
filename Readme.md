@@ -84,11 +84,12 @@ yourself.
 
 ## Configuration
 
-Declare a library's configuration with `[DovetailConfiguration]` on an options class. Dovetail generates a reflection-free
-binder for `IOptions<T>` and a JSON Schema for it, and merges the schemas of every referenced library into the
-application's `obj/appsettings.schema.json` for editor completion and validation. See
-[Managed Configuration](https://rocketsurgeonsguild.github.io/Dovetail/concepts/managed-configuration/) and
-[Editor Setup](https://rocketsurgeonsguild.github.io/Dovetail/guides/editor-setup/).
+Options binding and configuration schemas come from [Optionary](https://github.com/RocketSurgeonsGuild/Optionary), which
+Dovetail doesn't depend on. Add the `Optionary` package and put `[Optionary]` on an options class: Optionary generates a
+reflection-free binder for `IOptions<T>` and a JSON Schema, and Dovetail exports a joint that registers the options in every host
+that references the library. A library's `appsettings` files in JSON, YAML or TOML are still shipped by the Dovetail SDK. See
+[Configuration with Optionary](https://rocketsurgeonsguild.github.io/Dovetail/concepts/configuration-with-optionary/) and
+[Configuration Files](https://rocketsurgeonsguild.github.io/Dovetail/concepts/configuration-files/).
 
 ## Contributing
 

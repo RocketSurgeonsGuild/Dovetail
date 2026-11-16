@@ -2,19 +2,19 @@ using System.Reflection;
 
 // The JSON Schema of the "Serilog" configuration section, as Joinery.Dovetail.Serilog reads it (SerilogMinimumLevelConfiguration): the
 // minimum level, as a level name or as an object with Default and Override. It is emitted as the same assembly metadata fragment
-// Dovetail's generator writes for [DovetailConfiguration] types: Joinery.Dovetail.Build.Tasks reads it from this assembly's metadata,
-// writes it into the package's ConfigurationSchema.json and merges it into the appsettings.schema.json of every application that
-// references this library. It is a hand-written attribute rather than a generated one because the section is read by hand, with no
-// options type behind it. Nothing but the attribute exists at runtime, which keeps it trimming- and AOT-neutral.
+// Optionary's generator writes for [Optionary] types: when an application references Optionary, Optionary's build reads it from this
+// assembly's metadata and merges it into the application's appsettings.schema.json. Without Optionary nothing reads it. It is a
+// hand-written attribute rather than a generated one because the section is read by hand, with no options type behind it. Nothing but
+// the attribute exists at runtime, which keeps it trimming- and AOT-neutral.
 //
 // Sinks, enrichers, filters and the rest of the format of Serilog.Settings.Configuration are not read (that package finds them by
 // reflection), so they are not described either: the merge closes the section with the one key it lists, and flags the others.
 //
-// The level rules are those of the "Serilog" definition in SchemaStore's appsettings.json schema (Apache-2.0), which Dovetail embeds in
+// The level rules are those of the "Serilog" definition in SchemaStore's appsettings.json schema (Apache-2.0), which Optionary embeds in
 // every host schema, narrowed to what is read: the six level names (SchemaStore also lists Off, which is not a Serilog level) and no
 // level switches (SchemaStore's ControlledBy and $name references). Dovetail adds titles and descriptions, and a case-insensitive
-// patternProperties twin for each key (which Dovetail's writer emits for every fragment). SerilogSchemaTests runs sample
-// configurations through both and asserts where they agree and where they differ.
+// patternProperties twin for each key (as Optionary's writer emits for every fragment). SerilogConfigurationSchemaTests checks it
+// against the draft-07 meta-schema and Serilog's levels.
 //
 // The schema is draft-07 and permissive, as every fragment is: the merge closes the objects that list "properties" (the section
 // itself and MinimumLevel's object form) with case-insensitive propertyNames.
@@ -24,8 +24,8 @@ namespace Joinery.Dovetail.Serilog;
 
 internal static class SerilogConfigurationSchema
 {
-    /// <summary>The metadata key: the section path after Joinery.Dovetail.Build.Tasks' version prefix.</summary>
-    internal const string Key = "Dovetail.ConfigurationSchema.v1:Serilog";
+    /// <summary>The metadata key: the section path after Optionary's fragment version prefix.</summary>
+    internal const string Key = "Optionary.Schema.v1:Serilog";
 
     /// <summary>The fragment: the section's schema with its object types under <c>definitions</c>.</summary>
     internal const string Json = Head + Definitions + Tail;

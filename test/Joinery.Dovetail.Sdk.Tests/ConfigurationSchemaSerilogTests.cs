@@ -1,16 +1,14 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Joinery.Dovetail.Build.Tasks.Tests;
 using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
 /// Joinery.Dovetail.Serilog ships the schema of the <c>Serilog</c> section as an assembly metadata fragment
-/// (<c>SerilogConfigurationSchema.cs</c>). These build a real application that references the packed library and check that
-/// <c>Joinery.Dovetail.ConfigurationSchema.targets</c> merges the fragment into its <c>obj/appsettings.schema.json</c> during a normal
-/// <c>dotnet build</c>, next to the SchemaStore schema every host schema embeds. Joinery.Dovetail.Build.Tasks.Tests covers the fragment
-/// against the build task in-process; this is the same through the package and MSBuild.
+/// (<c>SerilogConfigurationSchema.cs</c>). These build a real application that references the packed library and Optionary, and check
+/// that Optionary merges the fragment into its <c>obj/appsettings.schema.json</c> during a normal <c>dotnet build</c>, next to the
+/// SchemaStore schema every host schema embeds.
 /// </summary>
 [TargetFrameworks]
 public class ConfigurationSchemaSerilogTests(string targetFramework)
@@ -66,12 +64,13 @@ public class ConfigurationSchemaSerilogTests(string targetFramework)
     private SdkTestProject CreateHost(bool referenceSerilog)
     {
         // Packed from the repo's sources and restored from the scaffold's feed (see SdkTestProject / Config.NugetArtifactsDirectory).
-        // Joinery.Dovetail.Serilog brings Dovetail, and with it the build assets that merge the schema; the control host gets the same
-        // through Joinery.Dovetail.Hosting, so only the Serilog library differs between them.
+        // Optionary writes the schema; the control host references Joinery.Dovetail.Hosting instead of Joinery.Dovetail.Serilog, so only
+        // the Serilog library differs between them.
         var package = referenceSerilog ? "Joinery.Dovetail.Serilog" : "Joinery.Dovetail.Hosting";
         var host = ProjectCreator
                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
-                  .ItemInclude("PackageReference", include: package, metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion(package) });
+                  .ItemInclude("PackageReference", include: package, metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion(package) })
+                  .ItemPackageReference("Optionary", Config.OptionaryVersion);
 
         var project = new SdkTestProject();
         project

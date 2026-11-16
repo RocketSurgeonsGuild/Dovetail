@@ -3,228 +3,153 @@ using Microsoft.Build.Utilities.ProjectCreation;
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// Covers <c>Joinery.Dovetail.ConfigurationSchema.targets</c>: libraries write their own configuration schema fragments to
-/// <c>obj/.../ConfigurationSchema.json</c> and pack it at the package root, and hosts merge theirs and every reference's into
-/// <c>obj/appsettings.schema.json</c>, copied to the output directory and published. The fragments are hand-written
-/// <c>[assembly: AssemblyMetadata("Dovetail.ConfigurationSchema.v1:...", ...)]</c> attributes in the generator's shape, so these
-/// don't depend on the generator.
+/// Dovetail's side of Optionary's configuration schema. Optionary writes the schema; Dovetail sets Optionary's hook properties from its own
+/// detection (<c>Joinery.Dovetail.targets</c>): an application the SDK detected is a schema host, one that embeds its configuration keeps
+/// the schema out of its output, and <c>DovetailEnableZeroAllocValidation=false</c> turns Optionary's ZeroAlloc validation off. Without
+/// Optionary there is no schema and nothing to warn about. The generic schema cases (merging, packing, editors) are Optionary's own tests.
 /// </summary>
 [TargetFrameworks]
 public class ConfigurationSchemaTests(string targetFramework)
 {
     /// <summary>
-    /// "Greetings", with an object type in the fragment's definitions.
-    /// </summary>
-    internal const string GreetingsFragment = """"
-        [assembly: System.Reflection.AssemblyMetadata("Dovetail.ConfigurationSchema.v1:Greetings", """{"type":"object","title":"Greetings","description":"Options of the greeter.","properties":{"Message":{"type":"string","description":"Text placed before the name."},"Endpoint":{"type":["object","null"],"allOf":[{"$ref":"#/definitions/Endpoint"}]}},"patternProperties":{"^(?:[Mm][Ee][Ss][Ss][Aa][Gg][Ee])$":{"type":"string","description":"Text placed before the name."},"^(?:[Ee][Nn][Dd][Pp][Oo][Ii][Nn][Tt])$":{"type":["object","null"],"allOf":[{"$ref":"#/definitions/Endpoint"}]}},"definitions":{"Endpoint":{"properties":{"Url":{"type":"string"}},"patternProperties":{"^(?:[Uu][Rr][Ll])$":{"type":"string"}}}}}""")]
-        """";
-
-    /// <summary>
-    /// "greetings" again (another library binding the same section), and a nested "Shared:Http".
-    /// </summary>
-    internal const string SharedFragments = """"
-        [assembly: System.Reflection.AssemblyMetadata("Dovetail.ConfigurationSchema.v1:greetings", """{"type":"object","title":"greetings","properties":{"Count":{"type":"integer"}},"patternProperties":{"^(?:[Cc][Oo][Uu][Nn][Tt])$":{"type":"integer"}}}""")]
-        [assembly: System.Reflection.AssemblyMetadata("Dovetail.ConfigurationSchema.v1:Shared:Http", """{"type":"object","title":"Shared:Http","properties":{"Timeout":{"type":"integer"}},"patternProperties":{"^(?:[Tt][Ii][Mm][Ee][Oo][Uu][Tt])$":{"type":"integer"}}}""")]
-        """";
-
-    /// <summary>
-    /// The application's own section.
+    /// The application's own section, as a hand-written fragment in the shape Optionary's generator writes, so these don't depend on
+    /// what that generator makes of a type.
     /// </summary>
     internal const string AppFragment = """"
-        [assembly: System.Reflection.AssemblyMetadata("Dovetail.ConfigurationSchema.v1:App", """{"type":"object","title":"App","properties":{"Name":{"type":"string"}},"patternProperties":{"^(?:[Nn][Aa][Mm][Ee])$":{"type":"string"}}}""")]
+        [assembly: System.Reflection.AssemblyMetadata("Optionary.Schema.v1:App", """{"type":"object","title":"App","properties":{"Name":{"type":"string"}},"patternProperties":{"^(?:[Nn][Aa][Mm][Ee])$":{"type":"string"}}}""")]
         """";
 
     private const string HostSchema = "host/obj/appsettings.schema.json";
 
     [Test]
-    public async Task Library_WritesItsSectionsToObj_AndPacksThemAtThePackageRoot()
+    public async Task SdkApplication_IsAnOptionarySchemaHost_AndALibraryIsLeftToOptionary()
     {
         using var project = new SdkTestProject();
         project
            .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
-           .AddProject("lib/lib.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework))
-           .AddFile("lib/Fragments.cs", GreetingsFragment + "\n" + SharedFragments);
+           .AddProject("web/web.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Microsoft.NET.Sdk.Web"))
+           .AddProject("lib/lib.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework));
 
-        var objSchema = $"lib/obj/Release/{targetFramework}/ConfigurationSchema.json";
-        await project.VerifyProjectsAndPackages(objSchema);
+        var web = await project.Evaluate("web", "-getProperty:OptionarySchemaHost -getProperty:OptionarySchemaCopyToOutput -getProperty:OptionaryZeroAllocValidation");
+        var lib = await project.Evaluate("lib", "-getProperty:OptionarySchemaHost -getProperty:OptionarySchemaCopyToOutput -getProperty:OptionaryZeroAllocValidation");
 
-        await project.ReadPackageFile("lib", "ConfigurationSchema.json").Should().BeEqualTo(project.ReadFile(objSchema));
-    }
-
-    /// <summary>
-    /// An appsettings.schema.json next to the configuration (say, one copied there for editors) is not configuration: it isn't
-    /// renamed, copied, packed or embedded like appsettings*.json.
-    /// </summary>
-    private SdkTestProject CreateLibraryWithASchemaFile()
-    {
-        var project = new SdkTestProject();
-        project
-           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
-           .AddProject("lib/lib.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework))
-           .AddFile("lib/appsettings.json", "{}")
-           .AddFile("lib/appsettings.schema.json", "{}");
-        return project;
+        await web.GetProperty("Properties").GetProperty("OptionarySchemaHost").GetString().Should().BeEqualTo("true");
+        await web.GetProperty("Properties").GetProperty("OptionarySchemaCopyToOutput").GetString().Should().BeEqualTo("");
+        await web.GetProperty("Properties").GetProperty("OptionaryZeroAllocValidation").GetString().Should().BeEqualTo("");
+        await lib.GetProperty("Properties").GetProperty("OptionarySchemaHost").GetString().Should().BeEqualTo("");
     }
 
     [Test]
-    public async Task ASchemaFileNextToTheConfiguration_IsNotPackedLikeIt()
-    {
-        using var project = CreateLibraryWithASchemaFile();
-
-        await project.VerifyProjectsAndPackages();
-    }
-
-    [Test]
-    public async Task ASchemaFileNextToTheConfiguration_IsNotEmbeddedLikeIt()
-    {
-        using var project = CreateLibraryWithASchemaFile();
-
-        await project.VerifyEmbeddedConfiguration("lib");
-    }
-
-    private SdkTestProject CreateHostReferencingLibraries()
-    {
-        var project = new SdkTestProject();
-        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"));
-
-        // track: false - built only through the host's ProjectReference (see HostConfigurationPropagationTests).
-        var lib1 = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework);
-        project.AddProject("lib1/lib1.csproj", lib1, track: false).AddFile("lib1/Fragments.cs", GreetingsFragment);
-        var lib2 = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework);
-        project.AddProject("lib2/lib2.csproj", lib2, track: false).AddFile("lib2/Fragments.cs", SharedFragments);
-
-        var host = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe").ItemProjectReference(lib1).ItemProjectReference(lib2);
-        project
-           .AddProject("host/host.csproj", host)
-           .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
-           .AddFile("host/Fragments.cs", AppFragment);
-        return project;
-    }
-
-    [Test]
-    public async Task HostReferencingLibraries_MergesTheirSections_AndCopiesTheSchemaToItsOutput()
-    {
-        using var project = CreateHostReferencingLibraries();
-
-        await project.VerifyProjects(HostSchema);
-
-        await project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
-    }
-
-    [Test]
-    public async Task HostReferencingLibraries_PublishesTheSchema()
-    {
-        using var project = CreateHostReferencingLibraries();
-
-        await project.VerifyPublish("host");
-
-        await project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
-    }
-
-    private async Task<SdkTestProject> CreateHostReferencingPackages()
-    {
-        var project = new SdkTestProject();
-        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"));
-
-        // Distinctive package IDs, so restore can't pick up an unrelated nuget.org package (see HostConfigurationPropagationTests).
-        project
-           .AddProject("lib1/DovetailSchemaTestLib1.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework))
-           .AddFile("lib1/Fragments.cs", GreetingsFragment);
-        project
-           .AddProject("lib2/DovetailSchemaTestLib2.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework))
-           .AddFile("lib2/Fragments.cs", SharedFragments);
-        var lib1 = await project.PackToLocalFeed("lib1");
-        var lib2 = await project.PackToLocalFeed("lib2");
-        await lib1.Files.Should().Contain("ConfigurationSchema.json");
-        await lib2.Files.Should().Contain("ConfigurationSchema.json");
-
-        var host = ProjectCreator
-                  .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
-                  .ItemInclude("PackageReference", include: lib1.PackageId, metadata: new Dictionary<string, string?> { ["Version"] = lib1.Version })
-                  .ItemInclude("PackageReference", include: lib2.PackageId, metadata: new Dictionary<string, string?> { ["Version"] = lib2.Version });
-        project
-           .AddProject("host/host.csproj", host)
-           .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
-           .AddFile("host/Fragments.cs", AppFragment);
-        return project;
-    }
-
-    [Test]
-    public async Task HostReferencingPackages_MergesTheirSections_AndCopiesTheSchemaToItsOutput()
-    {
-        using var project = await CreateHostReferencingPackages();
-
-        await project.VerifyProjects(HostSchema);
-
-        await project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
-    }
-
-    [Test]
-    public async Task HostReferencingPackages_PublishesTheSchema()
-    {
-        using var project = await CreateHostReferencingPackages();
-
-        await project.VerifyPublish("host");
-
-        await project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
-    }
-
-    /// <summary>
-    /// Test projects are hosts too, whatever their output type: they read configuration the way the application does.
-    /// </summary>
-    [Test]
-    public async Task TestProject_MergesTheSectionsOfWhatItTests()
+    public async Task DovetailSwitches_SetOptionarysHooks()
     {
         using var project = new SdkTestProject();
-        project.AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"));
-        var lib = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework);
-        project.AddProject("lib/lib.csproj", lib, track: false).AddFile("lib/Fragments.cs", GreetingsFragment);
-        project.AddProject("tests/tests.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework).Property("IsTestProject", "true").ItemProjectReference(lib));
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
+           .AddProject(
+                "host/host.csproj",
+                ProjectCreator
+                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                   .Property("DovetailEmbedConfiguration", "true")
+                   .Property("DovetailEnableZeroAllocValidation", "false")
+            );
 
-        await project.VerifyBuildWarnings("tests");
+        var host = await project.Evaluate("host", "-getProperty:OptionarySchemaHost -getProperty:OptionarySchemaCopyToOutput -getProperty:OptionaryZeroAllocValidation");
 
-        await project.ReadFile("tests/obj/appsettings.schema.json").Should().Contain("Unknown key in section \\\"Greetings\\\"");
-        await project.ReadFile($"tests/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile("tests/obj/appsettings.schema.json"));
+        await host.GetProperty("Properties").GetProperty("OptionarySchemaHost").GetString().Should().BeEqualTo("true");
+        await host.GetProperty("Properties").GetProperty("OptionarySchemaCopyToOutput").GetString().Should().BeEqualTo("false");
+        await host.GetProperty("Properties").GetProperty("OptionaryZeroAllocValidation").GetString().Should().BeEqualTo("false");
     }
 
     /// <summary>
-    /// An application that only references Joinery.Dovetail.Hosting (no Joinery.Dovetail.Sdk, no direct Dovetail reference) gets Dovetail's
-    /// build assets transitively, and with them the schema.
+    /// What a user sets wins over Dovetail's detection.
     /// </summary>
-    private SdkTestProject CreateHostingOnlyHost()
+    [Test]
+    public async Task OptionaryHooks_SetByTheProject_AreKept()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
+           .AddProject(
+                "host/host.csproj",
+                ProjectCreator
+                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                   .Property("DovetailEmbedConfiguration", "true")
+                   .Property("OptionarySchemaHost", "false")
+                   .Property("OptionarySchemaCopyToOutput", "true")
+            );
+
+        var host = await project.Evaluate("host", "-getProperty:OptionarySchemaHost -getProperty:OptionarySchemaCopyToOutput");
+
+        await host.GetProperty("Properties").GetProperty("OptionarySchemaHost").GetString().Should().BeEqualTo("false");
+        await host.GetProperty("Properties").GetProperty("OptionarySchemaCopyToOutput").GetString().Should().BeEqualTo("true");
+    }
+
+    /// <summary>
+    /// A host that embeds its configuration (as MAUI and Uno applications do) has no configuration files next to it, so the schema
+    /// stays in <c>obj/</c> for editors and isn't copied to the output.
+    /// </summary>
+    [Test]
+    public async Task EmbeddedConfigurationHost_KeepsTheSchemaInObj()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
+           .AddProject(
+                "host/host.csproj",
+                ProjectCreator
+                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
+                   .Property("DovetailEmbedConfiguration", "true")
+                   .ItemPackageReference("Optionary", Config.OptionaryVersion)
+            )
+           .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
+           .AddFile("host/Fragments.cs", AppFragment);
+
+        await project.BuildProject("host");
+
+        await project.ReadFile(HostSchema).Should().Contain("\"App\"");
+        await File.Exists(Path.Combine(project.Directory, "host", "bin", "Debug", targetFramework, "appsettings.schema.json")).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// An application that only references Joinery.Dovetail.Hosting (no Joinery.Dovetail.Sdk, no direct Dovetail reference) and
+    /// Optionary is a schema host through Optionary's own detection.
+    /// </summary>
+    [Test]
+    public async Task HostingOnlyHost_WithOptionary_WritesTheSchema_AndCopiesItToItsOutput()
     {
         var host = ProjectCreator
                   .Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe")
-                  .ItemInclude(
-                       "PackageReference",
-                       include: "Joinery.Dovetail.Hosting",
-                       metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail.Hosting") }
-                   );
-        var project = new SdkTestProject();
+                  .ItemPackageReference("Joinery.Dovetail.Hosting", Config.DovetailPackageVersion("Joinery.Dovetail.Hosting"))
+                  .ItemPackageReference("Optionary", Config.OptionaryVersion);
+        using var project = new SdkTestProject();
         project
            .AddProject("host/host.csproj", host)
            .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
            .AddFile("host/Fragments.cs", AppFragment);
-        return project;
-    }
 
-    [Test]
-    public async Task HostingOnlyHost_MergesItsSections_AndCopiesTheSchemaToItsOutput()
-    {
-        using var project = CreateHostingOnlyHost();
+        await project.BuildProject("host");
 
-        await project.VerifyProjects(HostSchema);
-
+        await project.ReadFile(HostSchema).Should().Contain("\"App\"");
         await project.ReadFile($"host/bin/Debug/{targetFramework}/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
     }
 
+    /// <summary>
+    /// Without Optionary a Dovetail application has no schema, and Dovetail says nothing about it.
+    /// </summary>
     [Test]
-    public async Task HostingOnlyHost_PublishesTheSchema()
+    public async Task HostWithoutOptionary_HasNoSchema_AndNoWarnings()
     {
-        using var project = CreateHostingOnlyHost();
+        using var project = new SdkTestProject();
+        project
+           .AddProject("Directory.Build.props", ProjectCreator.Create().Sdk("Joinery.Dovetail.Sdk"))
+           .AddProject("host/host.csproj", ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, outputType: "Exe"))
+           .AddFile("host/Program.cs", "System.Console.WriteLine(\"hello\");")
+           .AddFile("host/Fragments.cs", AppFragment);
 
-        await project.VerifyPublish("host");
+        var build = await project.BuildProject("host");
 
-        await project.ReadFile($"host/bin/Release/{targetFramework}/publish/appsettings.schema.json").Should().BeEqualTo(project.ReadFile(HostSchema));
+        await build.FindChildrenRecursive<Microsoft.Build.Logging.StructuredLogger.Warning>().Select(z => z.Text).Should().BeEmpty();
+        await File.Exists(Path.Combine(project.Directory, HostSchema)).Should().BeFalse();
+        await File.Exists(Path.Combine(project.Directory, "host", "bin", "Debug", targetFramework, "appsettings.schema.json")).Should().BeFalse();
     }
 }
