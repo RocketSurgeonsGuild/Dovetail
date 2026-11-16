@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>Provides Serilog support for a Rocket Surgery Application</PackageDescription>
+        <PackageDescription>Adds a Serilog joint, so libraries can configure the application's Serilog LoggerConfiguration, and reads Serilog minimum levels from configuration.</PackageDescription>
         <PackageTags>$(PackageTags);serilog;logging;structured-logging</PackageTags>
         <!-- The Serilog configuration section is read with plain IConfiguration calls (SerilogMinimumLevelConfiguration), so there is no reflection to annotate. -->
         <IsAotCompatible>true</IsAotCompatible>

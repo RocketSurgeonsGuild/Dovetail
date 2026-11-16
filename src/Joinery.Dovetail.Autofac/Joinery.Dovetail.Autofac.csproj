@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>Provides Autofac support for a Rocket Surgery Application</PackageDescription>
+        <PackageDescription>Uses Autofac as the application's container and adds an Autofac joint, so libraries can register services on its ContainerBuilder.</PackageDescription>
         <PackageTags>$(PackageTags);autofac;dependency-injection;ioc;container</PackageTags>
     </PropertyGroup>
     <ItemGroup>

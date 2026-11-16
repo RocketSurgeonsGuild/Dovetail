@@ -2,13 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>
-            Adds helpers to easily bootstrap an application using conventions by
-            just using the correct extension method. This adds command line operations, additional
-            configuration, logging and service injections by convention. One package for every host: the helpers for the generic
-            host, ASP.NET Core, .NET MAUI, Uno Platform and Blazor WebAssembly are emitted into the application when it references
-            that host's framework.
-        </PackageDescription>
+        <PackageDescription>Builds and configures a host from an application's joints. Covers the generic host, ASP.NET Core, .NET MAUI, Uno Platform and Blazor WebAssembly; the helpers for a host are emitted when the application references its framework.</PackageDescription>
         <PackageTags>$(PackageTags);hosting;generic-host;aspnetcore;maui;uno-platform;blazor;webassembly</PackageTags>
     </PropertyGroup>
     <ItemGroup>

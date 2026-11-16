@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>Adds support for loading toml configuration files</PackageDescription>
+        <PackageDescription>Configuration joint that adds appsettings.toml and its environment-specific files through Tomlyn, including embedded and Blazor WebAssembly wwwroot files.</PackageDescription>
         <PackageTags>$(PackageTags);configuration;toml;appsettings</PackageTags>
         <RootNamespace>Joinery.Dovetail.Configuration.Toml</RootNamespace>
     </PropertyGroup>

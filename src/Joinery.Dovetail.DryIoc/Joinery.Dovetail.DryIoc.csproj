@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>Provides DryIoc support for a Rocket Surgery Application</PackageDescription>
+        <PackageDescription>Uses DryIoc as the application's container and adds a DryIoc joint, so libraries can register services on its IContainer.</PackageDescription>
         <PackageTags>$(PackageTags);dryioc;dependency-injection;ioc;container</PackageTags>
     </PropertyGroup>
     <ItemGroup>

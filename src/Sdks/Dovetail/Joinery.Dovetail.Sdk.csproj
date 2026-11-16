@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <PackageDescription>MSBuild SDK for Dovetail — auto-selects packages and emits bootstrapping based on host SDK</PackageDescription>
+    <PackageDescription>MSBuild SDK for Dovetail: detects the host SDK, adds the Dovetail packages the project needs and emits the bootstrapping code.</PackageDescription>
     <PackageTags>$(PackageTags);microsoft.net.sdk;file-based-apps</PackageTags>
   </PropertyGroup>
 

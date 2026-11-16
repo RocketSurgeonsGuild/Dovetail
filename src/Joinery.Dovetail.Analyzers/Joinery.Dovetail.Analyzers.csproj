@@ -11,6 +11,7 @@
         <!-- The generator only reads its own constants; the dependency accessors load assemblies, which analyzers may not. -->
         <AssemblyInfoDependencies>false</AssemblyInfoDependencies>
         <_AnalyzersLocation>../Joinery.Dovetail.Analyzers.supports/bin/</_AnalyzersLocation>
+        <PackageDescription>The Roslyn source generator for Joinery.Dovetail. It writes the list of each assembly's exported joints and the other code Dovetail generates at build time. Joinery.Dovetail references it, so you don't add it yourself.</PackageDescription>
         <PackageTags>$(PackageTags);source-generator;roslyn;analyzers;aot</PackageTags>
     </PropertyGroup>
     <ItemGroup>

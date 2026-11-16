@@ -9,7 +9,7 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <!-- Tags every Dovetail package shares; each project appends its own with $(PackageTags);... -->
-        <PackageTags>dovetail;joinery;rocket-surgeons-guild;modularity;conventions</PackageTags>
+        <PackageTags>dovetail;joinery;modularity;conventions</PackageTags>
         <LangVersion>preview</LangVersion>
         <Features>strict</Features>
         <Nullable>enable</Nullable>

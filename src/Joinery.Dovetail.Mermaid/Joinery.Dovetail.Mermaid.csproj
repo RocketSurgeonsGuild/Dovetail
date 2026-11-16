@@ -2,10 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
     <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-    <PackageDescription>
-      Adds support for loading configuration, services, logging, command line
-      and more via simple and easy to setup assembly attributes
-    </PackageDescription>
+    <PackageDescription>Renders the joints an IDovetailContext resolved, and how they connect, as a Mermaid flowchart.</PackageDescription>
     <PackageTags>$(PackageTags);mermaid;diagram;diagnostics;visualization</PackageTags>
     <IsTrimmable>true</IsTrimmable>
     <RootNamespace>Joinery.Dovetail</RootNamespace>
