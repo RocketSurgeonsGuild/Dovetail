@@ -1426,7 +1426,7 @@ Dovetail itself does not log while it scans and applies joints. <xref:Joinery.Do
 
 Tip
 
-With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `AutoFakeTest<TestRecord>`): its Serilog logger writes to the test’s output.
+With TUnit, use the `TestRecord` from `Rocket.Surgery.Extensions.Testing.TUnit` (as in `LoggerTest<TestRecord>`): its Serilog logger writes to the test’s output.
 
 The builder is a bag of properties, so the test can put its logger there for a joint to find:
 
@@ -1828,6 +1828,90 @@ The schema lists every configuration key your application and its libraries acce
 * **A section is missing from completion.** The application’s schema only covers libraries it references. Check the library has `[DovetailConfiguration]` on its options type and that the application builds against it.
 * **Quoted numbers are flagged.** `"Timeout": "30"` is an incorrect type to the editor even though the binder accepts it. Write the number without quotes.
 
+# Dovetail SDKs for each Microsoft SDK
+
+> Swap a project's Microsoft SDK for its Dovetail counterpart, such as Microsoft.NET.Sdk.Web for Joinery.Dovetail.Sdk.Web, and the project gets Dovetail with nothing else to change.
+
+# Dovetail SDKs for each Microsoft SDK
+
+[Section titled “Dovetail SDKs for each Microsoft SDK”](#dovetail-sdks-for-each-microsoft-sdk)
+
+Each Microsoft project SDK has a Dovetail SDK of the same name. To give a project Dovetail, change its SDK name and nothing else:
+
+```xml
+<!-- before -->
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+
+<!-- after -->
+<Project Sdk="Joinery.Dovetail.Sdk.Web">
+```
+
+Pin the version in `global.json` under `msbuild-sdks`, or put it in the attribute (`Sdk="Joinery.Dovetail.Sdk.Web/1.2.3"`):
+
+```json
+{
+    "msbuild-sdks": {
+        "Joinery.Dovetail.Sdk.Web": "1.2.3"
+    }
+}
+```
+
+| Microsoft SDK                         | Dovetail SDK                             | What it is for                                        |
+| ------------------------------------- | ---------------------------------------- | ----------------------------------------------------- |
+| `Microsoft.NET.Sdk`                   | `Joinery.Dovetail.Sdk`                   | Console apps, libraries and test projects             |
+| `Microsoft.NET.Sdk.Web`               | `Joinery.Dovetail.Sdk.Web`               | ASP.NET Core applications                             |
+| `Microsoft.NET.Sdk.Worker`            | `Joinery.Dovetail.Sdk.Worker`            | Worker services                                       |
+| `Microsoft.NET.Sdk.Razor`             | `Joinery.Dovetail.Sdk.Razor`             | Razor class libraries                                 |
+| `Microsoft.NET.Sdk.BlazorWebAssembly` | `Joinery.Dovetail.Sdk.BlazorWebAssembly` | Blazor WebAssembly applications                       |
+| `Microsoft.NET.Sdk.WebAssembly`       | `Joinery.Dovetail.Sdk.WebAssembly`       | WebAssembly applications (the `wasmbrowser` template) |
+| `Microsoft.NET.Sdk.WindowsDesktop`    | `Joinery.Dovetail.Sdk.WindowsDesktop`    | Windows Forms and WPF projects that still name it     |
+| `Aspire.AppHost.Sdk`                  | `Joinery.Dovetail.Sdk.Aspire.AppHost`    | Aspire AppHost projects                               |
+
+`Joinery.Dovetail.Sdk.Console` is not a mirror: it is `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for [console applications](../../guides/console-apps/).
+
+## What a Dovetail SDK does
+
+[Section titled “What a Dovetail SDK does”](#what-a-dovetail-sdk-does)
+
+`Joinery.Dovetail.Sdk.Web` imports `Microsoft.NET.Sdk.Web`, then chains `Joinery.Dovetail.Sdk`. That is the same thing as naming both yourself:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="1.2.3" />
+</Project>
+```
+
+So the project builds exactly as it did with the Microsoft SDK. On top of that, `Joinery.Dovetail.Sdk` detects the host from what the Microsoft SDK set (see [DovetailHost](../../reference/dovetail-host/)), adds the Dovetail packages the project needs, and emits the bootstrapping.
+
+The others work the same way. `Microsoft.NET.Sdk.WindowsDesktop` has been unnecessary since .NET 5 (the SDK warns `NETSDK1137`): `Microsoft.NET.Sdk` with `UseWPF` or `UseWindowsForms` is enough, and so is `Joinery.Dovetail.Sdk`. Its mirror is for projects that have not moved off it yet.
+
+## Aspire AppHosts
+
+[Section titled “Aspire AppHosts”](#aspire-apphosts)
+
+`Aspire.AppHost.Sdk` comes from NuGet rather than with the .NET SDK, so `Joinery.Dovetail.Sdk.Aspire.AppHost` imports it at a version: the one it was built against, unless `DovetailAspireAppHostSdkVersion` says otherwise. The Aspire SDK is imported before any of the project’s files, so set that property where MSBuild sees it first, as an environment variable or on the command line:
+
+```bash
+dotnet build -p:DovetailAspireAppHostSdkVersion=13.6.5
+```
+
+An `Aspire.AppHost.Sdk` entry in `global.json` doesn’t change it. Keep `Aspire.Hosting.AppHost`, which the Aspire SDK adds for you, at the same version.
+
+Dovetail’s host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`), exactly as with `Aspire.AppHost.Sdk` and `Joinery.Dovetail.Sdk` named side by side.
+
+## Choosing the version of Joinery.Dovetail.Sdk
+
+[Section titled “Choosing the version of Joinery.Dovetail.Sdk”](#choosing-the-version-of-joinerydovetailsdk)
+
+A Dovetail SDK chains the `Joinery.Dovetail.Sdk` of its own version: every Dovetail package ships at one version. To chain another, set `DovetailSdkVersion` in a `Directory.Build.props`. The Microsoft SDK imports that file before the Dovetail SDK reads the property.
+
+## With Joinery.Dovetail.Sdk in a Directory.Build.props
+
+[Section titled “With Joinery.Dovetail.Sdk in a Directory.Build.props”](#with-joinerydovetailsdk-in-a-directorybuildprops)
+
+A repository that applies `Joinery.Dovetail.Sdk` to every project from a `Directory.Build.props` can still switch a project to a Dovetail SDK. The Dovetail SDK sees that `Joinery.Dovetail.Sdk` is already there and does not apply it a second time.
+
 # ModularPipelines
 
 > Apply Dovetail joints to a ModularPipelines PipelineBuilder, so joints add the modules, options and services of a build pipeline.
@@ -1964,7 +2048,7 @@ Pack both files, under `build/` (imported by NuGet into projects that reference 
 | `DirectReferenceOnly`  | `true` limits the template to projects with a direct reference to `Package`. Requires `Package`.                                                                                                        |
 | `References`           | Semicolon-separated assembly names (file names without extension). Every one must be among the project’s resolved references.                                                                           |
 | `Hosts`                | Semicolon-separated host names. At least one must be declared by the project: the host model that `Joinery.Dovetail.Sdk` detects (`HostApplication`, `WebApplication`, `WebAssembly`, `Maui` or `Uno`). |
-| `HostName`, `HostType` | When `HostType` is set, `{HostName}` and `{HostType}` in the template are replaced, so one template can be declared once per host model under different names.                                          |
+| `HostName`, `HostType` | When `HostType` is set, they replace their tokens like any other metadata, so one template can be declared once per host model under different names. `HostName` alone replaces nothing.                |
 | `OutputPrefix`         | The generated file is `<prefix>.<name>.g.cs`; the default prefix is `DovetailTemplate`.                                                                                                                 |
 
 Every gate you set has to pass. A project that doesn’t run the Dovetail source generator gets no templates. The [`DovetailTemplate` reference](../../reference/dovetail-template/) lists the defaults, the errors and the generated file names.
@@ -1988,7 +2072,37 @@ A package that ships from `build/` already gets this from NuGet for package refe
 
 * The generated code is part of the consuming project, compiled against whatever it references. Reference-gate everything it needs (`References`), and your package then depends on none of it.
 * Make the types `internal` and `[Embedded]`, so an assembly never sees the copy a referenced assembly emitted for itself. A template may also declare joints (`[DovetailExport]`), which the Dovetail source generator picks up like any other.
-* A template must not contain backslashes: MSBuild rewrites them to forward slashes on Linux and macOS when it writes the file.
+* Backslashes in a template are written as they are.
+
+## Fill in values from metadata
+
+[Section titled “Fill in values from metadata”](#fill-in-values-from-metadata)
+
+Every metadata value of a `DovetailTemplate`, your own metadata included, replaces `{Name}` and `__Name__` in the template, where `Name` is the metadata’s name. Declare one template under several names with different values and you get one file per name: a joint per client, say, from a template your package ships once.
+
+```xml
+<ItemGroup Condition="'$(DovetailTemplateMetadataTokens)' == 'true'">
+  <DovetailTemplate Include="Contoso.RocketsClient" File="$(MSBuildThisFileDirectory)ClientJoint.cs.template" ClientName="RocketsClient" Namespace="MyApp.Rockets" />
+  <DovetailTemplate Include="Contoso.LaunchClient" File="$(MSBuildThisFileDirectory)ClientJoint.cs.template" ClientName="LaunchClient" Namespace="MyApp.Launch" />
+</ItemGroup>
+```
+
+```csharp
+namespace __Namespace__;
+
+
+internal static partial class __ClientName__Joint
+{
+    // Registers {ClientName}.
+}
+```
+
+* `__Name__` is an identifier, so the template stays valid C# that an editor and an analyzer can read. Use `{Name}` where an identifier isn’t needed.
+* A token no metadata fills, or whose metadata is empty, is left as it is.
+* `Include` names the generated file and is what the gates are keyed on, so it has to be unique across packages; `OutputPrefix` does not change that. Prefix the names you make up with your package’s (`Contoso.RocketsClient`) and pass the bare name as metadata.
+* `DovetailTemplateMetadataTokens` is `true` wherever Dovetail expands these tokens. An older Dovetail replaces only `{HostName}` and `{HostType}`, so declare token-bearing templates under that condition and a project on an older Dovetail gets nothing rather than a file that doesn’t compile.
+
+The [`DovetailTemplate` reference](../../reference/dovetail-template/#tokens) has the full rule.
 
 ## When the metadata isn’t enough
 
@@ -2013,7 +2127,7 @@ The templates that pass their gates are the `DovetailEmittedTemplate` items, wit
 
 [Section titled “Test it”](#test-it)
 
-The Dovetail SDK tests show how to prove a template’s gates: pack a package that ships the template, reference it from a project that declares the reference and from one that only receives it transitively, build, and read which `DovetailTemplate.*.g.cs` files landed in each project’s `obj/` (`test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs`).
+The Dovetail SDK tests show how to prove a template’s gates: pack a package that ships the template, reference it from a project that declares the reference and from one that only receives it transitively, build, and read which `DovetailTemplate.*.g.cs` files landed in each project’s `obj/` (`test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs`). The same tests read what a template’s tokens were replaced with.
 
 # Reference
 
@@ -2160,7 +2274,7 @@ return await {HelperName}.Configure(builder{BuildExpression}, contextBuilder, ca
 
 [Section titled “A host the SDK declares”](#a-host-the-sdk-declares)
 
-For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp` (`src/Joinery.Dovetail.Sdk/Sdk/Joinery.Dovetail.HostDetection.targets`):
+For a MAUI application the SDK declares this, and `UseDovetail` is the blocking entry point it adds for `MauiProgram.CreateMauiApp` (`src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets`):
 
 ```xml
 <DovetailHost Include="Maui"
@@ -2558,7 +2672,7 @@ Nothing in `src/` or `sample/` sets `ProvideConfiguration`, `GenericConstraint`,
 
 # DovetailTemplate
 
-> The DovetailTemplate MSBuild item ships C# source from a package and has Dovetail write it into only the projects that should get it. Every metadata value, its default, the gates, and where the generated file lands.
+> The DovetailTemplate MSBuild item ships C# source from a package and has Dovetail write it into only the projects that should get it. Every metadata value, its default, the gates, the tokens metadata replaces, and where the generated file lands.
 
 # DovetailTemplate
 
@@ -2584,7 +2698,7 @@ A project that does not run the Dovetail source generator (`Joinery.Dovetail.Ana
 
 [Section titled “Declaring a template”](#declaring-a-template)
 
-The item’s `Include` is the template’s name. It names the generated file, so it has to be unique across every package a project references.
+The item’s `Include` is the template’s name. It names the generated file, so it has to be unique across every package a project references. It is also what the gates and the generated file are keyed on, so a different `OutputPrefix` does not keep two templates with one name apart. A package that declares templates from names its consumers choose, such as one per client, should prefix them with its own name (`Include="Chirograph.RocketsClient"`) and pass the bare name as [metadata](#tokens).
 
 ```xml
 <!-- a package's declaration, built by test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs -->
@@ -2601,16 +2715,57 @@ Metadata is optional unless stated. A name the item does not read is ignored wit
 
 | Metadata              | Default            | What it changes                                                                                                                                                                                                                                                                                                      |
 | --------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `File`                | none; required     | The full path of the template, usually `$(MSBuildThisFileDirectory)Name.cs.template`. A template without one, or whose file does not exist, fails the build. It must not contain backslashes: MSBuild rewrites them to forward slashes on Linux and macOS when the file is written.                                  |
+| `File`                | none; required     | The full path of the template, usually `$(MSBuildThisFileDirectory)Name.cs.template`. A template without one, or whose file does not exist, fails the build. Backslashes in it are written as they are.                                                                                                              |
 | `Package`             | empty              | The id of the package that ships the template. The template is only written into a project that references it: the package’s assembly, which is named after the package, is among the project’s resolved references (or, with `DirectReferenceOnly`, the project declares the reference itself).                     |
 | `DirectReferenceOnly` | empty (false)      | `true` limits the template to projects with a direct reference to `Package`: a `PackageReference` to it (the ones the Dovetail SDK adds count), or a `ProjectReference` to a project named after it. A project that only gets the package transitively gets nothing. Requires `Package`; without it the build fails. |
 | `References`          | empty              | Semicolon-separated assembly names (file names without extension). Every one has to be among the project’s resolved references.                                                                                                                                                                                      |
 | `Hosts`               | empty              | Semicolon-separated `DovetailHost` names, at least one of which the project has to declare: the host model, as `Joinery.Dovetail.Sdk` detects it (`HostApplication`, `WebApplication`, `WebAssembly`, `Maui`, `Uno`). These are the hosts declared when the templates resolve, before a package narrows them.        |
-| `HostName`            | empty              | Replaces `{HostName}` in the template, but only when `HostType` is set too.                                                                                                                                                                                                                                          |
-| `HostType`            | empty              | Replaces `{HostType}` in the template, and switches the `{HostName}` replacement on. Together they let one template be emitted once per host model under different names.                                                                                                                                            |
+| `HostName`            | empty              | Replaces `{HostName}` and `__HostName__` in the template, but only when `HostType` is set too.                                                                                                                                                                                                                       |
+| `HostType`            | empty              | Replaces `{HostType}` and `__HostType__` in the template, and switches the `HostName` replacement on. Together they let one template be emitted once per host model under different names.                                                                                                                           |
 | `OutputPrefix`        | `DovetailTemplate` | The prefix of the generated file name, `<prefix>.<name>.g.cs`.                                                                                                                                                                                                                                                       |
 
 The gates are applied together, and a template that fails any of them is not written. They are read once the project’s references have resolved, which is right after `ResolveAssemblyReferences` and before the compiler runs.
+
+## Tokens
+
+[Section titled “Tokens”](#tokens)
+
+Every metadata value of the item replaces two tokens in the template: `{Name}` and `__Name__`, where `Name` is the metadata’s name. That holds for the metadata above (`{OutputPrefix}`, `__Package__`, …) and for any metadata you add yourself, which the table does not list because the item reads it only here:
+
+```xml
+<!-- the declaration test/Joinery.Dovetail.Sdk.Tests/TemplateExtensionPointTests.cs builds, less the metadata it adds to cover more tokens -->
+<DovetailTemplate Include="Chirograph.RocketsClient" File="$(MSBuildThisFileDirectory)Client.cs.template" ClientName="RocketsClient" Namespace="MyApp.Rockets" />
+```
+
+```csharp
+// Client.cs.template: written as DovetailTemplate.Chirograph.RocketsClient.g.cs
+namespace __Namespace__;
+
+
+internal static class __ClientName__ { }
+// {ClientName} in {Namespace}
+```
+
+* **Use `__Name__` where C# needs an identifier.** `__ClientName__` is a valid class name, so the template stays a C# file an editor can read; `{ClientName}` is for comments, strings and anywhere else an identifier is not needed.
+* **A token no metadata fills is left as it is.** So is the token of a metadata whose value is empty, and `{HostName}` while `HostType` is empty. Metadata names compare ignoring case, as MSBuild’s do.
+* **Values are written as they are.** Nothing is escaped for C#: a value that ends up inside a string literal has to be valid there.
+* **The replacement is one pass.** A value that contains a token is not expanded again.
+
+Declaring one `File` under several `Include`s, each with its own metadata, writes one file per `Include`; that is how a package emits one joint per client from a single template.
+
+### Knowing that tokens are expanded
+
+[Section titled “Knowing that tokens are expanded”](#knowing-that-tokens-are-expanded)
+
+`Joinery.Dovetail` sets `DovetailTemplateMetadataTokens` to `true` in the projects it reaches. A version of Dovetail without it only replaces `{HostName}` and `{HostType}`, so a package that depends on other tokens should declare those templates only when the property is set:
+
+```xml
+<ItemGroup Condition="'$(DovetailTemplateMetadataTokens)' == 'true'">
+  <DovetailTemplate Include="RocketsClient" File="$(MSBuildThisFileDirectory)Client.cs.template" ClientName="RocketsClient" />
+</ItemGroup>
+```
+
+The property is set from Dovetail’s `.props`, so it is there before any package’s `.targets` declare their items.
 
 ## What is generated
 
@@ -2618,9 +2773,9 @@ The gates are applied together, and a template that fails any of them is not wri
 
 Each template that passes is written to `$(IntermediateOutputPath)`, which is `obj/<Configuration>/<TargetFramework>/`, as an ordinary `Compile` item:
 
-| File                   | Contents                                                                                                                                              |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<prefix>.<name>.g.cs` | The template’s text, with `{HostName}` and `{HostType}` replaced when `HostType` is set. The prefix is `OutputPrefix`, `DovetailTemplate` by default. |
+| File                   | Contents                                                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `<prefix>.<name>.g.cs` | The template’s text, with its [tokens](#tokens) replaced. The prefix is `OutputPrefix`, `DovetailTemplate` by default. |
 
 The item adds no namespace, type or method of its own: the template is the C#. For `Joinery.Dovetail.Hosting`, which sets `OutputPrefix="DovetailHosting"`, a generic-host application gets `obj/Debug/net10.0/DovetailHosting.DovetailHostApplicationHelpers.g.cs`.
 
@@ -2705,14 +2860,15 @@ The OpenTelemetry start joint is one template emitted once per host model, which
 
 [Section titled “Common mistakes”](#common-mistakes)
 
-* **`Include` is the file name, so it has to be unique across packages.** Two templates with one name write one file.
+* **`Include` is the file name, so it has to be unique across packages.** Two templates with one name write one file, whatever their `OutputPrefix`; prefix the names your package makes up with the package’s name.
 * **`File` has to be a full path.** Use `$(MSBuildThisFileDirectory)`, which is the directory of the targets file that declares the item. A missing `File` fails the build with `the template '<name>' has no File`, and a path that does not exist with `names a file that doesn't exist`.
 * **`DirectReferenceOnly` without `Package` fails the build** (`is DirectReferenceOnly, so it needs the Package it is direct to`).
 * **`Package` is matched against an assembly name.** It is the package’s id, and it has to be the name of the package’s assembly as well, since that is what the project’s resolved references are searched for.
 * **`HostName` alone does nothing.** `{HostName}` is replaced only when `HostType` is set; set both.
 * **`Hosts` names are `DovetailHost` names.** Each is matched, by name, against the `DovetailHost` items declared when the templates resolve, which are the ones `Joinery.Dovetail.Sdk` detected (`HostApplication`, `WebApplication`, `WebAssembly`, `Maui`, `Uno`) plus any you declared. See [DovetailHost](../dovetail-host/).
 * **A transitive reference declares your items but gets no file under `DirectReferenceOnly`.** Its `buildTransitive/` targets still run, so the `DovetailTemplate` items are there; the gate is what leaves the file out.
-* **A misspelled metadata name is ignored.** The default applies, with no warning.
+* **A misspelled metadata name is ignored.** The default applies, with no warning, and its tokens stay in the file.
+* **A token in a template that does not set its metadata is not an error.** `{Unknown}` is written as it is; if it is in code, the compiler is what complains.
 * **Templates do not reach projects that skip the generator.** A project without `Joinery.Dovetail.Analyzers` gets none.
 
 ## See also
