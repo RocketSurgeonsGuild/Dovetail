@@ -11,7 +11,7 @@ Dovetail doesn't depend on Optionary. Add it to the projects that declare option
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Optionary" Version="0.1.0" />
+  <PackageReference Include="Optionary" Version="0.1.1" />
 </ItemGroup>
 ```
 

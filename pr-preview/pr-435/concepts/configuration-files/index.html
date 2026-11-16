@@ -75,6 +75,8 @@ through a <code dir="auto">ProjectReference</code>, and restored from the packag
 <li>The generated joint loads, in ascending precedence, <code dir="auto">MyLibrary.{ext}</code>, <code dir="auto">MyLibrary.{Environment}.{ext}</code> and
 <code dir="auto">MyLibrary.local.{ext}</code>. The <code dir="auto">local</code> layer is never packed, and the SDK warns when no <code dir="auto">.gitignore</code> at or above the
 project ignores <code dir="auto">appsettings.local.*</code> (a <code dir="auto">*.local.*</code> entry counts too).</li>
+<li>YAML has two extensions and one joint. It requires <code dir="auto">MyLibrary.yaml</code> or <code dir="auto">MyLibrary.yml</code>, whichever the library has, not both,
+and reads the environment and local layers with either extension, <code dir="auto">.yaml</code> before <code dir="auto">.yml</code> in each layer.</li>
 <li>A file-based app (<code dir="auto">dotnet run Build.cs</code>) is named after its assembly, <code dir="auto">Build</code>, without the <code dir="auto">.cs</code>: its <code dir="auto">appsettings.{ext}</code>
 files, next to <code dir="auto">Build.cs</code>, are copied to its output directory as <code dir="auto">Build.{ext}</code>, with or without the Dovetail SDK. At run time,
 though, the configuration joints read the files from next to <code dir="auto">Build.cs</code> (the directory the .NET SDK names in the
