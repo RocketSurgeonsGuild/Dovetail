@@ -195,7 +195,7 @@ public class OptionsJointTests() : GeneratorTest()
         );
         using var stream = new MemoryStream();
         var result = compilation.Emit(stream);
-        return  !result.Success 
+        return !result.Success
             ? throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics))
             : (MetadataReference)MetadataReference.CreateFromImage(stream.ToArray());
     }
