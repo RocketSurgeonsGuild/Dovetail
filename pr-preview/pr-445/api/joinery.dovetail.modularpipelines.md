@@ -1,7 +1,7 @@
 # Joinery.Dovetail.ModularPipelines
 
 - Package: `Joinery.Dovetail.ModularPipelines`
-- Version: `0.7.1-pr.2`
+- Version: `0.7.1-pr.7`
 - Target framework: `net11.0`
 - NuGet: [Joinery.Dovetail.ModularPipelines](https://www.nuget.org/packages/Joinery.Dovetail.ModularPipelines)
 
