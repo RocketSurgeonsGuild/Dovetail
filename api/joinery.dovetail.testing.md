@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Testing
 
 - Package: `Joinery.Dovetail.Testing`
-- Version: `0.7.1-beta.9`
+- Version: `0.7.2-beta.2`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Testing](https://www.nuget.org/packages/Joinery.Dovetail.Testing)
 
