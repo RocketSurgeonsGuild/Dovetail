@@ -15,6 +15,7 @@ Builder-method extensions for applying Setup parts to a [DovetailContextBuilder]
 - Name: `ConfigureSetup(DovetailContextBuilder, SetupJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Setup.g.cs)
 
 ```csharp
 public static class SetupHostBuilderExtensions
@@ -48,6 +49,7 @@ public static class SetupHostBuilderExtensions
 - Name: `ConfigureSetup(DovetailContextBuilder, SetupAsyncJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Setup.g.cs)
 
 ```csharp
 public static class SetupHostBuilderExtensions

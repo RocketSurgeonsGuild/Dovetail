@@ -15,6 +15,7 @@ Builder-method extensions for applying DistributedApplication parts to a `Doveta
 - Name: `ConfigureDistributedApplication(DovetailContextBuilder, DistributedApplicationJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail.Aspire/obj/Release/net10.0/DovetailJoint.DistributedApplication.g.cs)
 
 ```csharp
 public static class DistributedApplicationHostBuilderExtensions
@@ -48,6 +49,7 @@ public static class DistributedApplicationHostBuilderExtensions
 - Name: `ConfigureDistributedApplication(DovetailContextBuilder, DistributedApplicationAsyncJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail.Aspire/obj/Release/net10.0/DovetailJoint.DistributedApplication.g.cs)
 
 ```csharp
 public static class DistributedApplicationHostBuilderExtensions

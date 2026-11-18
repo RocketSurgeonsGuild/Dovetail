@@ -15,6 +15,7 @@ Container for conventions
 - Name: `FromFactory(Func<IServiceProvider, IDovetailJoint>, DovetailHostType, DovetailCategory)`
 - Modifiers: `static`
 - Returns: [DovetailJointMetadata](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailjointmetadata.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L71-L72)
 
 Describes a joint that is created the first time [DovetailJointMetadata.Joint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) is read, rather than up front.
 
@@ -59,6 +60,7 @@ This is how the code generated for an exported joint with constructor parameters
 - Name: `GetHashCode`
 - Modifiers: `override`
 - Returns: `int`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L122)
 
 Serves as the default hash function.
 
@@ -83,6 +85,7 @@ public sealed class DovetailJointMetadata
 
 - Name: `WithDependency(DependencyDirection, Type)`
 - Returns: [DovetailJointMetadata](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailjointmetadata.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L93-L94)
 
 Adds a new dependency to the list
 

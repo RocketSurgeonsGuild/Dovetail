@@ -1,8 +1,9 @@
 # Joinery.Dovetail.Configuration.Yaml
 
 - Package: `Joinery.Dovetail.Configuration.Yaml`
-- Version: `0.7.2-pr.5`
+- Version: `0.7.2-pr.6`
 - Target framework: `net10.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail.Configuration.Yaml)
 - NuGet: [Joinery.Dovetail.Configuration.Yaml](https://www.nuget.org/packages/Joinery.Dovetail.Configuration.Yaml)
 
 ## Namespaces

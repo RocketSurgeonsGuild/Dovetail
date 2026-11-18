@@ -14,6 +14,7 @@ A ModularPipelines plugin that applies Dovetail's joints to the pipeline builder
 - Name: `Context`
 - Modifiers: `nullable` `get`
 - Returns: `IDovetailContext?`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail.ModularPipelines/DovetailPipelinePlugin.cs)
 
 The context the joints ran with, once the plugin has been added to a builder.
 
@@ -28,6 +29,7 @@ public IDovetailContext? Context { get; }
 - Name: `Name`
 - Modifiers: `get`
 - Returns: `string`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail.ModularPipelines/DovetailPipelinePlugin.cs#L26)
 
 Gets the unique name identifying this plugin. A pipeline can add each plugin name once.
 

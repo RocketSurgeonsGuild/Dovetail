@@ -15,6 +15,7 @@ Extension methods for applying DistributedApplication parts.
 - Name: `ApplyDistributedApplication(DistributedApplication, IDovetailContext, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail.Aspire/obj/Release/net10.0/DovetailJoint.DistributedApplication.g.cs#L51-L52)
 
 Applies the registered DistributedApplication parts.
 

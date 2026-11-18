@@ -14,6 +14,7 @@ A YAML file based `Configuration.FileConfigurationProvider`.
 
 - Name: `Load(Stream)`
 - Modifiers: `override`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-397-merge.Sha.91944b3b1523dd3e82455c32e7a1561e8b3ad9a0/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationProvider.cs#L20-L29)
 
 Loads this provider's data from a stream.
 
