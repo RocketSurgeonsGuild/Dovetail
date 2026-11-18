@@ -1,0 +1,31 @@
+# YamlConfigurationSource
+
+- Kind: `class`
+- Package: [Joinery.Dovetail.Configuration.Yaml](/Dovetail/pr-preview/pr-447/api/joinery.dovetail.configuration.yaml.md)
+- Version: `0.7.2-pr.13`
+- Namespace: `Joinery.Dovetail.Configuration.Yaml`
+- Target framework: `net10.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-447-merge.Sha.07e64d25a30d87fc48248bbdc4924e0013be133c/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationSource.cs)
+- Inherits: `FileConfigurationSource`
+
+A YAML file based `Configuration.FileConfigurationSource`.
+
+## Definition
+
+```csharp
+namespace Joinery.Dovetail.Configuration.Yaml;
+
+public class YamlConfigurationSource
+    : Microsoft.Extensions.Configuration.FileConfigurationSource
+{
+    // ...
+}
+```
+
+## Constructors
+
+- [YamlConfigurationSource](/Dovetail/pr-preview/pr-447/api/joinery.dovetail.configuration.yaml/yamlconfigurationsource/constructors.md#constructor)
+
+## Methods
+
+- [Build(IConfigurationBuilder)](/Dovetail/pr-preview/pr-447/api/joinery.dovetail.configuration.yaml/yamlconfigurationsource/methods.md#build-iconfigurationbuilder) : `IConfigurationProvider` -- Builds the `Configuration.IConfigurationProvider` for this source.
