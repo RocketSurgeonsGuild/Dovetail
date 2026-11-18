@@ -1,7 +1,6 @@
 <Project>
     <ItemGroup>
         <PackageReference Include="Bogus" />
-        <PackageReference Include="Rocket.Surgery.Extensions.Testing.TUnit" />
         <PackageReference Include="TUnit" />
         <PackageReference Include="TUnit.Mocks" />
         <PackageReference Include="TUnit.Assertions.Should" />
