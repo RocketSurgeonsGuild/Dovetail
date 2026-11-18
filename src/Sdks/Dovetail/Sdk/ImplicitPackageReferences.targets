@@ -26,10 +26,27 @@
         items too. It also has to come before the project's nuget.g.targets, whose package targets read
         the PackageReferences (Joinery.Dovetail's implicit using, for one). A package the consumer
         already references directly is left alone rather than duplicated.
+
+        Central package management (ManagePackageVersionsCentrally) forbids both a Version on a PackageReference (NU1008) and a
+        PackageVersion for a package whose reference is implicitly defined (NU1009), so the two cases below differ:
+          - the consumer pins the package (a PackageVersion item, e.g. in Directory.Packages.props): the reference carries no
+            version of its own and takes the pinned one, as if the consumer had written the PackageReference themselves;
+          - nothing pins it: the reference carries the SDK's version and is marked implicit, which is what lets it keep the
+            version under central package management. Without central package management it is a plain versioned reference.
     -->
     <ItemGroup>
-        <PackageReference Include="@(DovetailSdkImplicitPackageReference)"
-                          Condition="@(PackageReference->AnyHaveMetadataValue('Identity', '%(DovetailSdkImplicitPackageReference.Identity)')) != 'true'"
-                          IsImplicitlyDefined="true" />
+        <!-- Remove matches items by identity, which an item Condition can't do for another item type: %(Item.Identity) in an item function there doesn't batch. -->
+        <_DovetailImplicitPackage Include="@(DovetailSdkImplicitPackageReference)" />
+        <_DovetailImplicitPackage Remove="@(PackageReference)" />
+
+        <_DovetailImplicitUnpinned Include="@(_DovetailImplicitPackage)" />
+        <_DovetailImplicitUnpinned Remove="@(PackageVersion)" Condition="'$(ManagePackageVersionsCentrally)' == 'true'" />
+        <_DovetailImplicitPinned Include="@(_DovetailImplicitPackage)" />
+        <_DovetailImplicitPinned Remove="@(_DovetailImplicitUnpinned)" />
+
+        <PackageReference Include="@(_DovetailImplicitPinned)">
+            <Version />
+        </PackageReference>
+        <PackageReference Include="@(_DovetailImplicitUnpinned)" IsImplicitlyDefined="true" />
     </ItemGroup>
 </Project>
