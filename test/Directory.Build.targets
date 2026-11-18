@@ -1,6 +1,8 @@
 <Project>
     <ItemGroup>
         <PackageReference Include="Bogus" />
+        <!-- Named here because the SDK only injects the adapter when TUnit is in the project file; VersionOverride because an implicit reference elsewhere (the samples) cannot also have a PackageVersion. -->
+        <PackageReference Include="Rocket.Surgery.Extensions.Testing.TUnit" VersionOverride="11.0.1" />
         <PackageReference Include="TUnit" />
         <PackageReference Include="TUnit.Mocks" />
         <PackageReference Include="TUnit.Assertions.Should" />
