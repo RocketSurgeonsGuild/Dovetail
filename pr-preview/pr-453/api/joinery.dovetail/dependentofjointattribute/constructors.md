@@ -13,6 +13,7 @@ An attribute that ensures the convention runs before the given [IDovetailJoint](
 ## DependentOfJointAttribute(Type)
 
 - Name: `Constructor(Type)`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Attributes/DependentOfJointAttribute.cs#L15-L21)
 
 An attribute that ensures the convention runs before the given [IDovetailJoint](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/idovetailjoint.md)
 

@@ -15,6 +15,7 @@ Builder-method extensions for applying Service parts to a [DovetailContextBuilde
 - Name: `ConfigureServices(DovetailContextBuilder, ServiceJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Service.g.cs)
 
 ```csharp
 public static class ServiceHostBuilderExtensions
@@ -48,6 +49,7 @@ public static class ServiceHostBuilderExtensions
 - Name: `ConfigureServices(DovetailContextBuilder, ServiceAsyncJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Service.g.cs)
 
 ```csharp
 public static class ServiceHostBuilderExtensions

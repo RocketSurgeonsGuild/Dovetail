@@ -2,9 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.ModularPipelines](/Dovetail/pr-preview/pr-453/api/joinery.dovetail.modularpipelines.md)
-- Version: `0.7.2-pr.5`
+- Version: `0.7.2-pr.6`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net11.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail.ModularPipelines/DovetailPipelineHelpers.cs)
 
 Wires a ModularPipelines `PipelineBuilder` up to a Dovetail `Dovetail.IDovetailContext`. Called by the `ConfigureDovetail` entry points generated for the ModularPipelines host and by [DovetailPipelinePlugin](/Dovetail/pr-preview/pr-453/api/joinery.dovetail.modularpipelines/dovetailpipelineplugin.md); hidden from IntelliSense via `EditorBrowsableState.Never`.
 

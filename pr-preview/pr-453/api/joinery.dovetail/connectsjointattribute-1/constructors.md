@@ -12,6 +12,7 @@ A marker interface to indicate a type is a convention and has a name
 ## ConnectsJointAttribute
 
 - Name: `Constructor`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Infrastructure/ConnectsJointAttribute.cs#L9)
 
 A marker interface to indicate a type is a convention and has a name
 

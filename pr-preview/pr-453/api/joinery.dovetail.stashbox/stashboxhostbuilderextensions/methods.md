@@ -15,6 +15,7 @@ Builder-method extensions for applying Stashbox parts to a `Dovetail.DovetailCon
 - Name: `ConfigureStashbox(DovetailContextBuilder, StashboxJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail.Stashbox/obj/Release/net10.0/DovetailJoint.Stashbox.g.cs)
 
 ```csharp
 public static class StashboxHostBuilderExtensions
@@ -48,6 +49,7 @@ public static class StashboxHostBuilderExtensions
 - Name: `ConfigureStashbox(DovetailContextBuilder, StashboxAsyncJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail.Stashbox/obj/Release/net10.0/DovetailJoint.Stashbox.g.cs)
 
 ```csharp
 public static class StashboxHostBuilderExtensions

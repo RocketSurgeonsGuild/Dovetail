@@ -14,6 +14,7 @@ A joint that registers logging services into the context. This joint is automati
 
 - Name: `Register(IDovetailContext, IServiceCollection, CancellationToken)`
 - Returns: `ValueTask`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Infrastructure/LoggingJoint.cs#L15)
 
 Register the Service part asynchronously.
 

@@ -13,6 +13,7 @@ Builder that can be used to create a context.
 
 - Name: `AppendJoint(IEnumerable<IDovetailJointMetadata>)`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs)
 
 Adds a set of conventions to the scanner
 
@@ -42,6 +43,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `AppendJoint(IEnumerable<IDovetailJoint>)`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs)
 
 Adds a set of conventions to the scanner
 
@@ -71,6 +73,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `AppendJoint`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs#L131-L132)
 
 Adds a set of conventions to the scanner
 
@@ -96,6 +99,7 @@ public sealed class DovetailContextBuilder
 - Name: `Create(IEnumerable<IDovetailJointMetadata>, IDictionary<object, object>, DovetailHostType, IEnumerable<DovetailCategory>)`
 - Modifiers: `static`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs#L31)
 
 Create a default context builder
 
@@ -135,6 +139,7 @@ public sealed class DovetailContextBuilder
 - Name: `Create(IEnumerable<IDovetailJointMetadata>, IDictionary<object, object>, IEnumerable<DovetailCategory>)`
 - Modifiers: `static`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs#L44)
 
 Create a default context builder
 
@@ -171,6 +176,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `CreateAsync(CancellationToken)`
 - Returns: `ValueTask<IDovetailContext>`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs#L219-L226)
 
 Create a new [IDovetailContext](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/idovetailcontext.md)
 
@@ -201,6 +207,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `ExceptJoint(IEnumerable<Assembly>)`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs#L153-L155)
 
 Adds an exception to the scanner to exclude a specific convention
 
@@ -230,6 +237,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `ExceptJoint(IEnumerable<Type>)`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs#L165-L167)
 
 Adds an exception to the scanner to exclude a specific convention
 
@@ -259,6 +267,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `PrependJoint(IEnumerable<IDovetailJointMetadata>)`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs)
 
 Adds a set of conventions to the scanner
 
@@ -288,6 +297,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `PrependJoint(IEnumerable<IDovetailJoint>)`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs)
 
 Adds a set of conventions to the scanner
 
@@ -317,6 +327,7 @@ public sealed class DovetailContextBuilder
 
 - Name: `PrependJoint`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcontextbuilder.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailContextBuilder.cs#L142-L143)
 
 Adds a set of conventions to the scanner
 

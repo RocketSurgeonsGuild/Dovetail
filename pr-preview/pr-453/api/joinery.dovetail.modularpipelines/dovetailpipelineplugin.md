@@ -2,9 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.ModularPipelines](/Dovetail/pr-preview/pr-453/api/joinery.dovetail.modularpipelines.md)
-- Version: `0.7.2-pr.5`
+- Version: `0.7.2-pr.6`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net11.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail.ModularPipelines/DovetailPipelinePlugin.cs)
 - Implements: `IModularPipelinesPlugin`
 
 A ModularPipelines plugin that applies Dovetail's joints to the pipeline builder when it is added, for an application that builds and runs the pipeline itself: `builder.AddPlugin(new DovetailPipelinePlugin(DovetailContextBuilder.Create()))`.

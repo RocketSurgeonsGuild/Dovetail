@@ -14,6 +14,7 @@ Defines the host type of a given convention
 - Name: `HostType`
 - Modifiers: `get`
 - Returns: [DovetailHostType](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailhosttype.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Attributes/DovetailHostTypeAttribute.cs#L12)
 
 The host type of a given convention
 

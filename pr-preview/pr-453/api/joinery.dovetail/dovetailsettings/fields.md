@@ -14,6 +14,7 @@ Settings that change how Dovetail sets up a host, read from the host's own confi
 - Name: `ConfigurationDirectory`
 - Modifiers: `static` `const`
 - Returns: `string`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailSettings.cs)
 
 The configuration key naming the directory the configuration joints read their files from. Every host that reads configuration files from disk honors it. Without it, the joints read from the directory of the entry point file of a file-based app ( `dotnet run Build.cs`), and otherwise from the host's own file provider, which the host roots at its content root. A relative path is resolved against the current directory.
 

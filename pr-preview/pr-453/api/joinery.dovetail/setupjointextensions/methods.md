@@ -15,6 +15,7 @@ Extension methods for applying Setup parts.
 - Name: `ApplySetup(IDovetailContext, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Setup.g.cs#L51-L52)
 
 Applies the registered Setup parts.
 

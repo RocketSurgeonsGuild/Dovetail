@@ -15,6 +15,7 @@ Provides extension methods for retrieving metadata from Dovetail context builder
 - Name: `GetConnectedTo(Type)`
 - Modifiers: `static`
 - Returns: `IEnumerable<Type>`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Diagnostics/DiagnosticExtensions.cs#L29-L31)
 
 Gets the types of the steps that this joint is connected to
 
@@ -41,6 +42,7 @@ public static class DiagnosticExtensions
 - Name: `GetConnectedToStepNames(Type)`
 - Modifiers: `static`
 - Returns: `IEnumerable<string>`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Diagnostics/DiagnosticExtensions.cs#L37-L39)
 
 Gets the names of the steps that this joint is connected to
 
@@ -67,6 +69,7 @@ public static class DiagnosticExtensions
 - Name: `GetDiagnosticMetadata(DovetailContextBuilder, IEnumerable<DovetailCategory>)`
 - Modifiers: `extension`
 - Returns: [IEnumerable<DovetailDiagnosticMetadataJoint>](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetaildiagnosticmetadatajoint.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Diagnostics/DiagnosticExtensions.cs)
 
 ```csharp
 public static class DiagnosticExtensions
@@ -92,6 +95,7 @@ public static class DiagnosticExtensions
 - Name: `GetDiagnosticMetadata(IDovetailContext, IEnumerable<DovetailCategory>)`
 - Modifiers: `extension`
 - Returns: [IEnumerable<DovetailDiagnosticMetadataJoint>](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetaildiagnosticmetadatajoint.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Diagnostics/DiagnosticExtensions.cs)
 
 ```csharp
 public static class DiagnosticExtensions

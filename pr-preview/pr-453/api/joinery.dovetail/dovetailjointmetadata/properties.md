@@ -14,6 +14,7 @@ Container for conventions
 - Name: `Category`
 - Modifiers: `get`
 - Returns: [DovetailCategory](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailcategory.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L119)
 
 The category of the convention
 
@@ -28,6 +29,7 @@ public DovetailCategory Category { get; }
 - Name: `Dependencies`
 - Modifiers: `get; set`
 - Returns: [IReadOnlyCollection<IDovetailDependency>](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/idovetaildependency.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs)
 
 The dependencies
 
@@ -42,6 +44,7 @@ public IReadOnlyCollection<IDovetailDependency> Dependencies { get; set; }
 - Name: `HostType`
 - Modifiers: `get`
 - Returns: [DovetailHostType](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/dovetailhosttype.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L114)
 
 The host type of the convention
 
@@ -56,6 +59,7 @@ public DovetailHostType HostType { get; }
 - Name: `Joint`
 - Modifiers: `get`
 - Returns: [IDovetailJoint](/Dovetail/pr-preview/pr-453/api/joinery.dovetail/idovetailjoint.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L98)
 
 The convention
 

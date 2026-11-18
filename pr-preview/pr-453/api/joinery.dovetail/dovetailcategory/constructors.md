@@ -13,6 +13,7 @@ The category of a given convention
 ## DovetailCategory(string)
 
 - Name: `Constructor(string)`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-453-merge.Sha.4e8f54b63c507af277c87394eb3c66800a644417/src/Joinery.Dovetail/DovetailCategory.cs#L14-L64)
 
 The category of a given convention
 
