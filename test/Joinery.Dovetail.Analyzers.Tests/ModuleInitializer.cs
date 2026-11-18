@@ -44,12 +44,12 @@ public static class ModuleInitializer
             (builder, counter) =>
             {
                 // The generator's versions, read from the typed dependency information rather than its assembly.
-                if (AssemblyInfo.Dependencies.Joinery_Dovetail_Analyzers.Attributes.FileVersion is { Length: > 0, } version)
+                if (AssemblyInfo.Attributes.FileVersion is { Length: > 0, } version)
                 {
                     builder.Replace(version, "version");
                 }
 
-                if (AssemblyInfo.Dependencies.Joinery_Dovetail_Analyzers.Attributes.Version is { Length: > 0, } version2)
+                if (AssemblyInfo.Attributes.Version is { Length: > 0, } version2)
                 {
                     builder.Replace(version2, "version");
                 }
