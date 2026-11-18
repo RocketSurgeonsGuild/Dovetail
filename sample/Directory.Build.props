@@ -2,6 +2,8 @@
     <!-- Before the parent import: the SDK wires up the Microsoft.Testing extensions only when IsTestProject is already true. -->
     <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
         <IsTestProject>true</IsTestProject>
+        <!-- The build pipeline passes its own coverage settings; the option takes one value. -->
+        <RsgSdk_Testing_CoverageSettings>false</RsgSdk_Testing_CoverageSettings>
     </PropertyGroup>
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
     <Import Project="$(MSBuildThisFileDirectory)../src/Joinery.Dovetail.Configuration.Json/build/Joinery.Dovetail.Configuration.Json.props" />
