@@ -1,7 +1,7 @@
 # Joinery.Dovetail
 
 - Package: `Joinery.Dovetail`
-- Version: `0.6.1-pr.3`
+- Version: `0.7.2-pr.5`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail](https://www.nuget.org/packages/Joinery.Dovetail)
 
@@ -11,7 +11,6 @@
 
 - [DovetailCategory](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailcategory.md) -- `class` `sealed` -- The category of a given convention
 - [DovetailConfigurationContextExtensions](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailconfigurationcontextextensions.md) -- `class` `static` -- Extension members for IDovetailContext configuration access.
-- [DovetailConfigurationOptionsExtensions](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailconfigurationoptionsextensions.md) -- `class` `static` -- Registers strongly-typed configuration classes with the standard `Extensions.Options` pipeline.
 - [DovetailContext](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailcontext.md) -- `class` `sealed` -- Base convention context that allows for stashing items in index keys Implements the [IDovetailContext](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailcontext.md)
 - [DovetailContextBuilder](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailcontextbuilder.md) -- `class` `sealed` -- Builder that can be used to create a context.
 - [DovetailContextExtensions](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailcontextextensions.md) -- `class` `static` -- Base convention extensions
@@ -30,14 +29,11 @@
 - [AfterJointAttribute<T>](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/afterjointattribute-1.md) -- `class` `sealed` -- An attribute that ensures the convention runs after the given [IDovetailJoint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailjoint.md)
 - [BeforeJointAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/beforejointattribute.md) -- `class` `sealed` -- An attribute that ensures the convention runs before the given [IDovetailJoint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailjoint.md)
 - [BeforeJointAttribute<T>](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/beforejointattribute-1.md) -- `class` `sealed` -- An attribute that ensures the convention runs before the given [IDovetailJoint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailjoint.md)
-- [ConfigurationKeyStyle](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/configurationkeystyle.md) -- `enum` -- How [DovetailConfigurationAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailconfigurationattribute.md) spells the configuration keys of an options type and of every object type nested in it.
 - [DependentOfJointAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dependentofjointattribute.md) -- `class` `sealed` -- An attribute that ensures the convention runs before the given [IDovetailJoint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailjoint.md)
 - [DependentOfJointAttribute<T>](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dependentofjointattribute-1.md) -- `class` `sealed` -- An attribute that ensures the convention runs before the given [IDovetailJoint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailjoint.md)
 - [DependsOnJointAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dependsonjointattribute.md) -- `class` `sealed` -- An attribute that ensures the convention runs after the given [IDovetailJoint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailjoint.md)
 - [DependsOnJointAttribute<T>](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dependsonjointattribute-1.md) -- `class` `sealed` -- An attribute that ensures the convention runs after the given [IDovetailJoint](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/idovetailjoint.md)
 - [DovetailCategoryAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailcategoryattribute.md) -- `class` `sealed` -- Defines the category of a given convention
-- [DovetailConfigurationAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailconfigurationattribute.md) -- `class` `sealed` -- Declares the configuration section of an options class. Dovetail's source generator describes the class as JSON Schema, which is merged into the application's `appsettings.schema.json` for editor completion and validation, and registers it with the options pipeline.
-- [DovetailConfigurationAttribute<T>](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailconfigurationattribute-1.md) -- `class` `sealed` -- Declares the configuration section of an options type `T` from the assembly, for types you don't own.
 - [DovetailExportAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailexportattribute.md) -- `class` `sealed` -- Defines this convention as one that is exported to the Dovetail source generator
 - [DovetailHostTypeAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/dovetailhosttypeattribute.md) -- `class` `sealed` -- Defines the host type of a given convention
 - [LiveJointAttribute](/Dovetail/pr-preview/pr-397/api/joinery.dovetail/livejointattribute.md) -- `class` `sealed` -- Defines this convention as one that only runs during live usage to avoid unit tests

@@ -6,4 +6,3 @@ Dovetail is a joint-driven application wiring library for .NET. It uses a Roslyn
 > Dovetail requires .NET 8 or .NET 10 and a compatible Roslyn-based build.
 
 [Custom Dovetails](/guides/custom-joints/)
-  [Editor Setup](/guides/editor-setup/)

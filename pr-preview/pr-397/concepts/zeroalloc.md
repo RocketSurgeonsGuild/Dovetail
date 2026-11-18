@@ -45,13 +45,13 @@ validated before its handler runs, with nothing registered by hand.
 
 ### Validating configuration
 
-A `[DovetailConfiguration]` class marked `[Validate]` is validated by its generated validator whenever its options are read,
-through [ZeroAlloc.Validation.Options](https://validation.zeroalloc.net/docs/options): the options joint Dovetail generates
-calls that package's `ValidateWithZeroAlloc()` on the type's options builder, before `ValidateOnStart()` when the attribute
-asks for it.
+An [`[Optionary]`](./configuration-with-optionary) class marked `[Validate]` is validated by its generated validator whenever its
+options are read, through [ZeroAlloc.Validation.Options](https://validation.zeroalloc.net/docs/options): the registration Optionary
+generates, which Dovetail's joint calls, calls that package's `ValidateWithZeroAlloc()` on the type's options builder, before
+`ValidateOnStart()` when the attribute asks for it.
 
 ```c#
-[DovetailConfiguration(ValidateOnStart = true), Validate]
+[Optionary(ValidateOnStart = true), Validate]
 public class DatabaseOptions
 {
     [NotEmpty]
@@ -63,8 +63,8 @@ public class DatabaseOptions
 same version (ZeroAlloc ships them together), so there is nothing to add. Without the SDK, reference the package yourself.
 
 - Only types of the project itself are validated this way: `ValidateWithZeroAlloc()` is generated for the `[Validate]`
-  classes of each project, so a type from another assembly named by `[assembly: DovetailConfiguration<T>]` isn't.
-- A type with an asynchronous rule, its own or a nested model's, isn't validated, and Dovetail reports `DT0018`: options
+  classes of each project, so a type from another assembly named by `[assembly: Optionary<T>]` isn't.
+- A type with an asynchronous rule, its own or a nested model's, isn't validated, and Optionary reports `OPT0012`: options
   validation is synchronous.
 
 ### ASP.NET Core

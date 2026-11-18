@@ -2,7 +2,7 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Aspire.Testing](/Dovetail/pr-preview/pr-397/api/joinery.dovetail.aspire.testing.md)
-- Version: `0.6.1-pr.3`
+- Version: `0.7.2-pr.5`
 - Namespace: `Joinery.Dovetail.Testing.Joints`
 - Target framework: `net10.0`
 - Implements: `IDovetailJoint`
