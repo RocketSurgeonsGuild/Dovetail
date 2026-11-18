@@ -1,7 +1,7 @@
 # Joinery.Dovetail.Aspire
 
 - Package: `Joinery.Dovetail.Aspire`
-- Version: `0.7.1-beta.6`
+- Version: `0.7.1-beta.9`
 - Target framework: `net10.0`
 - NuGet: [Joinery.Dovetail.Aspire](https://www.nuget.org/packages/Joinery.Dovetail.Aspire)
 
