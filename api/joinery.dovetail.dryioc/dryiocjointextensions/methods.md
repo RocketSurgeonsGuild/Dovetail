@@ -15,6 +15,7 @@ Extension methods for applying DryIoc parts.
 - Name: `ApplyDryIoc(IContainer, IDovetailContext, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail.DryIoc/obj/Release/net10.0/DovetailJoint.DryIoc.g.cs#L51-L52)
 
 Applies the registered DryIoc parts.
 

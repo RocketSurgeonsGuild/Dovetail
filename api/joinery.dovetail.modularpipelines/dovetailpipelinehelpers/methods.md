@@ -15,6 +15,7 @@ Wires a ModularPipelines `PipelineBuilder` up to a Dovetail `Dovetail.IDovetailC
 - Name: `Apply(PipelineBuilder, DovetailContextBuilder, CancellationToken)`
 - Modifiers: `static`
 - Returns: `ValueTask<IDovetailContext>`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail.ModularPipelines/DovetailPipelineHelpers.cs#L59-L75)
 
 Populates the context and applies the configuration, service (and with them logging) and `PipelineBuilder` joints to the builder, without building it.
 
@@ -56,6 +57,7 @@ public static class DovetailPipelineHelpers
 - Name: `Configure(PipelineBuilder, DovetailContextBuilder, CancellationToken)`
 - Modifiers: `static`
 - Returns: `ValueTask<IPipeline>`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail.ModularPipelines/DovetailPipelineHelpers.cs#L32-L44)
 
 Applies the joints to the builder, builds the pipeline and applies the `HostCreated` joints to it.
 

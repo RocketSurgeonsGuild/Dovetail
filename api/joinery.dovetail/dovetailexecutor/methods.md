@@ -14,6 +14,7 @@ A class to help with executing conventions
 
 - Name: `AddHandler(Action<TDovetail>)`
 - Returns: [DovetailExecutor](/Dovetail/api/joinery.dovetail/dovetailexecutor.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
 
 Add a synchronous convention
 
@@ -43,6 +44,7 @@ public class DovetailExecutor
 
 - Name: `AddHandler(Func<TDovetail, ValueTask>)`
 - Returns: [DovetailExecutor](/Dovetail/api/joinery.dovetail/dovetailexecutor.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
 
 Add an asynchronous convention
 
@@ -72,6 +74,7 @@ public class DovetailExecutor
 
 - Name: `AddHandler(Func<TDovetail, CancellationToken, ValueTask>)`
 - Returns: [DovetailExecutor](/Dovetail/api/joinery.dovetail/dovetailexecutor.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
 
 Add an asynchronous convention
 
@@ -100,6 +103,7 @@ public class DovetailExecutor
 ## Execute
 
 - Name: `Execute`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L92-L99)
 
 Run all the conventions
 
@@ -120,6 +124,7 @@ public class DovetailExecutor
 
 - Name: `ExecuteAsync(CancellationToken)`
 - Returns: `ValueTask`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L126-L138)
 
 Run all the conventions
 
@@ -149,6 +154,7 @@ public class DovetailExecutor
 
 - Name: `ExecuteWithContext`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L108-L115)
 
 Run all the conventions
 
@@ -173,6 +179,7 @@ public class DovetailExecutor
 
 - Name: `ExecuteWithContextAsync(CancellationToken)`
 - Returns: `ValueTask<IDovetailContext>`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L148-L162)
 
 Run all the conventions
 

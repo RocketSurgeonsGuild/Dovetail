@@ -13,6 +13,7 @@ A ModularPipelines plugin that applies Dovetail's joints to the pipeline builder
 ## DovetailPipelinePlugin(DovetailContextBuilder)
 
 - Name: `Constructor(DovetailContextBuilder)`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail.ModularPipelines/DovetailPipelinePlugin.cs#L22)
 
 A ModularPipelines plugin that applies Dovetail's joints to the pipeline builder when it is added, for an application that builds and runs the pipeline itself: `builder.AddPlugin(new DovetailPipelinePlugin(DovetailContextBuilder.Create()))`.
 

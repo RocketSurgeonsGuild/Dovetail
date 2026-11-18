@@ -2,9 +2,10 @@
 
 - Kind: `record`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.7.2-beta.3`
+- Version: `0.7.2-beta.4`
 - Namespace: `Joinery.Dovetail.Diagnostics`
 - Target framework: `net10.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 - Implements: `IEquatable<DovetailDiagnosticMetadataJoint>`
 
 Represents a metadata item for a Dovetail joint, including its name, host type, category, and dependencies.

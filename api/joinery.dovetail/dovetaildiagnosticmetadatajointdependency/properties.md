@@ -14,6 +14,7 @@ Represents a metadata dependency for a Dovetail joint, including its name, host 
 - Name: `Direction`
 - Modifiers: `get; init`
 - Returns: [DependencyDirection](/Dovetail/api/joinery.dovetail/dependencydirection.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJointDependency.cs)
 
 The direction of the dependency.
 

@@ -13,6 +13,7 @@ A ModularPipelines plugin that applies Dovetail's joints to the pipeline builder
 ## Configure(PipelineBuilder)
 
 - Name: `Configure(PipelineBuilder)`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail.ModularPipelines/DovetailPipelinePlugin.cs#L37-L40)
 
 Configures the pipeline builder: register services through `PipelineBuilder.Services`, add modules, event handlers, requirements, or adjust options.
 

@@ -15,6 +15,7 @@ Extension members for accessing [StashboxOptions](/Dovetail/api/joinery.dovetail
 - Name: `get_StashboxOptions(IDovetailContext)`
 - Modifiers: `static`
 - Returns: [StashboxOptions](/Dovetail/api/joinery.dovetail.stashbox/stashboxoptions.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail.Stashbox/StashboxOptionsExtensions.cs#L14)
 
 ```csharp
 public static class StashboxOptionsExtensions

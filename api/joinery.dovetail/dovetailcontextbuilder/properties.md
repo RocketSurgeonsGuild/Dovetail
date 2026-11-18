@@ -14,6 +14,7 @@ Builder that can be used to create a context.
 - Name: `Categories`
 - Modifiers: `get`
 - Returns: `ImmutableHashSet<DovetailCategory>`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/DovetailContextBuilder.cs#L73)
 
 The categories of joints the context loads.
 

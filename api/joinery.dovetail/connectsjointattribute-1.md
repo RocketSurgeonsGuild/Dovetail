@@ -2,9 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.7.2-beta.3`
+- Version: `0.7.2-beta.4`
 - Namespace: `Joinery.Dovetail.Infrastructure`
 - Target framework: `net10.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail/Infrastructure/ConnectsJointAttribute.cs)
 - Inherits: `Attribute`
 
 A marker interface to indicate a type is a convention and has a name
