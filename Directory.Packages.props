@@ -28,10 +28,10 @@
     <PackageVersion Include="Sourcy.Git" Version="1.1.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <!-- The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost chains (an MSBuild SDK, not a package reference). Pinned here for the SDK's generated Packages.props. -->
-    <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.6.5" />
-    <PackageVersion Include="Aspire.Hosting" Version="13.6.5" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
+    <PackageVersion Include="Aspire.AppHost.Sdk" Version="17.0.0" />
+    <PackageVersion Include="Aspire.Hosting" Version="17.0.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="17.0.0" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="17.0.0" />
     <!-- Joinery.Dovetail.ModularPipelines; ModularPipelines 4 targets net11.0 only. -->
     <PackageVersion Include="ModularPipelines" Version="4.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
