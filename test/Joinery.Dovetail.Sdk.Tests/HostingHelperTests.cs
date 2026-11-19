@@ -328,6 +328,38 @@ public class HostingHelperTests(string targetFramework)
         await ( await BuildAndReadHelpers(project) ).Should().BeEquivalentTo([GenericHost, HostLifecycle, HostingContext], CollectionOrdering.Matching);
     }
 
+    /// <summary>
+    ///     The Dovetail SDK declares the ModularPipelines host for an application that references ModularPipelines, and adds
+    ///     Joinery.Dovetail.ModularPipelines, through which Joinery.Dovetail.Hosting emits the helper its entry points call. Building the
+    ///     application proves the helper and the entry points compile together.
+    /// </summary>
+    [Test]
+    public async Task Sdk_ModularPipelines_DeclaresTheHost_AndEmitsThePipelineHelpers()
+    {
+        Skip.When(targetFramework != "net11.0", "ModularPipelines 4 targets net11.0 only.");
+        using var project = CreateSdkApplication(app => WithModularPipelines(app));
+
+        await ( await BuildAndReadHelpers(project) ).Should().Contain("DovetailPipelineHelpers");
+        await GeneratedFiles(project, "DovetailHost.*.g.cs").Should().Contain("DovetailHost.ModularPipelines.g.cs");
+    }
+
+    /// <summary>
+    ///     <c>DovetailModularPipelinesHost=false</c> leaves the entry points out, for an application that wires Dovetail in through
+    ///     <c>DovetailPipelinePlugin</c> or <c>DovetailPipelineHelpers</c> itself; those are still emitted.
+    /// </summary>
+    [Test]
+    public async Task Sdk_ModularPipelines_DovetailModularPipelinesHostFalse_LeavesTheEntryPointsOut()
+    {
+        Skip.When(targetFramework != "net11.0", "ModularPipelines 4 targets net11.0 only.");
+        using var project = CreateSdkApplication(app => WithModularPipelines(app).Property("DovetailModularPipelinesHost", "false"));
+
+        await ( await BuildAndReadHelpers(project) ).Should().Contain("DovetailPipelineHelpers");
+        await GeneratedFiles(project, "DovetailHost.*.g.cs").Should().NotContain("DovetailHost.ModularPipelines.g.cs");
+    }
+
+    private ProjectCreator WithModularPipelines(ProjectCreator app) =>
+        app.ItemPackageReference("ModularPipelines", Config.CentralPackageVersion("ModularPipelines", targetFramework));
+
     private ProjectCreator WithGenericHost(ProjectCreator app) =>
         app.ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework));
 

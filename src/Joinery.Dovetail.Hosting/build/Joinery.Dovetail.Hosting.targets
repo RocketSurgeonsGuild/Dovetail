@@ -4,8 +4,10 @@
     Emits the helpers that the generated ConfigureDovetail entry points (Joinery.Dovetail.Hosts.targets) call into, from the
     *.cs.template files next to this file, the same way the entry points themselves are emitted. A helper is only emitted when
     every assembly it compiles against is among the project's resolved references, so this package depends on none of
-    Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of
-    them is what turns its helper on. The joints that turn OpenTelemetry on for the application's host are emitted the same way
+    Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly, ASP.NET Core or ModularPipelines:
+    referencing one of them is what turns its helper on. The ModularPipelines helper (DovetailPipelineHelpers, with DovetailPipelinePlugin
+    for an application that builds the pipeline itself) applies the PipelineBuilder joints, whose kind Joinery.Dovetail.ModularPipelines
+    declares, so it needs that package too; Joinery.Dovetail.ModularPipelines depends on this one, so referencing it is enough. The joints that turn OpenTelemetry on for the application's host are emitted the same way
     (see _DovetailResolveHostingHelpers), so the package depends on nothing but Joinery.Dovetail.
 
     This is Joinery.Dovetail's template extension point (Joinery.Dovetail.Templates.targets) with this package as a user: each helper
@@ -35,6 +37,7 @@
     <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
     <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
     <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
+    <_DovetailHostingHelper Include="DovetailPipelineHelpers" References="ModularPipelines;Joinery.Dovetail.ModularPipelines" />
   </ItemGroup>
   <ItemGroup>
     <DovetailTemplate

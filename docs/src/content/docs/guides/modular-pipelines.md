@@ -12,12 +12,18 @@ host. Joints add the pipeline's modules, options and services, and the pipeline 
 ## Getting the package
 
 With `Joinery.Dovetail.Sdk`, a project that references `ModularPipelines` on `net11.0` or later gets `Joinery.Dovetail.ModularPipelines`
-added for it (`DovetailEnableModularPipelines=false` opts out). Without the SDK, reference the package yourself, next to `ModularPipelines`.
+added for it, and an application gets the ModularPipelines host declared by the SDK (`DovetailEnableModularPipelines=false` opts out of
+both). Without the SDK, reference the package yourself, next to `ModularPipelines`: its build targets declare the host.
+
+`Joinery.Dovetail.ModularPipelines` holds the `PipelineBuilder` joint kind (`IPipelineBuilderJoint`, `IPipelineBuilderAsyncJoint`), which a
+library of joints references. The code the host's entry points call, `DovetailPipelineHelpers`, and `DovetailPipelinePlugin` are not
+in it: `Joinery.Dovetail.Hosting`, which the package depends on, emits them into the application, as it does the helpers of every other
+host, once the application references `ModularPipelines` and `Joinery.Dovetail.ModularPipelines`. They are internal to the application.
 
 ## Building the pipeline
 
-The package declares a host for `PipelineBuilder`, so an application (a project that imports joints, as the SDK makes every `Exe`)
-gets `ConfigureDovetail` extension methods on it, generated into the project's root namespace like those of every other host:
+The host is declared for `PipelineBuilder`, so an application (a project that imports joints, as the SDK makes every `Exe`) gets
+`ConfigureDovetail` extension methods on it, generated into the project's root namespace like those of every other host:
 
 ```csharp
 // sample/ModularPipelinesSample/Program.cs
@@ -31,7 +37,9 @@ await pipeline.RunAsync();
 
 `ConfigureDovetail` returns the built `IPipeline`, ready to run. Before building it, it applies, in this order:
 
-1. the configuration joints, whose sources go in front of the pipeline's environment variables and command line, so those still win;
+1. the configuration joints, whose sources go in front of the pipeline's environment variables and command line, so those still win.
+   The pipeline's configuration is registered as the `IConfiguration` first, so the one a service joint may add with `TryAdd` (as
+   OpenTelemetry's `AddOpenTelemetry()` does, which reads only the environment variables) does not take its place;
 2. the service joints, and with them the logging joints, to `builder.Services`;
 3. the `PipelineBuilder` joints, to the builder itself.
 

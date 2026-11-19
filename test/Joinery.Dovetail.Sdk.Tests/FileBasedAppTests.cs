@@ -149,6 +149,56 @@ public class FileBasedAppTests(string targetFramework)
     }
 
     /// <summary>
+    /// With the Dovetail SDK, a ModularPipelines build script gets the ModularPipelines host, its helper (emitted into the app by
+    /// Joinery.Dovetail.Hosting) and Joinery.Dovetail.OpenTelemetry, whose joint calls <c>AddOpenTelemetry()</c>. That TryAdds an
+    /// IConfiguration reading only the environment variables, which took the place of the pipeline configuration: the modules never saw
+    /// <c>appsettings.yaml</c>. The app names Microsoft.Extensions.Hosting itself: the version the SDK adds to a file-based app is the one
+    /// of its own build (10.x), older than the one ModularPipelines 4 needs.
+    /// </summary>
+    [Test]
+    public async Task FileBasedModularPipelinesApp_WithTheSdk_ReadsItsConfiguration()
+    {
+        Skip.When(targetFramework != "net11.0", "ModularPipelines 4 targets net11.0 only.");
+        using var project = new SdkTestProject();
+        project.AddFile(
+            "build/Build.cs",
+            $$"""
+            #:sdk Joinery.Dovetail.Sdk
+            #:package ModularPipelines@{{Config.CentralPackageVersion("ModularPipelines", targetFramework)}}
+            #:package Microsoft.Extensions.Hosting@{{Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework)}}
+            #:property TargetFramework={{targetFramework}}
+            #:property DovetailEnableYamlConfiguration=true
+
+            using Build;
+            using Microsoft.Extensions.Configuration;
+            using Microsoft.Extensions.DependencyInjection;
+            using ModularPipelines;
+
+            // A pipeline needs a module to build.
+            var builder = Pipeline.CreateBuilder(args);
+            builder.AddModule<NoOpModule>();
+            await using var pipeline = await builder.ConfigureDovetail();
+            System.Console.WriteLine("Greeting=" + pipeline.Services.GetRequiredService<IConfiguration>()["Greeting"]);
+            System.Console.WriteLine("Helpers=" + typeof(Joinery.Dovetail.DovetailPipelineHelpers).Assembly.GetName().Name);
+            System.Console.WriteLine("OpenTelemetry=" + typeof(Joinery.Dovetail.OpenTelemetry.Joints.IResourceBuilderJoint).Assembly.GetName().Name);
+
+            sealed class NoOpModule : Module<bool>
+            {
+                protected override System.Threading.Tasks.Task<bool> ExecuteAsync(IModuleContext context, System.Threading.CancellationToken cancellationToken) =>
+                    System.Threading.Tasks.Task.FromResult(true);
+            }
+            """
+        );
+        project.AddFile("build/appsettings.yaml", "Greeting: from-appsettings");
+
+        var output = await project.RunFile("build/Build.cs", workingDirectory: ".");
+
+        await output.Should().Contain("Greeting=from-appsettings");
+        await output.Should().Contain("Helpers=Build");
+        await output.Should().Contain("OpenTelemetry=Joinery.Dovetail.OpenTelemetry");
+    }
+
+    /// <summary>
     /// Without the Dovetail SDK, a file-based app has no default <c>None</c> items, so its <c>appsettings.{ext}</c> files were never copied to
     /// the output directory, and the generated configuration joint failed at startup looking for <c>Build.cs.{ext}</c> there. The packages
     /// now copy them for it, under the name of its assembly.

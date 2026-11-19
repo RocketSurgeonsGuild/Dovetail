@@ -1,0 +1,5 @@
+﻿[
+  DovetailPipelineHelpers.Apply(PipelineBuilder builder, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken) : ValueTask<IDovetailContext>,
+  DovetailPipelineHelpers.Configure(PipelineBuilder builder, DovetailContextBuilder contextBuilder, CancellationToken cancellationToken) : ValueTask<IPipeline>,
+  DovetailPipelinePlugin.Configure(PipelineBuilder builder) : Void
+]
