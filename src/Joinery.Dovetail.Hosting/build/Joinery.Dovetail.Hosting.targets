@@ -30,6 +30,8 @@
   <ItemGroup>
     <_DovetailHostingHelper Include="DovetailHostApplicationHelpers" References="Microsoft.Extensions.Hosting" />
     <_DovetailHostingHelper Include="DovetailHostLifecycleHelpers" References="Microsoft.Extensions.Hosting" />
+    <!-- Azure Functions: FunctionsApplicationBuilder (Microsoft.Azure.Functions.Worker), configured as the generic host is. -->
+    <_DovetailHostingHelper Include="DovetailFunctionsApplicationHelpers" References="Microsoft.Extensions.Hosting;Microsoft.Azure.Functions.Worker;Microsoft.Azure.Functions.Worker.Core" />
     <_DovetailHostingHelper Include="DovetailMauiHelpers" References="Microsoft.Maui" />
     <_DovetailHostingHelper Include="DovetailUnoHelpers" References="Uno.Extensions.Hosting.WinUI" />
     <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />

@@ -121,6 +121,17 @@
             </ItemGroup>
         </When> -->
   </Choose>
+  <!--
+      Azure Functions isolated worker applications are generic hosts (Azure.Functions.Sdk brings Microsoft.NET.Sdk.Worker, and a project on
+      the older Microsoft.Azure.Functions.Worker.Sdk package is an Exe), so the branch above has given them HostApplication already. They
+      also get FunctionsApplication: ConfigureDovetail on FunctionsApplication.CreateBuilder(args), whose FunctionsApplicationBuilder is
+      both an IHostApplicationBuilder and an IFunctionsWorkerApplicationBuilder. Items rather than a branch of the Choose above, since only
+      an item condition sees the project's PackageReferences. Joinery.Dovetail.Hosting only emits the helper once the project references
+      Microsoft.Azure.Functions.Worker (Azure.Functions.Sdk asks for it, AZFW0111), and drops the host until it does.
+  -->
+  <ItemGroup Condition="@(DovetailHost->AnyHaveMetadataValue('Identity', 'HostApplication')) == 'true' and ('$(UsingAzureFunctionsSdk)' == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Azure.Functions.Worker')) == 'true')">
+    <DovetailHost Include="FunctionsApplication" HostBuilderType="global::Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailFunctionsApplicationHelpers"/>
+  </ItemGroup>
   <PropertyGroup>
     <DovetailEnableAutofac Condition="'$(DovetailEnableAutofac)' == ''">false</DovetailEnableAutofac>
     <DovetailEnableDryIoc Condition="'$(DovetailEnableDryIoc)' == ''">false</DovetailEnableDryIoc>

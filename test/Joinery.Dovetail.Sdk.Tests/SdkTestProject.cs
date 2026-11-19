@@ -80,6 +80,8 @@ public sealed class SdkTestProject : IDisposable
         // Joinery.Dovetail.Sdk.Aspire.AppHost imports Aspire.AppHost.Sdk at the version Directory.Packages.props pins, so its path is
         // a placeholder too (as the version is in Config's evaluation serializer): an Aspire update doesn't rewrite the snapshot.
         _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @"/aspire\.apphost\.sdk/[^/]+/", "/aspire.apphost.sdk/{aspire-apphost-sdk-version}/"));
+        // Likewise Joinery.Dovetail.Sdk.Azure.Functions and Azure.Functions.Sdk.
+        _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @"/azure\.functions\.sdk/[^/]+/", "/azure.functions.sdk/{azure-functions-sdk-version}/"));
 
         var version = Config.DotnetSdkVersion;
 
@@ -480,7 +482,7 @@ public sealed class SdkTestProject : IDisposable
     /// Runs <c>dotnet build</c> (plus <paramref name="arguments"/>) for the project at <paramref name="relativePath"/> and returns
     /// the build's binary log, for behaviour that only shows across builds (incrementality, stale outputs).
     /// </summary>
-    public async Task<Microsoft.Build.Logging.StructuredLogger.Build> BuildProject(string relativePath, string arguments = "")
+    public async Task<Build> BuildProject(string relativePath, string arguments = "")
     {
         var projectDirectory = Path.Combine(Directory, relativePath);
         await RunDotnet($"build -bl {arguments}", projectDirectory);

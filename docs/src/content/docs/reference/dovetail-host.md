@@ -35,9 +35,9 @@ Do not declare a host the SDK already did. A second host on the same builder typ
 
 ### The hosts the SDK declares
 
-`Joinery.Dovetail.Sdk` declares at most one host, the first of these that matches the project (`Joinery.Dovetail.HostDetection.targets`).
-A library matches none, and gets no entry points. Each also adds the `Joinery.Dovetail.Hosting` package, which emits the helpers
-the entry points call.
+`Joinery.Dovetail.Sdk` declares one host, the first of these that matches the project (`Joinery.Dovetail.HostDetection.targets`), and
+an Azure Functions application gets `FunctionsApplication` next to its `HostApplication`. A library matches none, and gets no entry
+points. Each also adds the `Joinery.Dovetail.Hosting` package, which emits the helpers the entry points call.
 
 | Host name         | The project is                                                  | `HostBuilderType`                                                            | `HostType`                                                            | Helper                                     |
 | ----------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------ |
@@ -46,6 +46,11 @@ the entry points call.
 | `WebAssembly`     | a Blazor WebAssembly or `Microsoft.NET.Sdk.WebAssembly` project | `Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder` | `Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHost` | `DovetailWebAssemblyHelpers` (the default) |
 | `WebApplication`  | a `Microsoft.NET.Sdk.Web` or `Microsoft.NET.Sdk.Razor` project  | `Microsoft.AspNetCore.Builder.WebApplicationBuilder`                         | `Microsoft.AspNetCore.Builder.WebApplication`                         | `DovetailHostApplicationHelpers`           |
 | `HostApplication` | a `Microsoft.NET.Sdk.Worker` project, or any other `Exe`        | `Microsoft.Extensions.Hosting.HostApplicationBuilder`                        | `Microsoft.Extensions.Hosting.IHost`                                  | `DovetailHostApplicationHelpers`           |
+
+`FunctionsApplication` is declared next to `HostApplication` for an `Azure.Functions.Sdk` project, or one that references
+`Microsoft.Azure.Functions.Worker`: its `HostBuilderType` is `Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder`, its
+`HostType` is `Microsoft.Extensions.Hosting.IHost` and its helper is `DovetailFunctionsApplicationHelpers`, which `Joinery.Dovetail.Hosting`
+emits once the project references `Microsoft.Azure.Functions.Worker`.
 
 An Uno application without `Hosting` has no host and gets a build warning. MAUI is matched first, because a MAUI application is also
 an `Exe`.
@@ -74,17 +79,17 @@ Metadata is optional unless stated. A name the item does not read is ignored wit
 default. Types are written into the generated code exactly as you give them, so write them with `global::`, as the SDK does for builder types. Boolean
 values are compared with `true` ignoring case; any other non-empty value counts as false.
 
-| Metadata             | Default                   | What it changes                                                                                                                                                                                                                                                       |
-| -------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Namespace`          | `$(RootNamespace)`        | The namespace of the generated class, and so the namespace a caller imports for `ConfigureDovetail`.                                                                                                                                                                  |
-| `HostBuilderType`    | none; required            | The type the `ConfigureDovetail` extension methods extend (and `Task` of it). Written into every signature.                                                                                                                                                           |
-| `HostType`           | none; required            | The type the methods return, inside a `ValueTask<>`.                                                                                                                                                                                                                  |
-| `HostBuilderName`    | empty                     | Read and handed to the template, which has no use for it. It changes nothing in the generated code today; the SDK sets it to `builder`.                                                                                                                               |
-| `HelperName`         | `Dovetail{Name}Helpers`   | The static class whose `Configure` method the generated code calls, written as given. `Joinery.Dovetail.Hosting` emits `DovetailHostApplicationHelpers`, `DovetailMauiHelpers`, `DovetailUnoHelpers` and `DovetailWebAssemblyHelpers`; any other host brings its own. |
-| `BuildExpression`    | `, static b => b.Build()` | The arguments spliced into that call right after `builder`, so it begins with a comma. The default is the delegate that builds the host. MAUI and Uno add their application assembly.                                                                                 |
-| `HasBuildExpression` | `true`                    | `false` calls `Configure` without the `BuildExpression`, even one you set, for helpers that build the host themselves.                                                                                                                                                |
-| `SyncEntryPoint`     | empty (false)             | Internal, for the MAUI host model. `true` also emits blocking `UseDovetail` overloads.                                                                                                                                                                                |
-| `NavigateEntryPoint` | empty (false)             | Internal, for the Uno host model. `true` also emits `ConfigureDovetail<TShell>` overloads that navigate.                                                                                                                                                              |
+| Metadata             | Default                   | What it changes                                                                                                                                                                                                                                                                                              |
+| -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Namespace`          | `$(RootNamespace)`        | The namespace of the generated class, and so the namespace a caller imports for `ConfigureDovetail`.                                                                                                                                                                                                         |
+| `HostBuilderType`    | none; required            | The type the `ConfigureDovetail` extension methods extend (and `Task` of it). Written into every signature.                                                                                                                                                                                                  |
+| `HostType`           | none; required            | The type the methods return, inside a `ValueTask<>`.                                                                                                                                                                                                                                                         |
+| `HostBuilderName`    | empty                     | Read and handed to the template, which has no use for it. It changes nothing in the generated code today; the SDK sets it to `builder`.                                                                                                                                                                      |
+| `HelperName`         | `Dovetail{Name}Helpers`   | The static class whose `Configure` method the generated code calls, written as given. `Joinery.Dovetail.Hosting` emits `DovetailHostApplicationHelpers`, `DovetailFunctionsApplicationHelpers`, `DovetailMauiHelpers`, `DovetailUnoHelpers` and `DovetailWebAssemblyHelpers`; any other host brings its own. |
+| `BuildExpression`    | `, static b => b.Build()` | The arguments spliced into that call right after `builder`, so it begins with a comma. The default is the delegate that builds the host. MAUI and Uno add their application assembly.                                                                                                                        |
+| `HasBuildExpression` | `true`                    | `false` calls `Configure` without the `BuildExpression`, even one you set, for helpers that build the host themselves.                                                                                                                                                                                       |
+| `SyncEntryPoint`     | empty (false)             | Internal, for the MAUI host model. `true` also emits blocking `UseDovetail` overloads.                                                                                                                                                                                                                       |
+| `NavigateEntryPoint` | empty (false)             | Internal, for the Uno host model. `true` also emits `ConfigureDovetail<TShell>` overloads that navigate.                                                                                                                                                                                                     |
 
 ### Internal metadata
 

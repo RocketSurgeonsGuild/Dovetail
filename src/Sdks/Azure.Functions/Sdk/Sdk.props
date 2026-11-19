@@ -1,0 +1,40 @@
+<Project>
+  <!--
+      Joinery.Dovetail.Sdk.Azure.Functions is Azure.Functions.Sdk with Dovetail. An Azure Functions (isolated worker) project swaps the one
+      for the other:
+
+          <Project Sdk="Joinery.Dovetail.Sdk.Azure.Functions">
+
+      with the version under msbuild-sdks in global.json, or in the attribute (Joinery.Dovetail.Sdk.Azure.Functions/1.2.3).
+
+      Azure.Functions.Sdk comes from NuGet, so it is imported at a version: DovetailAzureFunctionsSdkVersion, which defaults to the version
+      this SDK was built against. Packages.props sets it, so it is imported first; set the property as an environment variable or a global
+      property (dotnet build -p:DovetailAzureFunctionsSdkVersion=1.2.0) to use another one. The version of the import wins over an
+      Azure.Functions.Sdk entry in global.json.
+
+      Then the same as the other mirrors: Azure.Functions.Sdk brings Microsoft.NET.Sdk.Worker (and so Microsoft.NET.Sdk) and sets
+      UsingAzureFunctionsSdk, and Joinery.Dovetail.Sdk, chained after it, adds Dovetail alone. Its host detection finds a generic host from
+      UsingMicrosoftNETSdkWorker, and the FunctionsApplication host (FunctionsApplicationBuilder) from UsingAzureFunctionsSdk. A project that
+      already gets Joinery.Dovetail.Sdk (from a Directory.Build.props, say) does not get it twice.
+
+      Azure.Functions.Sdk restores and builds a project of its own for the Functions host's binding extensions (azure_functions.g.csproj, under
+      obj/). That project names Azure.Functions.Sdk itself and imports no Directory.Build.props, so Dovetail never reaches it.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
+  <Import Project="Sdk.props" Sdk="Azure.Functions.Sdk" Version="$(DovetailAzureFunctionsSdkVersion)" />
+
+  <!--
+      Joinery.Dovetail.Sdk registers its host detection in CustomAfterMicrosoftCommonTargets: when that is already there, a
+      Directory.Build.props (or another SDK) applied it, and the mirror leaves it out. DovetailSdkVersion is read only now, after the
+      Directory.Build.props the Microsoft SDK imported, which can still set it.
+  -->
+  <PropertyGroup Condition="!$(CustomAfterMicrosoftCommonTargets.Contains('Joinery.Dovetail.HostDetection.targets'))">
+    <!-- Sdk.targets imports the same versions and makes the same choice, whatever the project body sets in between. -->
+    <_DovetailMirrorChainsDovetailSdk>true</_DovetailMirrorChainsDovetailSdk>
+    <_DovetailMirrorDovetailSdkVersion>$(DovetailSdkVersion)</_DovetailMirrorDovetailSdkVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_DovetailMirrorAzureFunctionsSdkVersion>$(DovetailAzureFunctionsSdkVersion)</_DovetailMirrorAzureFunctionsSdkVersion>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Joinery.Dovetail.Sdk" Version="$(_DovetailMirrorDovetailSdkVersion)" Condition="'$(_DovetailMirrorChainsDovetailSdk)' == 'true'" />
+</Project>

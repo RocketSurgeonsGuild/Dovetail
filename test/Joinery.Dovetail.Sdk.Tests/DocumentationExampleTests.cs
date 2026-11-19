@@ -43,7 +43,7 @@ public class DocumentationExampleTests(string targetFramework)
 
     /// <summary>
     /// The packages the examples are written against, as a reader of the docs would have them: the SDK adds Dovetail and the hosting
-    /// package, and the examples that use the Serilog, OpenTelemetry and Specular joints bring those.
+    /// package, and the examples that use the Serilog, OpenTelemetry, Specular and Azure Functions joints bring those.
     /// </summary>
     private static readonly string[] DovetailPackages = ["Joinery.Dovetail.Serilog", "Joinery.Dovetail.OpenTelemetry"];
 
@@ -80,7 +80,9 @@ public class DocumentationExampleTests(string targetFramework)
                     .Property("Nullable", "enable")
                     .ItemPackageReference("Microsoft.Extensions.Hosting", Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework))
                     .ItemPackageReference("Microsoft.Extensions.Logging", Config.CentralPackageVersion("Microsoft.Extensions.Logging", targetFramework))
-                    .ItemPackageReference("Specular", Config.CentralPackageVersion("Specular", targetFramework));
+                    .ItemPackageReference("Specular", Config.CentralPackageVersion("Specular", targetFramework))
+                    // The Azure Functions example joints are written against the worker builder (IFunctionsWorkerApplicationBuilder).
+                    .ItemPackageReference("Microsoft.Azure.Functions.Worker", Config.CentralPackageVersion("Microsoft.Azure.Functions.Worker", "net10.0"));
         foreach (var package in DovetailPackages)
         {
             worker.ItemPackageReference(package, Config.DovetailPackageVersion(package));

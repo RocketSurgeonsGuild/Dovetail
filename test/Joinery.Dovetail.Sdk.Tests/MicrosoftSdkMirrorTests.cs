@@ -47,6 +47,36 @@ public class MicrosoftSdkMirrorTests(string targetFramework)
     }
 
     /// <summary>
+    /// An Azure Functions isolated worker: Azure.Functions.Sdk comes from NuGet, at the version Directory.Packages.props pins, and brings
+    /// Microsoft.NET.Sdk.Worker. The application references Microsoft.Azure.Functions.Worker itself (Azure.Functions.Sdk asks for it, AZFW0111),
+    /// and gets the generic host and the FunctionsApplication host, whose <c>ConfigureDovetail</c> extends
+    /// <c>FunctionsApplicationBuilder</c>: Program.cs calls it, so the build proves the entry point and its helper compile.
+    /// </summary>
+    [Test]
+    public async Task Mirror_AzureFunctions_IsTheFunctionsSdkWithDovetail()
+    {
+        using var project = new SdkTestProject();
+        project
+           .AddProject(
+                "app/app.csproj",
+                ProjectCreator
+                   .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Joinery.Dovetail.Sdk.Azure.Functions")
+                   .ItemPackageReference("Microsoft.Azure.Functions.Worker", Config.CentralPackageVersion("Microsoft.Azure.Functions.Worker", "net10.0"))
+            )
+           .AddFile(
+                "app/Program.cs",
+                """
+                using app;
+                using Microsoft.Azure.Functions.Worker.Builder;
+
+                using var host = await FunctionsApplication.CreateBuilder(args).ConfigureDovetail();
+                """
+            );
+
+        await project.VerifyProjects();
+    }
+
+    /// <summary>
     /// A Directory.Build.props that applies <c>Joinery.Dovetail.Sdk</c> to every project, as <c>sample/SdkSample</c> does, is imported by the
     /// Microsoft SDK the mirror brings first. The mirror then leaves <c>Joinery.Dovetail.Sdk</c> out rather than importing it a second time.
     /// </summary>

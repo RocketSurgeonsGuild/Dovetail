@@ -32,6 +32,10 @@
     <PackageVersion Include="Aspire.Hosting" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
+    <!-- The Functions SDK Joinery.Dovetail.Sdk.Azure.Functions chains (an MSBuild SDK, not a package reference). Pinned here for the SDK's generated Packages.props. -->
+    <PackageVersion Include="Azure.Functions.Sdk" Version="1.1.0" />
+    <!-- The isolated worker: FunctionsApplicationBuilder, the host Joinery.Dovetail.Hosting configures (Joinery.Dovetail.Hosting.AzureFunctions.Tests). -->
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
     <!-- Joinery.Dovetail.ModularPipelines; ModularPipelines 4 targets net11.0 only. -->
     <PackageVersion Include="ModularPipelines" Version="4.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
