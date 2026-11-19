@@ -1483,6 +1483,7 @@ Pin the version in `global.json` under `msbuild-sdks`, or put it in the attribut
 | `Microsoft.NET.Sdk.WebAssembly`       | `Joinery.Dovetail.Sdk.WebAssembly`       | WebAssembly applications (the `wasmbrowser` template) |
 | `Microsoft.NET.Sdk.WindowsDesktop`    | `Joinery.Dovetail.Sdk.WindowsDesktop`    | Windows Forms and WPF projects that still name it     |
 | `Aspire.AppHost.Sdk`                  | `Joinery.Dovetail.Sdk.Aspire.AppHost`    | Aspire AppHost projects                               |
+| `Azure.Functions.Sdk`                 | `Joinery.Dovetail.Sdk.Azure.Functions`   | Azure Functions isolated worker applications          |
 
 `Joinery.Dovetail.Sdk.Console` is not a mirror: it is `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for [console applications](../../guides/console-apps/). Nor is `Joinery.Dovetail.Sdk.ModularPipelines`: it is `Joinery.Dovetail.Sdk` plus ModularPipelines, for [build pipelines](../../guides/modular-pipelines/) (`#:sdk Joinery.Dovetail.Sdk.ModularPipelines`).
 
@@ -1515,6 +1516,65 @@ dotnet build -p:DovetailAspireAppHostSdkVersion=13.6.5
 An `Aspire.AppHost.Sdk` entry in `global.json` doesn’t change it. Keep `Aspire.Hosting.AppHost`, which the Aspire SDK adds for you, at the same version.
 
 Dovetail’s host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`), exactly as with `Aspire.AppHost.Sdk` and `Joinery.Dovetail.Sdk` named side by side.
+
+## Azure Functions
+
+[Section titled “Azure Functions”](#azure-functions)
+
+`Azure.Functions.Sdk` is the MSBuild SDK for Azure Functions isolated worker applications, and like the Aspire SDK it comes from NuGet. `Joinery.Dovetail.Sdk.Azure.Functions` imports it at the version it was built against, unless `DovetailAzureFunctionsSdkVersion` says otherwise (as an environment variable or on the command line, as above).
+
+`Azure.Functions.Sdk` leaves `Microsoft.Azure.Functions.Worker`, the isolated worker every Functions application needs, to the application. `Joinery.Dovetail.Sdk.Azure.Functions` adds it for you, as an implicit package reference at the version it was built against (`DovetailAzureFunctionsWorkerVersion` picks another), so a project only references its trigger and binding extensions:
+
+```xml
+<Project Sdk="Joinery.Dovetail.Sdk.Azure.Functions">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.1" />
+  </ItemGroup>
+</Project>
+```
+
+A project that references `Microsoft.Azure.Functions.Worker` itself keeps its own reference and version, and the SDK adds nothing. Do that when an extension needs a newer worker than the SDK’s, since NuGet reports a package downgrade (`NU1605`) for the implicit one. With central package management, a `PackageVersion` for the worker in `Directory.Packages.props` sets the version of the implicit reference.
+
+`Azure.Functions.Sdk` brings `Microsoft.NET.Sdk.Worker`, so the application is a generic host (`HostApplication`). It also gets the `FunctionsApplication` host, whose `ConfigureDovetail` extends the `FunctionsApplicationBuilder` that `FunctionsApplication.CreateBuilder` returns:
+
+```csharp
+using Microsoft.Azure.Functions.Worker.Builder;
+
+
+var host = await FunctionsApplication.CreateBuilder(args).ConfigureDovetail();
+await host.RunAsync();
+```
+
+`FunctionsApplicationBuilder` is both an `IHostApplicationBuilder` and an `IFunctionsWorkerApplicationBuilder`, so the host application joints for either run on it. A library that adds worker middleware declares a joint for the worker builder, and the context carries the builder under that type too (`context.Get<IFunctionsWorkerApplicationBuilder>()`):
+
+```csharp
+using System.Threading.Tasks;
+using Joinery.Dovetail;
+using Joinery.Dovetail.Attributes;
+using Joinery.Dovetail.Joints;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Middleware;
+using Microsoft.Extensions.Hosting;
+
+
+[DovetailExport]
+public class CorrelationJoint : IHostApplicationJoint<IFunctionsWorkerApplicationBuilder>
+{
+    public void Register(IDovetailContext context, IFunctionsWorkerApplicationBuilder builder) =>
+        builder.UseMiddleware<CorrelationMiddleware>();
+}
+
+
+public class CorrelationMiddleware : IFunctionsWorkerMiddleware
+{
+    public Task Invoke(FunctionContext context, FunctionExecutionDelegate next) => next(context);
+}
+```
+
+A project on the older `Microsoft.Azure.Functions.Worker.Sdk` package (`Microsoft.NET.Sdk` with an `Exe` and a reference to `Microsoft.Azure.Functions.Worker`) gets the `FunctionsApplication` host from `Joinery.Dovetail.Sdk` the same way.
 
 ## Choosing the version of Joinery.Dovetail.Sdk
 
@@ -1801,7 +1861,7 @@ Do not declare a host the SDK already did. A second host on the same builder typ
 
 [Section titled “The hosts the SDK declares”](#the-hosts-the-sdk-declares)
 
-`Joinery.Dovetail.Sdk` declares at most one host, the first of these that matches the project (`Joinery.Dovetail.HostDetection.targets`). A library matches none, and gets no entry points. Each also adds the `Joinery.Dovetail.Hosting` package, which emits the helpers the entry points call.
+`Joinery.Dovetail.Sdk` declares one host, the first of these that matches the project (`Joinery.Dovetail.HostDetection.targets`), and an Azure Functions application gets `FunctionsApplication` next to its `HostApplication`. A library matches none, and gets no entry points. Each also adds the `Joinery.Dovetail.Hosting` package, which emits the helpers the entry points call.
 
 | Host name         | The project is                                                  | `HostBuilderType`                                                            | `HostType`                                                            | Helper                                     |
 | ----------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------ |
@@ -1811,7 +1871,9 @@ Do not declare a host the SDK already did. A second host on the same builder typ
 | `WebApplication`  | a `Microsoft.NET.Sdk.Web` or `Microsoft.NET.Sdk.Razor` project  | `Microsoft.AspNetCore.Builder.WebApplicationBuilder`                         | `Microsoft.AspNetCore.Builder.WebApplication`                         | `DovetailHostApplicationHelpers`           |
 | `HostApplication` | a `Microsoft.NET.Sdk.Worker` project, or any other `Exe`        | `Microsoft.Extensions.Hosting.HostApplicationBuilder`                        | `Microsoft.Extensions.Hosting.IHost`                                  | `DovetailHostApplicationHelpers`           |
 
-Besides the one host above, an application on `net11.0` or later that references `ModularPipelines` gets the `ModularPipelines` host (`ModularPipelines.PipelineBuilder`, returning `ModularPipelines.IPipeline`, helper `DovetailPipelineHelpers`) and the `Joinery.Dovetail.ModularPipelines` package. `DovetailEnableModularPipelines=false` leaves out both, `DovetailModularPipelinesHost=false` the host alone. The package’s own build targets then leave the host to the SDK, so it is declared once. `Joinery.Dovetail.Sdk.ModularPipelines` adds `ModularPipelines` itself, so its applications always get this host.
+`FunctionsApplication` is declared next to `HostApplication` for an `Azure.Functions.Sdk` project, or one that references `Microsoft.Azure.Functions.Worker`: its `HostBuilderType` is `Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder`, its `HostType` is `Microsoft.Extensions.Hosting.IHost` and its helper is `DovetailFunctionsApplicationHelpers`, which `Joinery.Dovetail.Hosting` emits once the project references `Microsoft.Azure.Functions.Worker`.
+
+Besides the hosts above, an application on `net11.0` or later that references `ModularPipelines` gets the `ModularPipelines` host (`ModularPipelines.PipelineBuilder`, returning `ModularPipelines.IPipeline`, helper `DovetailPipelineHelpers`) and the `Joinery.Dovetail.ModularPipelines` package. `DovetailEnableModularPipelines=false` leaves out both, `DovetailModularPipelinesHost=false` the host alone. The package’s own build targets then leave the host to the SDK, so it is declared once. `Joinery.Dovetail.Sdk.ModularPipelines` adds `ModularPipelines` itself, so its applications always get this host.
 
 An Uno application without `Hosting` has no host and gets a build warning. MAUI is matched first, because a MAUI application is also an `Exe`.
 
@@ -1839,17 +1901,17 @@ The item’s `Include` is the host’s name. It becomes part of the generated cl
 
 Metadata is optional unless stated. A name the item does not read is ignored without a warning, so a misspelling falls back to the default. Types are written into the generated code exactly as you give them, so write them with `global::`, as the SDK does for builder types. Boolean values are compared with `true` ignoring case; any other non-empty value counts as false.
 
-| Metadata             | Default                   | What it changes                                                                                                                                                                                                                                                                                  |
-| -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Namespace`          | `$(RootNamespace)`        | The namespace of the generated class, and so the namespace a caller imports for `ConfigureDovetail`.                                                                                                                                                                                             |
-| `HostBuilderType`    | none; required            | The type the `ConfigureDovetail` extension methods extend (and `Task` of it). Written into every signature.                                                                                                                                                                                      |
-| `HostType`           | none; required            | The type the methods return, inside a `ValueTask<>`.                                                                                                                                                                                                                                             |
-| `HostBuilderName`    | empty                     | Read and handed to the template, which has no use for it. It changes nothing in the generated code today; the SDK sets it to `builder`.                                                                                                                                                          |
-| `HelperName`         | `Dovetail{Name}Helpers`   | The static class whose `Configure` method the generated code calls, written as given. `Joinery.Dovetail.Hosting` emits `DovetailHostApplicationHelpers`, `DovetailMauiHelpers`, `DovetailUnoHelpers`, `DovetailWebAssemblyHelpers` and `DovetailPipelineHelpers`; any other host brings its own. |
-| `BuildExpression`    | `, static b => b.Build()` | The arguments spliced into that call right after `builder`, so it begins with a comma. The default is the delegate that builds the host. MAUI and Uno add their application assembly.                                                                                                            |
-| `HasBuildExpression` | `true`                    | `false` calls `Configure` without the `BuildExpression`, even one you set, for helpers that build the host themselves.                                                                                                                                                                           |
-| `SyncEntryPoint`     | empty (false)             | Internal, for the MAUI host model. `true` also emits blocking `UseDovetail` overloads.                                                                                                                                                                                                           |
-| `NavigateEntryPoint` | empty (false)             | Internal, for the Uno host model. `true` also emits `ConfigureDovetail<TShell>` overloads that navigate.                                                                                                                                                                                         |
+| Metadata             | Default                   | What it changes                                                                                                                                                                                                                                                                                                                         |
+| -------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Namespace`          | `$(RootNamespace)`        | The namespace of the generated class, and so the namespace a caller imports for `ConfigureDovetail`.                                                                                                                                                                                                                                    |
+| `HostBuilderType`    | none; required            | The type the `ConfigureDovetail` extension methods extend (and `Task` of it). Written into every signature.                                                                                                                                                                                                                             |
+| `HostType`           | none; required            | The type the methods return, inside a `ValueTask<>`.                                                                                                                                                                                                                                                                                    |
+| `HostBuilderName`    | empty                     | Read and handed to the template, which has no use for it. It changes nothing in the generated code today; the SDK sets it to `builder`.                                                                                                                                                                                                 |
+| `HelperName`         | `Dovetail{Name}Helpers`   | The static class whose `Configure` method the generated code calls, written as given. `Joinery.Dovetail.Hosting` emits `DovetailHostApplicationHelpers`, `DovetailFunctionsApplicationHelpers`, `DovetailMauiHelpers`, `DovetailUnoHelpers`, `DovetailWebAssemblyHelpers` and `DovetailPipelineHelpers`; any other host brings its own. |
+| `BuildExpression`    | `, static b => b.Build()` | The arguments spliced into that call right after `builder`, so it begins with a comma. The default is the delegate that builds the host. MAUI and Uno add their application assembly.                                                                                                                                                   |
+| `HasBuildExpression` | `true`                    | `false` calls `Configure` without the `BuildExpression`, even one you set, for helpers that build the host themselves.                                                                                                                                                                                                                  |
+| `SyncEntryPoint`     | empty (false)             | Internal, for the MAUI host model. `true` also emits blocking `UseDovetail` overloads.                                                                                                                                                                                                                                                  |
+| `NavigateEntryPoint` | empty (false)             | Internal, for the Uno host model. `true` also emits `ConfigureDovetail<TShell>` overloads that navigate.                                                                                                                                                                                                                                |
 
 ### Internal metadata
 
