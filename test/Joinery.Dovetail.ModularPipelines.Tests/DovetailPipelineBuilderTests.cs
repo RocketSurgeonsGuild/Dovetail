@@ -51,21 +51,22 @@ public class DovetailPipelineBuilderTests
                                         .CreateBuilder()
                                         .ConfigureDovetail(
                                              z => z
-                                                 .ConfigurePipelineBuilder(
-                                                      async (_, builder, cancellationToken) =>
-                                                      {
-                                                          await Task.Yield();
-                                                          order.Add("async");
-                                                          builder.AddModule<DelegateModule>();
-                                                      },
-                                                      priority: 10
-                                                  )
+                                                 .ConfigurePipelineBuilder(AsyncJoint, priority: 10)
                                                  .ConfigurePipelineBuilder((_, _) => order.Add("sync"), priority: -10)
                                          );
 
         await order.Should().BeEquivalentTo(["sync", "async"], CollectionOrdering.Matching);
         var plan = await pipeline.PlanAsync();
         await plan.Modules.OfType<DelegateModule>().Count().Should().BeEqualTo(1);
+
+        // A local function rather than an async lambda: its ValueTask return type is explicit, so analyzers that see the project without
+        // the generated PipelineBuilderAsyncJointDelegate (dotnet format, which doesn't build) don't take it for an async void lambda.
+        async ValueTask AsyncJoint(IDovetailContext context, PipelineBuilder builder, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            order.Add("async");
+            builder.AddModule<DelegateModule>();
+        }
     }
 
     [Test]
