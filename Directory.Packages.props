@@ -23,7 +23,7 @@
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="11.0.0" />
     <PackageVersion Include="Rocket.Surgery.ModularPipelines.Extensions" Version="0.2.4" />
     <!-- The build host (build/Build.cs) references the published Dovetail and Specular generators directly, as Rocket.Surgery.ModularPipelines.Extensions requires; they write ConfigureDovetail and the module scan into it. -->
-    <PackageVersion Include="Joinery.Dovetail.ModularPipelines" Version="0.5.3" />
+    <PackageVersion Include="Joinery.Dovetail.ModularPipelines" Version="0.7.1" />
     <PackageVersion Include="Sourcy.DotNet" Version="1.1.1" />
     <PackageVersion Include="Sourcy.Git" Version="1.1.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
@@ -48,7 +48,6 @@
     <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="8.0.0-preview-04" />
     <PackageVersion Include="Stashbox.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageVersion Include="Serilog" Version="4.4.0" />
-    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="OpenTelemetry" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
@@ -112,6 +111,8 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.15" />
+    <!-- 11.x needs Microsoft.Extensions.Logging 11 on every target framework, so net10.0 stays on 10.x. -->
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
     <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.10" />
@@ -132,5 +133,6 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="11.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="11.0.0" />
   </ItemGroup>
 </Project>

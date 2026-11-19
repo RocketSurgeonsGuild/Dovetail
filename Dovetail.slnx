@@ -112,6 +112,7 @@
     <Project Path="src/Sdks/Aspire.AppHost/Joinery.Dovetail.Sdk.Aspire.AppHost.csproj" />
     <Project Path="src/Sdks/BlazorWebAssembly/Joinery.Dovetail.Sdk.BlazorWebAssembly.csproj" />
     <Project Path="src/Sdks/Console/Joinery.Dovetail.Sdk.Console.csproj" />
+    <Project Path="src/Sdks/ModularPipelines/Joinery.Dovetail.Sdk.ModularPipelines.csproj" />
     <Project Path="src/Sdks/Razor/Joinery.Dovetail.Sdk.Razor.csproj" />
     <Project Path="src/Sdks/Web/Joinery.Dovetail.Sdk.Web.csproj" />
     <Project Path="src/Sdks/WebAssembly/Joinery.Dovetail.Sdk.WebAssembly.csproj" />

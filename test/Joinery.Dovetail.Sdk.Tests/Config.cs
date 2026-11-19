@@ -65,6 +65,8 @@ internal static class Config
             // The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost imports, written into its Packages.props the same way.
             ["DovetailAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
             ["_DovetailMirrorAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
+            // The ModularPipelines Joinery.Dovetail.Sdk.ModularPipelines adds, written into its Packages.props the same way.
+            ["DovetailModularPipelinesVersion"] = "{modularpipelines-version}",
         }.ToFrozenDictionary();
 
         private static readonly IReadOnlyCollection<string> PropertiesToWrite =
@@ -94,6 +96,13 @@ internal static class Config
                     )
             {
                 if (property.Key.StartsWith("RsgSdk_") && property.Key.EndsWith("_Version"))
+                {
+                    continue;
+                }
+
+                // The per-target-framework pins Joinery.Dovetail.Sdk's Packages.props carries; the version a project gets is the
+                // DovetailMicrosoftExtensionsHostingVersion (or DovetailOpenTelemetryExtensionsHostingVersion) chosen from them.
+                if (property.Key.StartsWith("_DovetailSdkNet", StringComparison.Ordinal) && property.Key.EndsWith("Version", StringComparison.Ordinal))
                 {
                     continue;
                 }

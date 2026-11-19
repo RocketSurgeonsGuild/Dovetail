@@ -2,8 +2,8 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
         <RuntimeAsyncBrowserWasmAsset>true</RuntimeAsyncBrowserWasmAsset>
-        <PackageDescription>Builds and configures a host from an application's joints. Covers the generic host, ASP.NET Core, .NET MAUI, Uno Platform and Blazor WebAssembly; the helpers for a host are emitted when the application references its framework.</PackageDescription>
-        <PackageTags>$(PackageTags);hosting;generic-host;aspnetcore;maui;uno-platform;blazor;webassembly</PackageTags>
+        <PackageDescription>Builds and configures a host from an application's joints. Covers the generic host, ASP.NET Core, .NET MAUI, Uno Platform, Blazor WebAssembly and ModularPipelines; the helpers for a host are emitted when the application references its framework.</PackageDescription>
+        <PackageTags>$(PackageTags);hosting;generic-host;aspnetcore;maui;uno-platform;blazor;webassembly;modularpipelines</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <!--

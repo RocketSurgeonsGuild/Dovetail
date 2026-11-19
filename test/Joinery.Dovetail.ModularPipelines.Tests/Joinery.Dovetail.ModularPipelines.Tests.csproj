@@ -6,6 +6,8 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\src\Joinery.Dovetail.ModularPipelines\Joinery.Dovetail.ModularPipelines.csproj" />
+        <!-- AddOpenTelemetry(), which Joinery.Dovetail.OpenTelemetry's joint calls: it TryAdds an IConfiguration of its own. -->
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     </ItemGroup>
     <!-- What NuGet imports for a package reference: the DovetailHost that generates ConfigureDovetail for PipelineBuilder. -->
     <Import Project="..\..\src\Joinery.Dovetail.ModularPipelines\build\Joinery.Dovetail.ModularPipelines.targets" />
