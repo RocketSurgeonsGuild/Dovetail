@@ -122,6 +122,7 @@
     <Project Path="src/Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.0.csproj" />
     <Project Path="src/Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.3.csproj" />
     <Project Path="src/Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.6.csproj" />
+    <Project Path="src/Joinery.Dovetail.Analyzers.supports/Joinery.Dovetail.Analyzers.roslyn5.9.csproj" />
   </Folder>
   <Folder Name="/test/">
     <File Path="test/.editorconfig" />
