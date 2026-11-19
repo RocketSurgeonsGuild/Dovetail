@@ -1,0 +1,167 @@
+﻿[
+  {
+    Name: app.csproj,
+    Configuration: Debug,
+    Platform: AnyCPU,
+    TargetFramework: {TargetFramework},
+    Properties: {
+      _DovetailApplicationDetected: true,
+      _DovetailMirrorAzureFunctionsSdkVersion: {azure-functions-sdk-version},
+      _DovetailMirrorChainsDovetailSdk: true,
+      _DovetailMirrorDovetailSdkVersion: {sdk-version},
+      AssemblyName: app,
+      BaseIntermediateOutputPath: {TempPath}sdk-tests/{id}/app/obj/,
+      BaseOutputPath: bin\,
+      CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
+      DefineConstants: TRACE;DEBUG,
+      DovetailAzureFunctionsSdkVersion: {azure-functions-sdk-version},
+      DovetailAzureFunctionsWorkerVersion: {azure-functions-worker-version},
+      DovetailEnableAspire: false,
+      DovetailEnableAspireTesting: false,
+      DovetailEnableAutofac: false,
+      DovetailEnableDryIoc: false,
+      DovetailEnableHosting: false,
+      DovetailEnableHostingWeb: false,
+      DovetailEnableOpenTelemetry: true,
+      DovetailEnableSerilog: false,
+      DovetailEnableStashbox: false,
+      DovetailMicrosoftExtensionsHostingVersion: {microsoft-extensions-hosting-version},
+      DovetailOpenTelemetryExtensionsHostingVersion: {opentelemetry-extensions-hosting-version},
+      DovetailSdkVersion: {sdk-version},
+      DovetailVersion: {sdk-version},
+      EnableDefaultCompileItems: false,
+      ExportDovetailAssembly: true,
+      GenerateDocumentationFile: false,
+      ImportDovetailAssembly: true,
+      IsPackable: false,
+      NoWarn: 1701;1702,
+      PackageOutputPath: bin\Debug/,
+      RootNamespace: app,
+      TargetFramework: {TargetFramework}
+    },
+    AdditionalFiles: [],
+    PackageReference: {
+      Joinery.Dovetail: {
+        IsImplicitlyDefined: true
+      },
+      Joinery.Dovetail.Hosting: {
+        IsImplicitlyDefined: true
+      },
+      Microsoft.Azure.Functions.Worker: {},
+      Microsoft.Azure.Functions.Worker.Sdk.Analyzers: {
+        IncludeAssets: runtime; build; native; contentfiles; analyzers; buildtransitive,
+        IsImplicitlyDefined: true,
+        PrivateAssets: all
+      },
+      Microsoft.Azure.Functions.Worker.Sdk.Generators: {
+        IncludeAssets: runtime; build; native; contentfiles; analyzers; buildtransitive,
+        IsImplicitlyDefined: true,
+        PrivateAssets: all
+      }
+    },
+    DovetailJoint: {},
+    DovetailHost: {
+      FunctionsApplication: {
+        HelperName: global::Joinery.Dovetail.DovetailFunctionsApplicationHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder,
+        HostType: global::Microsoft.Extensions.Hosting.IHost
+      },
+      HostApplication: {
+        HelperName: global::Joinery.Dovetail.DovetailHostApplicationHelpers,
+        HostBuilderName: builder,
+        HostBuilderType: global::Microsoft.Extensions.Hosting.HostApplicationBuilder,
+        HostType: global::Microsoft.Extensions.Hosting.IHost
+      }
+    },
+    Using: [],
+    Imports: [
+      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/targets/Azure.Functions.Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/targets/Azure.Functions.Sdk.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.azure.functions/{sdk-version}/Sdk/Sdk.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.azure.functions/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/app/app.csproj,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props
+    ],
+    NoImports: [
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/targets/Azure.Functions.Sdk.targets,
+        Imports: [
+          {
+            Path: $(MSBuildFunctionsTargetsPath)Microsoft.Azure.Functions.Designtime.targets,
+            Reason: /sdk/{dotnet-sdk-version}/Microsoft/VisualStudio/Managed.Functions/Microsoft.Azure.Functions.Designtime.targets')).
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.props,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)../targets/inner/Azure.Functions.Sdk.Inner.props,
+            Reason: false condition; ('$(_IsExtensionProject)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)../targets/inner/Azure.Functions.Sdk.Inner.targets,
+            Reason: false condition; ('$(_IsExtensionProject)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/targets/publish/Azure.Functions.Sdk.Publish.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Azure.Functions.Sdk.Publish.$(PublishProtocol).targets,
+            Reason: false condition; (Exists('$(MSBuildThisFileDirectory)Azure.Functions.Sdk.Publish.$(PublishProtocol).targets') was evaluated as Exists('{TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/targets/publish/Azure.Functions.Sdk.Publish.FileSystem.targets')).
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets,
+        Imports: [
+          {
+            Path: $(MSBuildThisFileDirectory)Joinery.Dovetail.Configuration.targets,
+            Reason: false condition; ('$(DovetailEnableConfiguration)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props,
+        Imports: [
+          {
+            Path: Sdk.props,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      },
+      {
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.targets,
+        Imports: [
+          {
+            Path: Sdk.targets,
+            Reason: false condition; ('$(_DovetailImportsMicrosoftNETSdk)' == 'true' was evaluated as '' == 'true').
+          }
+        ]
+      }
+    ],
+    GeneratedFiles: [
+      DovetailContextBuilder.g.cs,
+      DovetailHost.FunctionsApplication.g.cs,
+      DovetailHost.HostApplication.g.cs,
+      DovetailHosting.DovetailFunctionsApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostApplicationHelpers.g.cs,
+      DovetailHosting.DovetailHostLifecycleHelpers.g.cs
+    ],
+    OutputFiles: [
+      app.runtimeconfig.dev.json,
+      extensions.json,
+      worker.config.json
+    ]
+  }
+]

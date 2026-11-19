@@ -110,6 +110,7 @@
     <File Path="src/Sdks/Directory.Build.targets" />
     <Project Path="src/Sdks/Dovetail/Joinery.Dovetail.Sdk.csproj" />
     <Project Path="src/Sdks/Aspire.AppHost/Joinery.Dovetail.Sdk.Aspire.AppHost.csproj" />
+    <Project Path="src/Sdks/Azure.Functions/Joinery.Dovetail.Sdk.Azure.Functions.csproj" />
     <Project Path="src/Sdks/BlazorWebAssembly/Joinery.Dovetail.Sdk.BlazorWebAssembly.csproj" />
     <Project Path="src/Sdks/Console/Joinery.Dovetail.Sdk.Console.csproj" />
     <Project Path="src/Sdks/ModularPipelines/Joinery.Dovetail.Sdk.ModularPipelines.csproj" />
@@ -142,6 +143,7 @@
     <Project Path="test/Joinery.Dovetail.DryIoc.Tests/Joinery.Dovetail.DryIoc.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Stashbox.Tests/Joinery.Dovetail.Stashbox.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Hosting.AspNetCore.Tests/Joinery.Dovetail.Hosting.AspNetCore.Tests.csproj" />
+    <Project Path="test/Joinery.Dovetail.Hosting.AzureFunctions.Tests/Joinery.Dovetail.Hosting.AzureFunctions.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.OpenTelemetry.Tests/Joinery.Dovetail.OpenTelemetry.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Serilog.Tests/Joinery.Dovetail.Serilog.Tests.csproj" />
     <Project Path="test/Joinery.Dovetail.Hosting.Maui.Tests/Joinery.Dovetail.Hosting.Maui.Tests.csproj" />

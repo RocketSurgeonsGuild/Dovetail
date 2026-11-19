@@ -27,6 +27,16 @@
       A Microsoft SDK that comes from NuGet (Aspire.AppHost.Sdk) has to be imported at a version. The mirror names the property it reads
       that version from in DovetailMicrosoftSdkVersionProperty, and Packages.props sets it to the version Directory.Packages.props pins.
   -->
+  <!--
+      A package the mirror adds to the application (Joinery.Dovetail.Sdk.Azure.Functions adds Microsoft.Azure.Functions.Worker) is a
+      DovetailMirrorPackage item in its project, naming the property Packages.props sets to the version Directory.Packages.props pins:
+
+          <DovetailMirrorPackage Include="Microsoft.Azure.Functions.Worker" Property="DovetailAzureFunctionsWorkerVersion" />
+  -->
+  <ItemGroup>
+    <DovetailMirrorPackage Update="@(PackageVersion)" Version="%(PackageVersion.Version)" />
+  </ItemGroup>
+
   <Target Name="_DovetailMirrorGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack" Condition="'$(DovetailMicrosoftSdk)' != ''">
     <PropertyGroup>
       <_DovetailMirrorPackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailMirrorPackagesProps>
@@ -35,6 +45,10 @@
     <Error
       Condition="'$(DovetailMicrosoftSdkVersionProperty)' != '' and '$(_DovetailMirrorMicrosoftSdkVersion)' == ''"
       Text="Directory.Packages.props pins no version of $(DovetailMicrosoftSdk), which $(PackageId) imports."
+    />
+    <Error
+      Condition="'@(DovetailMirrorPackage)' != '' and '%(DovetailMirrorPackage.Version)' == ''"
+      Text="Directory.Packages.props pins no version of %(DovetailMirrorPackage.Identity), which $(PackageId) adds to an application."
     />
     <ItemGroup>
       <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
@@ -45,6 +59,9 @@
       <_DovetailMirrorPackagesPropsLine
         Condition="'$(DovetailMicrosoftSdkVersionProperty)' != ''"
         Include="&lt;$(DovetailMicrosoftSdkVersionProperty) Condition=&quot;%27%24($(DovetailMicrosoftSdkVersionProperty))%27 == %27%27&quot;&gt;$(_DovetailMirrorMicrosoftSdkVersion)&lt;/$(DovetailMicrosoftSdkVersionProperty)&gt;"
+      />
+      <_DovetailMirrorPackagesPropsLine
+        Include="@(DovetailMirrorPackage->'&lt;%(Property) Condition=&quot;%27%24(%(Property))%27 == %27%27&quot;&gt;%(Version)&lt;/%(Property)&gt;')"
       />
       <_DovetailMirrorPackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
       <_DovetailMirrorPackagesPropsLine Include="&lt;/Project&gt;" />

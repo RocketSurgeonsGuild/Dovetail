@@ -65,6 +65,13 @@ internal static class Config
             // The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost imports, written into its Packages.props the same way.
             ["DovetailAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
             ["_DovetailMirrorAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
+            // The Functions SDK Joinery.Dovetail.Sdk.Azure.Functions imports, likewise.
+            ["DovetailAzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
+            ["_DovetailMirrorAzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
+            // Azure.Functions.Sdk writes its own version too (Azure.Functions.Sdk.Version.props).
+            ["AzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
+            // The isolated worker the Functions SDK adds, written into its Packages.props the same way.
+            ["DovetailAzureFunctionsWorkerVersion"] = "{azure-functions-worker-version}",
             // The ModularPipelines Joinery.Dovetail.Sdk.ModularPipelines adds, written into its Packages.props the same way.
             ["DovetailModularPipelinesVersion"] = "{modularpipelines-version}",
         }.ToFrozenDictionary();

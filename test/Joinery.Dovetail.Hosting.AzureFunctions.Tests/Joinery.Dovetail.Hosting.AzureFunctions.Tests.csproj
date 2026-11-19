@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Configuration.Json\Joinery.Dovetail.Configuration.Json.csproj" />
+        <PackageReference Include="Microsoft.Azure.Functions.Worker" />
+
+        <!--
+            Mirrors what the Dovetail SDK's host detection adds to an Azure Functions application (see
+            src/Sdks/Dovetail/Sdk/Joinery.Dovetail.HostDetection.targets): the generic host, and the FunctionsApplication host next to it.
+        -->
+        <DovetailHost
+            Include="HostApplication"
+            HostBuilderType="global::Microsoft.Extensions.Hosting.HostApplicationBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Extensions.Hosting.IHost"
+            HelperName="global::Joinery.Dovetail.DovetailHostApplicationHelpers"
+        />
+        <DovetailHost
+            Include="FunctionsApplication"
+            HostBuilderType="global::Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder"
+            HostBuilderName="builder"
+            HostType="global::Microsoft.Extensions.Hosting.IHost"
+            HelperName="global::Joinery.Dovetail.DovetailFunctionsApplicationHelpers"
+        />
+    </ItemGroup>
+</Project>
