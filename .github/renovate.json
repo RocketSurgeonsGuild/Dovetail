@@ -46,8 +46,8 @@
       "separateMultipleMinor": false
     },
     {
-      "description": "net10.0 assets stay on the 10.0.x release train; the net11.0 group moves along 11.0.x",
-      "matchPackageNames": ["Microsoft.AspNetCore.*", "Microsoft.Extensions.*", "Microsoft.Maui.*"],
+      "description": "net10.0 assets stay on the 10.0.x release train; the net11.0 group moves along 11.0.x. Serilog.Extensions.Logging versions with Microsoft.Extensions.Logging (11.x needs Logging 11 on every target framework)",
+      "matchPackageNames": ["Microsoft.AspNetCore.*", "Microsoft.Extensions.*", "Microsoft.Maui.*", "Serilog.Extensions.Logging"],
       "matchCurrentVersion": "/^10\\./",
       "allowedVersions": "<11.0.0"
     },
