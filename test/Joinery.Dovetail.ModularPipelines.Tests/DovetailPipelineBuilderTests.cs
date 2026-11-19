@@ -1,6 +1,7 @@
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 
 namespace Joinery.Dovetail.ModularPipelines.Tests;
@@ -76,6 +77,50 @@ public class DovetailPipelineBuilderTests
                                              z => z.ConfigureConfiguration(
                                                  (_, builder) => builder.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Pipeline"] = "joined", })
                                              )
+                                         );
+
+        await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].Should().BeEqualTo("joined");
+    }
+
+    /// <summary>
+    ///     ModularPipelines registers its IConfiguration only when it builds the pipeline, after the joints ran. A service joint that
+    ///     TryAdds one of its own, as OpenTelemetry's <c>AddOpenTelemetry()</c> does (reading the environment only), must not take the
+    ///     place of the pipeline configuration, which holds the sources of the configuration joints.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_KeepsThePipelineConfiguration_WhenAServiceJointTryAddsAnIConfiguration()
+    {
+        await using var pipeline = await Pipeline
+                                        .CreateBuilder()
+                                        .ConfigureDovetail(
+                                             z => z
+                                                 .ConfigureConfiguration(
+                                                      (_, builder) => builder.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Pipeline"] = "joined", })
+                                                  )
+                                                 .ConfigureServices(
+                                                      (_, services) => services.TryAddSingleton<IConfiguration>(
+                                                          _ => new ConfigurationBuilder().AddEnvironmentVariables().Build()
+                                                      )
+                                                  )
+                                         );
+
+        await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].Should().BeEqualTo("joined");
+    }
+
+    /// <summary>
+    ///     The joint Joinery.Dovetail.OpenTelemetry brings an application calls <c>AddOpenTelemetry()</c>.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_KeepsThePipelineConfiguration_WhenAServiceJointAddsOpenTelemetry()
+    {
+        await using var pipeline = await Pipeline
+                                        .CreateBuilder()
+                                        .ConfigureDovetail(
+                                             z => z
+                                                 .ConfigureConfiguration(
+                                                      (_, builder) => builder.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Pipeline"] = "joined", })
+                                                  )
+                                                 .ConfigureServices((_, services) => services.AddOpenTelemetry())
                                          );
 
         await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].Should().BeEqualTo("joined");

@@ -3,6 +3,7 @@ using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -68,11 +69,29 @@ public static class DovetailPipelineHelpers
            .AddIfMissing("ApplicationName", builder.Environment.ApplicationName)
            .AddIfMissing("EnvironmentName", builder.Environment.EnvironmentName);
 
+        RegisterConfiguration(builder.Services, builder.Configuration);
         var context = await DovetailContext.FromAsync(contextBuilder, cancellationToken).ConfigureAwait(false);
         await ApplyConfiguration(context, builder.Configuration, builder.Environment.ContentRootPath, cancellationToken).ConfigureAwait(false);
         await builder.Services.ApplyService(context, cancellationToken).ConfigureAwait(false);
         await builder.ApplyPipelineBuilder(context, cancellationToken).ConfigureAwait(false);
         return context;
+    }
+
+    // ModularPipelines registers the pipeline configuration as the IConfiguration only when it builds the pipeline, after the joints ran.
+    // A service joint that TryAdds one of its own meanwhile would win: OpenTelemetry's AddOpenTelemetry() (Joinery.Dovetail.OpenTelemetry,
+    // which the Dovetail SDK brings) adds one that reads the environment variables alone, and the modules would never see the sources of the
+    // configuration joints. Registered up front, the pipeline configuration is the one such a TryAdd finds.
+    private static void RegisterConfiguration(IServiceCollection services, ConfigurationManager configuration)
+    {
+        foreach (var descriptor in services)
+        {
+            if (descriptor.ServiceType == typeof(IConfiguration) && !descriptor.IsKeyedService && ReferenceEquals(descriptor.ImplementationInstance, configuration))
+            {
+                return;
+            }
+        }
+
+        services.AddSingleton<IConfiguration>(configuration);
     }
 
     // The pipeline's own configuration holds only the environment variables and the command line, which keep the highest precedence,
