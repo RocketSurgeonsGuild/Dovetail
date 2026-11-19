@@ -70,6 +70,8 @@ internal static class Config
             ["_DovetailMirrorAzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
             // Azure.Functions.Sdk writes its own version too (Azure.Functions.Sdk.Version.props).
             ["AzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
+            // The ModularPipelines Joinery.Dovetail.Sdk.ModularPipelines adds, written into its Packages.props the same way.
+            ["DovetailModularPipelinesVersion"] = "{modularpipelines-version}",
         }.ToFrozenDictionary();
 
         private static readonly IReadOnlyCollection<string> PropertiesToWrite =
@@ -99,6 +101,13 @@ internal static class Config
                     )
             {
                 if (property.Key.StartsWith("RsgSdk_") && property.Key.EndsWith("_Version"))
+                {
+                    continue;
+                }
+
+                // The per-target-framework pins Joinery.Dovetail.Sdk's Packages.props carries; the version a project gets is the
+                // DovetailMicrosoftExtensionsHostingVersion (or DovetailOpenTelemetryExtensionsHostingVersion) chosen from them.
+                if (property.Key.StartsWith("_DovetailSdkNet", StringComparison.Ordinal) && property.Key.EndsWith("Version", StringComparison.Ordinal))
                 {
                     continue;
                 }

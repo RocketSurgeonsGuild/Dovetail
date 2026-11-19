@@ -145,6 +145,7 @@ each `obj/`.
     <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
     <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
     <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
+    <_DovetailHostingHelper Include="DovetailPipelineHelpers" References="ModularPipelines;Joinery.Dovetail.ModularPipelines" />
   </ItemGroup>
   <ItemGroup>
     <DovetailTemplate

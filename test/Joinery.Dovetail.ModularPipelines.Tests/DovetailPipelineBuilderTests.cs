@@ -1,6 +1,7 @@
 using Joinery.Dovetail.Joints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 
 namespace Joinery.Dovetail.ModularPipelines.Tests;
@@ -50,21 +51,22 @@ public class DovetailPipelineBuilderTests
                                         .CreateBuilder()
                                         .ConfigureDovetail(
                                              z => z
-                                                 .ConfigurePipelineBuilder(
-                                                      async (_, builder, cancellationToken) =>
-                                                      {
-                                                          await Task.Yield();
-                                                          order.Add("async");
-                                                          builder.AddModule<DelegateModule>();
-                                                      },
-                                                      priority: 10
-                                                  )
+                                                 .ConfigurePipelineBuilder(AsyncJoint, priority: 10)
                                                  .ConfigurePipelineBuilder((_, _) => order.Add("sync"), priority: -10)
                                          );
 
         await order.Should().BeEquivalentTo(["sync", "async"], CollectionOrdering.Matching);
         var plan = await pipeline.PlanAsync();
         await plan.Modules.OfType<DelegateModule>().Count().Should().BeEqualTo(1);
+
+        // A local function rather than an async lambda: its ValueTask return type is explicit, so analyzers that see the project without
+        // the generated PipelineBuilderAsyncJointDelegate (dotnet format, which doesn't build) don't take it for an async void lambda.
+        async ValueTask AsyncJoint(IDovetailContext context, PipelineBuilder builder, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            order.Add("async");
+            builder.AddModule<DelegateModule>();
+        }
     }
 
     [Test]
@@ -76,6 +78,50 @@ public class DovetailPipelineBuilderTests
                                              z => z.ConfigureConfiguration(
                                                  (_, builder) => builder.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Pipeline"] = "joined", })
                                              )
+                                         );
+
+        await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].Should().BeEqualTo("joined");
+    }
+
+    /// <summary>
+    ///     ModularPipelines registers its IConfiguration only when it builds the pipeline, after the joints ran. A service joint that
+    ///     TryAdds one of its own, as OpenTelemetry's <c>AddOpenTelemetry()</c> does (reading the environment only), must not take the
+    ///     place of the pipeline configuration, which holds the sources of the configuration joints.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_KeepsThePipelineConfiguration_WhenAServiceJointTryAddsAnIConfiguration()
+    {
+        await using var pipeline = await Pipeline
+                                        .CreateBuilder()
+                                        .ConfigureDovetail(
+                                             z => z
+                                                 .ConfigureConfiguration(
+                                                      (_, builder) => builder.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Pipeline"] = "joined", })
+                                                  )
+                                                 .ConfigureServices(
+                                                      (_, services) => services.TryAddSingleton<IConfiguration>(
+                                                          _ => new ConfigurationBuilder().AddEnvironmentVariables().Build()
+                                                      )
+                                                  )
+                                         );
+
+        await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].Should().BeEqualTo("joined");
+    }
+
+    /// <summary>
+    ///     The joint Joinery.Dovetail.OpenTelemetry brings an application calls <c>AddOpenTelemetry()</c>.
+    /// </summary>
+    [Test]
+    public async Task ConfigureDovetail_KeepsThePipelineConfiguration_WhenAServiceJointAddsOpenTelemetry()
+    {
+        await using var pipeline = await Pipeline
+                                        .CreateBuilder()
+                                        .ConfigureDovetail(
+                                             z => z
+                                                 .ConfigureConfiguration(
+                                                      (_, builder) => builder.AddInMemoryCollection(new Dictionary<string, string?> { ["Dovetail:Pipeline"] = "joined", })
+                                                  )
+                                                 .ConfigureServices((_, services) => services.AddOpenTelemetry())
                                          );
 
         await pipeline.Services.GetRequiredService<IConfiguration>()["Dovetail:Pipeline"].Should().BeEqualTo("joined");
@@ -256,18 +302,5 @@ public class DovetailPipelineBuilderTests
         await using var pipeline = await Pipeline.CreateBuilder().ConfigureDovetail(z => z.ConfigureHostCreated(joint.Object));
 
         joint.Invoke(Any(), Is(pipeline)).WasCalled(Times.Once);
-    }
-
-    [Test]
-    public async Task DovetailPipelinePlugin_AppliesTheJoints_WhenItIsAdded()
-    {
-        var plugin = new DovetailPipelinePlugin(DovetailContextBuilder.Create());
-        var builder = Pipeline.CreateBuilder().AddPlugin(plugin);
-
-        await plugin.Context.Should().NotBeNull();
-        await plugin.Context.Get<PipelineBuilder>().Should().BeSameReferenceAs(builder);
-        await using var pipeline = await builder.BuildAsync();
-        var plan = await pipeline.PlanAsync();
-        await plan.Modules.OfType<RecordedModule>().Count().Should().BeEqualTo(1);
     }
 }

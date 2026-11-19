@@ -9,6 +9,20 @@
       DovetailSdkImplicitPackageReference items below to reach NuGet restore.
   -->
   <!--
+      The versions of Microsoft.Extensions.Hosting and OpenTelemetry.Extensions.Hosting a file-based app gets (below): the ones the
+      repository pinned when the SDK was packed (Packages.props), for net11.0 and later or for earlier target frameworks. Chosen here
+      rather than in Packages.props, which Sdk.props imports before the project sets its TargetFramework. An application that sets
+      either property itself (a Directory.Build.props, the project, a #:property directive) keeps its own.
+  -->
+  <PropertyGroup Condition="'$(TargetFramework)' != '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <DovetailMicrosoftExtensionsHostingVersion Condition="'$(DovetailMicrosoftExtensionsHostingVersion)' == ''">$(_DovetailSdkNet11MicrosoftExtensionsHostingVersion)</DovetailMicrosoftExtensionsHostingVersion>
+    <DovetailOpenTelemetryExtensionsHostingVersion Condition="'$(DovetailOpenTelemetryExtensionsHostingVersion)' == ''">$(_DovetailSdkNet11OpenTelemetryExtensionsHostingVersion)</DovetailOpenTelemetryExtensionsHostingVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DovetailMicrosoftExtensionsHostingVersion Condition="'$(DovetailMicrosoftExtensionsHostingVersion)' == ''">$(_DovetailSdkNet10MicrosoftExtensionsHostingVersion)</DovetailMicrosoftExtensionsHostingVersion>
+    <DovetailOpenTelemetryExtensionsHostingVersion Condition="'$(DovetailOpenTelemetryExtensionsHostingVersion)' == ''">$(_DovetailSdkNet10OpenTelemetryExtensionsHostingVersion)</DovetailOpenTelemetryExtensionsHostingVersion>
+  </PropertyGroup>
+  <!--
       Uno.Sdk only normalizes UnoFeatures (whitespace stripped, lower-cased, wrapped in ';') in its own targets, which may
       not have been evaluated yet, so normalize a copy here.
   -->
@@ -192,12 +206,47 @@
         either way.
     -->
     <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.OpenTelemetry" Version="$(DovetailVersion)" Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and ('$(FileBasedProgram)' == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')) == 'true')"/>
-    <!--
-        A pipeline project (ModularPipelines 4, which targets net11.0 only) gets Joinery.Dovetail.ModularPipelines, whose build targets
-        declare the ModularPipelines host: ConfigureDovetail on PipelineBuilder. DovetailEnableModularPipelines=false opts out. No
-        default is written for the switch, so the evaluated properties of every other project stay as they were.
-    -->
-    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.ModularPipelines" Version="$(DovetailVersion)" Condition="'$(DovetailEnableModularPipelines)' != 'false' and '$(TargetFramework)' != '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) and @(PackageReference->AnyHaveMetadataValue('Identity', 'ModularPipelines')) == 'true'"/>
+  </ItemGroup>
+
+  <!--
+      A pipeline project (ModularPipelines 4, which targets net11.0 only) gets Joinery.Dovetail.ModularPipelines, which declares the
+      PipelineBuilder joint, and the ModularPipelines host: ConfigureDovetail on PipelineBuilder, for an application (a project that
+      imports joints). The entry points call DovetailPipelineHelpers, which Joinery.Dovetail.Hosting (a dependency of
+      Joinery.Dovetail.ModularPipelines) emits once ModularPipelines and Joinery.Dovetail.ModularPipelines are among the references.
+      The package's own build targets declare the same host for a project that references it without the SDK; this file comes first,
+      so they leave it alone. DovetailEnableModularPipelines=false opts out of all of it, DovetailModularPipelinesHost=false out of the
+      host alone. No default is written for either switch, so the evaluated properties of every other project stay as they were.
+
+      A pipeline project is one that references ModularPipelines, or that Joinery.Dovetail.Sdk.ModularPipelines adds it to (an implicit
+      reference, declared before this file).
+
+      It also gets ModularPipelines.OpenTelemetry, whose AddOpenTelemetry() traces and measures the pipeline's modules and commands
+      (Joinery.Dovetail.Hosting emits the joint that calls it), unless DovetailEnableOpenTelemetry is false. That package pins
+      ModularPipelines to its own version, so it gets the version of the ModularPipelines reference: its VersionOverride or Version,
+      else the central PackageVersion, else the version Joinery.Dovetail.Sdk.ModularPipelines adds; a direct reference to it wins.
+      Items rather than properties: properties are evaluated before any item exists.
+  -->
+  <ItemGroup>
+    <_DovetailModularPipelinesReference Include="@(PackageReference->WithMetadataValue('Identity', 'ModularPipelines'))" />
+    <_DovetailModularPipelinesReference Include="@(DovetailSdkImplicitPackageReference->WithMetadataValue('Identity', 'ModularPipelines'))" Condition="'@(_DovetailModularPipelinesReference)' == ''" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DovetailEnableModularPipelines)' != 'false' and '$(TargetFramework)' != '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) and '@(_DovetailModularPipelinesReference)' != ''">
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.ModularPipelines" Version="$(DovetailVersion)" />
+    <DovetailHost
+      Include="ModularPipelines"
+      Condition="'$(ImportDovetailAssembly)' == 'true' and '$(DovetailModularPipelinesHost)' != 'false'"
+      HostBuilderType="global::ModularPipelines.PipelineBuilder"
+      HostBuilderName="builder"
+      HostType="global::ModularPipelines.IPipeline"
+      HelperName="global::Joinery.Dovetail.DovetailPipelineHelpers"
+      HasBuildExpression="false" />
+    <_DovetailModularPipelinesVersion Include="@(_DovetailModularPipelinesReference->'%(VersionOverride)'->Distinct())" />
+    <_DovetailModularPipelinesVersion Include="@(_DovetailModularPipelinesReference->'%(Version)'->Distinct())" Condition="'@(_DovetailModularPipelinesVersion)' == ''" />
+    <_DovetailModularPipelinesVersion Include="@(PackageVersion->WithMetadataValue('Identity', 'ModularPipelines')->'%(Version)'->Distinct())" Condition="'@(_DovetailModularPipelinesVersion)' == ''" />
+    <DovetailSdkImplicitPackageReference
+      Include="ModularPipelines.OpenTelemetry"
+      Version="@(_DovetailModularPipelinesVersion)"
+      Condition="'$(DovetailEnableOpenTelemetry)' != 'false' and '@(_DovetailModularPipelinesVersion)' != ''" />
   </ItemGroup>
 
   <!--

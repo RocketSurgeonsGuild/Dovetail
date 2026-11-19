@@ -4,8 +4,8 @@
         <TargetFramework>net11.0</TargetFramework>
         <IsAotCompatible>true</IsAotCompatible>
         <PackageDescription>
-            Applies Dovetail joints to a ModularPipelines PipelineBuilder: the configuration, service and logging joints, and the
-            PipelineBuilder joint, through which a joint adds modules, options and services to the pipeline.
+            The PipelineBuilder joint, through which a Dovetail joint adds modules, options and services to a ModularPipelines pipeline,
+            and the ModularPipelines host: ConfigureDovetail on PipelineBuilder, which Joinery.Dovetail.Hosting emits into the application.
         </PackageDescription>
         <PackageTags>$(PackageTags);modularpipelines;modular-pipelines;pipeline;build-automation;ci</PackageTags>
         <RootNamespace>Joinery.Dovetail</RootNamespace>
@@ -15,6 +15,12 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+        <!--
+            The helper the generated ConfigureDovetail entry points call (DovetailPipelineHelpers) is a Joinery.Dovetail.Hosting
+            template, emitted into the application that references ModularPipelines and this package. A dependency, so a project that
+            references only this package gets it too: its buildTransitive targets reach that project.
+        -->
+        <ProjectReference Include="..\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
         <DovetailJoint Include="PipelineBuilder" ParameterType="global::ModularPipelines.PipelineBuilder" ParameterName="builder" />
     </ItemGroup>
     <ItemGroup>

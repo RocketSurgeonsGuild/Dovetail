@@ -79,6 +79,7 @@ Each SDK is a drop-in replacement for the Microsoft SDK it names.
 | [Joinery.Dovetail.Sdk.Aspire.AppHost][nuget-Joinery.Dovetail.Sdk.Aspire.AppHost]       | [![nuget-Joinery.Dovetail.Sdk.Aspire.AppHost-badge]][nuget-Joinery.Dovetail.Sdk.Aspire.AppHost]       | `Aspire.AppHost.Sdk`: Aspire AppHost projects                                     |
 | [Joinery.Dovetail.Sdk.Azure.Functions][nuget-Joinery.Dovetail.Sdk.Azure.Functions]     | [![nuget-Joinery.Dovetail.Sdk.Azure.Functions-badge]][nuget-Joinery.Dovetail.Sdk.Azure.Functions]     | `Azure.Functions.Sdk`: Azure Functions isolated worker applications               |
 | [Joinery.Dovetail.Sdk.Console][nuget-Joinery.Dovetail.Sdk.Console]                     | [![nuget-Joinery.Dovetail.Sdk.Console-badge]][nuget-Joinery.Dovetail.Sdk.Console]                     | `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for ConsoleAppFramework apps |
+| [Joinery.Dovetail.Sdk.ModularPipelines][nuget-Joinery.Dovetail.Sdk.ModularPipelines]   | [![nuget-Joinery.Dovetail.Sdk.ModularPipelines-badge]][nuget-Joinery.Dovetail.Sdk.ModularPipelines]   | `Joinery.Dovetail.Sdk` plus ModularPipelines, for build pipelines                 |
 
 `Joinery.Dovetail.Analyzers` holds the source generator. `Joinery.Dovetail` brings it in, so you don't reference it
 yourself.
@@ -161,5 +162,7 @@ Run `mise install` before building: it installs the .NET SDK and the extra .NET 
 [nuget-Joinery.Dovetail.Sdk.Azure.Functions-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Sdk.Azure.Functions.svg?logo=nuget&style=flat
 [nuget-Joinery.Dovetail.Sdk.Console]: https://www.nuget.org/packages/Joinery.Dovetail.Sdk.Console/
 [nuget-Joinery.Dovetail.Sdk.Console-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Sdk.Console.svg?logo=nuget&style=flat
+[nuget-Joinery.Dovetail.Sdk.ModularPipelines]: https://www.nuget.org/packages/Joinery.Dovetail.Sdk.ModularPipelines/
+[nuget-Joinery.Dovetail.Sdk.ModularPipelines-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Sdk.ModularPipelines.svg?logo=nuget&style=flat
 [nuget-Joinery.Dovetail.Analyzers]: https://www.nuget.org/packages/Joinery.Dovetail.Analyzers/
 [nuget-Joinery.Dovetail.Analyzers-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Analyzers.svg?logo=nuget&style=flat

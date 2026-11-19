@@ -8,23 +8,43 @@
       Every Dovetail package ships at the same version, so the SDK adds each one at $(DovetailVersion), which defaults to the
       version of the SDK itself. An application can set DovetailVersion to move every package the SDK adds together.
       A file-based app also gets Microsoft.Extensions.Hosting and OpenTelemetry.Extensions.Hosting, at
-      $(DovetailMicrosoftExtensionsHostingVersion) and $(DovetailOpenTelemetryExtensionsHostingVersion): the versions
-      Directory.Packages.props pins (for net10.0, which every target framework can use).
+      $(DovetailMicrosoftExtensionsHostingVersion) and $(DovetailOpenTelemetryExtensionsHostingVersion), which
+      Joinery.Dovetail.HostDetection.targets chooses for the application's target framework once the project is evaluated: the
+      versions Directory.Packages.props pins for net10.0, or for net11.0 and later. Packages.props carries both pins of each
+      (_DovetailSdkNet10*Version, _DovetailSdkNet11*Version), since an application on net11.0 can't take the 10.x packages when
+      something it references needs 11.x (ModularPipelines 4 needs Microsoft.Extensions.Hosting 11). This project is
+      netstandard2.0, so its own evaluation holds the net10.0 pins; the net11.0 ones come from evaluating it again for net11.0.
   -->
+  <Target Name="_DovetailGetPinnedHostingVersions" Returns="@(_DovetailPinnedHostingVersion)">
+    <ItemGroup>
+      <_DovetailPinnedHostingVersion Include="@(PackageVersion)" Condition="'%(Identity)' == 'Microsoft.Extensions.Hosting' or '%(Identity)' == 'OpenTelemetry.Extensions.Hosting'" />
+    </ItemGroup>
+  </Target>
   <Target Name="_DovetailGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_DovetailGetPinnedHostingVersions" Properties="TargetFramework=net11.0">
+      <Output TaskParameter="TargetOutputs" ItemName="_DovetailNet11PinnedHostingVersion" />
+    </MSBuild>
     <PropertyGroup>
       <_DovetailPackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailPackagesProps>
-      <_DovetailMicrosoftExtensionsHostingVersion>@(PackageVersion->WithMetadataValue('Identity', 'Microsoft.Extensions.Hosting')->'%(Version)')</_DovetailMicrosoftExtensionsHostingVersion>
-      <_DovetailOpenTelemetryExtensionsHostingVersion>@(PackageVersion->WithMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')->'%(Version)')</_DovetailOpenTelemetryExtensionsHostingVersion>
+      <_DovetailNet10MicrosoftExtensionsHostingVersion>@(PackageVersion->WithMetadataValue('Identity', 'Microsoft.Extensions.Hosting')->'%(Version)')</_DovetailNet10MicrosoftExtensionsHostingVersion>
+      <_DovetailNet10OpenTelemetryExtensionsHostingVersion>@(PackageVersion->WithMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')->'%(Version)')</_DovetailNet10OpenTelemetryExtensionsHostingVersion>
+      <_DovetailNet11MicrosoftExtensionsHostingVersion>@(_DovetailNet11PinnedHostingVersion->WithMetadataValue('Identity', 'Microsoft.Extensions.Hosting')->'%(Version)')</_DovetailNet11MicrosoftExtensionsHostingVersion>
+      <_DovetailNet11OpenTelemetryExtensionsHostingVersion>@(_DovetailNet11PinnedHostingVersion->WithMetadataValue('Identity', 'OpenTelemetry.Extensions.Hosting')->'%(Version)')</_DovetailNet11OpenTelemetryExtensionsHostingVersion>
     </PropertyGroup>
+    <Error
+      Condition="'$(_DovetailNet10MicrosoftExtensionsHostingVersion)' == '' or '$(_DovetailNet11MicrosoftExtensionsHostingVersion)' == '' or '$(_DovetailNet10OpenTelemetryExtensionsHostingVersion)' == '' or '$(_DovetailNet11OpenTelemetryExtensionsHostingVersion)' == ''"
+      Text="Directory.Packages.props pins no net10.0 or no net11.0 version of Microsoft.Extensions.Hosting or OpenTelemetry.Extensions.Hosting, which Joinery.Dovetail.Sdk adds to a file-based app."
+    />
     <ItemGroup>
       <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
       <_DovetailPackagesPropsLine Include="&lt;Project&gt;" />
-      <_DovetailPackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk is packed. Each version is only set when the application has not set it already. --&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk is packed. DovetailVersion is only set when the application has not set it already, and Joinery.Dovetail.HostDetection.targets picks the Hosting versions. --&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;PropertyGroup&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;DovetailVersion Condition=&quot;%27%24(DovetailVersion)%27 == %27%27&quot;&gt;$(Version)&lt;/DovetailVersion&gt;" />
-      <_DovetailPackagesPropsLine Include="&lt;DovetailMicrosoftExtensionsHostingVersion Condition=&quot;%27%24(DovetailMicrosoftExtensionsHostingVersion)%27 == %27%27&quot;&gt;$(_DovetailMicrosoftExtensionsHostingVersion)&lt;/DovetailMicrosoftExtensionsHostingVersion&gt;" />
-      <_DovetailPackagesPropsLine Include="&lt;DovetailOpenTelemetryExtensionsHostingVersion Condition=&quot;%27%24(DovetailOpenTelemetryExtensionsHostingVersion)%27 == %27%27&quot;&gt;$(_DovetailOpenTelemetryExtensionsHostingVersion)&lt;/DovetailOpenTelemetryExtensionsHostingVersion&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;_DovetailSdkNet10MicrosoftExtensionsHostingVersion&gt;$(_DovetailNet10MicrosoftExtensionsHostingVersion)&lt;/_DovetailSdkNet10MicrosoftExtensionsHostingVersion&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;_DovetailSdkNet11MicrosoftExtensionsHostingVersion&gt;$(_DovetailNet11MicrosoftExtensionsHostingVersion)&lt;/_DovetailSdkNet11MicrosoftExtensionsHostingVersion&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;_DovetailSdkNet10OpenTelemetryExtensionsHostingVersion&gt;$(_DovetailNet10OpenTelemetryExtensionsHostingVersion)&lt;/_DovetailSdkNet10OpenTelemetryExtensionsHostingVersion&gt;" />
+      <_DovetailPackagesPropsLine Include="&lt;_DovetailSdkNet11OpenTelemetryExtensionsHostingVersion&gt;$(_DovetailNet11OpenTelemetryExtensionsHostingVersion)&lt;/_DovetailSdkNet11OpenTelemetryExtensionsHostingVersion&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
       <_DovetailPackagesPropsLine Include="&lt;/Project&gt;" />
     </ItemGroup>

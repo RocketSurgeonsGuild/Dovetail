@@ -4,9 +4,12 @@
     Emits the helpers that the generated ConfigureDovetail entry points (Joinery.Dovetail.Hosts.targets) call into, from the
     *.cs.template files next to this file, the same way the entry points themselves are emitted. A helper is only emitted when
     every assembly it compiles against is among the project's resolved references, so this package depends on none of
-    Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly or ASP.NET Core: referencing one of
-    them is what turns its helper on. The joints that turn OpenTelemetry on for the application's host are emitted the same way
-    (see _DovetailResolveHostingHelpers), so the package depends on nothing but Joinery.Dovetail.
+    Microsoft.Extensions.Hosting (the generic host), .NET MAUI, Uno Platform, Blazor WebAssembly, ASP.NET Core or ModularPipelines:
+    referencing one of them is what turns its helper on. The ModularPipelines helper (DovetailPipelineHelpers) applies the
+    PipelineBuilder joints, whose kind Joinery.Dovetail.ModularPipelines declares, so it needs that package too;
+    Joinery.Dovetail.ModularPipelines depends on this one, so referencing it is enough. The joints that turn OpenTelemetry on for the
+    application's host are emitted the same way (see _DovetailResolveHostingHelpers), so the package depends on nothing but
+    Joinery.Dovetail.
 
     This is Joinery.Dovetail's template extension point (Joinery.Dovetail.Templates.targets) with this package as a user: each helper
     is a <DovetailTemplate> that Joinery.Dovetail resolves against the project's references and writes, and the OpenTelemetry joints
@@ -37,6 +40,7 @@
     <_DovetailHostingHelper Include="DovetailUnoNavigationHelpers" References="Uno.Extensions.Hosting.WinUI;Uno.Extensions.Navigation.UI" />
     <_DovetailHostingHelper Include="DovetailWebAssemblyHelpers" References="Microsoft.AspNetCore.Components.WebAssembly" />
     <_DovetailHostingHelper Include="DovetailConfigurationSchemaEndpointExtensions" References="Microsoft.AspNetCore" />
+    <_DovetailHostingHelper Include="DovetailPipelineHelpers" References="ModularPipelines;Joinery.Dovetail.ModularPipelines" />
   </ItemGroup>
   <ItemGroup>
     <DovetailTemplate
@@ -154,6 +158,24 @@
         OutputPrefix="DovetailHosting"
         HostName="Uno"
         HostType="global::Microsoft.Extensions.Hosting.IHost" />
+    </ItemGroup>
+
+    <!--
+        ModularPipelines' own OpenTelemetry instrumentation, for a pipeline application (one that gets DovetailPipelineHelpers) that
+        references ModularPipelines.OpenTelemetry (the Dovetail SDK adds it next to ModularPipelines): a PipelineBuilder joint calls its
+        AddOpenTelemetry(), which traces and measures the modules and commands. It needs neither Joinery.Dovetail.OpenTelemetry nor
+        the joints above, though with them both apply to the same OpenTelemetry providers. DovetailEnableOpenTelemetry=false leaves it
+        out, as it does those; only applications and test projects get it, for the same reason.
+    -->
+    <PropertyGroup>
+      <_DovetailHostingModularPipelinesOpenTelemetry>false</_DovetailHostingModularPipelinesOpenTelemetry>
+      <_DovetailHostingModularPipelinesOpenTelemetry Condition="'$(ImportDovetailAssembly)' == 'true' and '$(DovetailEnableOpenTelemetry)' != 'false' and @(_DovetailHostingEmittedHelper->AnyHaveMetadataValue('Identity', 'DovetailPipelineHelpers')) == 'true'">@(_DovetailHostingReference->AnyHaveMetadataValue('Identity', 'ModularPipelines.OpenTelemetry'))</_DovetailHostingModularPipelinesOpenTelemetry>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DovetailHostingModularPipelinesOpenTelemetry)' == 'true'">
+      <DovetailEmittedTemplate
+        Include="DovetailModularPipelinesOpenTelemetryJoint"
+        File="$(MSBuildThisFileDirectory)DovetailModularPipelinesOpenTelemetryJoint.cs.template"
+        OutputPrefix="DovetailHosting" />
     </ItemGroup>
   </Target>
 
