@@ -72,7 +72,7 @@
     <!-- The build host (build/Build.cs) references it for its module scan; the Joinery.Dovetail.Sdk.Tests scaffolds reference it to prove Dovetail seeds Specular's provider without depending on Specular. -->
     <PackageVersion Include="Specular" Version="0.4.1" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="Microsoft.Playwright" Version="1.65.0" />
+    <PackageVersion Include="Microsoft.Playwright" Version="1.65.1" />
     <PackageVersion Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" Version="11.0.1" />
     <PackageVersion Include="TUnit" Version="1.86.6" />
     <PackageVersion Include="TUnit.Mocks" Version="1.86.6" />
