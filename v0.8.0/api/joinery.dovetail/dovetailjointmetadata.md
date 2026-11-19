@@ -1,0 +1,41 @@
+# DovetailJointMetadata
+
+- Kind: `class`
+- Package: [Joinery.Dovetail](/Dovetail/v0.8.0/api/joinery.dovetail.md)
+- Version: `0.8.0`
+- Namespace: `Joinery.Dovetail.Infrastructure`
+- Target framework: `net10.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.dd91ad69021d707105f71e00730b2dfe6a92f5ae/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs)
+- Implements: [IDovetailJointMetadata](/Dovetail/v0.8.0/api/joinery.dovetail/idovetailjointmetadata.md)
+
+Container for conventions
+
+## Definition
+
+```csharp
+namespace Joinery.Dovetail.Infrastructure;
+
+public sealed class DovetailJointMetadata
+    : Joinery.Dovetail.Infrastructure.IDovetailJointMetadata
+{
+    // ...
+}
+```
+
+## Constructors
+
+- [DovetailJointMetadata(IDovetailJoint, DovetailHostType)](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/constructors.md#constructor-idovetailjoint-dovetailhosttype) -- The default constructor
+- [DovetailJointMetadata(IDovetailJoint, DovetailHostType, DovetailCategory)](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/constructors.md#constructor-idovetailjoint-dovetailhosttype-dovetailcategory) -- The default constructor
+
+## Properties
+
+- [Category](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/properties.md#category) : [DovetailCategory](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailcategory.md) `get` -- The category of the convention
+- [Dependencies](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/properties.md#dependencies) : [IReadOnlyCollection<IDovetailDependency>](/Dovetail/v0.8.0/api/joinery.dovetail/idovetaildependency.md) `get; set` -- The dependencies
+- [HostType](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/properties.md#hosttype) : [DovetailHostType](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailhosttype.md) `get` -- The host type of the convention
+- [Joint](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) : [IDovetailJoint](/Dovetail/v0.8.0/api/joinery.dovetail/idovetailjoint.md) `get` -- The convention
+
+## Methods
+
+- [FromFactory(Func<IServiceProvider, IDovetailJoint>, DovetailHostType, DovetailCategory)](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/methods.md#fromfactory-func-iserviceprovider-idovetailjoint-dovetailhosttype-dovetailcategory) : [DovetailJointMetadata](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata.md) `static` -- Describes a joint that is created the first time [DovetailJointMetadata.Joint](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) is read, rather than up front.
+- [GetHashCode](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/methods.md#gethashcode) : `int` -- Serves as the default hash function.
+- [WithDependency(DependencyDirection, Type)](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata/methods.md#withdependency-dependencydirection-type) : [DovetailJointMetadata](/Dovetail/v0.8.0/api/joinery.dovetail/dovetailjointmetadata.md) -- Adds a new dependency to the list

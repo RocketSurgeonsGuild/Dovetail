@@ -1,0 +1,37 @@
+# HostCreatedAsyncJointDelegate<THost>
+
+- Kind: `delegate`
+- Package: [Joinery.Dovetail](/Dovetail/v0.8.0/api/joinery.dovetail.md)
+- Version: `0.8.0`
+- Namespace: `Joinery.Dovetail.Joints`
+- Target framework: `net10.0`
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.dd91ad69021d707105f71e00730b2dfe6a92f5ae/src/Joinery.Dovetail/obj/Release/net10.0/HostCreatedAsyncJointDelegate.cs)
+- Inherits: `MulticastDelegate`
+
+Async delegate for the HostCreated part.
+
+## Definition
+
+```csharp
+namespace Joinery.Dovetail.Joints;
+
+public sealed delegate System.Threading.Tasks.ValueTask HostCreatedAsyncJointDelegate<THost>(
+    Joinery.Dovetail.IDovetailContext context,
+    THost host,
+    System.Threading.CancellationToken cancellationToken)
+```
+
+## Delegate Parameters
+
+- `context` ([IDovetailContext](/Dovetail/v0.8.0/api/joinery.dovetail/idovetailcontext.md))
+- `host` (`THost`)
+- `cancellationToken` (`CancellationToken`) `optional`
+
+## Constructors
+
+- [HostCreatedAsyncJointDelegate(object, nint)](/Dovetail/v0.8.0/api/joinery.dovetail/hostcreatedasyncjointdelegate-1/constructors.md#constructor-object-nint)
+
+## Methods
+
+- [BeginInvoke(IDovetailContext, THost, CancellationToken, AsyncCallback, object)](/Dovetail/v0.8.0/api/joinery.dovetail/hostcreatedasyncjointdelegate-1/methods.md#begininvoke-idovetailcontext-thost-cancellationtoken-asynccallback-object) : `IAsyncResult` `virtual`
+- [EndInvoke(IAsyncResult)](/Dovetail/v0.8.0/api/joinery.dovetail/hostcreatedasyncjointdelegate-1/methods.md#endinvoke-iasyncresult) : `ValueTask` `virtual`
