@@ -77,9 +77,9 @@
     Imports: [
       {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/targets/Azure.Functions.Sdk.props,
       {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/targets/Azure.Functions.Sdk.targets,
-      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.azure.functions/{sdk-version}/Sdk/Sdk.targets,
-      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/Sdk/Sdk.targets,
+      {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.azure.functions/{sdk-version}/Sdk/Sdk.props,
       {TempPath}sdk-tests/{id}/app/app.csproj,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props
@@ -95,7 +95,7 @@
         ]
       },
       {
-        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/Sdk/Sdk.props,
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.props,
         Imports: [
           {
             Path: $(MSBuildThisFileDirectory)../targets/inner/Azure.Functions.Sdk.Inner.props,
@@ -104,7 +104,7 @@
         ]
       },
       {
-        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/Sdk/Sdk.targets,
+        ProjectFilePath: {TempPath}sdk-tests/{id}/.nuget/packages/azure.functions.sdk/{azure-functions-sdk-version}/sdk/Sdk.targets,
         Imports: [
           {
             Path: $(MSBuildThisFileDirectory)../targets/inner/Azure.Functions.Sdk.Inner.targets,

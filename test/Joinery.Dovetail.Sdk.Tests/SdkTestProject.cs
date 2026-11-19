@@ -80,8 +80,15 @@ public sealed class SdkTestProject : IDisposable
         // Joinery.Dovetail.Sdk.Aspire.AppHost imports Aspire.AppHost.Sdk at the version Directory.Packages.props pins, so its path is
         // a placeholder too (as the version is in Config's evaluation serializer): an Aspire update doesn't rewrite the snapshot.
         _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @"/aspire\.apphost\.sdk/[^/]+/", "/aspire.apphost.sdk/{aspire-apphost-sdk-version}/"));
-        // Likewise Joinery.Dovetail.Sdk.Azure.Functions and Azure.Functions.Sdk.
-        _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @"/azure\.functions\.sdk/[^/]+/", "/azure.functions.sdk/{azure-functions-sdk-version}/"));
+        // Likewise Joinery.Dovetail.Sdk.Azure.Functions and Azure.Functions.Sdk. That package keeps its MSBuild SDK in a lower-case sdk/
+        // folder, which a case-insensitive file system (macOS) reports as the Sdk/ MSBuild asked for: normalize it to the package's own name.
+        _settings.ScrubLinesWithReplace(
+            z => System.Text.RegularExpressions.Regex.Replace(
+                System.Text.RegularExpressions.Regex.Replace(z, @"/azure\.functions\.sdk/[^/]+/(?i:sdk)/", "/azure.functions.sdk/{azure-functions-sdk-version}/sdk/"),
+                @"/azure\.functions\.sdk/(?!\{azure-functions-sdk-version\}/)[^/]+/",
+                "/azure.functions.sdk/{azure-functions-sdk-version}/"
+            )
+        );
 
         var version = Config.DotnetSdkVersion;
 
