@@ -70,6 +70,8 @@ internal static class Config
             ["_DovetailMirrorAzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
             // Azure.Functions.Sdk writes its own version too (Azure.Functions.Sdk.Version.props).
             ["AzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
+            // The isolated worker the Functions SDK adds, written into its Packages.props the same way.
+            ["DovetailAzureFunctionsWorkerVersion"] = "{azure-functions-worker-version}",
             // The ModularPipelines Joinery.Dovetail.Sdk.ModularPipelines adds, written into its Packages.props the same way.
             ["DovetailModularPipelinesVersion"] = "{modularpipelines-version}",
         }.ToFrozenDictionary();

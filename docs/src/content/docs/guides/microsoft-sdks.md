@@ -80,8 +80,11 @@ Dovetail's host detection has no Aspire host yet, so an AppHost is detected as a
 
 `Azure.Functions.Sdk` is the MSBuild SDK for Azure Functions isolated worker applications, and like the Aspire SDK it comes from NuGet.
 `Joinery.Dovetail.Sdk.Azure.Functions` imports it at the version it was built against, unless `DovetailAzureFunctionsSdkVersion` says
-otherwise (as an environment variable or on the command line, as above). Reference `Microsoft.Azure.Functions.Worker` and your trigger
-extensions yourself, as `Azure.Functions.Sdk` asks:
+otherwise (as an environment variable or on the command line, as above).
+
+`Azure.Functions.Sdk` leaves `Microsoft.Azure.Functions.Worker`, the isolated worker every Functions application needs, to the
+application. `Joinery.Dovetail.Sdk.Azure.Functions` adds it for you, as an implicit package reference at the version it was built
+against (`DovetailAzureFunctionsWorkerVersion` picks another), so a project only references its trigger and binding extensions:
 
 ```xml
 <Project Sdk="Joinery.Dovetail.Sdk.Azure.Functions">
@@ -89,11 +92,14 @@ extensions yourself, as `Azure.Functions.Sdk` asks:
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.1" />
   </ItemGroup>
 </Project>
 ```
+
+A project that references `Microsoft.Azure.Functions.Worker` itself keeps its own reference and version, and the SDK adds nothing. Do
+that when an extension needs a newer worker than the SDK's, since NuGet reports a package downgrade (`NU1605`) for the implicit one. With
+central package management, a `PackageVersion` for the worker in `Directory.Packages.props` sets the version of the implicit reference.
 
 `Azure.Functions.Sdk` brings `Microsoft.NET.Sdk.Worker`, so the application is a generic host (`HostApplication`). It also gets the
 `FunctionsApplication` host, whose `ConfigureDovetail` extends the `FunctionsApplicationBuilder` that `FunctionsApplication.CreateBuilder`

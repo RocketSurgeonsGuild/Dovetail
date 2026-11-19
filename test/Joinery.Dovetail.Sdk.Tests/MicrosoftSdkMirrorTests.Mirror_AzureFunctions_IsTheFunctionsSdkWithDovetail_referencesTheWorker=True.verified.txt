@@ -15,6 +15,7 @@
       CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
       DefineConstants: TRACE;DEBUG,
       DovetailAzureFunctionsSdkVersion: {azure-functions-sdk-version},
+      DovetailAzureFunctionsWorkerVersion: {azure-functions-worker-version},
       DovetailEnableAspire: false,
       DovetailEnableAspireTesting: false,
       DovetailEnableAutofac: false,

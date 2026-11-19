@@ -48,21 +48,25 @@ public class MicrosoftSdkMirrorTests(string targetFramework)
 
     /// <summary>
     /// An Azure Functions isolated worker: Azure.Functions.Sdk comes from NuGet, at the version Directory.Packages.props pins, and brings
-    /// Microsoft.NET.Sdk.Worker. The application references Microsoft.Azure.Functions.Worker itself (Azure.Functions.Sdk asks for it, AZFW0111),
-    /// and gets the generic host and the FunctionsApplication host, whose <c>ConfigureDovetail</c> extends
-    /// <c>FunctionsApplicationBuilder</c>: Program.cs calls it, so the build proves the entry point and its helper compile.
+    /// Microsoft.NET.Sdk.Worker. The mirror adds Microsoft.Azure.Functions.Worker (implicitly, at the pinned version) unless the project
+    /// references it itself, which then keeps its own reference. The application gets the generic host and the FunctionsApplication host,
+    /// whose <c>ConfigureDovetail</c> extends <c>FunctionsApplicationBuilder</c>: Program.cs calls it, so the build proves the entry point and
+    /// its helper compile.
     /// </summary>
     [Test]
-    public async Task Mirror_AzureFunctions_IsTheFunctionsSdkWithDovetail()
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task Mirror_AzureFunctions_IsTheFunctionsSdkWithDovetail(bool referencesTheWorker)
     {
         using var project = new SdkTestProject();
+        var app = ProjectCreator.Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Joinery.Dovetail.Sdk.Azure.Functions");
+        if (referencesTheWorker)
+        {
+            app.ItemPackageReference("Microsoft.Azure.Functions.Worker", Config.CentralPackageVersion("Microsoft.Azure.Functions.Worker", "net10.0"));
+        }
+
         project
-           .AddProject(
-                "app/app.csproj",
-                ProjectCreator
-                   .Templates.SdkCsproj(targetFramework: targetFramework, sdk: "Joinery.Dovetail.Sdk.Azure.Functions")
-                   .ItemPackageReference("Microsoft.Azure.Functions.Worker", Config.CentralPackageVersion("Microsoft.Azure.Functions.Worker", "net10.0"))
-            )
+           .AddProject("app/app.csproj", app)
            .AddFile(
                 "app/Program.cs",
                 """

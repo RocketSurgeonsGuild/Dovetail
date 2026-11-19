@@ -6,4 +6,8 @@
     <DovetailMicrosoftSdkVersionProperty>DovetailAzureFunctionsSdkVersion</DovetailMicrosoftSdkVersionProperty>
     <PackageTags>$(PackageTags);azure;azure-functions;functions;dotnet-isolated</PackageTags>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- The isolated worker the SDK adds to every Functions application (see Sdk/Sdk.props), at the version Directory.Packages.props pins. -->
+    <DovetailMirrorPackage Include="Microsoft.Azure.Functions.Worker" Property="DovetailAzureFunctionsWorkerVersion" />
+  </ItemGroup>
 </Project>

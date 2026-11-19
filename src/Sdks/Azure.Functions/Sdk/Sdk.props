@@ -17,11 +17,25 @@
       UsingMicrosoftNETSdkWorker, and the FunctionsApplication host (FunctionsApplicationBuilder) from UsingAzureFunctionsSdk. A project that
       already gets Joinery.Dovetail.Sdk (from a Directory.Build.props, say) does not get it twice.
 
+      The SDK also adds Microsoft.Azure.Functions.Worker, the isolated worker every Functions application needs (see below).
+
       Azure.Functions.Sdk restores and builds a project of its own for the Functions host's binding extensions (azure_functions.g.csproj, under
       obj/). That project names Azure.Functions.Sdk itself and imports no Directory.Build.props, so Dovetail never reaches it.
   -->
   <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
   <Import Project="Sdk.props" Sdk="Azure.Functions.Sdk" Version="$(DovetailAzureFunctionsSdkVersion)" />
+
+  <!--
+      Microsoft.Azure.Functions.Worker, which Azure.Functions.Sdk leaves to the application (AZFW0111 when it is missing), as an implicit
+      package reference at DovetailAzureFunctionsWorkerVersion: the version this SDK was built against, unless the application sets another
+      first. Declared ahead of the project, so Joinery.Dovetail.Sdk's ImplicitPackageReferences.targets (registered through
+      CustomAfterMicrosoftCommonTargets, after the whole project) turns it into a PackageReference, unless the project references
+      Microsoft.Azure.Functions.Worker itself: then its own reference and version win, which is how to move to a newer worker that a
+      binding extension needs.
+  -->
+  <ItemGroup>
+    <DovetailSdkImplicitPackageReference Include="Microsoft.Azure.Functions.Worker" Version="$(DovetailAzureFunctionsWorkerVersion)" />
+  </ItemGroup>
 
   <!--
       Joinery.Dovetail.Sdk registers its host detection in CustomAfterMicrosoftCommonTargets: when that is already there, a
