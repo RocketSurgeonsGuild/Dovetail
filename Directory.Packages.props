@@ -28,10 +28,10 @@
     <PackageVersion Include="Sourcy.Git" Version="1.1.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
     <!-- The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost chains (an MSBuild SDK, not a package reference). Pinned here for the SDK's generated Packages.props. -->
-    <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.6.5" />
-    <PackageVersion Include="Aspire.Hosting" Version="13.6.5" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
+    <PackageVersion Include="Aspire.AppHost.Sdk" Version="17.0.0" />
+    <PackageVersion Include="Aspire.Hosting" Version="17.0.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="17.0.0" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="17.0.0" />
     <!-- The Functions SDK Joinery.Dovetail.Sdk.Azure.Functions chains (an MSBuild SDK, not a package reference). Pinned here for the SDK's generated Packages.props. -->
     <PackageVersion Include="Azure.Functions.Sdk" Version="1.1.0" />
     <!-- The isolated worker: FunctionsApplicationBuilder, the host Joinery.Dovetail.Hosting configures (Joinery.Dovetail.Hosting.AzureFunctions.Tests). -->
@@ -76,12 +76,12 @@
     <!-- The build host (build/Build.cs) references it for its module scan; the Joinery.Dovetail.Sdk.Tests scaffolds reference it to prove Dovetail seeds Specular's provider without depending on Specular. -->
     <PackageVersion Include="Specular" Version="0.4.1" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="Microsoft.Playwright" Version="1.65.0" />
+    <PackageVersion Include="Microsoft.Playwright" Version="1.65.1" />
     <PackageVersion Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" Version="11.0.1" />
-    <PackageVersion Include="TUnit" Version="1.86.6" />
-    <PackageVersion Include="TUnit.Mocks" Version="1.86.6" />
+    <PackageVersion Include="TUnit" Version="1.87.0" />
+    <PackageVersion Include="TUnit.Mocks" Version="1.87.0" />
     <PackageVersion Include="TUnit.Assertions.Should" Version="1.85.0-beta" />
-    <PackageVersion Include="Verify.TUnit" Version="33.5.0" />
+    <PackageVersion Include="Verify.TUnit" Version="33.6.0" />
     <PackageVersion Include="Verify.AngleSharp" Version="5.1.2" />
     <PackageVersion Include="Verify.Playwright" Version="3.3.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
