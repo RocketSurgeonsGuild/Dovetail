@@ -15,7 +15,7 @@ Adds support for rendering an `Dovetail.IDovetailContext` 's resolved joints as 
 - Name: `ToMermaidJointFlowDiagram(IDovetailContext, IEnumerable<DovetailCategory>)`
 - Modifiers: `extension`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cdc3faae2d21ed65b085ade9f74e0b3b6e412754/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L153)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L153)
 
 ```csharp
 public static class DovetailContextDiagram
@@ -41,7 +41,7 @@ public static class DovetailContextDiagram
 - Name: `ToMermaidJointFlowDiagram(DovetailContextBuilder, IEnumerable<DovetailCategory>)`
 - Modifiers: `extension`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cdc3faae2d21ed65b085ade9f74e0b3b6e412754/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L177)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L177)
 
 ```csharp
 public static class DovetailContextDiagram
@@ -68,7 +68,7 @@ public static class DovetailContextDiagram
 - Name: `ToMermaidJointFlowDiagramMarkdown(IDovetailContext, IEnumerable<DovetailCategory>)`
 - Modifiers: `extension`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cdc3faae2d21ed65b085ade9f74e0b3b6e412754/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L162-L166)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L162-L166)
 
 ```csharp
 public static class DovetailContextDiagram
@@ -94,7 +94,7 @@ public static class DovetailContextDiagram
 - Name: `ToMermaidJointFlowDiagramMarkdown(DovetailContextBuilder, IEnumerable<DovetailCategory>)`
 - Modifiers: `extension`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cdc3faae2d21ed65b085ade9f74e0b3b6e412754/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L186-L190)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs#L186-L190)
 
 ```csharp
 public static class DovetailContextDiagram

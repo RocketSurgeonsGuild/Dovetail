@@ -13,7 +13,7 @@ An attribute that ensures the convention runs before the given [IDovetailJoint](
 ## BeforeJointAttribute(Type)
 
 - Name: `Constructor(Type)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cdc3faae2d21ed65b085ade9f74e0b3b6e412754/src/Joinery.Dovetail/Attributes/BeforeJointAttribute.cs#L15-L21)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail/Attributes/BeforeJointAttribute.cs#L15-L21)
 
 An attribute that ensures the convention runs before the given [IDovetailJoint](/Dovetail/api/joinery.dovetail/idovetailjoint.md)
 

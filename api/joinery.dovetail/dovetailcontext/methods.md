@@ -15,7 +15,7 @@ Base convention context that allows for stashing items in index keys Implements 
 - Name: `FromAsync(DovetailContextBuilder, CancellationToken)`
 - Modifiers: `static`
 - Returns: `ValueTask<IDovetailContext>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cdc3faae2d21ed65b085ade9f74e0b3b6e412754/src/Joinery.Dovetail/DovetailContext.cs#L24-L25)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail/DovetailContext.cs#L24-L25)
 
 Create a context from a given builder
 

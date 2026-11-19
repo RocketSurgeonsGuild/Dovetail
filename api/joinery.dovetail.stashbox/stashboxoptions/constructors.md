@@ -12,7 +12,7 @@ Options for building the Stashbox Container
 ## StashboxOptions
 
 - Name: `Constructor`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cdc3faae2d21ed65b085ade9f74e0b3b6e412754/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs#L25)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs#L25)
 
 ```csharp
 public class StashboxOptions
