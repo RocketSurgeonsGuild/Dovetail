@@ -1,9 +1,9 @@
 # Joinery.Dovetail
 
 - Package: `Joinery.Dovetail`
-- Version: `0.7.2-pr.11`
+- Version: `0.7.2-pr.12`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail)
 - NuGet: [Joinery.Dovetail](https://www.nuget.org/packages/Joinery.Dovetail)
 
 ## Namespaces

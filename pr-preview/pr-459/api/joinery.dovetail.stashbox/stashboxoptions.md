@@ -2,10 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/pr-preview/pr-459/api/joinery.dovetail.stashbox.md)
-- Version: `0.7.2-pr.11`
+- Version: `0.7.2-pr.12`
 - Namespace: `Joinery.Dovetail.Stashbox`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
 
 Options for building the Stashbox Container
 

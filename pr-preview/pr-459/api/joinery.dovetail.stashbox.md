@@ -1,9 +1,9 @@
 # Joinery.Dovetail.Stashbox
 
 - Package: `Joinery.Dovetail.Stashbox`
-- Version: `0.7.2-pr.11`
+- Version: `0.7.2-pr.12`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail.Stashbox)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail.Stashbox)
 - NuGet: [Joinery.Dovetail.Stashbox](https://www.nuget.org/packages/Joinery.Dovetail.Stashbox)
 
 ## Namespaces

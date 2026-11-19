@@ -14,7 +14,7 @@ Represents a metadata item for a Dovetail joint, including its name, host type, 
 - Name: `AssemblyName`
 - Modifiers: `get; init`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 
 The assembly name of the joint.
 
@@ -29,7 +29,7 @@ public string AssemblyName { get; init; }
 - Name: `Category`
 - Modifiers: `get; init`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 
 The category of the joint.
 
@@ -44,7 +44,7 @@ public string Category { get; init; }
 - Name: `ConnectsToJointTypes`
 - Modifiers: `get; init`
 - Returns: `ImmutableList<string>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 
 The types of the joint that this joint connects to.
 
@@ -59,7 +59,7 @@ public ImmutableList<string> ConnectsToJointTypes { get; init; }
 - Name: `Dependencies`
 - Modifiers: `get; init`
 - Returns: `ImmutableList<DovetailDiagnosticMetadataJointDependency>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 
 The dependencies of the joint.
 
@@ -74,7 +74,7 @@ public ImmutableList<DovetailDiagnosticMetadataJointDependency> Dependencies { g
 - Name: `HostType`
 - Modifiers: `get; init`
 - Returns: [DovetailHostType](/Dovetail/pr-preview/pr-459/api/joinery.dovetail/dovetailhosttype.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 
 The host type of the joint.
 
@@ -89,7 +89,7 @@ public DovetailHostType HostType { get; init; }
 - Name: `ImplementsJointTypes`
 - Modifiers: `get; init`
 - Returns: `ImmutableList<string>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 
 The types of the joint.
 
@@ -104,7 +104,7 @@ public ImmutableList<string> ImplementsJointTypes { get; init; }
 - Name: `JointName`
 - Modifiers: `get; init`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJoint.cs)
 
 The name of the joint.
 

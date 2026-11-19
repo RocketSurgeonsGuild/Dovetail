@@ -14,7 +14,7 @@ Container for conventions
 - Name: `Category`
 - Modifiers: `get`
 - Returns: [DovetailCategory](/Dovetail/pr-preview/pr-459/api/joinery.dovetail/dovetailcategory.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L119)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L119)
 
 The category of the convention
 
@@ -29,7 +29,7 @@ public DovetailCategory Category { get; }
 - Name: `Dependencies`
 - Modifiers: `get; set`
 - Returns: [IReadOnlyCollection<IDovetailDependency>](/Dovetail/pr-preview/pr-459/api/joinery.dovetail/idovetaildependency.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs)
 
 The dependencies
 
@@ -44,7 +44,7 @@ public IReadOnlyCollection<IDovetailDependency> Dependencies { get; set; }
 - Name: `HostType`
 - Modifiers: `get`
 - Returns: [DovetailHostType](/Dovetail/pr-preview/pr-459/api/joinery.dovetail/dovetailhosttype.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L114)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L114)
 
 The host type of the convention
 
@@ -59,7 +59,7 @@ public DovetailHostType HostType { get; }
 - Name: `Joint`
 - Modifiers: `get`
 - Returns: [IDovetailJoint](/Dovetail/pr-preview/pr-459/api/joinery.dovetail/idovetailjoint.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L98)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L98)
 
 The convention
 

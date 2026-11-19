@@ -15,7 +15,7 @@ Loads configuration files that the Dovetail SDK embedded into an assembly as man
 - Name: `get_EmbeddedConfigurationAssembly(IDovetailContext)`
 - Modifiers: `static` `nullable`
 - Returns: `Assembly?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs#L26)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs#L26)
 
 ```csharp
 public static class DovetailEmbeddedConfiguration
@@ -40,7 +40,7 @@ public static class DovetailEmbeddedConfiguration
 - Name: `GetConventionalFileNames(IDovetailContext, ReadOnlySpan<string>)`
 - Modifiers: `static`
 - Returns: `IReadOnlyList<string>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs#L68-L80)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs#L68-L80)
 
 Gets the conventional configuration file names, lowest precedence first: `appsettings`, the application name, each of those qualified by the environment name, and each of those qualified by `local`.
 
@@ -79,7 +79,7 @@ public static class DovetailEmbeddedConfiguration
 - Name: `OpenResource(Assembly, ReadOnlySpan<string>)`
 - Modifiers: `static` `nullable`
 - Returns: `Stream?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs#L39-L55)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs#L39-L55)
 
 Opens the first embedded resource that matches one of `fileNames`, in order. A resource matches when its name is the file name itself (the Dovetail SDK's naming) or ends with `.{fileName}` (the default manifest naming of other tools).
 

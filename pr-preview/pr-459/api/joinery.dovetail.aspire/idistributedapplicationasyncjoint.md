@@ -2,10 +2,10 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Aspire](/Dovetail/pr-preview/pr-459/api/joinery.dovetail.aspire.md)
-- Version: `0.7.2-pr.11`
+- Version: `0.7.2-pr.12`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.a1990fe6695c5fa9e9c003a3a333f8ff361aa602/src/Joinery.Dovetail.Aspire/obj/Release/net10.0/IDistributedApplicationAsyncJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-459-merge.Sha.aab685a60ccddd799f0b5db0f9ac63cb44227cbd/src/Joinery.Dovetail.Aspire/obj/Release/net10.0/IDistributedApplicationAsyncJoint.cs)
 - Implements: `IDovetailJoint`
 
 Async part interface for DistributedApplication. Implements the `Infrastructure.IDovetailJoint`
