@@ -12,7 +12,7 @@ Options for building the DryIoc Container
 ## DryIocOptions
 
 - Name: `Constructor`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d6b0f8d96f8417678d91819460b242bed026e72e/src/Joinery.Dovetail.DryIoc/DryIocOptions.cs#L12)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.c5bb6c9e8f86c7f4f65638c0127e84cdbf96b00b/src/Joinery.Dovetail.DryIoc/DryIocOptions.cs#L12)
 
 ```csharp
 public class DryIocOptions
