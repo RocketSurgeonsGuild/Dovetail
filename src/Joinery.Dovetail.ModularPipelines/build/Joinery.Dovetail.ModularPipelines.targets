@@ -13,7 +13,7 @@
     Joinery.Dovetail.Sdk declares the same host itself (Joinery.Dovetail.HostDetection.targets), before NuGet imports this file, so the
     host is declared once. NuGet imports this file for a package reference; the repository's own projects that use the host (the
     sample and the tests) import it by path. DovetailModularPipelinesHost=false leaves the host out, for a project that wires Dovetail in
-    through DovetailPipelinePlugin or DovetailPipelineHelpers itself.
+    through DovetailPipelineHelpers itself.
   -->
   <ItemGroup Condition="'$(ImportDovetailAssembly)' == 'true' and '$(DovetailModularPipelinesHost)' != 'false' and @(DovetailHost->AnyHaveMetadataValue('Identity', 'ModularPipelines')) != 'true'">
     <DovetailHost

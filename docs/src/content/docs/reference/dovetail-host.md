@@ -51,7 +51,8 @@ the entry points call.
 Besides the one host above, an application on `net11.0` or later that references `ModularPipelines` gets the `ModularPipelines` host
 (`ModularPipelines.PipelineBuilder`, returning `ModularPipelines.IPipeline`, helper `DovetailPipelineHelpers`) and the
 `Joinery.Dovetail.ModularPipelines` package. `DovetailEnableModularPipelines=false` leaves out both, `DovetailModularPipelinesHost=false`
-the host alone. The package's own build targets then leave the host to the SDK, so it is declared once.
+the host alone. The package's own build targets then leave the host to the SDK, so it is declared once. `Joinery.Dovetail.Sdk.ModularPipelines`
+adds `ModularPipelines` itself, so its applications always get this host.
 
 An Uno application without `Hosting` has no host and gets a build warning. MAUI is matched first, because a MAUI application is also
 an `Exe`.

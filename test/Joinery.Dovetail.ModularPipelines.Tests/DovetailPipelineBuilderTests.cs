@@ -302,17 +302,4 @@ public class DovetailPipelineBuilderTests
 
         joint.Invoke(Any(), Is(pipeline)).WasCalled(Times.Once);
     }
-
-    [Test]
-    public async Task DovetailPipelinePlugin_AppliesTheJoints_WhenItIsAdded()
-    {
-        var plugin = new DovetailPipelinePlugin(DovetailContextBuilder.Create());
-        var builder = Pipeline.CreateBuilder().AddPlugin(plugin);
-
-        await plugin.Context.Should().NotBeNull();
-        await plugin.Context.Get<PipelineBuilder>().Should().BeSameReferenceAs(builder);
-        await using var pipeline = await builder.BuildAsync();
-        var plan = await pipeline.PlanAsync();
-        await plan.Modules.OfType<RecordedModule>().Count().Should().BeEqualTo(1);
-    }
 }

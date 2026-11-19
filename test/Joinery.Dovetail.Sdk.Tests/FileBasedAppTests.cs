@@ -152,8 +152,8 @@ public class FileBasedAppTests(string targetFramework)
     /// With the Dovetail SDK, a ModularPipelines build script gets the ModularPipelines host, its helper (emitted into the app by
     /// Joinery.Dovetail.Hosting) and Joinery.Dovetail.OpenTelemetry, whose joint calls <c>AddOpenTelemetry()</c>. That TryAdds an
     /// IConfiguration reading only the environment variables, which took the place of the pipeline configuration: the modules never saw
-    /// <c>appsettings.yaml</c>. The app names Microsoft.Extensions.Hosting itself: the version the SDK adds to a file-based app is the one
-    /// of its own build (10.x), older than the one ModularPipelines 4 needs.
+    /// <c>appsettings.yaml</c>. The app doesn't name Microsoft.Extensions.Hosting: the SDK adds the version pinned for its target framework,
+    /// 11.x for net11.0, which ModularPipelines 4 needs (the 10.x one was a downgrade, NU1605).
     /// </summary>
     [Test]
     public async Task FileBasedModularPipelinesApp_WithTheSdk_ReadsItsConfiguration()
@@ -165,7 +165,6 @@ public class FileBasedAppTests(string targetFramework)
             $$"""
             #:sdk Joinery.Dovetail.Sdk
             #:package ModularPipelines@{{Config.CentralPackageVersion("ModularPipelines", targetFramework)}}
-            #:package Microsoft.Extensions.Hosting@{{Config.CentralPackageVersion("Microsoft.Extensions.Hosting", targetFramework)}}
             #:property TargetFramework={{targetFramework}}
             #:property DovetailEnableYamlConfiguration=true
 

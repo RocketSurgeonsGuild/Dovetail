@@ -37,7 +37,8 @@ Pin the version in `global.json` under `msbuild-sdks`, or put it in the attribut
 | `Aspire.AppHost.Sdk`                  | `Joinery.Dovetail.Sdk.Aspire.AppHost`    | Aspire AppHost projects                               |
 
 `Joinery.Dovetail.Sdk.Console` is not a mirror: it is `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for
-[console applications](../../guides/console-apps/).
+[console applications](../../guides/console-apps/). Nor is `Joinery.Dovetail.Sdk.ModularPipelines`: it is `Joinery.Dovetail.Sdk` plus
+ModularPipelines, for [build pipelines](../../guides/modular-pipelines/) (`#:sdk Joinery.Dovetail.Sdk.ModularPipelines`).
 
 ## What a Dovetail SDK does
 

@@ -5,7 +5,7 @@ namespace Joinery.Dovetail.ModularPipelines.Tests;
 
 /// <summary>
 ///     What the build generates for ModularPipelines: the PipelineBuilder joint kind (in the package), the ConfigureDovetail entry
-///     points the package's DovetailHost writes into an application (this project), and the helper and plugin Joinery.Dovetail.Hosting
+///     points the package's DovetailHost writes into an application (this project), and the helper Joinery.Dovetail.Hosting
 ///     emits there. A change to any of them shows up here.
 /// </summary>
 public class GeneratedSurfaceTests
@@ -27,15 +27,14 @@ public class GeneratedSurfaceTests
     public Task ConfigureDovetail_EntryPoints() => Verify(Describe(typeof(GeneratedDovetailModularPipelinesExtensions)));
 
     /// <summary>
-    ///     The helper the entry points call and the plugin are Joinery.Dovetail.Hosting templates (DovetailPipelineHelpers.cs.template),
-    ///     emitted into the application rather than compiled into the package.
+    ///     The helper the entry points call is a Joinery.Dovetail.Hosting template (DovetailPipelineHelpers.cs.template), emitted into
+    ///     the application rather than compiled into the package.
     /// </summary>
     [Test]
     public async Task PipelineHelpers_AreEmittedIntoTheApplication()
     {
         await typeof(DovetailPipelineHelpers).Assembly.Should().BeSameReferenceAs(typeof(GeneratedSurfaceTests).Assembly);
-        await typeof(DovetailPipelinePlugin).Assembly.Should().BeSameReferenceAs(typeof(GeneratedSurfaceTests).Assembly);
-        await Verify(Describe(typeof(DovetailPipelineHelpers), typeof(DovetailPipelinePlugin)));
+        await Verify(Describe(typeof(DovetailPipelineHelpers)));
     }
 
     private static IEnumerable<string> Describe(params Type[] types) =>

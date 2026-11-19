@@ -11,14 +11,39 @@ host. Joints add the pipeline's modules, options and services, and the pipeline 
 
 ## Getting the package
 
-With `Joinery.Dovetail.Sdk`, a project that references `ModularPipelines` on `net11.0` or later gets `Joinery.Dovetail.ModularPipelines`
-added for it, and an application gets the ModularPipelines host declared by the SDK (`DovetailEnableModularPipelines=false` opts out of
-both). Without the SDK, reference the package yourself, next to `ModularPipelines`: its build targets declare the host.
+A build script names one SDK, `Joinery.Dovetail.Sdk.ModularPipelines`, and nothing else:
+
+```csharp
+#:sdk Joinery.Dovetail.Sdk.ModularPipelines
+
+using Build;
+
+await using var pipeline = await Pipeline.CreateBuilder(args).ConfigureDovetail();
+await pipeline.RunAsync();
+```
+
+It chains `Joinery.Dovetail.Sdk` and adds `ModularPipelines` itself, at the version the SDK was built with
+(`DovetailModularPipelinesVersion` picks another; a project that references `ModularPipelines` keeps its own reference). A project file
+uses it the same way, `<Project Sdk="Joinery.Dovetail.Sdk.ModularPipelines">`, and needs no `OutputType`: the SDK makes it an `Exe`.
+Pin its version in `global.json` under `msbuild-sdks`, as for the other Dovetail SDKs.
+
+With `Joinery.Dovetail.Sdk` alone, a project that references `ModularPipelines` on `net11.0` or later gets the same: the SDK adds
+`Joinery.Dovetail.ModularPipelines` and `ModularPipelines.OpenTelemetry`, and declares the ModularPipelines host for an application
+(`DovetailEnableModularPipelines=false` opts out of all of it). Without either SDK, reference `Joinery.Dovetail.ModularPipelines`
+yourself, next to `ModularPipelines`: its build targets declare the host.
 
 `Joinery.Dovetail.ModularPipelines` holds the `PipelineBuilder` joint kind (`IPipelineBuilderJoint`, `IPipelineBuilderAsyncJoint`), which a
-library of joints references. The code the host's entry points call, `DovetailPipelineHelpers`, and `DovetailPipelinePlugin` are not
-in it: `Joinery.Dovetail.Hosting`, which the package depends on, emits them into the application, as it does the helpers of every other
-host, once the application references `ModularPipelines` and `Joinery.Dovetail.ModularPipelines`. They are internal to the application.
+library of joints references. The code the host's entry points call, `DovetailPipelineHelpers`, is not in it: `Joinery.Dovetail.Hosting`,
+which the package depends on, emits it into the application, as it does the helpers of every other host, once the application references
+`ModularPipelines` and `Joinery.Dovetail.ModularPipelines`. It is internal to the application.
+
+## OpenTelemetry
+
+`ModularPipelines.OpenTelemetry` traces and measures a pipeline's modules and commands. The SDK adds it next to `ModularPipelines`, at
+the same version (the package pins `ModularPipelines` to its own), and `Joinery.Dovetail.Hosting` emits a `PipelineBuilder` joint into the
+application that calls its `AddOpenTelemetry()`. Exporting is up to the application, as for the rest of its OpenTelemetry: an
+`IOpenTelemetryJoint`, or a `PipelineBuilder` joint that calls `AddOpenTelemetry(z => z.AddOtlpExporter())` itself.
+`DovetailEnableOpenTelemetry=false` leaves the package and the joint out.
 
 ## Building the pipeline
 
@@ -87,17 +112,3 @@ order them against the application's.
 
 Add modules with `AddModule<TModule>()`: it registers the module by its type, which is what keeps the pipeline trimmable and Native AOT
 compatible. Dovetail finds the joints at build time, so nothing is scanned at run time either.
-
-## Without ConfigureDovetail
-
-`DovetailPipelinePlugin` applies the same joints as a ModularPipelines plugin, for a project that builds the pipeline itself:
-
-```csharp
-var builder = Pipeline.CreateBuilder(args).AddPlugin(new DovetailPipelinePlugin(DovetailContextBuilder.Create()));
-builder.AddModule<ReleaseModule>();
-await builder.RunAsync();
-```
-
-The joints run when the plugin is added, so what the project adds afterwards comes after them. The `HostCreated` joints do not run, as
-the plugin never sees the built pipeline. `DovetailContextBuilder.Create()` is generated alongside a host's entry points, so a project
-that uses the plugin keeps the host (`DovetailModularPipelinesHost=false` leaves it out), even if it never calls `ConfigureDovetail`.

@@ -1,0 +1,40 @@
+<Project>
+  <!--
+      Joinery.Dovetail.Sdk.ModularPipelines is applied the way Joinery.Dovetail.Sdk is: as a project's only SDK
+      (<Project Sdk="Joinery.Dovetail.Sdk.ModularPipelines">, or a file-based build script's only #:sdk directive), as
+      <Sdk Name="Joinery.Dovetail.Sdk.ModularPipelines" Version="..." /> next to another SDK, or once for every project in a
+      Directory.Build.props, with its version pinned in global.json under msbuild-sdks. It chains Joinery.Dovetail.Sdk, so it is the only
+      SDK entry a build pipeline needs.
+
+      What it adds is ModularPipelines itself, as an implicit package reference. Joinery.Dovetail.Sdk's host detection treats it as a
+      reference to ModularPipelines, so the application also gets Joinery.Dovetail.ModularPipelines (the PipelineBuilder joint),
+      ModularPipelines.OpenTelemetry, and the ModularPipelines host: ConfigureDovetail on PipelineBuilder. ModularPipelines 4 targets
+      net11.0 only. See docs/src/content/docs/guides/modular-pipelines.md.
+
+      A project that references ModularPipelines itself keeps its own reference (and version); DovetailModularPipelinesVersion picks
+      another version for the implicit one. DovetailEnableModularPipelines=false turns all of it off (the SDK is then Joinery.Dovetail.Sdk).
+  -->
+
+  <!-- The versions of ModularPipelines and of the Dovetail SDK it chains, generated when the SDK is packed. -->
+  <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
+
+  <PropertyGroup>
+    <!-- A project (or a Directory.Build.props below the SDK entry) that sets it first still wins. -->
+    <OutputType Condition="'$(OutputType)' == ''">Exe</OutputType>
+  </PropertyGroup>
+
+  <!--
+      Declared here, ahead of the project, so Joinery.Dovetail.HostDetection.targets (registered through CustomAfterMicrosoftCommonTargets,
+      after the whole project) sees it, and ImplicitPackageReferences.targets turns it into a PackageReference unless the project
+      references ModularPipelines itself.
+  -->
+  <ItemGroup>
+    <DovetailSdkImplicitPackageReference Include="ModularPipelines" Version="$(DovetailModularPipelinesVersion)" Condition="'$(DovetailEnableModularPipelines)' != 'false'" />
+  </ItemGroup>
+
+  <!--
+      The version of the import wins over a Joinery.Dovetail.Sdk entry in global.json. To chain another version, set
+      DovetailModularPipelinesSdkDovetailSdkVersion before this file is imported.
+  -->
+  <Import Project="Sdk.props" Sdk="Joinery.Dovetail.Sdk" Version="$(DovetailModularPipelinesSdkDovetailSdkVersion)" />
+</Project>

@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageDescription>MSBuild SDK for Dovetail build pipelines: chains Joinery.Dovetail.Sdk and adds ModularPipelines, so a build script with #:sdk Joinery.Dovetail.Sdk.ModularPipelines gets ConfigureDovetail on PipelineBuilder, the pipeline's joints and OpenTelemetry with nothing else to reference</PackageDescription>
+    <PackageTags>$(PackageTags);modularpipelines;modular-pipelines;pipeline;build-automation;ci;file-based-apps</PackageTags>
+  </PropertyGroup>
+
+  <!--
+      Writes Sdk/Packages.props into the package: DovetailModularPipelinesSdkDovetailSdkVersion, the version of Joinery.Dovetail.Sdk that
+      Sdk/Sdk.props chains, which is this SDK's own version (every Dovetail package ships at one version), and
+      DovetailModularPipelinesVersion, the version of ModularPipelines that Directory.Packages.props pins. An application can set either
+      first to choose another. As in Joinery.Dovetail.Sdk, the versions are only known when the SDK is packed, so the file is generated
+      then rather than kept in the repository.
+  -->
+  <Target Name="_DovetailModularPipelinesGeneratePackagesProps" BeforeTargets="_GetPackageFiles;Pack">
+    <PropertyGroup>
+      <_DovetailModularPipelinesVersion>@(PackageVersion->WithMetadataValue('Identity', 'ModularPipelines')->'%(Version)')</_DovetailModularPipelinesVersion>
+      <_DovetailModularPipelinesPackagesProps>$(IntermediateOutputPath)Packages.props</_DovetailModularPipelinesPackagesProps>
+    </PropertyGroup>
+    <Error Condition="'$(_DovetailModularPipelinesVersion)' == ''" Text="Directory.Packages.props pins no version of ModularPipelines, which Joinery.Dovetail.Sdk.ModularPipelines adds to an application." />
+    <ItemGroup>
+      <!-- %24 is $ and %27 is ': the file reads the consumer's properties, which must not be expanded here -->
+      <_DovetailModularPipelinesPackagesPropsLine Include="&lt;Project&gt;" />
+      <_DovetailModularPipelinesPackagesPropsLine Include="&lt;!-- Generated when Joinery.Dovetail.Sdk.ModularPipelines is packed. Each version is only set when the application has not set it already. --&gt;" />
+      <_DovetailModularPipelinesPackagesPropsLine Include="&lt;PropertyGroup&gt;" />
+      <_DovetailModularPipelinesPackagesPropsLine Include="&lt;DovetailModularPipelinesSdkDovetailSdkVersion Condition=&quot;%27%24(DovetailModularPipelinesSdkDovetailSdkVersion)%27 == %27%27&quot;&gt;$(Version)&lt;/DovetailModularPipelinesSdkDovetailSdkVersion&gt;" />
+      <_DovetailModularPipelinesPackagesPropsLine Include="&lt;DovetailModularPipelinesVersion Condition=&quot;%27%24(DovetailModularPipelinesVersion)%27 == %27%27&quot;&gt;$(_DovetailModularPipelinesVersion)&lt;/DovetailModularPipelinesVersion&gt;" />
+      <_DovetailModularPipelinesPackagesPropsLine Include="&lt;/PropertyGroup&gt;" />
+      <_DovetailModularPipelinesPackagesPropsLine Include="&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_DovetailModularPipelinesPackagesProps)" Lines="@(_DovetailModularPipelinesPackagesPropsLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <None Include="$(_DovetailModularPipelinesPackagesProps)" Pack="true" PackagePath="Sdk" />
+      <FileWrites Include="$(_DovetailModularPipelinesPackagesProps)" />
+    </ItemGroup>
+  </Target>
+</Project>

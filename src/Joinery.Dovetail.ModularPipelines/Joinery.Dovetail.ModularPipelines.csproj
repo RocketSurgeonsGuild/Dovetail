@@ -16,9 +16,9 @@
     <ItemGroup>
         <ProjectReference Include="..\Joinery.Dovetail\Joinery.Dovetail.csproj" />
         <!--
-            The helper the generated ConfigureDovetail entry points call (DovetailPipelineHelpers) and DovetailPipelinePlugin are
-            Joinery.Dovetail.Hosting templates, emitted into the application that references ModularPipelines and this package. A
-            dependency, so a project that references only this package gets them too: its buildTransitive targets reach that project.
+            The helper the generated ConfigureDovetail entry points call (DovetailPipelineHelpers) is a Joinery.Dovetail.Hosting
+            template, emitted into the application that references ModularPipelines and this package. A dependency, so a project that
+            references only this package gets it too: its buildTransitive targets reach that project.
         -->
         <ProjectReference Include="..\Joinery.Dovetail.Hosting\Joinery.Dovetail.Hosting.csproj" />
         <DovetailJoint Include="PipelineBuilder" ParameterType="global::ModularPipelines.PipelineBuilder" ParameterName="builder" />

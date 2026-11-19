@@ -330,8 +330,8 @@ public class HostingHelperTests(string targetFramework)
 
     /// <summary>
     ///     The Dovetail SDK declares the ModularPipelines host for an application that references ModularPipelines, and adds
-    ///     Joinery.Dovetail.ModularPipelines, through which Joinery.Dovetail.Hosting emits the helper its entry points call. Building the
-    ///     application proves the helper and the entry points compile together.
+    ///     Joinery.Dovetail.ModularPipelines, through which Joinery.Dovetail.Hosting emits the helper its entry points call, and
+    ///     ModularPipelines.OpenTelemetry, with the joint that turns it on. Building the application proves they compile together.
     /// </summary>
     [Test]
     public async Task Sdk_ModularPipelines_DeclaresTheHost_AndEmitsThePipelineHelpers()
@@ -339,13 +339,26 @@ public class HostingHelperTests(string targetFramework)
         Skip.When(targetFramework != "net11.0", "ModularPipelines 4 targets net11.0 only.");
         using var project = CreateSdkApplication(app => WithModularPipelines(app));
 
-        await ( await BuildAndReadHelpers(project) ).Should().Contain("DovetailPipelineHelpers");
+        var helpers = await BuildAndReadHelpers(project);
+        await helpers.Should().Contain("DovetailPipelineHelpers");
+        await helpers.Should().Contain("DovetailModularPipelinesOpenTelemetryJoint");
         await GeneratedFiles(project, "DovetailHost.*.g.cs").Should().Contain("DovetailHost.ModularPipelines.g.cs");
+    }
+
+    [Test]
+    public async Task Sdk_ModularPipelines_DovetailEnableOpenTelemetryFalse_LeavesModularPipelinesOpenTelemetryOut()
+    {
+        Skip.When(targetFramework != "net11.0", "ModularPipelines 4 targets net11.0 only.");
+        using var project = CreateSdkApplication(app => WithModularPipelines(app).Property("DovetailEnableOpenTelemetry", "false"));
+
+        var helpers = await BuildAndReadHelpers(project);
+        await helpers.Should().Contain("DovetailPipelineHelpers");
+        await helpers.Should().NotContain("DovetailModularPipelinesOpenTelemetryJoint");
     }
 
     /// <summary>
     ///     <c>DovetailModularPipelinesHost=false</c> leaves the entry points out, for an application that wires Dovetail in through
-    ///     <c>DovetailPipelinePlugin</c> or <c>DovetailPipelineHelpers</c> itself; those are still emitted.
+    ///     <c>DovetailPipelineHelpers</c> itself, which is still emitted.
     /// </summary>
     [Test]
     public async Task Sdk_ModularPipelines_DovetailModularPipelinesHostFalse_LeavesTheEntryPointsOut()
