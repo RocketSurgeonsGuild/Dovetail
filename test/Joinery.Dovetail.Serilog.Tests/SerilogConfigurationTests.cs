@@ -209,7 +209,7 @@ public class SerilogConfigurationTests() : LoggerTest<TestRecord>(TestRecord.Cre
     {
         var exception = await ( (Func<Task>)( async () => { using var host = await BuildAsync(new Dictionary<string, string?> { [key] = value, }); } ) ).Should().Throw<Exception>();
 
-        await Flatten(exception!).Should().Contain(inner => inner.Message.Contains(key, StringComparison.Ordinal) && inner.Message.Contains("not a Serilog level", StringComparison.Ordinal));
+        await Flatten(exception).Should().Contain(inner => inner.Message.Contains(key, StringComparison.Ordinal) && inner.Message.Contains("not a Serilog level", StringComparison.Ordinal));
     }
 
     private static IReadOnlyList<string> MessagesOf(string sinkName) => [.. CapturingSink.Named(sinkName).Events.Select(logEvent => logEvent.MessageTemplate.Text)];

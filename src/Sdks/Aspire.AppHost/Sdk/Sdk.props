@@ -1,35 +1,41 @@
 <Project>
   <!--
-      Joinery.Dovetail.Sdk.Aspire.AppHost is Aspire.AppHost.Sdk with Dovetail. An Aspire AppHost swaps the one for the other:
+      Joinery.Dovetail.Sdk.Aspire.AppHost is an Aspire AppHost with Dovetail. An AppHost names it in place of Microsoft.NET.Sdk:
 
           <Project Sdk="Joinery.Dovetail.Sdk.Aspire.AppHost">
 
       with the version under msbuild-sdks in global.json, or in the attribute (Joinery.Dovetail.Sdk.Aspire.AppHost/1.2.3).
 
-      Aspire.AppHost.Sdk comes from NuGet, so it is imported at a version: DovetailAspireAppHostSdkVersion, which defaults to the version
-      this SDK was built against. Packages.props sets it, so it is imported first; set the property as an environment variable or a global
-      property (dotnet build -p:DovetailAspireAppHostSdkVersion=13.7.0) to use another Aspire. The version of the import wins over an
-      Aspire.AppHost.Sdk entry in global.json.
-
-      Then the same as the other mirrors: Aspire.AppHost.Sdk brings Microsoft.NET.Sdk (when nothing has yet) and sets IsAspireHost, and
-      Joinery.Dovetail.Sdk, chained after it, adds Dovetail alone. A project that already gets Joinery.Dovetail.Sdk (from a
-      Directory.Build.props, say) does not get it twice.
+      Since Aspire 17 a C# AppHost is Microsoft.NET.Sdk with the Aspire.Hosting.AppHost and Aspire.Hosting.Dotnet packages: the old
+      Aspire.AppHost.Sdk is obsolete (ASPIRE012). So this SDK imports Microsoft.NET.Sdk and adds both packages (see below);
+      Aspire.Hosting.AppHost's own props set IsAspireHost. Joinery.Dovetail.Sdk, chained after it, adds Dovetail alone. A project that
+      already gets Joinery.Dovetail.Sdk (from a Directory.Build.props, say) does not get it twice.
   -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- The versions, generated when the SDK is packed. Imported after the Microsoft SDK, so a Directory.Build.props can set them first. -->
   <Import Project="$(MSBuildThisFileDirectory)Packages.props" />
-  <Import Project="Sdk.props" Sdk="Aspire.AppHost.Sdk" Version="$(DovetailAspireAppHostSdkVersion)" />
+
+  <!--
+      Aspire.Hosting.AppHost and Aspire.Hosting.Dotnet as implicit package references, at DovetailAspireHostingAppHostVersion and
+      DovetailAspireHostingDotnetVersion: the versions this SDK was built against, unless the application sets others first. Declared ahead
+      of the project, so Joinery.Dovetail.Sdk's ImplicitPackageReferences.targets (registered through CustomAfterMicrosoftCommonTargets,
+      after the whole project) turns them into PackageReferences, unless the project references the package itself: then its own reference
+      and version win, which is how to move to another Aspire.
+  -->
+  <ItemGroup>
+    <DovetailSdkImplicitPackageReference Include="Aspire.Hosting.AppHost" Version="$(DovetailAspireHostingAppHostVersion)" />
+    <DovetailSdkImplicitPackageReference Include="Aspire.Hosting.Dotnet" Version="$(DovetailAspireHostingDotnetVersion)" />
+  </ItemGroup>
 
   <!--
       Joinery.Dovetail.Sdk registers its host detection in CustomAfterMicrosoftCommonTargets: when that is already there, a
-      Directory.Build.props (or another SDK) applied it, and the mirror leaves it out. DovetailSdkVersion is read only now, after the
-      Directory.Build.props the Microsoft SDK imported, which can still set it.
+      Directory.Build.props (or another SDK) applied it, and the mirror leaves it out.
   -->
   <PropertyGroup Condition="!$(CustomAfterMicrosoftCommonTargets.Contains('Joinery.Dovetail.HostDetection.targets'))">
-    <!-- Sdk.targets imports the same versions and makes the same choice, whatever the project body sets in between. -->
+    <!-- Sdk.targets chains the same version and makes the same choice, whatever the project body sets in between. -->
     <_DovetailMirrorChainsDovetailSdk>true</_DovetailMirrorChainsDovetailSdk>
     <_DovetailMirrorDovetailSdkVersion>$(DovetailSdkVersion)</_DovetailMirrorDovetailSdkVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <_DovetailMirrorAspireAppHostSdkVersion>$(DovetailAspireAppHostSdkVersion)</_DovetailMirrorAspireAppHostSdkVersion>
   </PropertyGroup>
   <Import Project="Sdk.props" Sdk="Joinery.Dovetail.Sdk" Version="$(_DovetailMirrorDovetailSdkVersion)" Condition="'$(_DovetailMirrorChainsDovetailSdk)' == 'true'" />
 </Project>

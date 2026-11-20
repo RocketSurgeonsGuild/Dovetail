@@ -27,8 +27,6 @@
     <PackageVersion Include="Sourcy.DotNet" Version="1.1.1" />
     <PackageVersion Include="Sourcy.Git" Version="1.1.1" />
     <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.52" />
-    <!-- The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost chains (an MSBuild SDK, not a package reference). Pinned here for the SDK's generated Packages.props. -->
-    <PackageVersion Include="Aspire.AppHost.Sdk" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting.Dotnet" Version="17.0.0" />

@@ -6,7 +6,6 @@
     TargetFramework: {TargetFramework},
     Properties: {
       _DovetailApplicationDetected: true,
-      _DovetailMirrorAspireAppHostSdkVersion: {aspire-apphost-sdk-version},
       _DovetailMirrorChainsDovetailSdk: true,
       _DovetailMirrorDovetailSdkVersion: {sdk-version},
       AssemblyName: app,
@@ -14,7 +13,8 @@
       BaseOutputPath: bin\,
       CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
       DefineConstants: TRACE;DEBUG,
-      DovetailAspireAppHostSdkVersion: {aspire-apphost-sdk-version},
+      DovetailAspireHostingAppHostVersion: {aspire-hosting-apphost-version},
+      DovetailAspireHostingDotnetVersion: {aspire-hosting-dotnet-version},
       DovetailEnableAspire: false,
       DovetailEnableAspireTesting: false,
       DovetailEnableAutofac: false,
@@ -40,6 +40,12 @@
     },
     AdditionalFiles: [],
     PackageReference: {
+      Aspire.Hosting.AppHost: {
+        IsImplicitlyDefined: true
+      },
+      Aspire.Hosting.Dotnet: {
+        IsImplicitlyDefined: true
+      },
       Joinery.Dovetail: {
         IsImplicitlyDefined: true
       },
@@ -58,10 +64,8 @@
     },
     Using: [],
     Imports: [
-      {TempPath}sdk-tests/{id}/.nuget/packages/aspire.apphost.sdk/{aspire-apphost-sdk-version}/Sdk/Sdk.props,
-      {TempPath}sdk-tests/{id}/.nuget/packages/aspire.apphost.sdk/{aspire-apphost-sdk-version}/Sdk/Sdk.targets,
-      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.aspire.apphost/{sdk-version}/Sdk/Sdk.targets,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.aspire.apphost/{sdk-version}/Sdk/Sdk.props,
+      {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk.aspire.apphost/{sdk-version}/Sdk/Sdk.targets,
       {TempPath}sdk-tests/{id}/app/app.csproj,
       {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Sdk.props
     ],
