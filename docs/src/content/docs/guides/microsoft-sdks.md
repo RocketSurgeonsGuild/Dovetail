@@ -34,7 +34,6 @@ Pin the version in `global.json` under `msbuild-sdks`, or put it in the attribut
 | `Microsoft.NET.Sdk.BlazorWebAssembly` | `Joinery.Dovetail.Sdk.BlazorWebAssembly` | Blazor WebAssembly applications                       |
 | `Microsoft.NET.Sdk.WebAssembly`       | `Joinery.Dovetail.Sdk.WebAssembly`       | WebAssembly applications (the `wasmbrowser` template) |
 | `Microsoft.NET.Sdk.WindowsDesktop`    | `Joinery.Dovetail.Sdk.WindowsDesktop`    | Windows Forms and WPF projects that still name it     |
-| `Microsoft.NET.Sdk` + Aspire packages | `Joinery.Dovetail.Sdk.Aspire.AppHost`    | Aspire AppHost projects                               |
 | `Azure.Functions.Sdk`                 | `Joinery.Dovetail.Sdk.Azure.Functions`   | Azure Functions isolated worker applications          |
 
 `Joinery.Dovetail.Sdk.Console` is not a mirror: it is `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for
@@ -62,27 +61,31 @@ have not moved off it yet.
 
 ## Aspire AppHosts
 
-Since Aspire 17 a C# AppHost is `Microsoft.NET.Sdk` with the `Aspire.Hosting.AppHost` and `Aspire.Hosting.Dotnet` packages;
-`Aspire.AppHost.Sdk` is obsolete (`ASPIRE012`). `Joinery.Dovetail.Sdk.Aspire.AppHost` follows suit: it imports `Microsoft.NET.Sdk` and
-adds both packages as implicit package references, at the versions it was built against. `Aspire.Hosting.AppHost` sets `IsAspireHost`
-itself.
-
-To use another Aspire, reference the packages yourself. The project's own references, and their versions, win:
+There is no Aspire SDK to mirror any more. Since Aspire 17 a C# AppHost is `Microsoft.NET.Sdk` with the `Aspire.Hosting.AppHost`
+and `Aspire.Hosting.Dotnet` packages, and `Aspire.AppHost.Sdk` is obsolete (`ASPIRE012`). So an AppHost swaps `Microsoft.NET.Sdk` for
+`Joinery.Dovetail.Sdk`, like any other project, and keeps its Aspire packages:
 
 ```xml
-<Project Sdk="Joinery.Dovetail.Sdk.Aspire.AppHost">
+<Project Sdk="Joinery.Dovetail.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="17.1.0" />
-    <PackageReference Include="Aspire.Hosting.Dotnet" Version="17.1.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="17.0.0" />
+    <PackageReference Include="Aspire.Hosting.Dotnet" Version="17.0.0" />
   </ItemGroup>
 </Project>
 ```
 
-Add .NET projects as resources with `AddDotnetProject`: without `Aspire.AppHost.Sdk`, a project reference no longer generates
-`Projects.*` metadata. Builds resolve the Aspire CLI (`ASPIRE009` when they can't), so install it alongside, at the same version.
+`Aspire.Hosting.AppHost` sets `IsAspireHost` itself. Add .NET projects as resources with `AddDotnetProject`: without
+`Aspire.AppHost.Sdk`, a project reference no longer generates `Projects.*` metadata. Builds resolve the Aspire CLI (`ASPIRE009` when
+they can't), so install it alongside, at the same version as the packages.
 
-Dovetail's host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`), exactly as with
-`Microsoft.NET.Sdk`, the Aspire packages and `Joinery.Dovetail.Sdk` named side by side.
+Dovetail's host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`).
+
+`Joinery.Dovetail.Sdk.Aspire.AppHost`, the mirror of `Aspire.AppHost.Sdk`, is no longer published. A project that used it switches to
+`Joinery.Dovetail.Sdk` as above.
 
 ## Azure Functions
 

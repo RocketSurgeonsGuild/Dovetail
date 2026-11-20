@@ -3,7 +3,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 namespace Joinery.Dovetail.Sdk.Tests;
 
 /// <summary>
-/// Each Microsoft project SDK (and the Aspire AppHost) has a Dovetail mirror in <c>src/Sdks</c>: <c>Joinery.Dovetail.Sdk.Web</c> is <c>Microsoft.NET.Sdk.Web</c> with
+/// Each Microsoft project SDK has a Dovetail mirror in <c>src/Sdks</c>: <c>Joinery.Dovetail.Sdk.Web</c> is <c>Microsoft.NET.Sdk.Web</c> with
 /// <c>Joinery.Dovetail.Sdk</c> chained after it, so a project swaps the one name for the other and changes nothing else. These apply the
 /// mirror as the project's only SDK, with no Directory.Build.props, and build: the snapshot shows the host Dovetail detected and the packages
 /// it added, which are what the Microsoft SDK with <c>Joinery.Dovetail.Sdk</c> next to it gets (<see cref="HostTypeTests" />).
@@ -20,8 +20,6 @@ public class MicrosoftSdkMirrorTests(string targetFramework)
     [Arguments("WebAssembly", null)]
     // A plain library: Microsoft.NET.Sdk.WindowsDesktop builds anywhere until the project targets Windows (UseWPF, UseWindowsForms).
     [Arguments("WindowsDesktop", "Library")]
-    // An Aspire AppHost: Microsoft.NET.Sdk with Aspire.Hosting.AppHost and Aspire.Hosting.Dotnet, which the mirror adds at the versions Directory.Packages.props pins.
-    [Arguments("Aspire.AppHost", "Exe")]
     public async Task Mirror_IsTheMicrosoftSdkWithDovetail(string name, string? outputType)
     {
         using var project = new SdkTestProject();
