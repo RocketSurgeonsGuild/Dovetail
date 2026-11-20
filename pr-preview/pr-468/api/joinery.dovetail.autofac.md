@@ -1,9 +1,9 @@
 # Joinery.Dovetail.Autofac
 
 - Package: `Joinery.Dovetail.Autofac`
-- Version: `0.8.1-pr.5`
+- Version: `0.8.1-pr.11`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-468-merge.Sha.d585f4d77fe77956909200475d8894f0f38a443f/src/Joinery.Dovetail.Autofac)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-468-merge.Sha.1950047ba9b0769796f6cf96621cfafcd184f8e2/src/Joinery.Dovetail.Autofac)
 - NuGet: [Joinery.Dovetail.Autofac](https://www.nuget.org/packages/Joinery.Dovetail.Autofac)
 
 ## Namespaces

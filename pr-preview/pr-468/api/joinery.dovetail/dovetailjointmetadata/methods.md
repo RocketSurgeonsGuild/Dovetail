@@ -15,7 +15,7 @@ Container for conventions
 - Name: `FromFactory(Func<IServiceProvider, IDovetailJoint>, DovetailHostType, DovetailCategory)`
 - Modifiers: `static`
 - Returns: [DovetailJointMetadata](/Dovetail/pr-preview/pr-468/api/joinery.dovetail/dovetailjointmetadata.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.d585f4d77fe77956909200475d8894f0f38a443f/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L71-L72)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.1950047ba9b0769796f6cf96621cfafcd184f8e2/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L71-L72)
 
 Describes a joint that is created the first time [DovetailJointMetadata.Joint](/Dovetail/pr-preview/pr-468/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) is read, rather than up front.
 
@@ -60,7 +60,7 @@ This is how the code generated for an exported joint with constructor parameters
 - Name: `GetHashCode`
 - Modifiers: `override`
 - Returns: `int`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.d585f4d77fe77956909200475d8894f0f38a443f/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L122)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.1950047ba9b0769796f6cf96621cfafcd184f8e2/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L122)
 
 Serves as the default hash function.
 
@@ -85,7 +85,7 @@ public sealed class DovetailJointMetadata
 
 - Name: `WithDependency(DependencyDirection, Type)`
 - Returns: [DovetailJointMetadata](/Dovetail/pr-preview/pr-468/api/joinery.dovetail/dovetailjointmetadata.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.d585f4d77fe77956909200475d8894f0f38a443f/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L93-L94)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.1950047ba9b0769796f6cf96621cfafcd184f8e2/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L93-L94)
 
 Adds a new dependency to the list
 

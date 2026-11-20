@@ -14,7 +14,7 @@ The base context marker interface to define this as a context
 - Name: `Assembly`
 - Modifiers: `virtual` `get`
 - Returns: `Assembly`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.d585f4d77fe77956909200475d8894f0f38a443f/src/Joinery.Dovetail/IDovetailContext.cs#L17)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-468-merge.Sha.1950047ba9b0769796f6cf96621cfafcd184f8e2/src/Joinery.Dovetail/IDovetailContext.cs#L17)
 
 The assembly that is executing the conventions
 
