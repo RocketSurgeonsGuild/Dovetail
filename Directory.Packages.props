@@ -86,7 +86,7 @@
     <PackageVersion Include="Verify.Playwright" Version="3.3.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
     <!-- Validates Joinery.Dovetail.Serilog's configuration schema fragment against the draft-07 meta-schema in its tests (Apache-2.0). -->
-    <PackageVersion Include="Corvus.Json.JsonSchema.Draft7" Version="5.8.11" />
+    <PackageVersion Include="Corvus.Json.JsonSchema.Draft7" Version="5.8.12" />
     <!-- The command line framework Joinery.Dovetail.Sdk.Console adds to a console application (MIT). Pinned here for the SDK's generated Packages.props. -->
     <PackageVersion Include="ConsoleAppFramework" Version="5.8.1" />
   </ItemGroup>
