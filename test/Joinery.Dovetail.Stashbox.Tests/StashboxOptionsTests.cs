@@ -54,7 +54,7 @@ public class StashboxOptionsTests : LoggerTest<TestRecord>
                                                 .Set(new StashboxOptions { ValidateOnBuild = true, })
                                                 .ConfigureStashbox((_, container) => container.Register<NeedsUnregistered>())
                                        );
-            } ) ).Should().Throw<AggregateException>() ).Message.Should().Contain(nameof(NeedsUnregistered));
+            } ) ).Should().Throw<AggregateException>() )!.Message.Should().Contain(nameof(NeedsUnregistered));
     }
 
     [Test]

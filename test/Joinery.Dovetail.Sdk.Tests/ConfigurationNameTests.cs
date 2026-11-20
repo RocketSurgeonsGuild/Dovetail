@@ -188,7 +188,7 @@ public class ConfigurationNameTests(string targetFramework)
 
         var exception = await ( (Func<Task>)( () => project.BuildProject("lib") ) ).Should().Throw<TUnitException>();
 
-        await exception.Message.Should().Contain($"error DT0019: Dovetail: '{collidingFile}' and '{collidingAppSettings}' are both copied, packed and embedded as '{collidingFile}'.");
+        await exception!.Message.Should().Contain($"error DT0019: Dovetail: '{collidingFile}' and '{collidingAppSettings}' are both copied, packed and embedded as '{collidingFile}'.");
     }
 
     /// <summary>

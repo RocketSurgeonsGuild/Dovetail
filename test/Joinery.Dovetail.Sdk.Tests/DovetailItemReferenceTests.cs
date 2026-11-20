@@ -338,7 +338,7 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        await failure.Message.Should().Contain("CS0234");
+        await failure!.Message.Should().Contain("CS0234");
         await failure.Message.Should().Contain("DovetailJoint.Captured.g.cs");
         await failure.Message.Should().NotContain("DovetailJoint.Safe.g.cs");
     }
@@ -354,7 +354,7 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        await failure.Message.Should().Contain("CS1961");
+        await failure!.Message.Should().Contain("CS1961");
     }
 
     /// <summary>
@@ -371,7 +371,7 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        await failure.Message.Should().Contain("CS0029");
+        await failure!.Message.Should().Contain("CS0029");
         await failure.Message.Should().Contain("ValueTask<Microsoft.Extensions.Logging.ILoggingBuilder>");
         await failure.Message.Should().Contain("ValueTask<Microsoft.Extensions.DependencyInjection.IServiceCollection>");
     }
@@ -387,7 +387,7 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        await failure.Message.Should().Contain("CS0103");
+        await failure!.Message.Should().Contain("CS0103");
         await failure.Message.Should().Contain("DovetailOrphanHelpers");
     }
 
@@ -402,7 +402,7 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        await failure.Message.Should().Contain("CS1001");
+        await failure!.Message.Should().Contain("CS1001");
         await failure.Message.Should().Contain("DovetailHost.Mine.g.cs");
     }
 
@@ -430,7 +430,7 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        await failure.Message.Should().Contain("CS0121");
+        await failure!.Message.Should().Contain("CS0121");
     }
 
     /// <summary>
@@ -466,8 +466,8 @@ public class DovetailItemReferenceTests(string targetFramework)
         var objDirectory = Path.Combine(project.Directory, "worker", "obj", "Debug", targetFramework);
         await Directory
            .EnumerateFiles(objDirectory, "*.g.cs")
-           .Select(Path.GetFileName)
-           .Where(z => z!.StartsWith("DovetailTemplate.", StringComparison.Ordinal) || z.StartsWith("Contoso.", StringComparison.Ordinal))
+           .Select(z => Path.GetFileName(z))
+           .Where(z => z.StartsWith("DovetailTemplate.", StringComparison.Ordinal) || z.StartsWith("Contoso.", StringComparison.Ordinal))
            .Order(StringComparer.Ordinal).Should().BeEquivalentTo([
                     "Contoso.Prefixed.g.cs",
                     "DovetailTemplate.ForThisHost.g.cs",
@@ -500,7 +500,7 @@ public class DovetailItemReferenceTests(string targetFramework)
 
         var failure = await ( (Func<Task>)( () => project.BuildProject("worker") ) ).Should().Throw<TUnitException>();
 
-        await failure.Message.Should().Contain($"the template '{mistake}' {message}");
+        await failure!.Message.Should().Contain($"the template '{mistake}' {message}");
     }
 
     private SdkTestProject CreateProject(params (string Type, string Name, Dictionary<string, string?> Metadata)[] items)

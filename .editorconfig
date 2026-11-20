@@ -41,6 +41,10 @@ indent_style = space
 indent_size = 4
 indent_style = space
 
+# Samples and benchmarks are not shipped, so their public types and members do not need XML docs.
+[{sample,benchmarks}/**.cs]
+dotnet_diagnostic.CS1591.severity = none
+
 [*.{vue}]
 indent_size = 4
 indent_style = space

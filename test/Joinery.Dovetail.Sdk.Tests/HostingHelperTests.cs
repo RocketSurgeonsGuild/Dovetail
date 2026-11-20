@@ -212,7 +212,7 @@ public class HostingHelperTests(string targetFramework)
 
         var exception = await ( (Func<Task>)( () => project.BuildProject("app") ) ).Should().Throw<TUnitException>();
 
-        await exception.Message.Should().Contain("error CS1029");
+        await exception!.Message.Should().Contain("error CS1029");
         await exception.Message.Should().Contain("Add a PackageReference to OpenTelemetry.Extensions.Hosting");
     }
 

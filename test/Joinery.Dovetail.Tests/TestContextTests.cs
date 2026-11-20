@@ -14,7 +14,7 @@ public class TestContextTests() : LoggerTest<TestRecord>(TestRecord.Create(LogEv
     {
         DovetailContextBuilder a() => DovetailContextBuilder.Create([], new Dictionary<object, object?>(), []).Set(Logger);
         var context = await Assert.That(a).ThrowsNothing();
-        await context.Get<ILogger>().Should().BeSameReferenceAs(Logger);
+        await context!.Get<ILogger>().Should().BeSameReferenceAs(Logger);
     }
 
     [Test]

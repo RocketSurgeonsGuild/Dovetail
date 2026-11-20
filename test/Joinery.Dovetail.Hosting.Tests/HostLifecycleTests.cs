@@ -122,7 +122,7 @@ public class HostLifecycleTests
         await host.StopAsync(CancellationToken);
 
         // The host's root scope, so it resolves what the host registered.
-        await ( await received.Should().NotBeNull() ).GetRequiredService<IHostEnvironment>().Should().BeSameReferenceAs(host.Services.GetRequiredService<IHostEnvironment>());
+        await ( await received.Should().NotBeNull() )!.GetRequiredService<IHostEnvironment>().Should().BeSameReferenceAs(host.Services.GetRequiredService<IHostEnvironment>());
     }
 
     [Test]
@@ -167,7 +167,7 @@ public class HostLifecycleTests
 
         var exception = await ( (Func<Task>)( () => host.StartAsync(CancellationToken) ) ).Should().Throw<InvalidOperationException>();
 
-        await exception.Message.Should().BeEqualTo("boom");
+        await exception!.Message.Should().BeEqualTo("boom");
         await ran.Should().BeTrue();
     }
 

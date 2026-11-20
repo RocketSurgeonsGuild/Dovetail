@@ -79,10 +79,12 @@ public class JsonContentConfigurationTests(string targetFramework)
         );
 
         await AppSettings(result, "None").Should().BeEmpty();
-        await AppSettings(result, "Content").Should().BeEquivalentTo([
-                ("appsettings.Development.json", "Build.Development.json", "PreserveNewest"),
-                ("appsettings.json", "Build.json", "PreserveNewest"),
-            ], CollectionOrdering.Matching);
+        (string File, string? TargetPath, string? CopyToOutputDirectory)[] expectedContent =
+        [
+            ("appsettings.Development.json", "Build.Development.json", "PreserveNewest"),
+            ("appsettings.json", "Build.json", "PreserveNewest"),
+        ];
+        await AppSettings(result, "Content").Should().BeEquivalentTo(expectedContent, CollectionOrdering.Matching);
         var properties = result.GetProperty("Properties");
         var joint = await File.ReadAllTextAsync(
             Path.Combine(

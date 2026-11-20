@@ -53,7 +53,7 @@ public class SerilogOpenTelemetryTests() : LoggerTest<TestRecord>(TestRecord.Cre
         var record = await exported.Should().HaveSingleItem();
         await record.Body.Should().BeEqualTo("It broke");
         await record.LogLevel.Should().BeEqualTo(LogLevel.Error);
-        await ( await Assert.That(record.Exception).IsTypeOf<InvalidOperationException>() ).Message.Should().BeEqualTo("Broken");
+        await ( await Assert.That(record.Exception).IsTypeOf<InvalidOperationException>() )!.Message.Should().BeEqualTo("Broken");
     }
 
     [Test]

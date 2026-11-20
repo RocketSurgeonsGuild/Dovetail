@@ -118,10 +118,15 @@ internal static class DovetailDependencyParser
                         if (successorState == 1)
                         {
                             var cycleStart = stack.FindIndex(x => comparer.Equals(x, successor));
-                            var cycle = stack.Skip(cycleStart).Append(successor).ToImmutableArray();
-                            foreach (var participant in cycle.Distinct(comparer).Cast<INamedTypeSymbol>())
+                            var cycleBuilder = ImmutableArray.CreateBuilder<INamedTypeSymbol>(stack.Count - cycleStart + 1);
+                            for (var i = cycleStart; i < stack.Count; i++) cycleBuilder.Add(stack[i]);
+                            cycleBuilder.Add(successor);
+                            var cycle = cycleBuilder.MoveToImmutable();
+                            // Each node is on the DFS stack at most once, so stack[cycleStart..] are the distinct
+                            // participants; the closing successor is stack[cycleStart] again.
+                            for (var i = cycleStart; i < stack.Count; i++)
                             {
-                                if (reported.Add(participant)) results.Add((participant, cycle));
+                                if (reported.Add(stack[i])) results.Add((stack[i], cycle));
                             }
                         }
 

@@ -31,6 +31,7 @@
     <PackageVersion Include="Aspire.AppHost.Sdk" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="17.0.0" />
+    <PackageVersion Include="Aspire.Hosting.Dotnet" Version="17.0.0" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="17.0.0" />
     <!-- The Functions SDK Joinery.Dovetail.Sdk.Azure.Functions chains (an MSBuild SDK, not a package reference). Pinned here for the SDK's generated Packages.props. -->
     <PackageVersion Include="Azure.Functions.Sdk" Version="1.1.0" />

@@ -87,7 +87,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         var create = () => builder.CreateAsync(TestContext.CancellationToken).AsTask();
 
         var exception = await create.Should().Throw<InvalidOperationException>();
-        await exception.Message.Should().Contain(typeof(IWidget).FullName!);
+        await exception!.Message.Should().Contain(typeof(IWidget).FullName!);
         await exception.Message.Should().Contain("widget");
         await exception.Message.Should().Contain("Constructed");
     }
@@ -117,9 +117,9 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         var create = () => builder.CreateAsync(TestContext.CancellationToken).AsTask();
 
         var exception = await create.Should().Throw<InvalidOperationException>();
-        await exception.Message.Should().NotContain(typeof(IWidget).FullName!);
+        await exception!.Message.Should().NotContain(typeof(IWidget).FullName!);
         var inner = await Assert.That(exception.InnerException).IsTypeOf<InvalidOperationException>();
-        await inner.Message.Should().Contain(typeof(IWidget).FullName!);
+        await inner!.Message.Should().Contain(typeof(IWidget).FullName!);
         await inner.Message.Should().Contain("widget");
         await inner.Message.Should().Contain("Sample.Needy");
     }
