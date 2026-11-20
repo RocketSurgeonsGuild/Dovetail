@@ -56,8 +56,8 @@ public static class DovetailContextDiagram
 
         foreach (var stepName in BaselineJointNames.Concat(discoveredJointNames).Distinct(StringComparer.Ordinal))
         {
-            var connector = connectorJoints[stepName];
-            var title = $"{stepName}{( connector.Any() ? $" via {string.Join(", ", connector)}" : "" )}";
+            var connectorNames = string.Join(", ", connectorJoints[stepName]);
+            var title = connectorNames.Length > 0 ? $"{stepName} via {connectorNames}" : stepName;
             builder.AddSubgraph(
                 title,
                 out var stepSubgraph,
@@ -110,19 +110,22 @@ public static class DovetailContextDiagram
             builder.AddLink(stepSubgraphs[from], stepSubgraphs[to], out _, lineStyle: LinkLineStyle.Dotted);
         }
 
-        items:
-        foreach (var item in metadata.OrderBy(z => z.AssemblyName, StringComparer.Ordinal).ThenBy(z => z.JointName, StringComparer.Ordinal))
+        // Sorted once up front (by joint, then by dependency) rather than re-sorting each joint's dependencies inside the loop.
+        var dependencyEdges = metadata
+                             .SelectMany(item => item.Dependencies, (item, dep) => (Item: item, Dependency: dep))
+                             .OrderBy(z => z.Item.AssemblyName, StringComparer.Ordinal)
+                             .ThenBy(z => z.Item.JointName, StringComparer.Ordinal)
+                             .ThenBy(z => z.Dependency.AssemblyName, StringComparer.Ordinal)
+                             .ThenBy(z => z.Dependency.JointName, StringComparer.Ordinal);
+        foreach (var (item, dep) in dependencyEdges)
         {
-            foreach (var dep in item.Dependencies.OrderBy(z => z.AssemblyName, StringComparer.Ordinal).ThenBy(z => z.JointName, StringComparer.Ordinal))
+            if (!metadataNodes.TryGetValue(item, out var toNode)) continue;
+            if (!metadataNodes.TryGetValue(dep, out var fromNode)) continue;
+            if (dep.Direction == DependencyDirection.DependentOf)
             {
-                if (!metadataNodes.TryGetValue(item, out var toNode)) continue items;
-                if (!metadataNodes.TryGetValue(dep, out var fromNode)) continue;
-                if (dep.Direction == DependencyDirection.DependentOf)
-                {
-                    toNode = Interlocked.Exchange(ref fromNode, toNode);
-                }
-                builder.AddLink(fromNode, toNode, out _);
+                toNode = Interlocked.Exchange(ref fromNode, toNode);
             }
+            builder.AddLink(fromNode, toNode, out _);
         }
 
         return builder.Build();

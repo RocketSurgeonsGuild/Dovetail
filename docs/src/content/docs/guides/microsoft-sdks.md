@@ -34,7 +34,6 @@ Pin the version in `global.json` under `msbuild-sdks`, or put it in the attribut
 | `Microsoft.NET.Sdk.BlazorWebAssembly` | `Joinery.Dovetail.Sdk.BlazorWebAssembly` | Blazor WebAssembly applications                       |
 | `Microsoft.NET.Sdk.WebAssembly`       | `Joinery.Dovetail.Sdk.WebAssembly`       | WebAssembly applications (the `wasmbrowser` template) |
 | `Microsoft.NET.Sdk.WindowsDesktop`    | `Joinery.Dovetail.Sdk.WindowsDesktop`    | Windows Forms and WPF projects that still name it     |
-| `Aspire.AppHost.Sdk`                  | `Joinery.Dovetail.Sdk.Aspire.AppHost`    | Aspire AppHost projects                               |
 | `Azure.Functions.Sdk`                 | `Joinery.Dovetail.Sdk.Azure.Functions`   | Azure Functions isolated worker applications          |
 
 `Joinery.Dovetail.Sdk.Console` is not a mirror: it is `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for
@@ -62,25 +61,42 @@ have not moved off it yet.
 
 ## Aspire AppHosts
 
-`Aspire.AppHost.Sdk` comes from NuGet rather than with the .NET SDK, so `Joinery.Dovetail.Sdk.Aspire.AppHost` imports it at a
-version: the one it was built against, unless `DovetailAspireAppHostSdkVersion` says otherwise. The Aspire SDK is imported before any
-of the project's files, so set that property where MSBuild sees it first, as an environment variable or on the command line:
+There is no Aspire SDK to mirror any more. Since Aspire 17 a C# AppHost is `Microsoft.NET.Sdk` with the `Aspire.Hosting.AppHost`
+and `Aspire.Hosting.Dotnet` packages, and `Aspire.AppHost.Sdk` is obsolete (`ASPIRE012`). So an AppHost swaps `Microsoft.NET.Sdk` for
+`Joinery.Dovetail.Sdk`, like any other project, and keeps its Aspire packages:
 
-```bash
-dotnet build -p:DovetailAspireAppHostSdkVersion=13.6.5
+```xml
+<Project Sdk="Joinery.Dovetail.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="17.0.0" />
+    <PackageReference Include="Aspire.Hosting.Dotnet" Version="17.0.0" />
+  </ItemGroup>
+</Project>
 ```
 
-An `Aspire.AppHost.Sdk` entry in `global.json` doesn't change it. Keep `Aspire.Hosting.AppHost`, which the Aspire SDK adds for you, at
-the same version.
+`Aspire.Hosting.AppHost` sets `IsAspireHost` itself. Add .NET projects as resources with `AddDotnetProject`: without
+`Aspire.AppHost.Sdk`, a project reference no longer generates `Projects.*` metadata. Builds resolve the Aspire CLI (`ASPIRE009` when
+they can't), so install it alongside, at the same version as the packages.
 
-Dovetail's host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`), exactly as with
-`Aspire.AppHost.Sdk` and `Joinery.Dovetail.Sdk` named side by side.
+Dovetail's host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`).
+
+`Joinery.Dovetail.Sdk.Aspire.AppHost`, the mirror of `Aspire.AppHost.Sdk`, is no longer published. A project that used it switches to
+`Joinery.Dovetail.Sdk` as above.
 
 ## Azure Functions
 
-`Azure.Functions.Sdk` is the MSBuild SDK for Azure Functions isolated worker applications, and like the Aspire SDK it comes from NuGet.
+`Azure.Functions.Sdk` is the MSBuild SDK for Azure Functions isolated worker applications, and it comes from NuGet.
 `Joinery.Dovetail.Sdk.Azure.Functions` imports it at the version it was built against, unless `DovetailAzureFunctionsSdkVersion` says
-otherwise (as an environment variable or on the command line, as above).
+otherwise. The Functions SDK is imported before any of the project's files, so set that property where MSBuild sees it first, as an
+environment variable or on the command line:
+
+```bash
+dotnet build -p:DovetailAzureFunctionsSdkVersion=1.2.0
+```
 
 `Azure.Functions.Sdk` leaves `Microsoft.Azure.Functions.Worker`, the isolated worker every Functions application needs, to the
 application. `Joinery.Dovetail.Sdk.Azure.Functions` adds it for you, as an implicit package reference at the version it was built

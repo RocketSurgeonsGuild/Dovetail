@@ -52,6 +52,11 @@
       "allowedVersions": "<11.0.0"
     },
     {
+      "description": "The Aspire CLI pinned in mise resolves the AppHost builds' bundle (ASPIRE009) and pairs with the Aspire.Hosting.* package version, so it moves in the same PR as them",
+      "matchDepNames": ["Aspire.Cli"],
+      "groupName": "aspire monorepo"
+    },
+    {
       "matchCategories": ["js"],
       "automerge": true,
       "labels": [":truck: private-dependencies"]

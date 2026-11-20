@@ -62,9 +62,6 @@ internal static class Config
         {
             ["DovetailMicrosoftExtensionsHostingVersion"] = "{microsoft-extensions-hosting-version}",
             ["DovetailOpenTelemetryExtensionsHostingVersion"] = "{opentelemetry-extensions-hosting-version}",
-            // The Aspire SDK Joinery.Dovetail.Sdk.Aspire.AppHost imports, written into its Packages.props the same way.
-            ["DovetailAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
-            ["_DovetailMirrorAspireAppHostSdkVersion"] = "{aspire-apphost-sdk-version}",
             // The Functions SDK Joinery.Dovetail.Sdk.Azure.Functions imports, likewise.
             ["DovetailAzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",
             ["_DovetailMirrorAzureFunctionsSdkVersion"] = "{azure-functions-sdk-version}",

@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <!--
-      A Microsoft SDK that comes from NuGet (Aspire.AppHost.Sdk) has to be imported at a version. The mirror names the property it reads
+      A Microsoft SDK that comes from NuGet (Azure.Functions.Sdk) has to be imported at a version. The mirror names the property it reads
       that version from in DovetailMicrosoftSdkVersionProperty, and Packages.props sets it to the version Directory.Packages.props pins.
   -->
   <!--

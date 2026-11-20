@@ -1,6 +1,10 @@
 [*]
 dotnet_diagnostic.CS0436.severity = none
 dotnet_diagnostic.CA1014.severity = none
+# TUnit assertions (Throw<T>, NotBeNull, IsTypeOf<T>, BeEquivalentTo) return nullable values even after proving them non-null.
+dotnet_diagnostic.CS8602.severity = none
+dotnet_diagnostic.CS8604.severity = none
+dotnet_diagnostic.CS8631.severity = none
 dotnet_diagnostic.CA1031.severity = none
 dotnet_diagnostic.CA1034.severity = none
 dotnet_diagnostic.CA1040.severity = none

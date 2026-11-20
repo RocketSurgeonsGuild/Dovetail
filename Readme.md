@@ -76,7 +76,6 @@ Each SDK is a drop-in replacement for the Microsoft SDK it names.
 | [Joinery.Dovetail.Sdk.BlazorWebAssembly][nuget-Joinery.Dovetail.Sdk.BlazorWebAssembly] | [![nuget-Joinery.Dovetail.Sdk.BlazorWebAssembly-badge]][nuget-Joinery.Dovetail.Sdk.BlazorWebAssembly] | `Microsoft.NET.Sdk.BlazorWebAssembly`: Blazor WebAssembly applications            |
 | [Joinery.Dovetail.Sdk.WebAssembly][nuget-Joinery.Dovetail.Sdk.WebAssembly]             | [![nuget-Joinery.Dovetail.Sdk.WebAssembly-badge]][nuget-Joinery.Dovetail.Sdk.WebAssembly]             | `Microsoft.NET.Sdk.WebAssembly`: WebAssembly applications                         |
 | [Joinery.Dovetail.Sdk.WindowsDesktop][nuget-Joinery.Dovetail.Sdk.WindowsDesktop]       | [![nuget-Joinery.Dovetail.Sdk.WindowsDesktop-badge]][nuget-Joinery.Dovetail.Sdk.WindowsDesktop]       | `Microsoft.NET.Sdk.WindowsDesktop`: Windows Forms and WPF                         |
-| [Joinery.Dovetail.Sdk.Aspire.AppHost][nuget-Joinery.Dovetail.Sdk.Aspire.AppHost]       | [![nuget-Joinery.Dovetail.Sdk.Aspire.AppHost-badge]][nuget-Joinery.Dovetail.Sdk.Aspire.AppHost]       | `Aspire.AppHost.Sdk`: Aspire AppHost projects                                     |
 | [Joinery.Dovetail.Sdk.Azure.Functions][nuget-Joinery.Dovetail.Sdk.Azure.Functions]     | [![nuget-Joinery.Dovetail.Sdk.Azure.Functions-badge]][nuget-Joinery.Dovetail.Sdk.Azure.Functions]     | `Azure.Functions.Sdk`: Azure Functions isolated worker applications               |
 | [Joinery.Dovetail.Sdk.Console][nuget-Joinery.Dovetail.Sdk.Console]                     | [![nuget-Joinery.Dovetail.Sdk.Console-badge]][nuget-Joinery.Dovetail.Sdk.Console]                     | `Joinery.Dovetail.Sdk` plus a generated `Program.cs` for ConsoleAppFramework apps |
 | [Joinery.Dovetail.Sdk.ModularPipelines][nuget-Joinery.Dovetail.Sdk.ModularPipelines]   | [![nuget-Joinery.Dovetail.Sdk.ModularPipelines-badge]][nuget-Joinery.Dovetail.Sdk.ModularPipelines]   | `Joinery.Dovetail.Sdk` plus ModularPipelines, for build pipelines                 |
@@ -156,8 +155,6 @@ Run `mise install` before building: it installs the .NET SDK and the extra .NET 
 [nuget-Joinery.Dovetail.Sdk.WebAssembly-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Sdk.WebAssembly.svg?logo=nuget&style=flat
 [nuget-Joinery.Dovetail.Sdk.WindowsDesktop]: https://www.nuget.org/packages/Joinery.Dovetail.Sdk.WindowsDesktop/
 [nuget-Joinery.Dovetail.Sdk.WindowsDesktop-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Sdk.WindowsDesktop.svg?logo=nuget&style=flat
-[nuget-Joinery.Dovetail.Sdk.Aspire.AppHost]: https://www.nuget.org/packages/Joinery.Dovetail.Sdk.Aspire.AppHost/
-[nuget-Joinery.Dovetail.Sdk.Aspire.AppHost-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Sdk.Aspire.AppHost.svg?logo=nuget&style=flat
 [nuget-Joinery.Dovetail.Sdk.Azure.Functions]: https://www.nuget.org/packages/Joinery.Dovetail.Sdk.Azure.Functions/
 [nuget-Joinery.Dovetail.Sdk.Azure.Functions-badge]: https://img.shields.io/nuget/v/Joinery.Dovetail.Sdk.Azure.Functions.svg?logo=nuget&style=flat
 [nuget-Joinery.Dovetail.Sdk.Console]: https://www.nuget.org/packages/Joinery.Dovetail.Sdk.Console/

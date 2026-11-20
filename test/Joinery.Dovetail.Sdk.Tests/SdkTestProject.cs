@@ -77,10 +77,8 @@ public sealed class SdkTestProject : IDisposable
         // across dev machines/CI runners with a different set of installed SDKs.
         _settings.ScrubLinesWithReplace(z => ScrubTargetFramework(System.Text.RegularExpressions.Regex.Replace(z, @".*/sdk/\d+\.\d+\.\d+[^/]*/", "/sdk/{dotnet-sdk-version}/")));
 
-        // Joinery.Dovetail.Sdk.Aspire.AppHost imports Aspire.AppHost.Sdk at the version Directory.Packages.props pins, so its path is
-        // a placeholder too (as the version is in Config's evaluation serializer): an Aspire update doesn't rewrite the snapshot.
-        _settings.ScrubLinesWithReplace(z => System.Text.RegularExpressions.Regex.Replace(z, @"/aspire\.apphost\.sdk/[^/]+/", "/aspire.apphost.sdk/{aspire-apphost-sdk-version}/"));
-        // Likewise Joinery.Dovetail.Sdk.Azure.Functions and Azure.Functions.Sdk. That package keeps its MSBuild SDK in a lower-case sdk/
+        // Joinery.Dovetail.Sdk.Azure.Functions imports Azure.Functions.Sdk at the version Directory.Packages.props pins, so its path is a
+        // placeholder too (as the version is in Config's evaluation serializer). That package keeps its MSBuild SDK in a lower-case sdk/
         // folder, which a case-insensitive file system (macOS) reports as the Sdk/ MSBuild asked for: normalize it to the package's own name.
         _settings.ScrubLinesWithReplace(
             z => System.Text.RegularExpressions.Regex.Replace(
