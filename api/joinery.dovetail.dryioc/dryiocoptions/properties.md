@@ -14,7 +14,7 @@ Options for building the DryIoc Container
 - Name: `NoMoreRegistrationAllowed`
 - Modifiers: `get; set`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail.DryIoc/DryIocOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.0fa3b4648007e057ae22bfa0eddc52edf69e7087/src/Joinery.Dovetail.DryIoc/DryIocOptions.cs)
 
 Prevents additional container registrations (defaults to true)
 

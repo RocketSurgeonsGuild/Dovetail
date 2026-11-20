@@ -14,7 +14,7 @@ Loads configuration files that the Dovetail SDK embedded into an assembly as man
 - Name: `AssemblyKey`
 - Modifiers: `static` `const`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.cd8ca819f0052d2aa42af9cdb144b71372752f30/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.0fa3b4648007e057ae22bfa0eddc52edf69e7087/src/Joinery.Dovetail/DovetailEmbeddedConfiguration.cs)
 
 The context key that holds the `Reflection.Assembly` the application's configuration files are embedded in.
 
