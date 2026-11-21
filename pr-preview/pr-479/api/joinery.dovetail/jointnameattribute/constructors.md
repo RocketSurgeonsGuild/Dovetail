@@ -13,7 +13,7 @@ A marker interface to indicate a type is a convention and has a name
 ## JointNameAttribute(string)
 
 - Name: `Constructor(string)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-479-merge.Sha.ca686f4f650b8283955a8e82f7ce758bbabd623f/src/Joinery.Dovetail/Infrastructure/JointNameAttribute.cs#L8)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-479-merge.Sha.feaeb0c3ab7f343cde2ec1bc8326c12fbbd4fca4/src/Joinery.Dovetail/Infrastructure/JointNameAttribute.cs#L8)
 
 A marker interface to indicate a type is a convention and has a name
 

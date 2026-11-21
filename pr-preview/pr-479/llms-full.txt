@@ -1523,7 +1523,56 @@ There is no Aspire SDK to mirror any more. Since Aspire 17 a C# AppHost is `Micr
 
 `Aspire.Hosting.AppHost` sets `IsAspireHost` itself. Add .NET projects as resources with `AddDotnetProject`: without `Aspire.AppHost.Sdk`, a project reference no longer generates `Projects.*` metadata. Builds resolve the Aspire CLI (`ASPIRE009` when they can’t), so install it alongside, at the same version as the packages.
 
-Dovetail’s host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`).
+An AppHost is detected as such: a project that references `Aspire.Hosting.AppHost` gets `Joinery.Dovetail.Aspire` and the `DistributedApplication` host in place of the generic host, so `ConfigureDovetail` extends `IDistributedApplicationBuilder`. It applies the `IDistributedApplicationBuilderJoint` joints of the AppHost and of the assemblies it references, in dependency order, then builds the application, so the resources can come from joints instead of `Program.cs`:
+
+```c#
+await using var app = await DistributedApplication.CreateBuilder(args).ConfigureDovetail();
+await app.RunAsync();
+```
+
+sample/SdkSample/SdkSample.AppHost/WebResourceJoint.cs
+
+```c#
+[DovetailExport]
+public sealed class WebResourceJoint : IDistributedApplicationBuilderJoint
+{
+    /// <inheritdoc />
+    public void Register(IDovetailContext context, IDistributedApplicationBuilder builder)
+    {
+        var web = builder
+                 .AddDotnetProject("web", "../SdkSample.Web/SdkSample.Web.csproj")
+                 .WithExternalHttpEndpoints()
+                 .WithHttpHealthCheck("/health");
+        context.Set(new WebResource(web));
+    }
+}
+```
+
+A joint that needs another’s resource runs after it, and finds the resource in the context:
+
+sample/SdkSample/SdkSample.AppHost/WorkerResourceJoint.cs
+
+```c#
+[DovetailExport]
+[DependsOnJoint<WebResourceJoint>]
+public sealed class WorkerResourceJoint : IDistributedApplicationBuilderJoint
+{
+    /// <inheritdoc />
+    public void Register(IDovetailContext context, IDistributedApplicationBuilder builder)
+    {
+        var web = context.Get<WebResource>()
+                  ?? throw new InvalidOperationException($"{nameof(WebResourceJoint)} has not added the web resource.");
+        builder
+           .AddDotnetProject("worker", "../SdkSample.Worker/SdkSample.Worker.csproj")
+           .WithReference(web.Builder)
+           .WaitFor(web.Builder);
+    }
+}
+```
+
+The joint is in `Joinery.Dovetail.Aspire`, which any project that references `Aspire.Hosting` gets, so a library can ship resources to every AppHost that references it. The AppHost’s helper applies only these joints and the `DistributedApplication` host-created ones: an AppHost has no services or configuration of its own for joints to add to. `DovetailEnableAspire=false` leaves Aspire out (the AppHost is a generic host again), `DovetailAspireHost=false` only the host.
+
+The services an AppHost runs are ordinary Dovetail applications. Aspire’s “service defaults” fit in a library of joints that each service references, with nothing to call: `sample/SdkSample/SdkSample.ServiceDefaults` turns on OpenTelemetry with the OTLP exporter (an `IOpenTelemetryJoint`) and service discovery with health checks (an `IServiceJoint`). The whole sample, an AppHost that runs `SdkSample.Web` and `SdkSample.Worker`, is in `sample/SdkSample` (`mise run sample:aspire`).
 
 `Joinery.Dovetail.Sdk.Aspire.AppHost`, the mirror of `Aspire.AppHost.Sdk`, is no longer published. A project that used it switches to `Joinery.Dovetail.Sdk` as above.
 
@@ -1865,7 +1914,7 @@ The item is expanded by MSBuild targets, not by the Roslyn source generator: the
 In most projects, nobody: `Joinery.Dovetail.Sdk` looks at the project and declares the host for you. You declare your own when the SDK does not, which is one of:
 
 * the project does not use `Joinery.Dovetail.Sdk` but references `Joinery.Dovetail`. `sample/Sample`, the benchmarks and most test projects declare their host by hand;
-* the host is one the SDK does not detect. Aspire’s `IDistributedApplicationBuilder` is declared by hand in `test/Joinery.Dovetail.Aspire.Tests`; the SDK has that case commented out.
+* the host is one the SDK does not detect, or a second host on a builder the SDK did not pick. Aspire’s testing builder, `IDistributedApplicationTestingBuilder`, is declared by hand in `test/Joinery.Dovetail.Aspire.Tests`.
 
 An integration package can declare its host itself, in the build targets NuGet imports for a direct reference. `Joinery.Dovetail.ModularPipelines` declares one for ModularPipelines’ `PipelineBuilder` that way, for a project that references it without the SDK (see [ModularPipelines](../../guides/modular-pipelines/)). Its helper, `DovetailPipelineHelpers`, is a `Joinery.Dovetail.Hosting` template like the others, and the package depends on `Joinery.Dovetail.Hosting` to get it.
 
@@ -1886,6 +1935,8 @@ Do not declare a host the SDK already did. A second host on the same builder typ
 | `HostApplication` | a `Microsoft.NET.Sdk.Worker` project, or any other `Exe`        | `Microsoft.Extensions.Hosting.HostApplicationBuilder`                        | `Microsoft.Extensions.Hosting.IHost`                                  | `DovetailHostApplicationHelpers`           |
 
 `FunctionsApplication` is declared next to `HostApplication` for an `Azure.Functions.Sdk` project, or one that references `Microsoft.Azure.Functions.Worker`: its `HostBuilderType` is `Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder`, its `HostType` is `Microsoft.Extensions.Hosting.IHost` and its helper is `DovetailFunctionsApplicationHelpers`, which `Joinery.Dovetail.Hosting` emits once the project references `Microsoft.Azure.Functions.Worker`.
+
+An Aspire AppHost, an application that references `Aspire.Hosting.AppHost`, gets the `DistributedApplication` host instead of `HostApplication`: `Aspire.Hosting.IDistributedApplicationBuilder`, returning `Aspire.Hosting.DistributedApplication`, helper `DovetailDistributedApplicationHelpers` (in `Joinery.Dovetail.Aspire`, so declared with `HasBuildExpression="false"`). Any project that references `Aspire.Hosting` or `Aspire.Hosting.AppHost` gets the `Joinery.Dovetail.Aspire` package, so a library can export joints that add resources. `DovetailEnableAspire=false` leaves out both, `DovetailAspireHost=false` the host alone (see [Aspire AppHosts](../../guides/microsoft-sdks/#aspire-apphosts)).
 
 Besides the hosts above, an application on `net11.0` or later that references `ModularPipelines` gets the `ModularPipelines` host (`ModularPipelines.PipelineBuilder`, returning `ModularPipelines.IPipeline`, helper `DovetailPipelineHelpers`) and the `Joinery.Dovetail.ModularPipelines` package. `DovetailEnableModularPipelines=false` leaves out both, `DovetailModularPipelinesHost=false` the host alone. The package’s own build targets then leave the host to the SDK, so it is declared once. `Joinery.Dovetail.Sdk.ModularPipelines` adds `ModularPipelines` itself, so its applications always get this host.
 
@@ -2020,7 +2071,7 @@ await builder
 
 [Section titled “A host of your own: Aspire”](#a-host-of-your-own-aspire)
 
-The Aspire helper builds the host itself, so its `Configure` takes no build delegate, and its tests declare the host with `HasBuildExpression="false"`. The helper is `DovetailDistributedApplicationHelpers`, which is the default for a host named `DistributedApplication`, so there is no `HelperName`:
+The Aspire helper builds the host itself, so its `Configure` takes no build delegate, and the host is declared with `HasBuildExpression="false"`. The SDK declares it for an AppHost; `Joinery.Dovetail.Aspire`’s own tests, which do not use the SDK, declare it by hand. The helper is `DovetailDistributedApplicationHelpers`, which is the default for a host named `DistributedApplication`, so there is no `HelperName`:
 
 ```xml
 <!-- test/Joinery.Dovetail.Aspire.Tests/Joinery.Dovetail.Aspire.Tests.csproj -->

@@ -1,9 +1,9 @@
 # Joinery.Dovetail.Aspire.Testing
 
 - Package: `Joinery.Dovetail.Aspire.Testing`
-- Version: `0.8.2-pr.5`
+- Version: `0.8.2-pr.7`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-479-merge.Sha.ca686f4f650b8283955a8e82f7ce758bbabd623f/src/Joinery.Dovetail.Aspire.Testing)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-479-merge.Sha.feaeb0c3ab7f343cde2ec1bc8326c12fbbd4fca4/src/Joinery.Dovetail.Aspire.Testing)
 - NuGet: [Joinery.Dovetail.Aspire.Testing](https://www.nuget.org/packages/Joinery.Dovetail.Aspire.Testing)
 
 ## Namespaces

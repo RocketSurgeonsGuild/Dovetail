@@ -19,8 +19,8 @@ the SDK does not, which is one of:
 
 - the project does not use `Joinery.Dovetail.Sdk` but references `Joinery.Dovetail`. `sample/Sample`, the benchmarks and most test
   projects declare their host by hand;
-- the host is one the SDK does not detect. Aspire's `IDistributedApplicationBuilder` is declared by hand in
-  `test/Joinery.Dovetail.Aspire.Tests`; the SDK has that case commented out.
+- the host is one the SDK does not detect, or a second host on a builder the SDK did not pick. Aspire's testing builder,
+  `IDistributedApplicationTestingBuilder`, is declared by hand in `test/Joinery.Dovetail.Aspire.Tests`.
 
 An integration package can declare its host itself, in the build targets NuGet imports for a direct reference.
 `Joinery.Dovetail.ModularPipelines` declares one for ModularPipelines' `PipelineBuilder` that way, for a project that references it
@@ -48,6 +48,13 @@ points. Each also adds the `Joinery.Dovetail.Hosting` package, which emits the h
 `Microsoft.Azure.Functions.Worker`: its `HostBuilderType` is `Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder`, its
 `HostType` is `Microsoft.Extensions.Hosting.IHost` and its helper is `DovetailFunctionsApplicationHelpers`, which `Joinery.Dovetail.Hosting`
 emits once the project references `Microsoft.Azure.Functions.Worker`.
+
+An Aspire AppHost, an application that references `Aspire.Hosting.AppHost`, gets the `DistributedApplication` host instead of
+`HostApplication`: `Aspire.Hosting.IDistributedApplicationBuilder`, returning `Aspire.Hosting.DistributedApplication`, helper
+`DovetailDistributedApplicationHelpers` (in `Joinery.Dovetail.Aspire`, so declared with `HasBuildExpression="false"`). Any project that
+references `Aspire.Hosting` or `Aspire.Hosting.AppHost` gets the `Joinery.Dovetail.Aspire` package, so a library can export joints that
+add resources. `DovetailEnableAspire=false` leaves out both, `DovetailAspireHost=false` the host alone (see
+[Aspire AppHosts](../../guides/microsoft-sdks/#aspire-apphosts)).
 
 Besides the hosts above, an application on `net11.0` or later that references `ModularPipelines` gets the `ModularPipelines` host
 (`ModularPipelines.PipelineBuilder`, returning `ModularPipelines.IPipeline`, helper `DovetailPipelineHelpers`) and the
@@ -186,8 +193,9 @@ await builder
 
 ### A host of your own: Aspire
 
-The Aspire helper builds the host itself, so its `Configure` takes no build delegate, and its tests declare the host with
-`HasBuildExpression="false"`. The helper is `DovetailDistributedApplicationHelpers`, which is the default for a host named
+The Aspire helper builds the host itself, so its `Configure` takes no build delegate, and the host is declared with
+`HasBuildExpression="false"`. The SDK declares it for an AppHost; `Joinery.Dovetail.Aspire`'s own tests, which do not use the SDK,
+declare it by hand. The helper is `DovetailDistributedApplicationHelpers`, which is the default for a host named
 `DistributedApplication`, so there is no `HelperName`:
 
 ```xml
