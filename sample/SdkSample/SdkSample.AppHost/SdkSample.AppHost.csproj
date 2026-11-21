@@ -1,0 +1,21 @@
+<!--
+    An Aspire AppHost: since Aspire 17 that is Microsoft.NET.Sdk with Aspire.Hosting.AppHost and Aspire.Hosting.Dotnet (Aspire.AppHost.Sdk
+    is obsolete). Referencing Aspire.Hosting.AppHost makes Joinery.Dovetail.Sdk detect a DistributedApplication host: it injects
+    Joinery.Dovetail.Aspire and generates the ConfigureDovetail() extension on IDistributedApplicationBuilder used in Program.cs, which
+    applies the joints that add the resources (WebResourceJoint, WorkerResourceJoint).
+
+    The services are added by path (AddDotnetProject), so there are no project references: Aspire builds them before it starts them.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>C642838A-2015-412F-BB8A-72D85622F80F</UserSecretsId>
+    <!-- The AppHost reads Aspire's own appsettings.json; there are no options of the sample's libraries to layer here. -->
+    <DovetailEnableConfiguration>false</DovetailEnableConfiguration>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="17.0.0" />
+    <PackageReference Include="Aspire.Hosting.Dotnet" Version="17.0.0" />
+  </ItemGroup>
+</Project>

@@ -31,6 +31,8 @@ The SDK could equally be applied once for every project, in a `Directory.Build.p
 | `SdkSample.Worker`        | `OutputType=Exe`        | detect a `HostApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                               |
 | `SdkSample.Console`       | `Sdk="Joinery.Dovetail.Sdk/…"` | bring `Microsoft.NET.Sdk` itself, then the same as `SdkSample.Worker` (it references `SdkSample.Greetings` only) |
 | `SdkSample.Web`           | `Microsoft.NET.Sdk.Web` | detect a `WebApplicationBuilder` host, inject `Joinery.Dovetail.Hosting`, generate `ConfigureDovetail()`                                                                |
+| `SdkSample.ServiceDefaults` | class library referencing OpenTelemetry | inject `Joinery.Dovetail.OpenTelemetry`, so its joints can configure OpenTelemetry (see [Running it under Aspire](#running-it-under-aspire)) |
+| `SdkSample.AppHost`       | references `Aspire.Hosting.AppHost` | detect an Aspire AppHost, inject `Joinery.Dovetail.Aspire`, generate `ConfigureDovetail()` on `IDistributedApplicationBuilder`                                  |
 
 `DovetailEnableConfiguration=true` (set in `Directory.Build.props`) additionally injects
 `Joinery.Dovetail.Configuration.Yaml` into every project. YAML is the default format; setting
@@ -109,14 +111,53 @@ The Web app answers `GET /` with the greeting and `GET /config` with the resolve
 }
 ```
 
-In the Development environment the Web app also serves the merged schema at
+In the Development environment, which its launch profile sets, the Web app also serves the merged schema at
 `/.well-known/dovetail/configuration-schema`:
 
 ```sh
-ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://127.0.0.1:5198 dotnet run --project SdkSample.Web
-curl http://127.0.0.1:5198/config
-curl http://127.0.0.1:5198/.well-known/dovetail/configuration-schema
+dotnet run --project SdkSample.Web
+curl http://localhost:5198/config
+curl http://localhost:5198/.well-known/dovetail/configuration-schema
 ```
+
+## Running it under Aspire
+
+`SdkSample.AppHost` is an [Aspire](https://aspire.dev) AppHost that runs the web app and the worker, with the dashboard. It needs the
+[Aspire CLI](https://aspire.dev/get-started/install-cli/) (17.0 or later); `dotnet run` on an AppHost hands over to it.
+
+```sh
+dotnet msbuild build/pack.proj
+dotnet run --project SdkSample.AppHost   # or: aspire run (aspire.config.json names the AppHost)
+```
+
+or from anywhere in the repo: `mise run sample:aspire`.
+
+Its `Program.cs` adds no resources. It calls `DistributedApplication.CreateBuilder(args).ConfigureDovetail()`, and the joints add them:
+
+- `WebResourceJoint` adds `SdkSample.Web` as `web`, by path (`AddDotnetProject`), healthy once `/health` answers, and leaves the
+  resource in the Dovetail context.
+- `WorkerResourceJoint` runs after it (`[DependsOnJoint<WebResourceJoint>]`), takes `web` from the context, and adds `SdkSample.Worker`
+  as `worker`, referencing `web` and waiting for it.
+
+Both are `IDistributedApplicationBuilderJoint`s, the joint `Joinery.Dovetail.Aspire` declares, so they could as well come from a library
+the AppHost references.
+
+The web app and the worker reference `SdkSample.ServiceDefaults`, Aspire's "service defaults" as Dovetail joints. Nothing calls it:
+
+- `TelemetryJoint` (an `IOpenTelemetryJoint`) adds ASP.NET Core, `HttpClient` and runtime instrumentation, and the OTLP exporter when
+  `OTEL_EXPORTER_OTLP_ENDPOINT` is set, as the AppHost sets it for its resources.
+- `ServiceDiscoveryJoint` (an `IServiceJoint`) adds service discovery to every `HttpClient`, and health checks, which the web app maps
+  at `/health`.
+
+Under the AppHost the worker prints its usual output, then calls `https+http://web/`, which service discovery resolves from the
+endpoints Aspire passes it (`services:web:...`):
+
+```text
+web says: Hello from SdkSample.Greetings.yaml, SdkSample.Web!
+```
+
+The dashboard shows that call and the request it made to `web` as one trace, and both applications' logs and metrics. Run on their
+own, the applications export nothing and the worker skips the call.
 
 ## Try the schema
 
@@ -150,7 +191,12 @@ that are still running keep the SDK files they read before.
 - `global.json` pins the .NET SDK. `Joinery.Dovetail.Sdk`'s version is in each project's `<Sdk>` element:
   MSBuild SDKs resolved from NuGet need an explicit version.
 - `NuGet.config` clears the repository's feeds and maps `Joinery.Dovetail*` to the local feed.
-- `Directory.Packages.props` and `Directory.Build.targets` are intentionally empty so MSBuild stops
-  here instead of picking up the repository's central package management and build targets.
+- `Directory.Packages.props` (empty) and `Directory.Build.targets` stop MSBuild here instead of picking up the repository's central
+  package management and build targets.
+- `Directory.Build.targets` runs an application from its output directory under `dotnet run` (`RunWorkingDirectory`), which the
+  AppHost does too. Dovetail reads each library's YAML file from the host's content root, the current directory, and the build copies
+  those files to the output directory only.
+- `SdkSample.Web/Properties/launchSettings.json` gives the web app its endpoint (`http://localhost:5198`, in Development), which the
+  AppHost reads to expose it.
 - `.gitignore` ignores `appsettings.local.*`. With configuration enabled, the SDK warns when no
   `.gitignore` at or above a project ignores those developer-only overrides.

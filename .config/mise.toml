@@ -47,6 +47,10 @@ docs = { run = [
   "dotnet msbuild build/pack.proj",
   "dotnet run --project SdkSample.Worker",
 ], dir = "{{config_root}}/sample/SdkSample", description = "Pack src/** locally and run the Joinery.Dovetail.Sdk sample worker" }
+"sample:aspire" = { run = [
+  "dotnet msbuild build/pack.proj",
+  "dotnet run --project SdkSample.AppHost",
+], dir = "{{config_root}}/sample/SdkSample", description = "Pack src/** locally and run the Joinery.Dovetail.Sdk sample's Aspire AppHost (web + worker)" }
 
 [settings]
 experimental = true

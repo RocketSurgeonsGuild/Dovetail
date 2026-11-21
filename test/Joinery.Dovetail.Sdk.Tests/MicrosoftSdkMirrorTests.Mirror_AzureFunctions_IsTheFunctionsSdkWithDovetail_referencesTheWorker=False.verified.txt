@@ -16,7 +16,7 @@
       DefineConstants: TRACE;DEBUG,
       DovetailAzureFunctionsSdkVersion: {azure-functions-sdk-version},
       DovetailAzureFunctionsWorkerVersion: {azure-functions-worker-version},
-      DovetailEnableAspire: false,
+      DovetailEnableAspire: true,
       DovetailEnableAspireTesting: false,
       DovetailEnableAutofac: false,
       DovetailEnableDryIoc: false,
