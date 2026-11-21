@@ -128,12 +128,6 @@
         <_DovetailApplicationDetected>false</_DovetailApplicationDetected>
       </PropertyGroup>
     </Otherwise>
-    <!-- leaving aspire out for the moment -->
-    <!-- <When Condition=" '$(IsAspireHost)'=='true' ">
-            <ItemGroup>
-                <DovetailHost Include="Aspire" HostBuilderType="Aspire.Hosting.IDistributedApplicationBuilder" HostBuilderName="builder" HostType="Aspire.Hosting.DistributedApplication" />
-            </ItemGroup>
-        </When> -->
   </Choose>
   <!--
       Azure Functions isolated worker applications are generic hosts (Azure.Functions.Sdk brings Microsoft.NET.Sdk.Worker, and a project on
@@ -146,6 +140,32 @@
   <ItemGroup Condition="@(DovetailHost->AnyHaveMetadataValue('Identity', 'HostApplication')) == 'true' and ('$(UsingAzureFunctionsSdk)' == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Azure.Functions.Worker')) == 'true')">
     <DovetailHost Include="FunctionsApplication" HostBuilderType="global::Microsoft.Azure.Functions.Worker.Builder.FunctionsApplicationBuilder" HostBuilderName="builder" HostType="global::Microsoft.Extensions.Hosting.IHost" HelperName="global::Joinery.Dovetail.DovetailFunctionsApplicationHelpers"/>
   </ItemGroup>
+  <!--
+      Aspire. A project that references Aspire.Hosting (an AppHost does, through Aspire.Hosting.AppHost) gets Joinery.Dovetail.Aspire,
+      which declares the DistributedApplicationBuilder joint (IDistributedApplicationBuilderJoint) and the DistributedApplication
+      host-created joint, so a library can export joints that add resources to an AppHost.
+
+      An AppHost is a project that references Aspire.Hosting.AppHost: since Aspire 17 it is Microsoft.NET.Sdk with that package
+      (Aspire.AppHost.Sdk is obsolete, ASPIRE012), so it is an Exe and the branch above gave it HostApplication. Its builder is
+      Aspire's IDistributedApplicationBuilder, not a HostApplicationBuilder, so it gets the DistributedApplication host instead:
+      ConfigureDovetail on DistributedApplication.CreateBuilder(args), which applies the joints and builds the application through
+      DovetailDistributedApplicationHelpers (in Joinery.Dovetail.Aspire). Only an assembly that imports joints gets the host.
+      Items rather than a branch of the Choose above, since only an item condition sees the project's PackageReferences.
+      DovetailEnableAspire=false leaves all of it out, DovetailAspireHost=false only the host.
+  -->
+  <ItemGroup Condition="'$(DovetailEnableAspire)' != 'false' and (@(PackageReference->AnyHaveMetadataValue('Identity', 'Aspire.Hosting')) == 'true' or @(PackageReference->AnyHaveMetadataValue('Identity', 'Aspire.Hosting.AppHost')) == 'true')">
+    <DovetailSdkImplicitPackageReference Include="Joinery.Dovetail.Aspire" Version="$(DovetailVersion)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DovetailEnableAspire)' != 'false' and '$(DovetailAspireHost)' != 'false' and '$(ImportDovetailAssembly)' == 'true' and @(PackageReference->AnyHaveMetadataValue('Identity', 'Aspire.Hosting.AppHost')) == 'true'">
+    <DovetailHost Remove="HostApplication" />
+    <DovetailHost
+      Include="DistributedApplication"
+      HostBuilderType="global::Aspire.Hosting.IDistributedApplicationBuilder"
+      HostBuilderName="builder"
+      HostType="global::Aspire.Hosting.DistributedApplication"
+      HelperName="global::Joinery.Dovetail.DovetailDistributedApplicationHelpers"
+      HasBuildExpression="false" />
+  </ItemGroup>
   <PropertyGroup>
     <DovetailEnableAutofac Condition="'$(DovetailEnableAutofac)' == ''">false</DovetailEnableAutofac>
     <DovetailEnableDryIoc Condition="'$(DovetailEnableDryIoc)' == ''">false</DovetailEnableDryIoc>
@@ -157,7 +177,8 @@
     <DovetailEnableOpenTelemetry Condition="'$(DovetailEnableOpenTelemetry)' == ''">true</DovetailEnableOpenTelemetry>
     <DovetailEnableHosting Condition="'$(DovetailEnableHosting)' == ''">false</DovetailEnableHosting>
     <DovetailEnableHostingWeb Condition="'$(DovetailEnableHostingWeb)' == ''">false</DovetailEnableHostingWeb>
-    <DovetailEnableAspire Condition="'$(DovetailEnableAspireHosting)' == ''">false</DovetailEnableAspire>
+    <!-- On by default: a project that references Aspire gets Joinery.Dovetail.Aspire, an AppHost its host (false opts out). -->
+    <DovetailEnableAspire Condition="'$(DovetailEnableAspire)' == ''">true</DovetailEnableAspire>
     <DovetailEnableAspireTesting Condition="'$(DovetailEnableAspireHostingTesting)' == ''">false</DovetailEnableAspireTesting>
   </PropertyGroup>
 

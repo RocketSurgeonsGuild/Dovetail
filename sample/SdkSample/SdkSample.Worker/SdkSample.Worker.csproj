@@ -14,5 +14,7 @@
     <ProjectReference Include="..\SdkSample.Notifications\SdkSample.Notifications.csproj" />
     <ProjectReference Include="..\SdkSample.Storage\SdkSample.Storage.csproj" />
     <ProjectReference Include="..\SdkSample.Diagnostics\SdkSample.Diagnostics.csproj" />
+    <!-- OpenTelemetry, service discovery and health checks, through its joints: see SdkSample.AppHost. -->
+    <ProjectReference Include="..\SdkSample.ServiceDefaults\SdkSample.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>

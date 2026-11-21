@@ -14,6 +14,8 @@ builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Con
 var app = await builder.ConfigureDovetail();
 
 app.MapGet("/", (IGreeter greeter) => greeter.Greet("SdkSample.Web"));
+// SdkSample.ServiceDefaults registers the health checks; SdkSample.AppHost waits on this endpoint before it starts the worker.
+app.MapHealthChecks("/health");
 
 // The resolved options of every library: each library's defaults, then this project's appsettings.yaml on top.
 app.MapGet(

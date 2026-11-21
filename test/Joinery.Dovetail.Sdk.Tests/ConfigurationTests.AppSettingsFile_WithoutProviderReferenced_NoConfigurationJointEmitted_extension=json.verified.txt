@@ -11,7 +11,7 @@
       BaseOutputPath: bin\,
       CustomAfterMicrosoftCommonTargets: {TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/Joinery.Dovetail.HostDetection.targets;;{TempPath}sdk-tests/{id}/.nuget/packages/joinery.dovetail.sdk/{sdk-version}/Sdk/ImplicitPackageReferences.targets,
       DefineConstants: TRACE;DEBUG,
-      DovetailEnableAspire: false,
+      DovetailEnableAspire: true,
       DovetailEnableAspireTesting: false,
       DovetailEnableAutofac: false,
       DovetailEnableDryIoc: false,

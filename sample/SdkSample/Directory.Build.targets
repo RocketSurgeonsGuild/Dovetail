@@ -1,2 +1,13 @@
 <!-- Stops MSBuild from walking up into the repository's own Directory.Build.targets. -->
-<Project />
+<Project>
+  <!--
+      Dovetail reads each library's configuration file (SdkSample.Greetings.yaml, ...) from the host's content root, which is the
+      current directory, but the build copies those files to the output directory only. So `dotnet run` (and the AppHost, which starts
+      the services the same way) runs a host from its output directory.
+  -->
+  <Target Name="_SdkSampleRunFromOutputDirectory" BeforeTargets="ComputeRunArguments" Condition="'$(OutputType)' == 'Exe'">
+    <PropertyGroup>
+      <RunWorkingDirectory>$(TargetDir)</RunWorkingDirectory>
+    </PropertyGroup>
+  </Target>
+</Project>

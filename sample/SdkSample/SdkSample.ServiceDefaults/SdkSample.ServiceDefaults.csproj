@@ -1,0 +1,21 @@
+<!--
+    Aspire's "service defaults" as a Dovetail library: OpenTelemetry, service discovery and health checks, registered by exported joints.
+    An application that references it gets them without calling anything: there is no builder.AddServiceDefaults().
+
+    Referencing OpenTelemetry.Extensions.Hosting makes Joinery.Dovetail.Sdk inject Joinery.Dovetail.OpenTelemetry, which declares the
+    OpenTelemetry joint TelemetryJoint implements. The applications that reference this library get it too, and with it the joint that
+    turns OpenTelemetry on (AddOpenTelemetry()) and applies TelemetryJoint.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Joinery.Dovetail.Sdk" Version="0.0.0-sample" />
+  <ItemGroup>
+    <!-- Health checks and ASP.NET Core's instrumentation, as Aspire's own ServiceDefaults project has. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="11.0.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.21.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.21.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.21.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.21.0" />
+  </ItemGroup>
+</Project>
