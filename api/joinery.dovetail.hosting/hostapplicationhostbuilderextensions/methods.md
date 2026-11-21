@@ -15,7 +15,7 @@ Builder-method extensions for applying HostApplication parts to a `Dovetail.Dove
 - Name: `ConfigureHostApplication(DovetailContextBuilder, HostApplicationJointDelegate<TBuilder>, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail.Hosting/obj/Release/net10.0/DovetailJoint.HostApplication.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail.Hosting/obj/Release/net10.0/DovetailJoint.HostApplication.g.cs)
 
 ```csharp
 public static class HostApplicationHostBuilderExtensions
@@ -49,7 +49,7 @@ public static class HostApplicationHostBuilderExtensions
 - Name: `ConfigureHostApplication(DovetailContextBuilder, HostApplicationAsyncJointDelegate<TBuilder>, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail.Hosting/obj/Release/net10.0/DovetailJoint.HostApplication.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail.Hosting/obj/Release/net10.0/DovetailJoint.HostApplication.g.cs)
 
 ```csharp
 public static class HostApplicationHostBuilderExtensions

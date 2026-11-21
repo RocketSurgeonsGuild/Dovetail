@@ -14,7 +14,7 @@ The category of a given convention
 - Name: `Application`
 - Modifiers: `static` `const`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/DovetailCategory.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/DovetailCategory.cs)
 
 This convention is loaded for any application that might be starting
 
@@ -33,7 +33,7 @@ Application is the default category for a convention
 - Name: `Core`
 - Modifiers: `static` `const`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/DovetailCategory.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/DovetailCategory.cs)
 
 This convention is to load for any infrastructure bits (serializer, logging, etc)
 

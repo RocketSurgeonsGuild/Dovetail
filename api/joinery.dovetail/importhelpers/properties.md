@@ -14,7 +14,7 @@ This class is used by the source generator to allow the conventions provided to 
 - Name: `Rivets`
 - Modifiers: `static` `nullable` `get; set`
 - Returns: [DovetailContextBuilderFactory?](/Dovetail/api/joinery.dovetail/dovetailcontextbuilderfactory.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/ImportHelpers.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/ImportHelpers.cs)
 
 The external conventions that have been provided by the caller.
 

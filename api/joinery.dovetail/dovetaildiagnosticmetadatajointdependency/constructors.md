@@ -13,7 +13,7 @@ Represents a metadata dependency for a Dovetail joint, including its name, host 
 ## DovetailDiagnosticMetadataJointDependency(string, string, ImmutableList<string>, ImmutableList<string>, DovetailHostType, string, ImmutableList<DovetailDiagnosticMetadataJointDependency>, DependencyDirection)
 
 - Name: `Constructor(string, string, ImmutableList<string>, ImmutableList<string>, DovetailHostType, string, ImmutableList<DovetailDiagnosticMetadataJointDependency>, DependencyDirection)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJointDependency.cs#L25)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJointDependency.cs#L25)
 
 Represents a metadata dependency for a Dovetail joint, including its name, host type, category, dependencies, and direction.
 

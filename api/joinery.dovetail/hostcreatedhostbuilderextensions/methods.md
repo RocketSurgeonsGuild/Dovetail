@@ -15,7 +15,7 @@ Builder-method extensions for applying HostCreated parts to a [DovetailContextBu
 - Name: `ConfigureHostCreated(DovetailContextBuilder, HostCreatedJointDelegate<THost>, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.HostCreated.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.HostCreated.g.cs)
 
 ```csharp
 public static class HostCreatedHostBuilderExtensions
@@ -49,7 +49,7 @@ public static class HostCreatedHostBuilderExtensions
 - Name: `ConfigureHostCreated(DovetailContextBuilder, HostCreatedAsyncJointDelegate<THost>, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.HostCreated.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.HostCreated.g.cs)
 
 ```csharp
 public static class HostCreatedHostBuilderExtensions

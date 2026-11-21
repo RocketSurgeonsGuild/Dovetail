@@ -2,10 +2,10 @@
 
 - Kind: `record`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.8.2-beta.4`
+- Version: `0.8.2-beta.5`
 - Namespace: `Joinery.Dovetail.Diagnostics`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJointDependency.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Diagnostics/DovetailDiagnosticMetadataJointDependency.cs)
 - Inherits: [DovetailDiagnosticMetadataJoint](/Dovetail/api/joinery.dovetail/dovetaildiagnosticmetadatajoint.md)
 - Implements: `IEquatable<DovetailDiagnosticMetadataJointDependency>`
 

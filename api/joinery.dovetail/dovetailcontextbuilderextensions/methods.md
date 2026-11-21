@@ -15,7 +15,7 @@ Dovetail Context build extensions.
 - Name: `CreateServiceProvider(IDovetailContext, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask<IServiceProvider>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Infrastructure/DovetailContextBuilderExtensions.cs#L21-L34)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Infrastructure/DovetailContextBuilderExtensions.cs#L21-L34)
 
 Allows creation of a service provider from the convention context. This will apply configuration
 

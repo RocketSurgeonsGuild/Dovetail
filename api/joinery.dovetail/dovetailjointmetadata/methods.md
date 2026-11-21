@@ -15,7 +15,7 @@ Container for conventions
 - Name: `FromFactory(Func<IServiceProvider, IDovetailJoint>, DovetailHostType, DovetailCategory)`
 - Modifiers: `static`
 - Returns: [DovetailJointMetadata](/Dovetail/api/joinery.dovetail/dovetailjointmetadata.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L71-L72)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L71-L72)
 
 Describes a joint that is created the first time [DovetailJointMetadata.Joint](/Dovetail/api/joinery.dovetail/dovetailjointmetadata/properties.md#joint) is read, rather than up front.
 
@@ -60,7 +60,7 @@ This is how the code generated for an exported joint with constructor parameters
 - Name: `GetHashCode`
 - Modifiers: `override`
 - Returns: `int`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L122)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L122)
 
 Serves as the default hash function.
 
@@ -85,7 +85,7 @@ public sealed class DovetailJointMetadata
 
 - Name: `WithDependency(DependencyDirection, Type)`
 - Returns: [DovetailJointMetadata](/Dovetail/api/joinery.dovetail/dovetailjointmetadata.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L93-L94)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L93-L94)
 
 Adds a new dependency to the list
 

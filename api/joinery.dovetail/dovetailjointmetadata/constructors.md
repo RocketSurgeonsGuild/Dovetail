@@ -13,7 +13,7 @@ Container for conventions
 ## DovetailJointMetadata(IDovetailJoint, DovetailHostType)
 
 - Name: `Constructor(IDovetailJoint, DovetailHostType)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L11-L26)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L11-L26)
 
 The default constructor
 
@@ -41,7 +41,7 @@ public sealed class DovetailJointMetadata
 ## DovetailJointMetadata(IDovetailJoint, DovetailHostType, DovetailCategory)
 
 - Name: `Constructor(IDovetailJoint, DovetailHostType, DovetailCategory)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L11-L39)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L11-L39)
 
 The default constructor
 
