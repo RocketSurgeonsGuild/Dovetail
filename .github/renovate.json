@@ -60,6 +60,28 @@
       "matchCategories": ["js"],
       "automerge": true,
       "labels": [":truck: private-dependencies"]
+    },
+    {
+      "description": "Shipped: src/Joinery.Dovetail.ModularPipelines builds on ModularPipelines, and the Dovetail SDKs pin it and Microsoft.Azure.Functions.Worker into the Packages.props they ship. The org preset marks them private; this repository ships them",
+      "matchDepNames": ["ModularPipelines", "Microsoft.Azure.Functions.Worker"],
+      "labels": [":package: dependencies"]
+    },
+    {
+      "description": "Only the tests, samples and Sdk.Tests scaffolds use these: consumers of this repository's packages never get them",
+      "matchDepNames": [
+        "FluentValidation",
+        "FluentValidation.*",
+        "Optionary",
+        "ZeroAlloc.Mediator",
+        "ZeroAlloc.Mediator.*",
+        "ZeroAlloc.Validation",
+        "ZeroAlloc.Validation.*",
+        "Corvus.*",
+        "NuGet.Packaging",
+        "Uno.Sdk",
+        "Uno.*"
+      ],
+      "labels": [":truck: private-dependencies"]
     }
   ]
 }
