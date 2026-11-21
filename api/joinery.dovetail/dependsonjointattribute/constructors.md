@@ -13,7 +13,7 @@ An attribute that ensures the convention runs after the given [IDovetailJoint](/
 ## DependsOnJointAttribute(Type)
 
 - Name: `Constructor(Type)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.df99f660b93b620eb74a22d624c2b80d06a28fba/src/Joinery.Dovetail/Attributes/DependsOnJointAttribute.cs#L15-L21)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.65fca43d4a7154e28dbe9531d628c844781169f5/src/Joinery.Dovetail/Attributes/DependsOnJointAttribute.cs#L15-L21)
 
 An attribute that ensures the convention runs after the given [IDovetailJoint](/Dovetail/api/joinery.dovetail/idovetailjoint.md)
 
