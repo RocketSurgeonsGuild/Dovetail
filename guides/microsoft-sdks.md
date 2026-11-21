@@ -79,7 +79,63 @@ and `Aspire.Hosting.Dotnet` packages, and `Aspire.AppHost.Sdk` is obsolete (`ASP
 `Aspire.AppHost.Sdk`, a project reference no longer generates `Projects.*` metadata. Builds resolve the Aspire CLI (`ASPIRE009` when
 they can't), so install it alongside, at the same version as the packages.
 
-Dovetail's host detection has no Aspire host yet, so an AppHost is detected as a generic host (`HostApplication`).
+An AppHost is detected as such: a project that references `Aspire.Hosting.AppHost` gets `Joinery.Dovetail.Aspire` and the
+`DistributedApplication` host in place of the generic host, so `ConfigureDovetail` extends `IDistributedApplicationBuilder`. It applies
+the `IDistributedApplicationBuilderJoint` joints of the AppHost and of the assemblies it references, in dependency order, then builds the
+application, so the resources can come from joints instead of `Program.cs`:
+
+```c#
+await using var app = await DistributedApplication.CreateBuilder(args).ConfigureDovetail();
+await app.RunAsync();
+```
+
+```c#
+// sample/SdkSample/SdkSample.AppHost/WebResourceJoint.cs
+[DovetailExport]
+public sealed class WebResourceJoint : IDistributedApplicationBuilderJoint
+{
+    /// <inheritdoc />
+    public void Register(IDovetailContext context, IDistributedApplicationBuilder builder)
+    {
+        var web = builder
+                 .AddDotnetProject("web", "../SdkSample.Web/SdkSample.Web.csproj")
+                 .WithExternalHttpEndpoints()
+                 .WithHttpHealthCheck("/health");
+        context.Set(new WebResource(web));
+    }
+}
+```
+
+A joint that needs another's resource runs after it, and finds the resource in the context:
+
+```c#
+// sample/SdkSample/SdkSample.AppHost/WorkerResourceJoint.cs
+[DovetailExport]
+[DependsOnJoint<WebResourceJoint>]
+public sealed class WorkerResourceJoint : IDistributedApplicationBuilderJoint
+{
+    /// <inheritdoc />
+    public void Register(IDovetailContext context, IDistributedApplicationBuilder builder)
+    {
+        var web = context.Get<WebResource>()
+                  ?? throw new InvalidOperationException($"{nameof(WebResourceJoint)} has not added the web resource.");
+        builder
+           .AddDotnetProject("worker", "../SdkSample.Worker/SdkSample.Worker.csproj")
+           .WithReference(web.Builder)
+           .WaitFor(web.Builder);
+    }
+}
+```
+
+The joint is in `Joinery.Dovetail.Aspire`, which any project that references `Aspire.Hosting` gets, so a library can ship resources
+to every AppHost that references it. The AppHost's helper applies only these joints and the `DistributedApplication` host-created ones:
+an AppHost has no services or configuration of its own for joints to add to. `DovetailEnableAspire=false` leaves Aspire out (the
+AppHost is a generic host again), `DovetailAspireHost=false` only the host.
+
+The services an AppHost runs are ordinary Dovetail applications. Aspire's "service defaults" fit in a library of joints that each
+service references, with nothing to call: `sample/SdkSample/SdkSample.ServiceDefaults` turns on OpenTelemetry with the OTLP exporter
+(an `IOpenTelemetryJoint`) and service discovery with health checks (an `IServiceJoint`). The whole sample, an AppHost that runs
+`SdkSample.Web` and `SdkSample.Worker`, is in `sample/SdkSample` (`mise run sample:aspire`).
 
 `Joinery.Dovetail.Sdk.Aspire.AppHost`, the mirror of `Aspire.AppHost.Sdk`, is no longer published. A project that used it switches to
 `Joinery.Dovetail.Sdk` as above.

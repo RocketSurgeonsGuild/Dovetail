@@ -13,7 +13,7 @@ Defines the category of a given convention
 ## DovetailCategoryAttribute(string)
 
 - Name: `Constructor(string)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2684f07ee53170846be385fe620b39c192be9695/src/Joinery.Dovetail/Attributes/DovetailCategoryAttribute.cs#L7-L12)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.354b445804a95dc447ae84afadceb7b383ae9fe4/src/Joinery.Dovetail/Attributes/DovetailCategoryAttribute.cs#L7-L12)
 
 Defines the category of a given convention
 
