@@ -15,7 +15,7 @@ Base convention extensions
 - Name: `AddIfMissing(DovetailContextBuilder, T)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L287-L289)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L287-L289)
 
 Set key to the value if the type is missing
 
@@ -49,7 +49,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `AddIfMissing(DovetailContextBuilder, Type, object)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set key to the value if the key is missing
 
@@ -86,7 +86,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `AddIfMissing(DovetailContextBuilder, string, T)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set key to the value if the key is missing
 
@@ -124,7 +124,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `Get(DovetailContextBuilder)`
 - Modifiers: `extension` `nullable`
 - Returns: `T?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L126-L128)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L126-L128)
 
 Get a value by type from the context
 
@@ -159,7 +159,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `Get(DovetailContextBuilder, string)`
 - Modifiers: `extension` `nullable`
 - Returns: `T?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L160-L162)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L160-L162)
 
 Get a value by key from the context
 
@@ -198,7 +198,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `GetHostType(DovetailContextBuilder)`
 - Modifiers: `extension`
 - Returns: [DovetailHostType](/Dovetail/api/joinery.dovetail/dovetailhosttype.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L341-L344)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L341-L344)
 
 Get the host type the builder is currently configured for
 
@@ -230,7 +230,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `GetOrAdd(DovetailContextBuilder, Func<T>)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L195-L204)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L195-L204)
 
 Get a value by key from the context
 
@@ -268,7 +268,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `GetOrAdd(DovetailContextBuilder, string, Func<T>)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L219-L229)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L219-L229)
 
 Get a value by key from the context
 
@@ -310,7 +310,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `IsUnitTestHost(DovetailContextBuilder)`
 - Modifiers: `extension`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L329-L331)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L329-L331)
 
 Check if this is a test host (to allow conventions to behave differently during unit tests)
 
@@ -346,7 +346,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `Require(DovetailContextBuilder)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L142-L146)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L142-L146)
 
 Get a value by type from the context or throw
 
@@ -382,7 +382,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `Require(DovetailContextBuilder, string)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L177-L181)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L177-L181)
 
 Get a value by type from the context or throw
 
@@ -422,7 +422,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `Set(DovetailContextBuilder, T)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L241-L244)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs#L241-L244)
 
 Get a value by type from the context
 
@@ -456,7 +456,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `Set(DovetailContextBuilder, Type, object)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Get a value by type from the context
 
@@ -493,7 +493,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `Set(DovetailContextBuilder, string, T)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Get a value by type from the context
 
@@ -531,7 +531,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `UseServiceProviderFactory(DovetailContextBuilder, IServiceProviderFactory<TContainerBuilder>)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set the service provider factory to be used for hosting or other systems.
 
@@ -569,7 +569,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `UseServiceProviderFactory(DovetailContextBuilder, Func<IDovetailContext, IServiceCollection, CancellationToken, ValueTask<IServiceProviderFactory<TContainerBuilder>>>)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set the service provider factory to be used for hosting or other systems.
 
@@ -607,7 +607,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `UseServiceProviderFactory(DovetailContextBuilder, Func<IDovetailContext, IServiceCollection, ValueTask<IServiceProviderFactory<TContainerBuilder>>>)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set the service provider factory to be used for hosting or other systems.
 
@@ -645,7 +645,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `UseServiceProviderFactory(IDovetailContext, IServiceProviderFactory<TContainerBuilder>)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set the service provider factory to be used for hosting or other systems.
 
@@ -683,7 +683,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `UseServiceProviderFactory(IDovetailContext, Func<IDovetailContext, IServiceCollection, CancellationToken, ValueTask<IServiceProviderFactory<TContainerBuilder>>>)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set the service provider factory to be used for hosting or other systems.
 
@@ -721,7 +721,7 @@ public static class DovetailHostBuilderExtensions
 - Name: `UseServiceProviderFactory(IDovetailContext, Func<IDovetailContext, IServiceCollection, ValueTask<IServiceProviderFactory<TContainerBuilder>>>)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailHostBuilderExtensions.cs)
 
 Set the service provider factory to be used for hosting or other systems.
 

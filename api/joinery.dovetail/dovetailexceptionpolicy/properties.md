@@ -14,7 +14,7 @@ A policy that determines how to handle exceptions thrown by conventions
 - Name: `IgnoreNotSupported`
 - Modifiers: `static` `get`
 - Returns: [DovetailExceptionPolicyDelegate](/Dovetail/api/joinery.dovetail/dovetailexceptionpolicydelegate.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/DovetailExceptionPolicy.cs#L11)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/DovetailExceptionPolicy.cs#L11)
 
 A policy that ignores `NotSupportedException` exceptions
 

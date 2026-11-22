@@ -71,7 +71,8 @@ host’s configuration, where the options binding (Optionary’s, or your own) p
 libraries can ship their own file into one output directory. The name is the project’s assembly name (<code dir="auto">AssemblyName</code>, which
 defaults to the project’s name): the <code dir="auto">ApplicationName</code> the runtime conventions look for.</li>
 <li>The files are packed under <code dir="auto">contentFiles/any/any/configuration/</code>, copied to a same-solution host’s output directory
-through a <code dir="auto">ProjectReference</code>, and restored from the package otherwise.</li>
+through a <code dir="auto">ProjectReference</code>, and restored from the package otherwise. Either way they land at the root of the output
+directory, next to the application (the package flattens them out of <code dir="auto">configuration/</code>).</li>
 <li>The generated joint loads, in ascending precedence, <code dir="auto">MyLibrary.{ext}</code>, <code dir="auto">MyLibrary.{Environment}.{ext}</code> and
 <code dir="auto">MyLibrary.local.{ext}</code>. The <code dir="auto">local</code> layer is never packed, and the SDK warns when no <code dir="auto">.gitignore</code> at or above the
 project ignores <code dir="auto">appsettings.local.*</code> (a <code dir="auto">*.local.*</code> entry counts too).</li>
@@ -84,15 +85,25 @@ though, the configuration joints read the files from next to <code dir="auto">Bu
 rebuild. A host or pipeline whose configuration was given a base path or file provider of its own keeps it.</li>
 <li>Outside a file-based app, the joints read the files through the host’s own file provider, the one its configuration
 uses for <code dir="auto">appsettings.json</code>: the host roots it at its content root, unless <code dir="auto">SetBasePath</code> or <code dir="auto">SetFileProvider</code> pointed it
-somewhere else.</li>
+somewhere else. <code dir="auto">dotnet run</code> leaves the content root at the current directory, and Aspire starts a project in its project
+directory.</li>
+<li>A joint that doesn’t find its base file (<code dir="auto">MyLibrary.{ext}</code>) there reads its files from the application’s output directory
+(<code dir="auto">AppContext.BaseDirectory</code>), where the build copied them. That is where a library’s files always are, so
+<code dir="auto">dotnet run --project MyApp</code> from any directory, or from the application’s project directory, finds every library’s files.</li>
+<li>A library ships its <code dir="auto">appsettings.{ext}</code> files as <code dir="auto">MyLibrary.{ext}</code>, so its joint looks for that name only: an
+<code dir="auto">appsettings.{ext}</code> where the host reads files is the application’s. The application’s own joint also looks for its
+source names (<code dir="auto">appsettings.{ext}</code>), which it finds in its project directory, so an edit there takes effect on the next
+<code dir="auto">dotnet run</code> without a rebuild. The application is the project the host is named after, its <code dir="auto">ApplicationName</code> (the
+entry assembly’s name unless the host was given another).</li>
 <li>To read the files from another directory, set <code dir="auto">Dovetail:ConfigurationDirectory</code> (<code dir="auto">DovetailSettings.ConfigurationDirectory</code>)
 in the host’s configuration, for example <code dir="auto">Dovetail__ConfigurationDirectory=./config</code> or
 <code dir="auto">--Dovetail:ConfigurationDirectory=./config</code>. A relative path is resolved against the current directory. It wins over
-everything above. The <code dir="auto">Dovetail__ConfigurationDirectory</code> environment variable is read directly too, for hosts whose
-configuration doesn’t read environment variables.</li>
+everything above for the files it holds; a project whose base file it doesn’t hold reads its files from the output
+directory, so the directory need only hold the files you override. The <code dir="auto">Dovetail__ConfigurationDirectory</code> environment
+variable is read directly too, for hosts whose configuration doesn’t read environment variables.</li>
 <li>Every host that reads the files from disk (the generic host, ASP.NET Core, ModularPipelines, Uno) picks the
 directory in the same order: <code dir="auto">Dovetail:ConfigurationDirectory</code>, then the directory of a file-based app’s entry point file,
-then the host’s own file provider. Configuration embedded in the application (MAUI and Uno apps) still wins over all of
+then the host’s own file provider, and each joint falls back to the output directory. Configuration embedded in the application (MAUI and Uno apps) still wins over all of
 them: a MAUI app always reads its embedded copies, and a browser (WebAssembly) host fetches its files over HTTP.</li>
 </ul>
 <div class="sl-heading-wrapper level-h3"><h3 id="naming-the-source-files">Naming the source files</h3><a class="sl-anchor-link" href="#naming-the-source-files"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Naming the source files”</span></a></div>

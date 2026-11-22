@@ -2,10 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.8.2-beta.7`
+- Version: `0.8.2-beta.11`
 - Namespace: `Joinery.Dovetail.Attributes`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/Attributes/AfterJointAttribute.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/Attributes/AfterJointAttribute.cs)
 - Inherits: `Attribute`
 - Implements: [IDovetailDependency](/Dovetail/api/joinery.dovetail/idovetaildependency.md)
 

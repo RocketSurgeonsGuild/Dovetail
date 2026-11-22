@@ -13,7 +13,7 @@ A YAML file based `Configuration.FileConfigurationProvider`.
 ## YamlConfigurationProvider(YamlConfigurationSource)
 
 - Name: `Constructor(YamlConfigurationSource)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationProvider.cs#L14)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationProvider.cs#L14)
 
 A YAML file based `Configuration.FileConfigurationProvider`.
 

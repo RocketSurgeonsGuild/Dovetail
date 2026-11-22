@@ -2,10 +2,10 @@
 
 - Kind: `delegate`
 - Package: [Joinery.Dovetail](/Dovetail/api/joinery.dovetail.md)
-- Version: `0.8.2-beta.7`
+- Version: `0.8.2-beta.11`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/obj/Release/net10.0/ConfigurationJointDelegate.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/obj/Release/net10.0/ConfigurationJointDelegate.cs)
 - Inherits: `MulticastDelegate`
 
 Delegate for the Configuration part.
