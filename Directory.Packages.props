@@ -46,7 +46,7 @@
         Configuration binding and schemas. Dovetail doesn't depend on it (applications add it themselves); the samples and tests do, and
         Joinery.Dovetail.Sdk.Tests builds against this version.
     -->
-    <PackageVersion Include="Optionary" Version="0.1.2" />
+    <PackageVersion Include="Optionary" Version="0.2.0" />
     <PackageVersion Include="bunit.web" Version="1.40.0" />
     <PackageVersion Include="DryIoc.Microsoft.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Stashbox.Extensions.DependencyInjection" Version="6.0.0" />
