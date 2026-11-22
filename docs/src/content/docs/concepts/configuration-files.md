@@ -38,15 +38,24 @@ MyLibrary/
   rebuild. A host or pipeline whose configuration was given a base path or file provider of its own keeps it.
 - Outside a file-based app, the joints read the files through the host's own file provider, the one its configuration
   uses for `appsettings.json`: the host roots it at its content root, unless `SetBasePath` or `SetFileProvider` pointed it
-  somewhere else.
+  somewhere else. `dotnet run` leaves the content root at the current directory, and Aspire starts a project in its project
+  directory.
+- A joint that doesn't find its base file (`MyLibrary.{ext}`) there reads its files from the application's output directory
+  (`AppContext.BaseDirectory`), where the build copied them. That is where a library's files always are, so
+  `dotnet run --project MyApp` from any directory, or from the application's project directory, finds every library's files.
+- Only the application's own joint also looks for its source names (`appsettings.{ext}`), which it finds in its project
+  directory, so an edit there takes effect on the next `dotnet run` without a rebuild. A library's joint looks for
+  `MyLibrary.{ext}` only: an `appsettings.{ext}` where the host reads files is the application's. The application is the
+  project the host is named after, its `ApplicationName` (the entry assembly's name unless the host was given another).
 - To read the files from another directory, set `Dovetail:ConfigurationDirectory` (`DovetailSettings.ConfigurationDirectory`)
   in the host's configuration, for example `Dovetail__ConfigurationDirectory=./config` or
   `--Dovetail:ConfigurationDirectory=./config`. A relative path is resolved against the current directory. It wins over
-  everything above. The `Dovetail__ConfigurationDirectory` environment variable is read directly too, for hosts whose
-  configuration doesn't read environment variables.
+  everything above for the files it holds; a project whose base file it doesn't hold reads its files from the output
+  directory, so the directory need only hold the files you override. The `Dovetail__ConfigurationDirectory` environment
+  variable is read directly too, for hosts whose configuration doesn't read environment variables.
 - Every host that reads the files from disk (the generic host, ASP.NET Core, ModularPipelines, Uno) picks the
   directory in the same order: `Dovetail:ConfigurationDirectory`, then the directory of a file-based app's entry point file,
-  then the host's own file provider. Configuration embedded in the application (MAUI and Uno apps) still wins over all of
+  then the host's own file provider, and each joint falls back to the output directory. Configuration embedded in the application (MAUI and Uno apps) still wins over all of
   them: a MAUI app always reads its embedded copies, and a browser (WebAssembly) host fetches its files over HTTP.
 
 ### Naming the source files

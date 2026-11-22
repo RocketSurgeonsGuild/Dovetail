@@ -419,10 +419,17 @@ public sealed class SdkTestProject : IDisposable
     /// </summary>
     /// <param name="relativePath">The directory of the application.</param>
     /// <param name="arguments">The command line arguments the application is started with.</param>
-    public async Task<string> Run(string relativePath, string arguments = "")
+    /// <param name="workingDirectory">
+    ///     The directory (relative to the scaffold) to run from with <c>dotnet run --project</c>, rather than from the application's own
+    ///     directory.
+    /// </param>
+    public async Task<string> Run(string relativePath, string arguments = "", string? workingDirectory = null)
     {
-        var psi = CreateHermeticStartInfo(arguments == "" ? "run" : $"run -- {arguments}");
-        psi.WorkingDirectory = Path.Combine(Directory, relativePath);
+        var run = workingDirectory is null
+            ? "run"
+            : $"run --project {Path.GetRelativePath(Path.Combine(Directory, workingDirectory), Path.Combine(Directory, relativePath))}";
+        var psi = CreateHermeticStartInfo(arguments == "" ? run : $"{run} -- {arguments}");
+        psi.WorkingDirectory = Path.Combine(Directory, workingDirectory ?? relativePath);
         // A net10.0 application needs the .NET 10 runtime, which a machine with only the .NET 11 (preview) runtime installed, such as
         // the CI runner, doesn't have. Let it run on the next major runtime, prerelease included.
         psi.Environment["DOTNET_ROLL_FORWARD"] = "Major";
