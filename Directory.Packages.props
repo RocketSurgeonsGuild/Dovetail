@@ -38,7 +38,7 @@
     <!-- Joinery.Dovetail.ModularPipelines; ModularPipelines 4 targets net11.0 only. -->
     <PackageVersion Include="ModularPipelines" Version="4.0.0" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
-    <PackageVersion Include="Polyfill" Version="11.4.5" />
+    <PackageVersion Include="Polyfill" Version="12.0.0" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="11.0.2" />
     <PackageVersion Include="BenchMarkDotNet" Version="0.15.8" />
     <PackageVersion Include="Tomlyn.Extensions.Configuration" Version="2.0.1" />
