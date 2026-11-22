@@ -25,7 +25,8 @@ MyLibrary/
   libraries can ship their own file into one output directory. The name is the project's assembly name (`AssemblyName`, which
   defaults to the project's name): the `ApplicationName` the runtime conventions look for.
 - The files are packed under `contentFiles/any/any/configuration/`, copied to a same-solution host's output directory
-  through a `ProjectReference`, and restored from the package otherwise.
+  through a `ProjectReference`, and restored from the package otherwise. Either way they land at the root of the output
+  directory, next to the application (the package flattens them out of `configuration/`).
 - The generated joint loads, in ascending precedence, `MyLibrary.{ext}`, `MyLibrary.{Environment}.{ext}` and
   `MyLibrary.local.{ext}`. The `local` layer is never packed, and the SDK warns when no `.gitignore` at or above the
   project ignores `appsettings.local.*` (a `*.local.*` entry counts too).
@@ -43,10 +44,11 @@ MyLibrary/
 - A joint that doesn't find its base file (`MyLibrary.{ext}`) there reads its files from the application's output directory
   (`AppContext.BaseDirectory`), where the build copied them. That is where a library's files always are, so
   `dotnet run --project MyApp` from any directory, or from the application's project directory, finds every library's files.
-- Only the application's own joint also looks for its source names (`appsettings.{ext}`), which it finds in its project
-  directory, so an edit there takes effect on the next `dotnet run` without a rebuild. A library's joint looks for
-  `MyLibrary.{ext}` only: an `appsettings.{ext}` where the host reads files is the application's. The application is the
-  project the host is named after, its `ApplicationName` (the entry assembly's name unless the host was given another).
+- A library ships its `appsettings.{ext}` files as `MyLibrary.{ext}`, so its joint looks for that name only: an
+  `appsettings.{ext}` where the host reads files is the application's. The application's own joint also looks for its
+  source names (`appsettings.{ext}`), which it finds in its project directory, so an edit there takes effect on the next
+  `dotnet run` without a rebuild. The application is the project the host is named after, its `ApplicationName` (the
+  entry assembly's name unless the host was given another).
 - To read the files from another directory, set `Dovetail:ConfigurationDirectory` (`DovetailSettings.ConfigurationDirectory`)
   in the host's configuration, for example `Dovetail__ConfigurationDirectory=./config` or
   `--Dovetail:ConfigurationDirectory=./config`. A relative path is resolved against the current directory. It wins over
