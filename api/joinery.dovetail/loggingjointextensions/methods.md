@@ -15,7 +15,7 @@ Extension methods for applying Logging parts.
 - Name: `ApplyLogging(ILoggingBuilder, IDovetailContext, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Logging.g.cs#L51-L52)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Logging.g.cs#L51-L52)
 
 Applies the registered Logging parts.
 

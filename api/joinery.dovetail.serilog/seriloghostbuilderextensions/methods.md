@@ -15,7 +15,7 @@ Builder-method extensions for applying Serilog parts to a `Dovetail.DovetailCont
 - Name: `ConfigureSerilog(DovetailContextBuilder, SerilogJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail.Serilog/obj/Release/net10.0/DovetailJoint.Serilog.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail.Serilog/obj/Release/net10.0/DovetailJoint.Serilog.g.cs)
 
 ```csharp
 public static class SerilogHostBuilderExtensions
@@ -49,7 +49,7 @@ public static class SerilogHostBuilderExtensions
 - Name: `ConfigureSerilog(DovetailContextBuilder, SerilogAsyncJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.e5590664261ce458679e619c245619797437f750/src/Joinery.Dovetail.Serilog/obj/Release/net10.0/DovetailJoint.Serilog.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.1a70f4998e74bb5e13c08f9f6cc5e89b61dcd8dc/src/Joinery.Dovetail.Serilog/obj/Release/net10.0/DovetailJoint.Serilog.g.cs)
 
 ```csharp
 public static class SerilogHostBuilderExtensions
