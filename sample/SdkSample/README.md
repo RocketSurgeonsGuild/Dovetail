@@ -193,9 +193,6 @@ that are still running keep the SDK files they read before.
 - `NuGet.config` clears the repository's feeds and maps `Joinery.Dovetail*` to the local feed.
 - `Directory.Packages.props` (empty) and `Directory.Build.targets` stop MSBuild here instead of picking up the repository's central
   package management and build targets.
-- `Directory.Build.targets` runs an application from its output directory under `dotnet run` (`RunWorkingDirectory`), which the
-  AppHost does too. Dovetail reads each library's YAML file from the host's content root, the current directory, and the build copies
-  those files to the output directory only.
 - `SdkSample.Web/Properties/launchSettings.json` gives the web app its endpoint (`http://localhost:5198`, in Development), which the
   AppHost reads to expose it.
 - `.gitignore` ignores `appsettings.local.*`. With configuration enabled, the SDK warns when no

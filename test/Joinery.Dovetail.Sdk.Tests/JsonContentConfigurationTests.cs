@@ -91,8 +91,8 @@ public class JsonContentConfigurationTests(string targetFramework)
                 "Dovetail.JsonConfiguration.g.cs"
             )
         );
-        await joint.Should().Contain("""builder.AddJsonFile(files, FileName(files, "Build.json", "appsettings.json"), optional: false""");
-        await joint.Should().Contain("""builder.AddJsonFile(files, FileName(files, $"Build.{environmentName}.json", $"appsettings.{environmentName}.json"), optional: true""");
+        await joint.Should().Contain("""builder.AddJsonFile(files, FileName(files, "Build.json", $"{source}.json"), optional: false""");
+        await joint.Should().Contain("""builder.AddJsonFile(files, FileName(files, $"Build.{environmentName}.json", $"{source}.{environmentName}.json"), optional: true""");
     }
 
     /// <summary>The <c>appsettings*</c> items of <paramref name="itemType"/>: file name, target path and copy setting.</summary>

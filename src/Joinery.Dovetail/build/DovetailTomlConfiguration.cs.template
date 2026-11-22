@@ -33,13 +33,49 @@ internal class TomlAppSettingsConfiguration : IConfigurationJoint
             return;
         }
 
-        // The output directory holds the files under the project's name. A file-based app reads them from next to its entry point file
-        // instead, where they keep their source names, appsettings.toml or {{ProjectName}}.toml.
-        // One file provider for the three files, rather than one each.
-        var files = builder.GetFileProvider();
-        builder.AddTomlFile(files, FileName(files, "{{ProjectName}}.toml", "appsettings.toml"), optional: false, reloadOnChange: false);
-        builder.AddTomlFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.toml", $"appsettings.{environmentName}.toml"), optional: true, reloadOnChange: false);
-        builder.AddTomlFile(files, FileName(files, "{{ProjectName}}.local.toml", "appsettings.local.toml"), optional: true, reloadOnChange: false);
+        // The output directory holds the files under the project's name. The application's own files can also be read where they keep
+        // their source names, appsettings.toml or {{ProjectName}}.toml: next to a file-based app's entry point file, or in its project
+        // directory. One file provider for the three files, rather than one each.
+        var source = SourceName(context);
+        var files = Find(builder.GetFileProvider(), ref source, "toml");
+        builder.AddTomlFile(files, FileName(files, "{{ProjectName}}.toml", $"{source}.toml"), optional: false, reloadOnChange: false);
+        builder.AddTomlFile(files, FileName(files, $"{{ProjectName}}.{environmentName}.toml", $"{source}.{environmentName}.toml"), optional: true, reloadOnChange: false);
+        builder.AddTomlFile(files, FileName(files, "{{ProjectName}}.local.toml", $"{source}.local.toml"), optional: true, reloadOnChange: false);
+    }
+
+    /// <summary>
+    ///     The other name to look for this project's files under: <c>appsettings</c>, the name the application's own files keep in its
+    ///     project directory and next to a file-based app's entry point file. A library never looks for it, since there it would find the
+    ///     application's files: it uses <c>{{ProjectName}}</c> again. The application is the project the host is named after (its
+    ///     <c>ApplicationName</c>).
+    /// </summary>
+    private static string SourceName(IDovetailContext context) =>
+        context.Get<string>("ApplicationName") is { Length: > 0, } applicationName
+     && !string.Equals(applicationName, "{{ProjectName}}", System.StringComparison.OrdinalIgnoreCase)
+            ? "{{ProjectName}}"
+            : "appsettings";
+
+    /// <summary>
+    ///     Where this project's files are read from: the host's files when its base file is there. Otherwise the application's base
+    ///     directory (its output directory) when the build copied the base file there, under the project's name, as it does a library's,
+    ///     so <c>dotnet run</c> from any directory, or a host whose content root is its project directory, still finds them.
+    /// </summary>
+    private static IFileProvider Find(IFileProvider files, ref string source, params string[] extensions)
+    {
+        foreach (var extension in extensions)
+        {
+            if (files.GetFileInfo($"{{ProjectName}}.{extension}").Exists || files.GetFileInfo($"{source}.{extension}").Exists) return files;
+        }
+
+        var applicationDirectory = System.AppContext.BaseDirectory;
+        foreach (var extension in extensions)
+        {
+            if (!System.IO.File.Exists(System.IO.Path.Combine(applicationDirectory, $"{{ProjectName}}.{extension}"))) continue;
+            source = "{{ProjectName}}";
+            return new PhysicalFileProvider(applicationDirectory);
+        }
+
+        return files;
     }
 
     private static string FileName(IFileProvider files, string name, string fallback) =>

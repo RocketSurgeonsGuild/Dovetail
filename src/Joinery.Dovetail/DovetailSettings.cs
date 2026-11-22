@@ -13,7 +13,8 @@ public static class DovetailSettings
     ///     The configuration key naming the directory the configuration joints read their files from. Every host that reads configuration
     ///     files from disk honors it. Without it, the joints read from the directory of the entry point file of a file-based app
     ///     (<c>dotnet run Build.cs</c>), and otherwise from the host's own file provider, which the host roots at its content root. A
-    ///     relative path is resolved against the current directory.
+    ///     relative path is resolved against the current directory. Wherever they look, a project whose base file isn't there has its
+    ///     files read from the application's output directory, where the build copied them.
     /// </summary>
     /// <remarks>
     ///     <para>
