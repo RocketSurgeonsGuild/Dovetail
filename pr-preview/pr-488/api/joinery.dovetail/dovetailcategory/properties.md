@@ -14,7 +14,7 @@ The category of a given convention
 - Name: `ValueComparer`
 - Modifiers: `static` `get`
 - Returns: [IEqualityComparer<DovetailCategory>](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/dovetailcategory.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/DovetailCategory.cs#L42)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/DovetailCategory.cs#L42)
 
 The value comparer for this category
 

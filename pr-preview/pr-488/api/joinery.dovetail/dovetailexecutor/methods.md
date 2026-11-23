@@ -14,7 +14,7 @@ A class to help with executing conventions
 
 - Name: `AddHandler(Action<TDovetail>)`
 - Returns: [DovetailExecutor](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/dovetailexecutor.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
 
 Add a synchronous convention
 
@@ -44,7 +44,7 @@ public class DovetailExecutor
 
 - Name: `AddHandler(Func<TDovetail, ValueTask>)`
 - Returns: [DovetailExecutor](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/dovetailexecutor.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
 
 Add an asynchronous convention
 
@@ -74,7 +74,7 @@ public class DovetailExecutor
 
 - Name: `AddHandler(Func<TDovetail, CancellationToken, ValueTask>)`
 - Returns: [DovetailExecutor](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/dovetailexecutor.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs)
 
 Add an asynchronous convention
 
@@ -103,7 +103,7 @@ public class DovetailExecutor
 ## Execute
 
 - Name: `Execute`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L92-L99)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L92-L99)
 
 Run all the conventions
 
@@ -124,7 +124,7 @@ public class DovetailExecutor
 
 - Name: `ExecuteAsync(CancellationToken)`
 - Returns: `ValueTask`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L126-L138)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L126-L138)
 
 Run all the conventions
 
@@ -154,7 +154,7 @@ public class DovetailExecutor
 
 - Name: `ExecuteWithContext`
 - Returns: [IDovetailContext](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L108-L115)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L108-L115)
 
 Run all the conventions
 
@@ -179,7 +179,7 @@ public class DovetailExecutor
 
 - Name: `ExecuteWithContextAsync(CancellationToken)`
 - Returns: `ValueTask<IDovetailContext>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L148-L162)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L148-L162)
 
 Run all the conventions
 

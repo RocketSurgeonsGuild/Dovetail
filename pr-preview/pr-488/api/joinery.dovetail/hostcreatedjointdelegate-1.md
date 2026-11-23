@@ -5,7 +5,7 @@
 - Version: `0.8.2-pr.13`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/obj/Release/net10.0/HostCreatedJointDelegate.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/obj/Release/net10.0/HostCreatedJointDelegate.cs)
 - Inherits: `MulticastDelegate`
 
 Delegate for the HostCreated part.

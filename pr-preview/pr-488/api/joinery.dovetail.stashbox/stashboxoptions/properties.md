@@ -14,7 +14,7 @@ Options for building the Stashbox Container
 - Name: `ConfigureContainer`
 - Modifiers: `nullable` `get; set`
 - Returns: `Action<ContainerConfigurator>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
 
 Configures the container (registration behavior, disposable transient tracking, etc.). Applied when the container is created and again once the service collection has been registered, so these settings win over the defaults set by the Microsoft.Extensions.DependencyInjection adapter.
 
@@ -29,7 +29,7 @@ public Action<ContainerConfigurator>? ConfigureContainer { get; set; }
 - Name: `ValidateLifetimesInDevelopment`
 - Modifiers: `get; set`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
 
 Enables lifetime validation when the environment is Development (defaults to true)
 
@@ -44,7 +44,7 @@ public bool ValidateLifetimesInDevelopment { get; set; }
 - Name: `ValidateOnBuild`
 - Modifiers: `get; set`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
 
 Validates the whole container once the service provider has been built (defaults to false)
 

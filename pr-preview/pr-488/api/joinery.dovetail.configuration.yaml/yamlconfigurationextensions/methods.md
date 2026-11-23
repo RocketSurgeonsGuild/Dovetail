@@ -15,7 +15,7 @@ Extension methods for adding YAML configuration sources to an `Configuration.ICo
 - Name: `AddYamlFile(IConfigurationBuilder, string)`
 - Modifiers: `extension`
 - Returns: `IConfigurationBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L27)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L27)
 
 Adds the YAML configuration provider at `path` to `builder`.
 
@@ -54,7 +54,7 @@ public static class YamlConfigurationExtensions
 - Name: `AddYamlFile(IConfigurationBuilder, string, bool)`
 - Modifiers: `extension`
 - Returns: `IConfigurationBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L41)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L41)
 
 Adds the YAML configuration provider at `path` to `builder`.
 
@@ -96,7 +96,7 @@ public static class YamlConfigurationExtensions
 - Name: `AddYamlFile(IConfigurationBuilder, string, bool, bool)`
 - Modifiers: `extension`
 - Returns: `IConfigurationBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L56)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L56)
 
 Adds the YAML configuration provider at `path` to `builder`.
 
@@ -141,7 +141,7 @@ public static class YamlConfigurationExtensions
 - Name: `AddYamlFile(IConfigurationBuilder, IFileProvider?, string, bool, bool)`
 - Modifiers: `extension`
 - Returns: `IConfigurationBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L80-L93)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L80-L93)
 
 Adds a YAML configuration source to `builder`.
 
@@ -189,7 +189,7 @@ public static class YamlConfigurationExtensions
 - Name: `AddYamlFile(IConfigurationBuilder, Action<YamlConfigurationSource>)`
 - Modifiers: `extension`
 - Returns: `IConfigurationBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L102)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L102)
 
 Adds a YAML configuration source to `builder`.
 
@@ -224,7 +224,7 @@ public static class YamlConfigurationExtensions
 - Name: `AddYamlStream(IConfigurationBuilder, Stream)`
 - Modifiers: `extension`
 - Returns: `IConfigurationBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L114-L116)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs#L114-L116)
 
 Adds a YAML configuration source to `builder` that reads from a `IO.Stream`.
 

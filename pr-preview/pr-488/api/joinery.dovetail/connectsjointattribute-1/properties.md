@@ -14,7 +14,7 @@ A marker interface to indicate a type is a convention and has a name
 - Name: `JointName`
 - Modifiers: `get`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.0e8baabd008e578e204d5b77e4720c2164a0a162/src/Joinery.Dovetail/Infrastructure/ConnectsJointAttribute.cs#L14)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Infrastructure/ConnectsJointAttribute.cs#L14)
 
 The name of the joint that this joint connects to
 
