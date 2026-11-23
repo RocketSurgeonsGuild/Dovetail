@@ -15,7 +15,7 @@ Shared helpers used to wire an `Hosting.IDistributedApplicationBuilder` up to a 
 - Name: `Configure(IDistributedApplicationBuilder, DovetailContextBuilder, CancellationToken)`
 - Modifiers: `static`
 - Returns: `ValueTask<DistributedApplication>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail.Aspire/RocketDistributedApplicationExtensions.cs#L35-L56)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail.Aspire/RocketDistributedApplicationExtensions.cs#L35-L56)
 
 Populates the context, applies shared configuration, and builds the distributed application host.
 

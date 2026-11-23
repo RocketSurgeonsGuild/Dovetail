@@ -15,7 +15,7 @@ Extension methods for [IDovetailJointMetadata](/Dovetail/pr-preview/pr-486/api/j
 - Name: `get_Assembly(IDovetailJointMetadata)`
 - Modifiers: `static`
 - Returns: `Assembly`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L17)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L17)
 
 ```csharp
 public static class DovetailMetadataDiagnosticExtensions
@@ -40,7 +40,7 @@ public static class DovetailMetadataDiagnosticExtensions
 - Name: `get_JointName(IDovetailJointMetadata)`
 - Modifiers: `static`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L22)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L22)
 
 ```csharp
 public static class DovetailMetadataDiagnosticExtensions
@@ -65,7 +65,7 @@ public static class DovetailMetadataDiagnosticExtensions
 - Name: `GetConnectedTo(IDovetailJointMetadata)`
 - Modifiers: `extension`
 - Returns: `IEnumerable<Type>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L38-L41)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L38-L41)
 
 ```csharp
 public static class DovetailMetadataDiagnosticExtensions
@@ -90,7 +90,7 @@ public static class DovetailMetadataDiagnosticExtensions
 - Name: `GetConnectedToStepNames(IDovetailJointMetadata)`
 - Modifiers: `extension`
 - Returns: `IEnumerable<string>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L47-L49)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L47-L49)
 
 ```csharp
 public static class DovetailMetadataDiagnosticExtensions
@@ -115,7 +115,7 @@ public static class DovetailMetadataDiagnosticExtensions
 - Name: `GetStepNames(IDovetailJointMetadata)`
 - Modifiers: `extension`
 - Returns: `IEnumerable<string>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L29-L32)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/Diagnostics/DovetailMetadataDiagnosticExtensions.cs#L29-L32)
 
 ```csharp
 public static class DovetailMetadataDiagnosticExtensions

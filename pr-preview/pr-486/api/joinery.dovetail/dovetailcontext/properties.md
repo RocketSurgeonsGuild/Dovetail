@@ -14,7 +14,7 @@ Base convention context that allows for stashing items in index keys Implements 
 - Name: `Categories`
 - Modifiers: `get; set`
 - Returns: `ImmutableHashSet<DovetailCategory>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailContext.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailContext.cs)
 
 The categories of joints the context loads.
 
@@ -33,7 +33,7 @@ The `Core` joints are always loaded, and when no category was given the `Applica
 - Name: `HostType`
 - Modifiers: `get`
 - Returns: [DovetailHostType](/Dovetail/pr-preview/pr-486/api/joinery.dovetail/dovetailhosttype.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailContext.cs#L49)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailContext.cs#L49)
 
 The host type
 
@@ -48,7 +48,7 @@ public DovetailHostType HostType { get; }
 - Name: `Joints`
 - Modifiers: `get`
 - Returns: `ImmutableList<IDovetailJoint>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailContext.cs#L42)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailContext.cs#L42)
 
 Get the conventions from the context
 

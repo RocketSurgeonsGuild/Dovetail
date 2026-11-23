@@ -15,7 +15,7 @@ The category of a given convention
 - Name: `Equals(object?)`
 - Modifiers: `override`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailCategory.cs#L17)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailCategory.cs#L17)
 
 Determines whether the specified object is equal to the current object.
 
@@ -46,7 +46,7 @@ public sealed class DovetailCategory
 - Name: `GetHashCode`
 - Modifiers: `override`
 - Returns: `int`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailCategory.cs#L20)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailCategory.cs#L20)
 
 Serves as the default hash function.
 
@@ -72,7 +72,7 @@ public sealed class DovetailCategory
 - Name: `op_Implicit(DovetailCategory)`
 - Modifiers: `static`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailCategory.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailCategory.cs)
 
 Implicitly convert to a string
 
@@ -103,7 +103,7 @@ public sealed class DovetailCategory
 - Name: `op_Implicit(string)`
 - Modifiers: `static`
 - Returns: [DovetailCategory](/Dovetail/pr-preview/pr-486/api/joinery.dovetail/dovetailcategory.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailCategory.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailCategory.cs)
 
 Implicitly convert from a string
 
@@ -134,7 +134,7 @@ public sealed class DovetailCategory
 - Name: `ToString`
 - Modifiers: `override`
 - Returns: `string`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/DovetailCategory.cs#L23)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/DovetailCategory.cs#L23)
 
 Returns a string that represents the current object.
 

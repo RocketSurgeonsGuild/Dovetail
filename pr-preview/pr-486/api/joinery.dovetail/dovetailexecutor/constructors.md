@@ -13,7 +13,7 @@ A class to help with executing conventions
 ## DovetailExecutor(IDovetailContext)
 
 - Name: `Constructor(IDovetailContext)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L10-L165)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/Infrastructure/DovetailExecutor.cs#L10-L165)
 
 A class to help with executing conventions
 

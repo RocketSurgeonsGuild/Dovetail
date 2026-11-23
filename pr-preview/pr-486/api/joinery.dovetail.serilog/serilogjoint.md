@@ -2,10 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Serilog](/Dovetail/pr-preview/pr-486/api/joinery.dovetail.serilog.md)
-- Version: `0.8.2-pr.13`
+- Version: `0.8.2-pr.14`
 - Namespace: `Joinery.Dovetail.Serilog`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail.Serilog/SerilogJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail.Serilog/SerilogJoint.cs)
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
 
 A joint that applies the Serilog joints and registers the Serilog logger they configure: the logger, Serilog's `ILogger` and the `ILoggerFactory` (which backs every `ILogger<T>`) take the place of the logging providers the host adds by default. This joint is automatically registered by the Dovetail generator, so it is not necessary to register this joint manually.

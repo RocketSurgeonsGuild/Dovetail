@@ -15,7 +15,7 @@ Builder-method extensions for applying Setup parts to a [DovetailContextBuilder]
 - Name: `ConfigureSetup(DovetailContextBuilder, SetupJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-486/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Setup.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Setup.g.cs)
 
 ```csharp
 public static class SetupHostBuilderExtensions
@@ -49,7 +49,7 @@ public static class SetupHostBuilderExtensions
 - Name: `ConfigureSetup(DovetailContextBuilder, SetupAsyncJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: [DovetailContextBuilder](/Dovetail/pr-preview/pr-486/api/joinery.dovetail/dovetailcontextbuilder.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.0dbc318ad08f7f5b82ee2d67aaffd22e5ac9b9a1/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Setup.g.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.Setup.g.cs)
 
 ```csharp
 public static class SetupHostBuilderExtensions
