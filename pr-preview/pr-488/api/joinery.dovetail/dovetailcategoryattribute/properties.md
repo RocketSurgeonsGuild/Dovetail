@@ -14,7 +14,7 @@ Defines the category of a given convention
 - Name: `Category`
 - Modifiers: `get`
 - Returns: [DovetailCategory](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/dovetailcategory.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/Attributes/DovetailCategoryAttribute.cs#L12)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.e45ee6e0d79c0d85cef3c470cf41c895606037cf/src/Joinery.Dovetail/Attributes/DovetailCategoryAttribute.cs#L12)
 
 The category of a given convention
 

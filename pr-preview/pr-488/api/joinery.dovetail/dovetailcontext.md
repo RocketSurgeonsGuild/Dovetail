@@ -2,10 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail](/Dovetail/pr-preview/pr-488/api/joinery.dovetail.md)
-- Version: `0.8.2-pr.13`
+- Version: `0.8.2-pr.14`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.b923ce22aa77b414a24bbc6f5b0f138765cba600/src/Joinery.Dovetail/DovetailContext.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.e45ee6e0d79c0d85cef3c470cf41c895606037cf/src/Joinery.Dovetail/DovetailContext.cs)
 - Implements: [IDovetailContext](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/idovetailcontext.md)
 
 Base convention context that allows for stashing items in index keys Implements the [IDovetailContext](/Dovetail/pr-preview/pr-488/api/joinery.dovetail/idovetailcontext.md)
