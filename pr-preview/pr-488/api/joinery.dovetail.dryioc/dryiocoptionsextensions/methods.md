@@ -15,7 +15,7 @@ Extension members for accessing [DryIocOptions](/Dovetail/pr-preview/pr-488/api/
 - Name: `get_DryIocOptions(IDovetailContext)`
 - Modifiers: `static`
 - Returns: [DryIocOptions](/Dovetail/pr-preview/pr-488/api/joinery.dovetail.dryioc/dryiocoptions.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.e45ee6e0d79c0d85cef3c470cf41c895606037cf/src/Joinery.Dovetail.DryIoc/DryIocOptionsExtensions.cs#L14)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.a3aef988fbd13ff75690c9f41acdb3e58da6e1a4/src/Joinery.Dovetail.DryIoc/DryIocOptionsExtensions.cs#L14)
 
 ```csharp
 public static class DryIocOptionsExtensions

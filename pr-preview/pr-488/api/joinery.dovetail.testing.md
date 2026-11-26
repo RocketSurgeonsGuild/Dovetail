@@ -3,7 +3,7 @@
 - Package: `Joinery.Dovetail.Testing`
 - Version: `0.8.2-pr.14`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-488-merge.Sha.e45ee6e0d79c0d85cef3c470cf41c895606037cf/src/Joinery.Dovetail.Testing/obj/Release/net10.0)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-488-merge.Sha.a3aef988fbd13ff75690c9f41acdb3e58da6e1a4/src/Joinery.Dovetail.Testing/obj/Release/net10.0)
 - NuGet: [Joinery.Dovetail.Testing](https://www.nuget.org/packages/Joinery.Dovetail.Testing)
 
 ## Namespaces

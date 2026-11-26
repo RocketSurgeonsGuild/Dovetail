@@ -3,7 +3,7 @@
 - Package: `Joinery.Dovetail.ModularPipelines`
 - Version: `0.8.2-pr.14`
 - Target framework: `net11.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-488-merge.Sha.e45ee6e0d79c0d85cef3c470cf41c895606037cf/src/Joinery.Dovetail.ModularPipelines/obj/Release/net11.0)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-488-merge.Sha.a3aef988fbd13ff75690c9f41acdb3e58da6e1a4/src/Joinery.Dovetail.ModularPipelines/obj/Release/net11.0)
 - NuGet: [Joinery.Dovetail.ModularPipelines](https://www.nuget.org/packages/Joinery.Dovetail.ModularPipelines)
 
 ## Namespaces

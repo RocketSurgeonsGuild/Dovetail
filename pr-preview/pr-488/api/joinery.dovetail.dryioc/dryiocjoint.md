@@ -5,7 +5,7 @@
 - Version: `0.8.2-pr.14`
 - Namespace: `Joinery.Dovetail.DryIoc`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.e45ee6e0d79c0d85cef3c470cf41c895606037cf/src/Joinery.Dovetail.DryIoc/DryIocJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-488-merge.Sha.a3aef988fbd13ff75690c9f41acdb3e58da6e1a4/src/Joinery.Dovetail.DryIoc/DryIocJoint.cs)
 - Implements: `IDovetailJoint`, `IServiceAsyncJoint`
 
 A joint that registers DryIoc services into the context. This joint is automatically registered by the Dovetail generator, so it is not necessary to register this joint manually.
