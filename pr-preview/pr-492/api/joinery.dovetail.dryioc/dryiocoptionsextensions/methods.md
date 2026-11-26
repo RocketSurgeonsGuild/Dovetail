@@ -1,0 +1,33 @@
+# DryIocOptionsExtensions Methods
+
+- Package: [Joinery.Dovetail.DryIoc](/Dovetail/pr-preview/pr-492/api/joinery.dovetail.dryioc.md)
+- Type: [DryIocOptionsExtensions](/Dovetail/pr-preview/pr-492/api/joinery.dovetail.dryioc/dryiocoptionsextensions.md)
+- Kind: `Methods`
+- Members: `1`
+
+Extension members for accessing [DryIocOptions](/Dovetail/pr-preview/pr-492/api/joinery.dovetail.dryioc/dryiocoptions.md) from the convention context.
+
+<a id="get-dryiocoptions"></a>
+<a id="get-dryiocoptions-idovetailcontext"></a>
+
+## get_DryIocOptions(IDovetailContext)
+
+- Name: `get_DryIocOptions(IDovetailContext)`
+- Modifiers: `static`
+- Returns: [DryIocOptions](/Dovetail/pr-preview/pr-492/api/joinery.dovetail.dryioc/dryiocoptions.md)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-492-merge.Sha.b704f8de5a56fc20916b1423a64b3b3874050871/src/Joinery.Dovetail.DryIoc/DryIocOptionsExtensions.cs#L14)
+
+```csharp
+public static class DryIocOptionsExtensions
+{
+    public static DryIocOptions get_DryIocOptions(
+        IDovetailContext context)
+    {
+        // ...
+    }
+}
+```
+
+## Parameters
+
+- `context` (`IDovetailContext`)
