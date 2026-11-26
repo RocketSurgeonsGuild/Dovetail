@@ -13,7 +13,7 @@ Defines the host type of a given convention
 ## DovetailHostTypeAttribute(DovetailHostType)
 
 - Name: `Constructor(DovetailHostType)`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail/Attributes/DovetailHostTypeAttribute.cs#L7-L12)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.9116ea12c6002cf1bba224cfb363e5a7ac536a99/src/Joinery.Dovetail/Attributes/DovetailHostTypeAttribute.cs#L7-L12)
 
 Defines the host type of a given convention
 

@@ -15,7 +15,7 @@ A YAML file based `Configuration.FileConfigurationSource`.
 - Name: `Build(IConfigurationBuilder)`
 - Modifiers: `override`
 - Returns: `IConfigurationProvider`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationSource.cs#L13-L14)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.9116ea12c6002cf1bba224cfb363e5a7ac536a99/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationSource.cs#L13-L14)
 
 Builds the `Configuration.IConfigurationProvider` for this source.
 

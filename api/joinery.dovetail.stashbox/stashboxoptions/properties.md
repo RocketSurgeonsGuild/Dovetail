@@ -14,7 +14,7 @@ Options for building the Stashbox Container
 - Name: `ConfigureContainer`
 - Modifiers: `nullable` `get; set`
 - Returns: `Action<ContainerConfigurator>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.9116ea12c6002cf1bba224cfb363e5a7ac536a99/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
 
 Configures the container (registration behavior, disposable transient tracking, etc.). Applied when the container is created and again once the service collection has been registered, so these settings win over the defaults set by the Microsoft.Extensions.DependencyInjection adapter.
 
@@ -29,7 +29,7 @@ public Action<ContainerConfigurator>? ConfigureContainer { get; set; }
 - Name: `ValidateLifetimesInDevelopment`
 - Modifiers: `get; set`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.9116ea12c6002cf1bba224cfb363e5a7ac536a99/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
 
 Enables lifetime validation when the environment is Development (defaults to true)
 
@@ -44,7 +44,7 @@ public bool ValidateLifetimesInDevelopment { get; set; }
 - Name: `ValidateOnBuild`
 - Modifiers: `get; set`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.2281acdd6f0011b26520551395637e54409e48e8/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.9116ea12c6002cf1bba224cfb363e5a7ac536a99/src/Joinery.Dovetail.Stashbox/StashboxOptions.cs)
 
 Validates the whole container once the service provider has been built (defaults to false)
 
