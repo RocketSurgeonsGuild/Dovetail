@@ -1,8 +1,6 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Joinery.Dovetail;
 
@@ -62,17 +60,19 @@ internal static class Helpers
         "CS8669",
     ];
 
-    /// <summary>The directives at the top of every generated file: nullable annotations on, and the shared warnings off.</summary>
-    public static SyntaxTriviaList SharedHeaderTrivia { get; } = TriviaList(
-        SyntaxLayout.NullableDirective(SyntaxKind.EnableKeyword),
-        SyntaxLayout.PragmaWarningDirective(SyntaxKind.DisableKeyword, _disabledWarnings)
-    );
+    /// <summary>Writes the directives at the top of every generated file: nullable annotations on, and the shared warnings off.</summary>
+    public static SourceWriter WriteSharedHeader(this SourceWriter writer) =>
+        writer.Line("#nullable enable").Line(DisableSharedWarnings);
 
-    /// <summary>The directives at the end of every generated file, which undo <see cref="SharedHeaderTrivia" />.</summary>
-    public static SyntaxTriviaList SharedFooterTrivia { get; } = TriviaList(
-        SyntaxLayout.PragmaWarningDirective(SyntaxKind.RestoreKeyword, _disabledWarnings),
-        SyntaxLayout.NullableDirective(SyntaxKind.RestoreKeyword)
-    );
+    /// <summary>Writes the directives at the end of every generated file, which undo <see cref="WriteSharedHeader" />.</summary>
+    public static SourceWriter WriteSharedFooter(this SourceWriter writer) =>
+        writer.Line(RestoreSharedWarnings).Line("#nullable restore");
+
+    private static readonly string DisableSharedWarnings = $"#pragma warning disable {string.Join(", ", _disabledWarnings)}";
+    private static readonly string RestoreSharedWarnings = $"#pragma warning restore {string.Join(", ", _disabledWarnings)}";
+
+    /// <summary><paramref name="value" /> as a C# string literal.</summary>
+    public static string StringLiteral(string value) => SymbolDisplay.FormatLiteral(value, quote: true);
 
     public static bool IsOpenGenericType(this INamedTypeSymbol type) => type.IsGenericType && ( type.IsUnboundGenericType || type.TypeArguments.All(z => z.TypeKind == TypeKind.TypeParameter) );
 
@@ -231,44 +231,11 @@ internal static class Helpers
 
 
     /// <summary>The attributes on every generated type.</summary>
-    internal static AttributeListSyntax CompilerGeneratedAttributes { get; } =
-        AttributeList(
-            SyntaxLayout.CommaSeparated(
-                Attribute(ParseName("System.CodeDom.Compiler.GeneratedCode"))
-                   .WithArgumentList(
-                        AttributeArgumentList(
-                            SyntaxLayout.CommaSeparated(
-                                AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Project.AssemblyName))),
-                                AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Attributes.FileVersion)))
-                            )
-                        )
-                    ),
-                Attribute(ParseName("System.Runtime.CompilerServices.CompilerGenerated")),
-                Attribute(ParseName("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"))
-            )
-        );
+    internal static readonly string CompilerGeneratedAttributes =
+        $"[System.CodeDom.Compiler.GeneratedCode({StringLiteral(AssemblyInfo.Project.AssemblyName)}, {StringLiteral(AssemblyInfo.Attributes.FileVersion)}), "
+      + "System.Runtime.CompilerServices.CompilerGenerated, System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]";
 
-    /// <summary>An <c>[assembly: AssemblyMetadata(key, value)]</c> attribute on a line of its own.</summary>
-    internal static AttributeListSyntax AddAssemblyAttribute(string key, string? value)
-    {
-        return AttributeList(
-                SingletonSeparatedList(
-                    Attribute(QualifiedName(QualifiedName(IdentifierName("System"), IdentifierName("Reflection")), IdentifierName("AssemblyMetadata")))
-                       .WithArgumentList(
-                            AttributeArgumentList(
-                                SyntaxLayout.CommaSeparated(
-                                    AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(key))),
-                                    AttributeArgument(
-                                        value is null
-                                            ? LiteralExpression(SyntaxKind.NullLiteralExpression)
-                                            : LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
-                                    )
-                                )
-                            )
-                        )
-                )
-            )
-           .WithTarget(AttributeTargetSpecifier(Token(SyntaxKind.AssemblyKeyword), SyntaxLayout.SpaceAfter(SyntaxKind.ColonToken)))
-           .OnLine(0);
-    }
+    /// <summary>An <c>[assembly: AssemblyMetadata(key, value)]</c> attribute.</summary>
+    internal static string AssemblyMetadataAttribute(string key, string? value) =>
+        $"[assembly: System.Reflection.AssemblyMetadata({StringLiteral(key)}, {( value is null ? "null" : StringLiteral(value) )})]";
 }
