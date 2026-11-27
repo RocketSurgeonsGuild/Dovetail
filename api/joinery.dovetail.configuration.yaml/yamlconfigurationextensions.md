@@ -2,10 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Configuration.Yaml](/Dovetail/api/joinery.dovetail.configuration.yaml.md)
-- Version: `0.8.2-beta.21`
+- Version: `0.8.2-beta.23`
 - Namespace: `Joinery.Dovetail.Configuration.Yaml`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.17b7d26d99ec453dd8fde79e881ab33c1107ffd5/src/Joinery.Dovetail.Configuration.Yaml/YamlConfigurationExtensions.cs)
 
 Extension methods for adding YAML configuration sources to an `Configuration.IConfigurationBuilder`.
 

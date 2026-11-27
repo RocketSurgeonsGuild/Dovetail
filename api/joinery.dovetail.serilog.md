@@ -1,9 +1,9 @@
 # Joinery.Dovetail.Serilog
 
 - Package: `Joinery.Dovetail.Serilog`
-- Version: `0.8.2-beta.21`
+- Version: `0.8.2-beta.23`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.Serilog)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.main.Sha.17b7d26d99ec453dd8fde79e881ab33c1107ffd5/src/Joinery.Dovetail.Serilog)
 - NuGet: [Joinery.Dovetail.Serilog](https://www.nuget.org/packages/Joinery.Dovetail.Serilog)
 
 ## Namespaces
