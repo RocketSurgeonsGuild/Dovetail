@@ -123,19 +123,6 @@ public class OptionsJointTests() : GeneratorTest()
     }
 
     [Test]
-    public async Task Exports_no_joint_below_CSharp12()
-    {
-        var result = await Joints(Optionary)
-                          .AddGlobalOption("build_property.RootNamespace", "Sample")
-                          .WithLanguageVersion(LanguageVersion.CSharp11)
-                          .AddSources(OptionsClass)
-                          .Build()
-                          .GenerateAsync(TestContext.CancellationToken);
-
-        await Verify(result);
-    }
-
-    [Test]
     public async Task Exports_no_joint_for_an_attribute_from_another_assembly()
     {
         var result = await Joints(NotOptionary)

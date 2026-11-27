@@ -210,7 +210,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
 
         // Reported once, on the joint, and nothing else: the joint is left out of the exports instead of generating code that
         // can't compile, and an exports class with no joint left in it is still valid.
-        var diagnostic = await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().HaveSingleItem();
+        var diagnostic = await result.AnalyzerResults[typeof(DovetailJointAnalyzer)].Diagnostics.Should().HaveSingleItem();
         await diagnostic.Id.Should().BeEqualTo("DT0017");
         await diagnostic.Severity.Should().BeEqualTo(DiagnosticSeverity.Error);
         await diagnostic.GetMessage().Should().BeEqualTo("Joint 'Sample.Constructed' has no public or internal constructor, so it cannot be created");
@@ -240,7 +240,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
               """
         );
 
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await result.AnalyzerResults[typeof(DovetailJointAnalyzer)].Diagnostics.Should().BeEmpty();
         await CompileErrors(result).Should().BeEmpty();
         var options = new WidgetOptions();
         var joint = await CreateJoint(DovetailContextBuilder.Create(Rivet(result), new Dictionary<object, object>(), []).Set(options));
@@ -262,7 +262,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
             """
         );
 
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await result.AnalyzerResults[typeof(DovetailJointAnalyzer)].Diagnostics.Should().BeEmpty();
         await CompileErrors(result).Should().BeEmpty();
         await Rivet(result).Single().Joint.Should().BeOfType(result.Assembly!.GetType("Sample.Constructed")!);
     }
@@ -283,7 +283,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
               """
         );
 
-        await ( await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().HaveSingleItem() ).Id.Should().BeEqualTo("DT0001");
+        await ( await result.AnalyzerResults[typeof(DovetailJointAnalyzer)].Diagnostics.Should().HaveSingleItem() ).Id.Should().BeEqualTo("DT0001");
         await CompileErrors(result).Where(z => z.Id != "DT0001").Should().BeEmpty();
     }
 

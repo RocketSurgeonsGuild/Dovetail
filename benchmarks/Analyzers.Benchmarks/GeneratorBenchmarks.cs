@@ -17,8 +17,6 @@ public class GeneratorBenchmarks
 
     /// <summary>How many files have nothing to do with Dovetail.</summary>
     private const int UnrelatedFiles = 100;
-
-    private CSharpCompilation _compilation = null!;
     private CSharpCompilation _jointEdited = null!;
     private CSharpCompilation _unrelatedEdited = null!;
     private CSharpParseOptions _parseOptions = null!;
@@ -27,6 +25,9 @@ public class GeneratorBenchmarks
     private GeneratorDriver _unrelatedDriver = null!;
     private bool _jointToggle;
     private bool _unrelatedToggle;
+
+    /// <summary>The compilation the generator runs over, which <see cref="AnalyzerBenchmarks" /> analyzes too.</summary>
+    internal CSharpCompilation Compilation { get; private set; } = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -43,7 +44,7 @@ public class GeneratorBenchmarks
             trees.Add(Parse(UnrelatedSource(i, ""), $"Unrelated{i}.cs"));
         }
 
-        _compilation = CSharpCompilation.Create(
+        Compilation = CSharpCompilation.Create(
             "Sample",
             trees,
             References(),
@@ -51,23 +52,23 @@ public class GeneratorBenchmarks
         );
 
         // An edit above the joints that doesn't change them: their spans move, nothing else does.
-        _jointEdited = _compilation.ReplaceSyntaxTree(trees[0], Parse(JointSource(0, "// edited\r\n"), "Joints0.cs"));
-        _unrelatedEdited = _compilation.ReplaceSyntaxTree(trees[JointFiles], Parse(UnrelatedSource(0, "// edited\r\n"), "Unrelated0.cs"));
+        _jointEdited = Compilation.ReplaceSyntaxTree(trees[0], Parse(JointSource(0, "// edited\r\n"), "Joints0.cs"));
+        _unrelatedEdited = Compilation.ReplaceSyntaxTree(trees[JointFiles], Parse(UnrelatedSource(0, "// edited\r\n"), "Unrelated0.cs"));
 
-        _jointDriver = CreateDriver().RunGenerators(_compilation);
-        _unrelatedDriver = CreateDriver().RunGenerators(_compilation);
+        _jointDriver = CreateDriver().RunGenerators(Compilation);
+        _unrelatedDriver = CreateDriver().RunGenerators(Compilation);
     }
 
     /// <summary>The first run, with nothing cached: a build.</summary>
     [Benchmark(Baseline = true)]
-    public GeneratorDriver Cold() => CreateDriver().RunGenerators(_compilation);
+    public GeneratorDriver Cold() => CreateDriver().RunGenerators(Compilation);
 
     /// <summary>A keystroke in a file that declares joints, which doesn't change them.</summary>
     [Benchmark]
     public GeneratorDriver Edit_joint_file()
     {
         _jointToggle = !_jointToggle;
-        return _jointDriver = _jointDriver.RunGenerators(_jointToggle ? _jointEdited : _compilation);
+        return _jointDriver = _jointDriver.RunGenerators(_jointToggle ? _jointEdited : Compilation);
     }
 
     /// <summary>A keystroke in a file that has nothing to do with Dovetail.</summary>
@@ -75,7 +76,7 @@ public class GeneratorBenchmarks
     public GeneratorDriver Edit_unrelated_file()
     {
         _unrelatedToggle = !_unrelatedToggle;
-        return _unrelatedDriver = _unrelatedDriver.RunGenerators(_unrelatedToggle ? _unrelatedEdited : _compilation);
+        return _unrelatedDriver = _unrelatedDriver.RunGenerators(_unrelatedToggle ? _unrelatedEdited : Compilation);
     }
 
     private GeneratorDriver CreateDriver() =>

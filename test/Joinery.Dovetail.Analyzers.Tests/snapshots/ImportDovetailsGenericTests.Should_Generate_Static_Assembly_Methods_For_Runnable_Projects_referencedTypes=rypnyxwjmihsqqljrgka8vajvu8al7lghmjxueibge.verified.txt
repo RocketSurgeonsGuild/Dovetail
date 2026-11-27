@@ -1,4 +1,7 @@
 ﻿{
+  AnalyzerDiagnostics: {
+    Joinery.Dovetail.DovetailJointAnalyzer: []
+  },
   FinalDiagnostics: [],
   GeneratorDiagnostics: {
     Joinery.Dovetail.DovetailAttributesGenerator: []

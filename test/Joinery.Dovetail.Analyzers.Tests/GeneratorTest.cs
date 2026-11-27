@@ -12,6 +12,7 @@ public abstract class GeneratorTest() : LoggerTest<TestRecord>(TestRecord.Create
                                                                          .WithSdkDefaultNoWarn()
                                                                          .AddCommonReferences()
                                                                          .AddCommonGenerators()
+                                                                         .WithAnalyzer<DovetailJointAnalyzer>()
                                                                          .AddDovetailConfiguration("", "");
 
     protected GeneratorTestContextBuilder WithSharedDeps() => Builder.AddSharedDeps(TestContext.CancellationToken);

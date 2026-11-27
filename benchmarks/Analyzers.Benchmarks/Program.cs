@@ -10,4 +10,4 @@ var config = ManualConfig
             .Create(DefaultConfig.Instance)
             .AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance).WithId("net10.0"));
 
-BenchmarkSwitcher.FromTypes([typeof(GeneratorBenchmarks)]).Run(args, config);
+BenchmarkSwitcher.FromTypes([typeof(GeneratorBenchmarks), typeof(AnalyzerBenchmarks)]).Run(args, config);

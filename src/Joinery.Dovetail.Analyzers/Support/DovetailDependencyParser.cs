@@ -19,17 +19,14 @@ internal static class DovetailDependencyParser
     /// <summary>An edge from the joint that declares it to <paramref name="Target" />, named by its display string.</summary>
     public readonly record struct DependencyEdge(DependencyKind Direction, string Target);
 
-    /// <summary>A malformed dependency attribute, reported where the attribute is applied.</summary>
-    public readonly record struct DependencyIssue(Location? Location, DiagnosticDescriptor Descriptor);
-
     /// <summary>
-    ///     Parses the dependency attributes on <paramref name="convention" />. Malformed attribute arguments are returned as issues
-    ///     rather than reported directly, so the caller controls whether and where to report them.
+    ///     Parses the dependency attributes on <paramref name="convention" />. A malformed attribute is handed to
+    ///     <paramref name="onIssue" /> with where it is applied, when there is one to report it; the generator passes none, so it
+    ///     never looks up the attribute's syntax.
     /// </summary>
-    public static (ImmutableArray<DependencyEdge> Edges, ImmutableArray<DependencyIssue> Issues) ParseDependencies(INamedTypeSymbol convention)
+    public static ImmutableArray<DependencyEdge> ParseDependencies(INamedTypeSymbol convention, Action<Location?, DiagnosticDescriptor>? onIssue = null)
     {
         var edges = ImmutableArray.CreateBuilder<DependencyEdge>();
-        var issues = ImmutableArray.CreateBuilder<DependencyIssue>();
 
         foreach (var attributeData in convention.GetAttributes())
         {
@@ -51,15 +48,15 @@ internal static class DovetailDependencyParser
                     edges.Add(new(kind.Value, target.ToDisplayString()));
                     break;
                 case { ConstructorArguments: [{ Kind: not TypedConstantKind.Type }] }:
-                    issues.Add(new(LocationOf(attributeData), Diagnostics.MustBeTypeOf));
+                    onIssue?.Invoke(LocationOf(attributeData), Diagnostics.MustBeTypeOf);
                     break;
                 default:
-                    issues.Add(new(LocationOf(attributeData), Diagnostics.UnhandledSymbol));
+                    onIssue?.Invoke(LocationOf(attributeData), Diagnostics.UnhandledSymbol);
                     break;
             }
         }
 
-        return (edges.ToImmutable(), issues.ToImmutable());
+        return edges.ToImmutable();
 
         static Location? LocationOf(AttributeData attribute) => attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation();
     }

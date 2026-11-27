@@ -112,7 +112,7 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await GeneratedSource(result, ImportsHint).Should().NotContain("Specular");
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await result.AnalyzerResults[typeof(DovetailJointAnalyzer)].Diagnostics.Should().BeEmpty();
         await Problems(result).Should().BeEmpty();
         await Verify(result);
     }
@@ -127,7 +127,7 @@ public class SpecularProviderSeedingTests() : GeneratorTest()
                           .GenerateAsync(TestContext.CancellationToken);
 
         await GeneratedSource(result, ImportsHint).Should().NotContain("Specular");
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Should().BeEmpty();
+        await result.AnalyzerResults[typeof(DovetailJointAnalyzer)].Diagnostics.Should().BeEmpty();
         // No provider exists to name, so seeding one anyway would fail the build here.
         await Problems(result).Should().BeEmpty();
     }
