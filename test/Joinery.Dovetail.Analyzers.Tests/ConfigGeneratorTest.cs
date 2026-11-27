@@ -20,6 +20,7 @@ public abstract class ConfigGeneratorTest() : LoggerTest<TestRecord>(TestRecord.
 {
     protected GeneratorTestContextBuilder Builder { get; } = GeneratorTestContextBuilder
                                                                          .Create()
+                                                                         .WithSdkDefaultNoWarn()
                                                                          .AddDovetailConfiguration(importNamespace: "Sample", exportNamespace: "Sample")
                                                                          .AddGlobalOption("build_property.RootNamespace", "Sample")
                                                                          .AddConfigCommonReferences()

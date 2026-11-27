@@ -112,7 +112,8 @@ public static class Example2
               .AddReferences(typeof(Expression<>))
               .AddCompilationReferences(class1)
               .AddSources(
-                   @"using Joinery.Dovetail;
+                   @"#nullable enable
+using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Infrastructure;
 using Sample.DependencyOne;
@@ -203,7 +204,8 @@ public class Class2 : IDovetailJoint
               .AddReferences(typeof(Expression<>))
               .AddCompilationReferences(class1)
               .AddSources(
-                   @"using Joinery.Dovetail;
+                   @"#nullable enable
+using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Infrastructure;
 using Sample.DependencyOne;
