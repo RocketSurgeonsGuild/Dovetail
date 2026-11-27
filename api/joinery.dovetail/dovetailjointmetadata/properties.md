@@ -14,7 +14,7 @@ Container for conventions
 - Name: `Category`
 - Modifiers: `get`
 - Returns: [DovetailCategory](/Dovetail/api/joinery.dovetail/dovetailcategory.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.6690600a1d8dc3e5d18fb6e69136cd6b75569d71/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L119)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L119)
 
 The category of the convention
 
@@ -29,7 +29,7 @@ public DovetailCategory Category { get; }
 - Name: `Dependencies`
 - Modifiers: `get; set`
 - Returns: [IReadOnlyCollection<IDovetailDependency>](/Dovetail/api/joinery.dovetail/idovetaildependency.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.6690600a1d8dc3e5d18fb6e69136cd6b75569d71/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs)
 
 The dependencies
 
@@ -44,7 +44,7 @@ public IReadOnlyCollection<IDovetailDependency> Dependencies { get; set; }
 - Name: `HostType`
 - Modifiers: `get`
 - Returns: [DovetailHostType](/Dovetail/api/joinery.dovetail/dovetailhosttype.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.6690600a1d8dc3e5d18fb6e69136cd6b75569d71/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L114)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L114)
 
 The host type of the convention
 
@@ -59,7 +59,7 @@ public DovetailHostType HostType { get; }
 - Name: `Joint`
 - Modifiers: `get`
 - Returns: [IDovetailJoint](/Dovetail/api/joinery.dovetail/idovetailjoint.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.6690600a1d8dc3e5d18fb6e69136cd6b75569d71/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L98)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/Infrastructure/DovetailJointMetadata.cs#L98)
 
 The convention
 

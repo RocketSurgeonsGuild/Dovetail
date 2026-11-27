@@ -15,7 +15,7 @@ Settings that change how Dovetail sets up a host, read from the host's own confi
 - Name: `GetConfiguredDirectory(IConfiguration?)`
 - Modifiers: `static` `nullable`
 - Returns: `string?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.6690600a1d8dc3e5d18fb6e69136cd6b75569d71/src/Joinery.Dovetail/DovetailSettings.cs#L57-L61)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailSettings.cs#L57-L61)
 
 The full path of [DovetailSettings.ConfigurationDirectory](/Dovetail/api/joinery.dovetail/dovetailsettings/fields.md#configurationdirectory) when `configuration` sets it, or else the `Dovetail__ConfigurationDirectory` environment variable does (for hosts whose configuration doesn't read environment variables); otherwise `null`.
 
@@ -46,7 +46,7 @@ public static class DovetailSettings
 - Name: `GetEntryPointFileDirectory`
 - Modifiers: `static` `nullable`
 - Returns: `string?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.6690600a1d8dc3e5d18fb6e69136cd6b75569d71/src/Joinery.Dovetail/DovetailSettings.cs#L44-L47)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailSettings.cs#L44-L47)
 
 The directory of the entry point file of a file-based app ( `dotnet run Build.cs`), where its configuration files sit, or `null` for any other app.
 
