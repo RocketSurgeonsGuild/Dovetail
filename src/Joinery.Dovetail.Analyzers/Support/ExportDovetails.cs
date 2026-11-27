@@ -53,6 +53,7 @@ internal static class ExportDovetails
         if (rejection is { }) return new(convention.Name, typeName, convention.MetadataName, location, rejection, null, null, null, default, default);
 
         var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
+        var (hostType, category) = GetDeclaredHostTypeAndCategory(convention);
         return new(
             convention.Name,
             typeName,
@@ -60,8 +61,8 @@ internal static class ExportDovetails
             location,
             null,
             Factory(typeName, callableConstructor),
-            GetDeclaredHostType(convention),
-            GetDeclaredCategory(convention),
+            hostType,
+            category,
             edges.ToEquatableArray(),
             issues.ToEquatableArray()
         );
@@ -186,46 +187,63 @@ internal static class ExportDovetails
     }
 
     /// <summary>
-    ///     The host type the joint declares, or <see langword="null" /> when it declares none. This mirrors what
-    ///     <c>DovetailContextBuilder</c> reads from the joint's type at runtime: <c>[LiveJoint]</c> and <c>[UnitTestJoint]</c> first,
-    ///     then <c>[DovetailHostType]</c>. All of them are inherited, so the attributes on base classes count, and the
-    ///     nearest declaration wins.
+    ///     The host type and category the joint declares, each <see langword="null" /> when it declares none, read in one walk up its
+    ///     base classes. This mirrors what <c>DovetailContextBuilder</c> reads from the joint's type at runtime. All of the attributes
+    ///     are inherited, so the ones on base classes count (not those on interfaces, which attribute lookup on a type never reads),
+    ///     and the nearest declaration wins. For the host type, <c>[LiveJoint]</c> and <c>[UnitTestJoint]</c> anywhere win over
+    ///     <c>[DovetailHostType]</c>.
     /// </summary>
-    private static string? GetDeclaredHostType(INamedTypeSymbol joint)
+    private static (string? HostType, string? Category) GetDeclaredHostTypeAndCategory(INamedTypeSymbol joint)
     {
-        var attributes = new List<AttributeData>();
+        string? marker = null, declaredHostType = null, category = null;
         for (var type = joint; type is not null; type = type.BaseType)
         {
             foreach (var attribute in type.GetAttributes())
             {
-                attributes.Add(attribute);
+                if (attribute.AttributeClass is not { } attributeClass || !IsDovetailAttribute(attributeClass)) continue;
+                switch (attributeClass.Name)
+                {
+                    case LiveJointAttributeName:
+                        marker ??= "Live";
+                        break;
+                    case UnitTestJointAttributeName:
+                        marker ??= "UnitTest";
+                        break;
+                    // The generator doesn't reference Dovetail, so find the member the constructor argument names in the enum itself.
+                    case DovetailHostTypeAttributeName when declaredHostType is null
+                                                         && attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Enum, Type: INamedTypeSymbol enumType, Value: { } value }]:
+                        declaredHostType = EnumMemberName(enumType, value);
+                        break;
+                    // The constructor takes a string, which the compiler has already folded to its value, whether it was written as
+                    // a literal, a constant such as DovetailCategory.Core or an expression of constants. An attribute that has no
+                    // usable value (null, or an argument that doesn't bind) declares nothing.
+                    case DovetailCategoryAttributeName when category is null
+                                                         && attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Primitive, Value: string declared }]:
+                        category = declared;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
-        foreach (var attribute in attributes)
-        {
-            switch (attribute.AttributeClass?.ToDisplayString())
-            {
-                case LiveJointAttributeName:
-                    return "Live";
-                case UnitTestJointAttributeName:
-                    return "UnitTest";
-                default:
-                    break;
-            }
-        }
-
-        foreach (var attribute in attributes)
-        {
-            if (attribute.AttributeClass?.ToDisplayString() != DovetailHostTypeAttributeName) continue;
-            if (attribute.ConstructorArguments is not [{ Kind: TypedConstantKind.Enum, Type: INamedTypeSymbol enumType, Value: { } value }]) continue;
-
-            // The generator doesn't reference Dovetail, so find the member the constructor argument names in the enum itself.
-            if (EnumMemberName(enumType, value) is { } name) return name;
-        }
-
-        return null;
+        return (marker ?? declaredHostType, category);
     }
+
+    /// <summary>
+    ///     Whether <paramref name="attributeClass" /> is declared in <c>Joinery.Dovetail.Attributes</c>, checked by walking its
+    ///     namespaces rather than formatting its name, which this did for every attribute up every joint's base classes.
+    /// </summary>
+    private static bool IsDovetailAttribute(INamedTypeSymbol attributeClass) =>
+        attributeClass is
+        {
+            ContainingType: null,
+            ContainingNamespace:
+            {
+                Name: "Attributes",
+                ContainingNamespace: { Name: "Dovetail", ContainingNamespace: { Name: "Joinery", ContainingNamespace.IsGlobalNamespace: true } },
+            },
+        };
 
     /// <summary>The name of the member of <paramref name="enumType" /> whose value is <paramref name="value" />, if there is one.</summary>
     private static string? EnumMemberName(INamedTypeSymbol enumType, object value)
@@ -254,29 +272,6 @@ internal static class ExportDovetails
     }
 
     /// <summary>
-    ///     The category the joint declares with <c>[DovetailCategory]</c>, or <see langword="null" /> when it declares none. This mirrors
-    ///     what <c>DovetailContextBuilder</c> reads from the joint's type at runtime: the attribute is inherited from base classes (not
-    ///     from interfaces, which attribute lookup on a type never reads) and the nearest declaration wins.
-    /// </summary>
-    private static string? GetDeclaredCategory(INamedTypeSymbol joint)
-    {
-        for (var type = joint; type is not null; type = type.BaseType)
-        {
-            foreach (var attribute in type.GetAttributes())
-            {
-                if (attribute.AttributeClass?.ToDisplayString() != DovetailCategoryAttributeName) continue;
-
-                // The constructor takes a string, which the compiler has already folded to its value, whether it was written as
-                // a literal, a constant such as DovetailCategory.Core or an expression of constants. An attribute that has no usable
-                // value (null, or an argument that doesn't bind) declares nothing.
-                if (attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Primitive, Value: string category }]) return category;
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
     ///     The category as the generated code spells it. <c>DovetailCategory</c> converts implicitly from the string the attribute
     ///     takes, so a category without a constant of its own is written as its string literal. The well-known ones use their
     ///     constants, which is how a joint without the attribute has always been written.
@@ -290,10 +285,10 @@ internal static class ExportDovetails
 
     private const string ApplicationCategory = "Application";
     private const string CoreCategory = "Core";
-    private const string DovetailCategoryAttributeName = "Joinery.Dovetail.Attributes.DovetailCategoryAttribute";
-    private const string LiveJointAttributeName = "Joinery.Dovetail.Attributes.LiveJointAttribute";
-    private const string UnitTestJointAttributeName = "Joinery.Dovetail.Attributes.UnitTestJointAttribute";
-    private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
+    private const string DovetailCategoryAttributeName = "DovetailCategoryAttribute";
+    private const string LiveJointAttributeName = "LiveJointAttribute";
+    private const string UnitTestJointAttributeName = "UnitTestJointAttribute";
+    private const string DovetailHostTypeAttributeName = "DovetailHostTypeAttribute";
 
     /// <summary>
     ///     The factory that gives <c>DovetailJointMetadata</c> its joint, or <see langword="null" /> when the joint is created right

@@ -30,7 +30,7 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                            .AnalyzerConfigOptionsProvider
                            .Combine(exportConfiguration)
                            .Combine(importConfiguration)
-                           .Select((provider, _) => new MsBuildConfig(
+                           .Select(static (provider, _) => new MsBuildConfig(
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("DovetailMetadata", x => bool.TryParse(x, out var v) && v),
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("DovetailAssignExternal", x => bool.TryParse(x, out var v) && v),
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("IsTestProject", x => bool.TryParse(x, out var v) && v),
@@ -71,9 +71,9 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
         // Dovetail transitively, so rather than break a project pinned to an older LangVersion, emit nothing and say why.
         var languageVersion = context
                              .ParseOptionsProvider
-                             .Select((options, _) => options is CSharpParseOptions csharp ? csharp.LanguageVersion : LanguageVersion.Latest)
+                             .Select(static (options, _) => options is CSharpParseOptions csharp ? csharp.LanguageVersion : LanguageVersion.Latest)
                              .WithTrackingName("dovetail:language_version");
-        var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
+        var supportedLanguageVersion = languageVersion.Select(static (version, _) => version >= LanguageVersion.CSharp12);
 
         // Optionary's generator emits the registration method whenever Optionary is referenced; when this assembly declares an
         // [Optionary] type, the exports list a joint that calls it. Found here rather than read from Optionary's generator.
