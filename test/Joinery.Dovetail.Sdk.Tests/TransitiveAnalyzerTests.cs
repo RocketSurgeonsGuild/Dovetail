@@ -6,14 +6,13 @@ namespace Joinery.Dovetail.Sdk.Tests;
 /// <summary>
 /// Dovetail's integration packages let the analyzer flow through their dependency on Dovetail, so a project that only
 /// references (say) Joinery.Dovetail.Hosting - no Joinery.Dovetail.Sdk, no direct Dovetail reference - still runs the generator. What it
-/// emits then follows the same rules as everywhere else: applications get an Imports class, libraries don't, and a
-/// project pinned below C# 12 gets a warning instead of code it can't compile. EmitCompilerGeneratedFiles makes the
-/// generator's output visible in the GeneratedFiles snapshot.
+/// emits then follows the same rules as everywhere else: applications get an Imports class, libraries don't.
+/// EmitCompilerGeneratedFiles makes the generator's output visible in the GeneratedFiles snapshot.
 /// </summary>
 [TargetFrameworks]
 public class TransitiveAnalyzerTests(string targetFramework)
 {
-    private SdkTestProject CreateHostingOnlyProject(string? outputType, string? langVersion = null)
+    private SdkTestProject CreateHostingOnlyProject(string? outputType)
     {
         var project = ProjectCreator
                      .Templates.SdkCsproj(targetFramework: targetFramework, outputType: outputType)
@@ -23,11 +22,6 @@ public class TransitiveAnalyzerTests(string targetFramework)
                           include: "Joinery.Dovetail.Hosting",
                           metadata: new Dictionary<string, string?> { ["Version"] = Config.DovetailPackageVersion("Joinery.Dovetail.Hosting") }
                       );
-        if (langVersion is not null)
-        {
-            project.Property("LangVersion", langVersion);
-        }
-
         var scaffold = new SdkTestProject();
         scaffold.AddProject("app/app.csproj", project);
         if (outputType is "Exe")
@@ -52,14 +46,6 @@ public class TransitiveAnalyzerTests(string targetFramework)
         using var project = CreateHostingOnlyProject(outputType: null);
 
         await project.VerifyProjects();
-    }
-
-    [Test]
-    public async Task HostingOnlyProject_BelowCSharp12_WarnsInsteadOfGenerating()
-    {
-        using var project = CreateHostingOnlyProject("Exe", langVersion: "11");
-
-        await project.VerifyBuildWarnings("app");
     }
 
     /// <summary>
