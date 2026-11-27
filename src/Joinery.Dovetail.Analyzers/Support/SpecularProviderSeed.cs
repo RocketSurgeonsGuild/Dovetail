@@ -29,14 +29,23 @@ internal static class SpecularProviderSeed
     private const string GeneratedProviderInstanceName = "global::SpecularProvider.Instance";
 
     /// <summary>
-    ///     Whether the compilation references the runtime package that defines <c>Specular.ISpecularProvider</c>. The assembly gets a
-    ///     generated <c>SpecularProvider</c> that the seeding can name when this is true and the <c>SpecularEmitProvider</c> MSBuild
-    ///     property, which Specular reads as a boolean that defaults to <see langword="true" />, isn't false. A library that sets it to
-    ///     <see langword="false" /> generates no provider and keeps receiving the application's through the context.
+    ///     Whether <paramref name="assembly" /> is the runtime package that defines <c>Specular.ISpecularProvider</c>. The assembly
+    ///     the generated code is added to gets a generated <c>SpecularProvider</c> that the seeding can name when it references this
+    ///     package and the <c>SpecularEmitProvider</c> MSBuild property, which Specular reads as a boolean that defaults to
+    ///     <see langword="true" />, isn't false. A library that sets it to <see langword="false" /> generates no provider and keeps
+    ///     receiving the application's through the context.
     /// </summary>
-    /// <param name="compilation">The compilation the generated code is added to.</param>
-    public static bool HasProviderInterface(Compilation compilation) =>
-        compilation.GetTypeByMetadataName(ProviderInterfaceMetadataName) is { TypeKind: TypeKind.Interface, DeclaredAccessibility: Accessibility.Public, };
+    /// <remarks>
+    ///     Checked for each reference while the references are read, so only the package's own assembly is searched for the type,
+    ///     rather than every assembly of a new compilation on every edit.
+    /// </remarks>
+    /// <param name="assembly">An assembly the compilation references.</param>
+    public static bool DefinesProviderInterface(IAssemblySymbol assembly) =>
+        assembly.Name == ProviderAssemblyName
+     && assembly.GetTypeByMetadataName(ProviderInterfaceMetadataName) is { TypeKind: TypeKind.Interface, DeclaredAccessibility: Accessibility.Public, };
+
+    /// <summary>The assembly of the runtime package that defines <c>Specular.ISpecularProvider</c>.</summary>
+    private const string ProviderAssemblyName = "Specular";
 
     /// <summary>
     ///     The call appended to the context builder the generated <c>Imports</c> creates, which adds the provider unless it was
