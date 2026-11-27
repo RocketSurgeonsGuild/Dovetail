@@ -78,7 +78,7 @@ project is a working example.</p>
 <li><strong>The joint.</strong> Optionary emits <code dir="auto">OptionaryConfigurationOptions.AddOptionaryConfigurationOptions(services)</code> in the project’s
 <code dir="auto">RootNamespace</code>. When an assembly declares at least one <code dir="auto">[Optionary]</code> type, Dovetail’s generator exports a joint that calls it, listed
 first so options are bound before other joints configure them in code. Every host that references the assembly registers its options,
-so there is nothing to call. Below C# 12 Dovetail emits nothing and reports <code dir="auto">DT0006</code>.</li>
+so there is nothing to call.</li>
 <li><strong>Host detection.</strong> An application the <a href="../guides/microsoft-sdks">Dovetail SDK</a> detects (ASP.NET Core, the generic host, Blazor
 WebAssembly, MAUI, Uno) is an Optionary schema host: Dovetail sets <code dir="auto">OptionarySchemaHost</code> to <code dir="auto">true</code> unless the project set it.</li>
 <li><strong>Embedded hosts.</strong> A host that embeds its configuration (<code dir="auto">DovetailEmbedConfiguration</code>, which the SDK sets for MAUI and Uno

@@ -104,9 +104,11 @@ referenced assembly that exports joints. The <code dir="auto">DovetailImportName
 </ul>
 <p>Set either property in a project file to override its default.</p>
 <p>The generator runs in every project that references a Dovetail package, including projects that only reference one
-indirectly, for example through <code dir="auto">Joinery.Dovetail.Hosting</code>. Its diagnostics (<code dir="auto">DT0001</code> to <code dir="auto">DT0005</code>, such as the error for a joint
-with more than one constructor, and <code dir="auto">DT0017</code>, the error for a joint with no constructor it can be created with) apply there too. The code it generates needs C# 12 or later: in a project whose <code dir="auto">LangVersion</code> is older, it
-generates nothing and reports warning <code dir="auto">DT0006</code> instead.</p>
+indirectly, for example through <code dir="auto">Joinery.Dovetail.Hosting</code>. So does Dovetail’s analyzer, which reports what is wrong with a joint:
+<code dir="auto">DT0001</code> to <code dir="auto">DT0005</code>, such as the error for a joint with more than one constructor, and <code dir="auto">DT0017</code>, the error for a joint with no
+constructor it can be created with. The generator leaves such a joint out of the exports. <code dir="auto">DT0005</code>, a circular dependency between
+joints, needs every joint of the project, so it is reported on build, and in the editor only when the IDE analyzes the whole
+solution. The code the generator writes needs C# 12 or later, which every supported .NET version has by default.</p>
 <div class="sl-heading-wrapper level-h2"><h2 id="speculars-provider">Specular’s provider</h2><a class="sl-anchor-link" href="#speculars-provider"><span aria-hidden="true" class="sl-anchor-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m12.11 15.39-3.88 3.88a2.52 2.52 0 0 1-3.5 0 2.47 2.47 0 0 1 0-3.5l3.88-3.88a1 1 0 1 0-1.42-1.42l-3.88 3.89a4.48 4.48 0 0 0 6.33 6.33l3.89-3.88a1 1 0 0 0-1.42-1.42m8.58-12.08a4.49 4.49 0 0 0-6.33 0l-3.89 3.88a1 1 0 1 0 1.42 1.42l3.88-3.88a2.52 2.52 0 0 1 3.5 0 2.47 2.47 0 0 1 0 3.5l-3.88 3.88a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l3.88-3.89a4.49 4.49 0 0 0 0-6.33M8.83 15.17a1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.92-4.92a1 1 0 1 0-1.42-1.42l-4.92 4.92a1 1 0 0 0 0 1.42"></path></svg></span><span class="sr-only" data-pagefind-ignore="">Section titled “Specular’s provider”</span></a></div>
 <p>An application that references <a href="https://www.nuget.org/packages/Specular">Specular</a> doesn’t set its provider by hand. Specular generates
 an internal <code dir="auto">SpecularProvider</code> into each project that emits one, and the generated <code dir="auto">Imports</code> seeds that provider into the context

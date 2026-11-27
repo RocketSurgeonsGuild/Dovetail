@@ -2,10 +2,10 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.Stashbox](/Dovetail/api/joinery.dovetail.stashbox.md)
-- Version: `0.8.2-beta.23`
+- Version: `0.8.2-beta.24`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.17b7d26d99ec453dd8fde79e881ab33c1107ffd5/src/Joinery.Dovetail.Stashbox/obj/Release/net10.0/IStashboxJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.c89aa479a31cf66e20128be06e87a71eacecc74f/src/Joinery.Dovetail.Stashbox/obj/Release/net10.0/IStashboxJoint.cs)
 - Implements: `IDovetailJoint`
 
 Joint interface for Stashbox. Implements the `Infrastructure.IDovetailJoint`
