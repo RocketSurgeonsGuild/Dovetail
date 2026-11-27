@@ -48,16 +48,24 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                             )
                            .WithTrackingName("dovetail:msbuild");
 
+        // Each joint is described in the transform, so the pipeline holds equatable models rather than symbols: an edit that
+        // doesn't touch a joint leaves the collected models equal, and the exports aren't generated again.
         var exportedDovetails = context
-                                 .SyntaxProvider
-                                 .ForAttributeWithMetadataName(
-                                      "Joinery.Dovetail.Attributes.DovetailExportAttribute",
-                                      (node, _) => node is TypeDeclarationSyntax,
-                                      (syntaxContext, _) => (INamedTypeSymbol)syntaxContext.TargetSymbol
-                                  )
-                                 .Collect()
-                                 .Select((z, _) => z.Sort(Comparer<INamedTypeSymbol>.Create((x, y) => string.Compare(x.MetadataName, y.MetadataName, StringComparison.Ordinal))))
-                                 .WithTrackingName("dovetail_:self_exports");
+                               .SyntaxProvider
+                               .ForAttributeWithMetadataName(
+                                    "Joinery.Dovetail.Attributes.DovetailExportAttribute",
+                                    static (node, _) => node is TypeDeclarationSyntax,
+                                    static (syntaxContext, _) => ExportDovetails.Describe((INamedTypeSymbol)syntaxContext.TargetSymbol)
+                                )
+                               .Collect()
+                               .Select(static (z, _) => z.Sort(static (x, y) => string.Compare(x.MetadataName, y.MetadataName, StringComparison.Ordinal)).ToEquatableArray())
+                               .WithTrackingName("dovetail:self_exports");
+
+        // Read from every compilation, but compared by value, so the imports are generated again only when the references change.
+        var referencedExports = context
+                               .CompilationProvider
+                               .Select(static (compilation, _) => ImportDovetails.ReferencedExports.From(compilation))
+                               .WithTrackingName("dovetail:referenced_exports");
 
         // The generated code uses C# 12 syntax (collection expressions). The analyzer reaches projects that only reference
         // Dovetail transitively, so rather than break a project pinned to an older LangVersion, emit nothing and say why.
@@ -84,22 +92,19 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(
             msBuildConfig
-               .Combine(context.CompilationProvider)
                .Combine(exportedDovetails)
                .Combine(hasConfigurationOptions)
                .Combine(supportedLanguageVersion),
             static (productionContext, tuple) =>
             {
                 if (!tuple.Right) return;
-                ExportDovetails.HandleDovetailExports(productionContext, new(tuple.Left.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Right));
+                ExportDovetails.HandleDovetailExports(productionContext, new(tuple.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Right));
             }
         );
 
-
         context.RegisterSourceOutput(
-            context
-               .CompilationProvider
-               .Combine(exportedDovetails)
+            referencedExports
+               .Combine(exportedDovetails.Select(static (z, _) => z.Count > 0))
                .Combine(msBuildConfig)
                .Combine(hasConfigurationOptions)
                .Combine(supportedLanguageVersion),
@@ -108,7 +113,7 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                 if (!tuple.Right) return;
                 ImportDovetails.HandleDovetailImports(
                     productionContext,
-                    new(tuple.Left.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Left.Left.Right, tuple.Left.Right)
+                    new(tuple.Left.Left.Right, tuple.Left.Left.Left.Left, tuple.Left.Left.Left.Right, tuple.Left.Right)
                 );
             }
         );

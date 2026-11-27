@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Joinery.Dovetail;
 
@@ -34,14 +33,13 @@ internal record DovetailConfigurationData(string Property, string Namespace, str
         );
     }
 
-    public SyntaxList<AttributeListSyntax> ToAttributes()
-    {
-        return [
-            .. GetType()
-               .GetProperties()
-               .Select(z => Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{z.Name}", z.GetValue(this) as string))
-        ];
-    }
+    /// <summary>Writes the <c>Dovetail.{Property}.*</c> assembly metadata that tells referencing assemblies about this configuration.</summary>
+    public SourceWriter WriteAttributes(SourceWriter writer) =>
+        writer
+           .Line(Helpers.AssemblyMetadataAttribute($"Dovetail.{Property}.{nameof(Property)}", Property))
+           .Line(Helpers.AssemblyMetadataAttribute($"Dovetail.{Property}.{nameof(Namespace)}", Namespace))
+           .Line(Helpers.AssemblyMetadataAttribute($"Dovetail.{Property}.{nameof(ClassName)}", ClassName))
+           .Line(Helpers.AssemblyMetadataAttribute($"Dovetail.{Property}.{nameof(MethodName)}", MethodName));
 
     public override string ToString() => $"{( Namespace is { Length: > 0 } ? $"{Namespace}." : "" )}{ClassName}.{MethodName}";
 

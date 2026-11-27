@@ -1,7 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Joinery.Dovetail.Support;
 
@@ -32,52 +29,28 @@ internal static class SpecularProviderSeed
     private const string GeneratedProviderInstanceName = "global::SpecularProvider.Instance";
 
     /// <summary>
-    ///     Whether the assembly gets a generated <c>SpecularProvider</c> that the seeding can name.
+    ///     Whether the compilation references the runtime package that defines <c>Specular.ISpecularProvider</c>. The assembly gets a
+    ///     generated <c>SpecularProvider</c> that the seeding can name when this is true and the <c>SpecularEmitProvider</c> MSBuild
+    ///     property, which Specular reads as a boolean that defaults to <see langword="true" />, isn't false. A library that sets it to
+    ///     <see langword="false" /> generates no provider and keeps receiving the application's through the context.
     /// </summary>
     /// <param name="compilation">The compilation the generated code is added to.</param>
-    /// <param name="emitsProvider">
-    ///     The <c>SpecularEmitProvider</c> MSBuild property, which Specular reads as a boolean that defaults to <see langword="true" />.
-    ///     A library that sets it to <see langword="false" /> generates no provider and keeps receiving the application's through the context.
-    /// </param>
-    public static bool IsAvailable(Compilation compilation, bool emitsProvider) =>
-        emitsProvider
-     && compilation.GetTypeByMetadataName(ProviderInterfaceMetadataName) is { TypeKind: TypeKind.Interface, DeclaredAccessibility: Accessibility.Public, };
+    public static bool HasProviderInterface(Compilation compilation) =>
+        compilation.GetTypeByMetadataName(ProviderInterfaceMetadataName) is { TypeKind: TypeKind.Interface, DeclaredAccessibility: Accessibility.Public, };
 
     /// <summary>
-    ///     Adds the provider to the builder the generated <c>Imports</c> creates, unless it was already added.
+    ///     The call appended to the context builder the generated <c>Imports</c> creates, which adds the provider unless it was
+    ///     already added.
     /// </summary>
-    /// <param name="importsClass">The generated <c>Imports</c> class, with its context builder factory.</param>
-    public static ClassDeclarationSyntax Seed(ClassDeclarationSyntax importsClass)
-    {
-        var factory = importsClass
-                     .Members.OfType<MethodDeclarationSyntax>()
-                     .Single(z => z.Identifier.ValueText == ImportDovetails.ContextBuilderFactoryName);
-        if (factory.ExpressionBody is not { } body) throw new InvalidOperationException("The context builder factory is expected to be expression-bodied.");
-
-        var seeded = InvocationExpression(
-                MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    body.Expression,
-                    GenericName(Identifier("AddIfMissing"))
-                       .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList(ParseTypeName(ProviderInterfaceName))))
-                )
-            )
-           .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(ParseExpression(GeneratedProviderInstanceName)))));
-        return importsClass.ReplaceNode(factory, factory.WithExpressionBody(body.WithExpression(seeded)));
-    }
+    public const string SeedCall = $".AddIfMissing<{ProviderInterfaceName}>({GeneratedProviderInstanceName})";
 
     /// <summary>
-    ///     Allows the generated code to name the provider of this assembly when another assembly shares its internals with this one.
+    ///     The warning the generated <c>Imports</c> disables around its code, so it can name the provider of this assembly when another
+    ///     assembly shares its internals with this one.
     /// </summary>
     /// <remarks>
     ///     A test host, say, sees the internals of the application it tests, which has a <c>SpecularProvider</c> of its own. The
     ///     compiler then picks the one in this assembly, which is the one meant, and warns (CS0436) that it did.
     /// </remarks>
-    /// <param name="compilationUnit">The generated <c>Imports</c> file.</param>
-    public static CompilationUnitSyntax AllowNameConflict(CompilationUnitSyntax compilationUnit) =>
-        compilationUnit
-           .WithLeadingTrivia(compilationUnit.GetLeadingTrivia().Add(Trivia(PragmaWarningDirectiveTrivia(Token(SyntaxKind.DisableKeyword), true).WithErrorCodes(NameConflictWarning))))
-           .WithTrailingTrivia(compilationUnit.GetTrailingTrivia().Insert(0, Trivia(PragmaWarningDirectiveTrivia(Token(SyntaxKind.RestoreKeyword), true).WithErrorCodes(NameConflictWarning))));
-
-    private static SeparatedSyntaxList<ExpressionSyntax> NameConflictWarning => SingletonSeparatedList<ExpressionSyntax>(IdentifierName("CS0436"));
+    public const string NameConflictWarning = "CS0436";
 }

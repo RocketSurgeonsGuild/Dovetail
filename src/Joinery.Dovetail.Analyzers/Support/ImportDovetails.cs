@@ -1,231 +1,106 @@
-using System.Collections.Immutable;
-using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Joinery.Dovetail.Helpers;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Joinery.Dovetail.Support;
 
 internal static class ImportDovetails
 {
-    public static void HandleDovetailImports(
-        SourceProductionContext context,
-        Request request
-    )
+    /// <summary>
+    ///     What the imports need from the compilation: the export methods of the referenced assemblies, and whether Specular's
+    ///     provider interface is there to seed. Read on every compilation, but cheap, and equal from one edit to the next unless
+    ///     the references change, so the imports file isn't generated again.
+    /// </summary>
+    public sealed record ReferencedExports(EquatableArray<string> ExportMethods, bool HasSpecularProviderInterface)
     {
-        if (!request.BuildConfig.ImportAssembly) return;
+        public static ReferencedExports From(Compilation compilation) => new(
+            compilation.GetDovetailReferences().Select(reference => reference.ToString()).ToEquatableArray(),
+            SpecularProviderSeed.HasProviderInterface(compilation)
+        );
+    }
 
-        var exportConfig = request.BuildConfig.ExportConfiguration;
+    public static void HandleDovetailImports(SourceProductionContext context, Request request)
+    {
+        var buildConfig = request.BuildConfig;
+        if (!buildConfig.ImportAssembly) return;
+
+        var exportConfig = buildConfig.ExportConfiguration;
         var referenceMethods = request
-                              .Compilation.GetDovetailReferences()
-                              .Select(refer => refer.ToString())
-                              .Concat(request.ExportedDovetails.Length > 0 || request.HasConfigurationOptions ? [$"{( exportConfig.Namespace is { Length: > 0 } ? $"{exportConfig.Namespace}." : "" )}{exportConfig.ClassName}.{exportConfig.MethodName}"] : [])
-                              .ToImmutableList();
-
-        var functionBody = referenceMethods.Count == 0 ? Block(YieldStatement(SyntaxKind.YieldBreakStatement)) : addEnumerateExportStatements(referenceMethods);
+                              .References.ExportMethods
+                              .Concat(request.HasExports || request.HasConfigurationOptions ? [$"{( exportConfig.Namespace is { Length: > 0 } ? $"{exportConfig.Namespace}." : "" )}{exportConfig.ClassName}.{exportConfig.MethodName}"] : [])
+                              .ToList();
 
         // Only pin the host type when the build says what it is: an explicit DovetailHostType first, then test projects.
         // Pinning it unconditionally (it used to always be UnitTest) wins over the hosting helpers'
         // AddIfMissing(DovetailHostType.Live), so real applications ran UnitTest-only joints and skipped Live-only ones.
-        var hostTypeName = PinnableHostTypes.FirstOrDefault(z => string.Equals(z, request.BuildConfig.HostType.Trim(), StringComparison.OrdinalIgnoreCase))
-         ?? ( request.BuildConfig.IsTestProject ? "UnitTest" : null );
-        ArgumentSyntax[] hostTypeArguments = hostTypeName is null
-            ? []
-            : [Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailHostType"), IdentifierName(hostTypeName)))];
-
-        var importsClass =
-            ClassDeclaration(request.BuildConfig.ImportConfiguration.ClassName)
-               .WithAttributeLists(
-                    SingletonList(
-                        CompilerGeneratedAttributes
-                           .WithLeadingTrivia(GetXmlSummary("The class defined for importing Dovetail parts into this assembly"))
-                    )
-                )
-               .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.PartialKeyword)))
-               .AddMembers(
-                    FieldDeclaration(
-                            VariableDeclaration(IdentifierName("DovetailContextBuilderFactory"))
-                               .WithVariables(
-                                    SingletonSeparatedList(
-                                        VariableDeclarator(Identifier(request.BuildConfig.ImportConfiguration.MethodName))
-                                           .WithInitializer(EqualsValueClause(IdentifierName(ContextBuilderFactoryName)))
-                                    )
-                                )
-                        )
-                       .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword))),
-                    // The parameterless factory delegate assigned to ImportHelpers.Rivets. It seeds a builder to
-                    // resolve any convention dependencies, then materializes the final builder from the imported parts.
-                    MethodDeclaration(IdentifierName("DovetailContextBuilder"), Identifier(ContextBuilderFactoryName))
-                       .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.StaticKeyword)))
-                       .WithParameterList(ParameterList([
-                        // new dictionary<object, object>
-                        Parameter(Identifier("properties"))
-                            .WithType(                            NullableType(GenericName("IDictionary").WithTypeArgumentList(TypeArgumentList(SeparatedList<TypeSyntax>([PredefinedType(Token(SyntaxKind.ObjectKeyword)), PredefinedType(Token(SyntaxKind.ObjectKeyword))]))))                        )
-                            .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.NullLiteralExpression))),
-                        Parameter(Identifier("categories"))
-                            .WithType(                            NullableType(GenericName("IEnumerable").WithTypeArgumentList(TypeArgumentList(SeparatedList<TypeSyntax>([IdentifierName("DovetailCategory")]))))                        )
-                            .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.NullLiteralExpression))),
-                       ]))
-                       .WithExpressionBody(
-            ArrowExpressionClause(
-                                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailContextBuilder"), IdentifierName("Create")))
-                                       .WithArgumentList(
-                                            ArgumentList(
-                                                SeparatedList(
-                                                    [
-                                                        Argument(InvocationExpression(IdentifierName("LoadDovetailJointsMethod")).WithArgumentList(ArgumentList())),
-                                                        Argument(BinaryExpression(
-                        SyntaxKind.CoalesceExpression,
-                        IdentifierName("properties"),
-                        ObjectCreationExpression(
-                            GenericName(Identifier("Dictionary"))
-                                .WithTypeArgumentList(
-                                    TypeArgumentList(
-                                        SeparatedList<TypeSyntax>([PredefinedType(Token(SyntaxKind.ObjectKeyword)), PredefinedType(Token(SyntaxKind.ObjectKeyword))])
-                                    )
-                                )
-                        ).WithArgumentList(ArgumentList())
-                    )),
-                                                        ..hostTypeArguments,
-                                                        Argument(BinaryExpression(                        SyntaxKind.CoalesceExpression,                        IdentifierName("categories"),                        CollectionExpression()                    ))
-                                                    ]
-                                                )
-                                            )
-                                        )
-                                    )
-                            )
-                       .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
-                       .WithLeadingTrivia(GetXmlSummary("Creates the context builder populated with the Dovetail parts imported into this assembly")),
-                    MethodDeclaration(
-                            GenericName(Identifier("IEnumerable"))
-                               .WithTypeArgumentList(
-                                    TypeArgumentList(
-                                        SingletonSeparatedList<TypeSyntax>(IdentifierName("IDovetailJointMetadata"))
-                                    )
-                                ),
-                            Identifier("LoadDovetailJointsMethod")
-                        )
-                       .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.StaticKeyword)))
-                       .WithParameterList(ParameterList())
-                       .WithBody(functionBody)
-                       .WithLeadingTrivia(GetXmlSummary("The Dovetail parts imported into this assembly"))
-                )
-               .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
+        var hostTypeName = PinnableHostTypes.FirstOrDefault(z => string.Equals(z, buildConfig.HostType.Trim(), StringComparison.OrdinalIgnoreCase))
+         ?? ( buildConfig.IsTestProject ? "UnitTest" : null );
 
         // An application that references Specular gets its provider in the context without setting it by hand.
-        var seedsSpecularProvider = SpecularProviderSeed.IsAvailable(request.Compilation, request.BuildConfig.SpecularEmitsProvider);
-        if (seedsSpecularProvider)
+        var seedsSpecularProvider = buildConfig.SpecularEmitsProvider && request.References.HasSpecularProviderInterface;
+        var importConfiguration = buildConfig.ImportConfiguration;
+
+        var writer = new SourceWriter();
+        if (seedsSpecularProvider) writer.Line($"#pragma warning disable {SpecularProviderSeed.NameConflictWarning}");
+        writer
+           .WriteSharedHeader()
+           .Line("using System;")
+           .Line("using System.Collections.Generic;")
+           .Line("using System.Runtime.Loader;")
+           .Line("using Microsoft.Extensions.DependencyInjection;")
+           .Line("using Joinery.Dovetail;")
+           .Line("using Joinery.Dovetail.Infrastructure;")
+           .BlankLine();
+        importConfiguration.WriteAttributes(writer);
+
+        var inNamespace = importConfiguration.Namespace is { Length: > 0 };
+        if (inNamespace) writer.Line($"namespace {importConfiguration.Namespace}").OpenBlock();
+
+        writer
+           .Summary("The class defined for importing Dovetail parts into this assembly")
+           .Line(CompilerGeneratedAttributes)
+           .Line($"internal static partial class {importConfiguration.ClassName}")
+           .OpenBlock()
+           .Line($"internal static DovetailContextBuilderFactory {importConfiguration.MethodName} = {ContextBuilderFactoryName};")
+           // The parameterless factory delegate assigned to ImportHelpers.Rivets. It seeds a builder to
+           // resolve any convention dependencies, then materializes the final builder from the imported parts.
+           .Summary("Creates the context builder populated with the Dovetail parts imported into this assembly")
+           .StartLine()
+           .Append("private static DovetailContextBuilder ")
+           .Append(ContextBuilderFactoryName)
+           .Append("(IDictionary<object, object>? properties = null, IEnumerable<DovetailCategory>? categories = null) => ")
+           .Append("DovetailContextBuilder.Create(LoadDovetailJointsMethod(), properties ?? new Dictionary<object, object>(), ")
+           .Append(hostTypeName is null ? "" : $"DovetailHostType.{hostTypeName}, ")
+           .Append("categories ?? [])")
+           .Append(seedsSpecularProvider ? SpecularProviderSeed.SeedCall : "")
+           .Append(";")
+           .EndLine()
+           .Summary("The Dovetail parts imported into this assembly")
+           .Line("private static IEnumerable<IDovetailJointMetadata> LoadDovetailJointsMethod()")
+           .OpenBlock();
+        if (referenceMethods.Count == 0) writer.Line("yield break;");
+        foreach (var reference in referenceMethods)
         {
-            importsClass = SpecularProviderSeed.Seed(importsClass);
+            writer.Line($"foreach (var part in {reference}())").Indented("yield return part;");
         }
 
-        if (request.BuildConfig.IsTestProject || request.BuildConfig.AssignExternal)
+        writer.CloseBlock();
+
+        if (buildConfig.IsTestProject || buildConfig.AssignExternal)
         {
-            importsClass = importsClass.AddMembers(
-                MethodDeclaration(PredefinedType(Token(SyntaxKind.VoidKeyword)), Identifier("Init"))
-                   .WithAttributeLists(
-                        SingletonList(
-                            AttributeList(
-                                SeparatedList(
-                                    [
-                                        Attribute(ParseName("System.Runtime.CompilerServices.ModuleInitializer")),
-                                        Attribute(ParseName("System.ComponentModel.EditorBrowsable"))
-                                           .WithArgumentList(
-                                                AttributeArgumentList(
-                                                    SingletonSeparatedList(
-                                                        AttributeArgument(
-                                                            MemberAccessExpression(
-                                                                SyntaxKind.SimpleMemberAccessExpression,
-                                                                ParseName("System.ComponentModel.EditorBrowsableState"),
-                                                                IdentifierName("Never")
-                                                            )
-                                                        )
-                                                    )
-                                                )
-                                            ),
-                                    ]
-                                )
-                            )
-                        )
-                    )
-                   .WithModifiers(TokenList(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword)))
-                   .WithBody(
-                        Block(
-                            List<StatementSyntax>(
-                                [
-                                    ExpressionStatement(
-                                        AssignmentExpression(
-                                            SyntaxKind.SimpleAssignmentExpression,
-                                            MemberAccessExpression(
-                                                SyntaxKind.SimpleMemberAccessExpression,
-                                                IdentifierName("ImportHelpers"),
-                                                IdentifierName("Rivets")
-                                            ),
-                                            IdentifierName(request.BuildConfig.ImportConfiguration.MethodName)
-                                        )
-                                    ),
-                                ]
-                            )
-                        )
-                    )
-            );
+            writer
+               .BlankLine()
+               .Line("[System.Runtime.CompilerServices.ModuleInitializer, System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]")
+               .Line("internal static void Init()")
+               .OpenBlock()
+               .Line($"ImportHelpers.Rivets = {importConfiguration.MethodName};")
+               .CloseBlock();
         }
 
-        var cu = CompilationUnit()
-                .WithAttributeLists(request.BuildConfig.ImportConfiguration.ToAttributes())
-                .AddSharedTrivia()
-                .WithUsings(
-                     List(
-                         [
-                             UsingDirective(ParseName("System")),
-                             UsingDirective(ParseName("System.Collections.Generic")),
-                             UsingDirective(ParseName("System.Runtime.Loader")),
-                             UsingDirective(ParseName("Microsoft.Extensions.DependencyInjection")),
-                             UsingDirective(ParseName("Joinery.Dovetail")),
-                             UsingDirective(ParseName("Joinery.Dovetail.Infrastructure")),
-                         ]
-                     )
-                 );
-        var members = new List<MemberDeclarationSyntax>
-        {
-            importsClass,
-        };
+        writer.CloseBlock();
+        if (inNamespace) writer.CloseBlock();
 
-        cu = cu
-           .AddMembers(
-                request.BuildConfig.ImportConfiguration is { Namespace: { Length: > 0 } relativeNamespace }
-                    ? [NamespaceDeclaration(ParseName(relativeNamespace)).AddMembers(members.ToArray())]
-                    : [.. members]
-            );
-
-        if (seedsSpecularProvider) cu = SpecularProviderSeed.AllowNameConflict(cu);
-
-        context.AddSource(
-            "Imported_Assembly_Dovetails.g.cs",
-            cu.NormalizeWhitespace().SyntaxTree.GetRoot().GetText(Encoding.UTF8)
-        );
-
-        static BlockSyntax addEnumerateExportStatements(IReadOnlyCollection<string> references)
-        {
-            var block = Block();
-            foreach (var reference in references)
-            {
-                block = block.AddStatements(
-                    ForEachStatement(
-                            IdentifierName("var"),
-                            Identifier("part"),
-                            InvocationExpression(ParseExpression(reference))
-                               .WithArgumentList(ArgumentList()),
-                            YieldStatement(SyntaxKind.YieldReturnStatement, IdentifierName("part"))
-                        )
-                       .NormalizeWhitespace()
-                );
-            }
-
-            return block;
-        }
+        if (seedsSpecularProvider) writer.Line($"#pragma warning restore {SpecularProviderSeed.NameConflictWarning}");
+        context.AddSource("Imported_Assembly_Dovetails.g.cs", writer.WriteSharedFooter().ToSourceText());
     }
 
     /// <summary>The name of the generated method that creates the context builder.</summary>
@@ -234,12 +109,10 @@ internal static class ImportDovetails
     /// <summary>The <c>DovetailHostType</c> values a build may pin; anything else (e.g. <c>Undefined</c>) leaves it to the host.</summary>
     private static readonly string[] PinnableHostTypes = ["Live", "UnitTest"];
 
-    public record Request
-    (
-        Compilation Compilation,
-        MsBuildConfig BuildConfig,
-        ImmutableArray<INamedTypeSymbol> ExportedDovetails,
-        bool HasConfigurationOptions
-    );
-
+    /// <summary>What the imports file is generated from.</summary>
+    /// <param name="BuildConfig">The build properties.</param>
+    /// <param name="References">What the imports need from the compilation.</param>
+    /// <param name="HasExports">Whether this assembly exports any joint, so its own exports are imported too.</param>
+    /// <param name="HasConfigurationOptions">Whether this assembly declares Optionary options, which its exports register.</param>
+    public record Request(MsBuildConfig BuildConfig, ReferencedExports References, bool HasExports, bool HasConfigurationOptions);
 }

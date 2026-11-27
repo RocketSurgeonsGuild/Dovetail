@@ -1,7 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Joinery.Dovetail.Helpers;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Joinery.Dovetail.Support;
 
@@ -52,25 +51,24 @@ internal static class OptionaryJoint
         return classes.Combine(assembly).Select(static (z, _) => z.Left || z.Right).WithTrackingName("dovetail:optionary_declarations");
     }
 
-    /// <summary>The joint class, which calls the registration method in <paramref name="rootNamespace" />.</summary>
+    /// <summary>Writes the joint class, which calls the registration method in <paramref name="rootNamespace" />.</summary>
+    /// <param name="writer">The exports file, at the depth of the exports class's members.</param>
     /// <param name="rootNamespace">The <c>RootNamespace</c> build property, used verbatim; empty or whitespace is the global namespace.</param>
-    public static MemberDeclarationSyntax Declaration(string rootNamespace)
+    public static SourceWriter Write(SourceWriter writer, string rootNamespace)
     {
         var registrationClass = string.IsNullOrWhiteSpace(rootNamespace)
             ? $"global::{RegistrationClassName}"
             : $"global::{rootNamespace}.{RegistrationClassName}";
-        var joint = (ClassDeclarationSyntax)ParseMemberDeclaration(
-            $$"""
-            private sealed class {{JointClassName}} : global::Joinery.Dovetail.Joints.IServiceJoint
-            {
-                public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) =>
-                    {{registrationClass}}.{{RegistrationMethodName}}(services);
-            }
-            """
-        )!;
-        return joint.WithAttributeLists(
-            SingletonList(CompilerGeneratedAttributes.WithLeadingTrivia(GetXmlSummary("Registers this assembly's [Optionary] types with the options pipeline.")))
-        );
+        return writer
+              .Summary("Registers this assembly's [Optionary] types with the options pipeline.")
+              .Line(CompilerGeneratedAttributes)
+              .Line($"private sealed class {JointClassName} : global::Joinery.Dovetail.Joints.IServiceJoint")
+              .OpenBlock()
+              .Line(
+                   "public void Register(global::Joinery.Dovetail.IDovetailContext context, global::Microsoft.Extensions.DependencyInjection.IServiceCollection services) => "
+                 + $"{registrationClass}.{RegistrationMethodName}(services);"
+               )
+              .CloseBlock();
     }
 
     private static bool FromOptionary(GeneratorAttributeSyntaxContext syntaxContext) =>
