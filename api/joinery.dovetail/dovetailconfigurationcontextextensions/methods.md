@@ -15,7 +15,7 @@ Extension members for IDovetailContext configuration access.
 - Name: `get_Configuration(IDovetailContext)`
 - Modifiers: `static`
 - Returns: `IConfiguration`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailConfigurationContextExtensions.cs#L18-L21)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail/DovetailConfigurationContextExtensions.cs#L18-L21)
 
 ```csharp
 public static class DovetailConfigurationContextExtensions

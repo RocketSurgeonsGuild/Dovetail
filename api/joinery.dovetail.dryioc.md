@@ -1,9 +1,9 @@
 # Joinery.Dovetail.DryIoc
 
 - Package: `Joinery.Dovetail.DryIoc`
-- Version: `0.8.2-beta.20`
+- Version: `0.8.2-beta.21`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail.DryIoc)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.DryIoc)
 - NuGet: [Joinery.Dovetail.DryIoc](https://www.nuget.org/packages/Joinery.Dovetail.DryIoc)
 
 ## Namespaces

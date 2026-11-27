@@ -12,7 +12,7 @@ An attribute that ensures the convention runs before the given [IDovetailJoint](
 ## DependentOfJointAttribute
 
 - Name: `Constructor`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/Attributes/DependentOfJointAttribute.cs#L15-L21)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail/Attributes/DependentOfJointAttribute.cs#L15-L21)
 
 ```csharp
 public sealed class DependentOfJointAttribute<T>

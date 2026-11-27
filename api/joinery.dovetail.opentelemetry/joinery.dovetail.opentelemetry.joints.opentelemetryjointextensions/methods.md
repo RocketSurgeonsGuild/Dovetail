@@ -15,7 +15,7 @@ Extension methods for applying LoggerProvider parts.
 - Name: `ConfigureLoggerProvider(DovetailContextBuilder, LoggerProviderJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L29-L30)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L29-L30)
 
 ```csharp
 public static class OpenTelemetryJointExtensions
@@ -50,7 +50,7 @@ public static class OpenTelemetryJointExtensions
 - Name: `ConfigureMeterProvider(DovetailContextBuilder, MeterProviderJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L75-L76)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L75-L76)
 
 ```csharp
 public static class OpenTelemetryJointExtensions
@@ -85,7 +85,7 @@ public static class OpenTelemetryJointExtensions
 - Name: `ConfigureResourceBuilder(DovetailContextBuilder, ResourceBuilderJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L45-L46)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L45-L46)
 
 ```csharp
 public static class OpenTelemetryJointExtensions
@@ -120,7 +120,7 @@ public static class OpenTelemetryJointExtensions
 - Name: `ConfigureTracerProvider(DovetailContextBuilder, TracerProviderJointDelegate, int, DovetailCategory?, DovetailHostType, string?)`
 - Modifiers: `extension`
 - Returns: `DovetailContextBuilder`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L60-L61)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.OpenTelemetry/Joints/OpenTelemetryJointExtensions.cs#L60-L61)
 
 ```csharp
 public static class OpenTelemetryJointExtensions

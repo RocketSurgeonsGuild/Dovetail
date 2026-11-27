@@ -2,10 +2,10 @@
 
 - Kind: `class`
 - Package: [Joinery.Dovetail.Mermaid](/Dovetail/api/joinery.dovetail.mermaid.md)
-- Version: `0.8.2-beta.20`
+- Version: `0.8.2-beta.21`
 - Namespace: `Joinery.Dovetail`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.f0c56e1dcadc9219196cd48facce90770bb6bd05/src/Joinery.Dovetail.Mermaid/DovetailContextDiagram.cs)
 
 Adds support for rendering an `Dovetail.IDovetailContext` 's resolved joints as a Mermaid diagram.
 
