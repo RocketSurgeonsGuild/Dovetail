@@ -15,7 +15,7 @@ Base convention extensions
 - Name: `AddIfMissing(IDovetailContext, T)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L23-L25)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L23-L25)
 
 Set key to the value if the type is missing
 
@@ -53,7 +53,7 @@ public static class DovetailContextExtensions
 - Name: `AddIfMissing(IDovetailContext, Type, object)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs)
 
 Set key to the value if the key is missing
 
@@ -94,7 +94,7 @@ public static class DovetailContextExtensions
 - Name: `AddIfMissing(IDovetailContext, string, T)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs)
 
 Set key to the value if the key is missing
 
@@ -136,7 +136,7 @@ public static class DovetailContextExtensions
 - Name: `Get(IDovetailContext)`
 - Modifiers: `extension` `nullable`
 - Returns: `T?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L68-L69)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L68-L69)
 
 Get a value by type from the context
 
@@ -171,7 +171,7 @@ public static class DovetailContextExtensions
 - Name: `Get(IDovetailContext, string)`
 - Modifiers: `extension` `nullable`
 - Returns: `T?`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L82-L83)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L82-L83)
 
 Get a value by key from the context
 
@@ -210,7 +210,7 @@ public static class DovetailContextExtensions
 - Name: `GetHostType(IDovetailContext)`
 - Modifiers: `extension`
 - Returns: [DovetailHostType](/Dovetail/api/joinery.dovetail/dovetailhosttype.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L94-L98)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L94-L98)
 
 Get the host type the context is currently running under
 
@@ -246,7 +246,7 @@ public static class DovetailContextExtensions
 - Name: `GetOrAdd(IDovetailContext, Func<T>)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L112-L114)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L112-L114)
 
 Get a value by key from the context
 
@@ -284,7 +284,7 @@ public static class DovetailContextExtensions
 - Name: `GetOrAdd(IDovetailContext, string, Func<T>)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L129-L131)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L129-L131)
 
 Get a value by key from the context
 
@@ -326,7 +326,7 @@ public static class DovetailContextExtensions
 - Name: `IsUnitTestHost(IDovetailContext)`
 - Modifiers: `extension`
 - Returns: `bool`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L142-L143)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L142-L143)
 
 Check if this is a test host (to allow conventions to behave differently during unit tests)
 
@@ -361,7 +361,7 @@ public static class DovetailContextExtensions
 
 - Name: `RegisterJoints(IDovetailContext, Action<DovetailExecutor>)`
 - Modifiers: `extension`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L154-L159)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L154-L159)
 
 Register a set of conventions
 
@@ -396,7 +396,7 @@ public static class DovetailContextExtensions
 - Name: `RegisterJointsAsync(IDovetailContext, Action<DovetailExecutor>, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L188-L192)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L188-L192)
 
 Register a set of conventions
 
@@ -438,7 +438,7 @@ public static class DovetailContextExtensions
 - Name: `RegisterJointsWithContext(IDovetailContext, Action<DovetailExecutor>)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L170-L174)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L170-L174)
 
 Register a set of conventions
 
@@ -477,7 +477,7 @@ public static class DovetailContextExtensions
 - Name: `RegisterJointsWithContextAsync(IDovetailContext, Action<DovetailExecutor>, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask<IDovetailContext>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L206-L210)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L206-L210)
 
 Register a set of conventions
 
@@ -519,7 +519,7 @@ public static class DovetailContextExtensions
 - Name: `Require(IDovetailContext)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L224-L228)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L224-L228)
 
 Get a value by type from the context or throw
 
@@ -555,7 +555,7 @@ public static class DovetailContextExtensions
 - Name: `Require(IDovetailContext, string)`
 - Modifiers: `extension`
 - Returns: `T`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L243-L247)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L243-L247)
 
 Get a value by type from the context or throw
 
@@ -595,7 +595,7 @@ public static class DovetailContextExtensions
 - Name: `Set(IDovetailContext, T)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs#L259-L263)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs#L259-L263)
 
 Get a value by type from the context
 
@@ -629,7 +629,7 @@ public static class DovetailContextExtensions
 - Name: `Set(IDovetailContext, Type, object)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs)
 
 Get a value by type from the context
 
@@ -666,7 +666,7 @@ public static class DovetailContextExtensions
 - Name: `Set(IDovetailContext, string, T)`
 - Modifiers: `extension`
 - Returns: [IDovetailContext](/Dovetail/api/joinery.dovetail/idovetailcontext.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail/DovetailContextExtensions.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail/DovetailContextExtensions.cs)
 
 Get a value by type from the context
 

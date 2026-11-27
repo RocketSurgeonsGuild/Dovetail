@@ -15,7 +15,7 @@ Shared helpers used to wire an `Testing.IDistributedApplicationTestingBuilder` u
 - Name: `Configure(IDistributedApplicationTestingBuilder, DovetailContextBuilder, CancellationToken)`
 - Modifiers: `static`
 - Returns: `ValueTask<DistributedApplication>`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.d3d86de99d09b379bd09cfaa27e848e7aa21ab62/src/Joinery.Dovetail.Aspire.Testing/RocketDistributedApplicationTestingExtensions.cs#L36-L58)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.main.Sha.8a82cb49b33f2224c727413f73300cc763726aca/src/Joinery.Dovetail.Aspire.Testing/RocketDistributedApplicationTestingExtensions.cs#L36-L58)
 
 Populates the context, applies shared configuration, and builds the distributed application test host.
 
