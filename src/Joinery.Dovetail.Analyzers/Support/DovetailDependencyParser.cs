@@ -4,10 +4,9 @@ using Microsoft.CodeAnalysis;
 namespace Joinery.Dovetail.Support;
 
 /// <summary>
-///     Parses the <c>DependsOnJoint</c>/<c>DependentOfJoint</c>/<c>BeforeJoint</c>/<c>AfterJoint</c> attributes
-///     declared on a joint type into a normalized edge list, and detects cycles across a set of joints. Shared
-///     between <see cref="ExportDovetails" /> (which reports diagnostics and emits <c>.WithDependency(...)</c>
-///     calls) and the Mermaid diagram builder (which only needs the edges).
+///     Parses the <c>DependsOnJoint</c>/<c>DependentOfJoint</c>/<c>BeforeJoint</c>/<c>AfterJoint</c> attributes declared on a
+///     joint type into a normalized edge list, and detects cycles across a set of joints. The results hold names, not symbols, so
+///     they can be part of the generator's cached pipeline values.
 /// </summary>
 internal static class DovetailDependencyParser
 {
@@ -17,18 +16,20 @@ internal static class DovetailDependencyParser
         DependentOf,
     }
 
-    public readonly record struct DependencyEdge(DependencyKind Direction, INamedTypeSymbol Target);
+    /// <summary>An edge from the joint that declares it to <paramref name="Target" />, named by its display string.</summary>
+    public readonly record struct DependencyEdge(DependencyKind Direction, string Target);
+
+    /// <summary>A malformed dependency attribute, reported where the attribute is applied.</summary>
+    public readonly record struct DependencyIssue(Location? Location, DiagnosticDescriptor Descriptor);
 
     /// <summary>
-    ///     Parses the dependency attributes on <paramref name="convention" />. Malformed attribute arguments are
-    ///     returned as issues rather than reported directly, so callers control whether/where to report them
-    ///     (avoids double-reporting when both <see cref="ExportDovetails" /> and the diagram builder parse the
-    ///     same joint).
+    ///     Parses the dependency attributes on <paramref name="convention" />. Malformed attribute arguments are returned as issues
+    ///     rather than reported directly, so the caller controls whether and where to report them.
     /// </summary>
-    public static (ImmutableArray<DependencyEdge> Edges, ImmutableArray<(Location? Location, DiagnosticDescriptor Descriptor)> Issues) ParseDependencies(INamedTypeSymbol convention)
+    public static (ImmutableArray<DependencyEdge> Edges, ImmutableArray<DependencyIssue> Issues) ParseDependencies(INamedTypeSymbol convention)
     {
         var edges = ImmutableArray.CreateBuilder<DependencyEdge>();
-        var issues = ImmutableArray.CreateBuilder<(Location? Location, DiagnosticDescriptor Descriptor)>();
+        var issues = ImmutableArray.CreateBuilder<DependencyIssue>();
 
         foreach (var attributeData in convention.GetAttributes())
         {
@@ -41,46 +42,47 @@ internal static class DovetailDependencyParser
 
             if (kind is null) continue;
 
-            var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
-
             switch (attributeData)
             {
                 case { AttributeClass.TypeArguments: [INamedTypeSymbol target] }:
-                    edges.Add(new(kind.Value, target));
+                    edges.Add(new(kind.Value, target.ToDisplayString()));
                     break;
                 case { ConstructorArguments: [{ Kind: TypedConstantKind.Type, Value: INamedTypeSymbol target }] }:
-                    edges.Add(new(kind.Value, target));
+                    edges.Add(new(kind.Value, target.ToDisplayString()));
                     break;
                 case { ConstructorArguments: [{ Kind: not TypedConstantKind.Type }] }:
-                    issues.Add((location, Diagnostics.MustBeTypeOf));
+                    issues.Add(new(LocationOf(attributeData), Diagnostics.MustBeTypeOf));
                     break;
                 default:
-                    issues.Add((location, Diagnostics.UnhandledSymbol));
+                    issues.Add(new(LocationOf(attributeData), Diagnostics.UnhandledSymbol));
                     break;
             }
         }
 
         return (edges.ToImmutable(), issues.ToImmutable());
+
+        static Location? LocationOf(AttributeData attribute) => attribute.ApplicationSyntaxReference?.GetSyntax().GetLocation();
     }
 
     /// <summary>
-    ///     Detects cycles across the given local joint dependency graph. Only edges pointing at another local joint
-    ///     can participate in a cycle (an edge to a joint exported from a different assembly can't be verified at
-    ///     this compile-time boundary). Returns one entry per joint that participates in a detected cycle, together
-    ///     with the full cycle chain for diagnostic reporting.
+    ///     Detects cycles across the given local joint dependency graph, whose joints and edge targets are named by their display
+    ///     strings. Only edges pointing at another local joint can participate in a cycle (an edge to a joint exported from a
+    ///     different assembly can't be verified at this compile-time boundary). Returns one entry per joint that participates in a
+    ///     detected cycle, together with the full cycle chain for diagnostic reporting.
     /// </summary>
-    public static ImmutableArray<(INamedTypeSymbol Joint, ImmutableArray<INamedTypeSymbol> Cycle)> DetectCycles(
-        ImmutableArray<(INamedTypeSymbol Joint, ImmutableArray<DependencyEdge> Edges)> graph
+    public static ImmutableArray<(string Joint, ImmutableArray<string> Cycle)> DetectCycles(
+        IEnumerable<(string Joint, IEnumerable<DependencyEdge> Edges)> graph
     )
     {
-        var comparer = SymbolEqualityComparer.Default;
-        var jointSet = new HashSet<INamedTypeSymbol>(graph.Select(g => g.Joint), comparer);
+        var joints = graph.ToList();
+        var comparer = StringComparer.Ordinal;
+        var jointSet = new HashSet<string>(joints.Select(g => g.Joint), comparer);
 
         // Normalize both attribute directions into a single "runs before" adjacency list: DependsOn means the
         // target runs before the joint; DependentOf (and its Before/After aliases) means the joint runs before
         // the target.
-        var runsBefore = new Dictionary<INamedTypeSymbol, List<INamedTypeSymbol>>(comparer);
-        foreach (var (joint, edges) in graph)
+        var runsBefore = new Dictionary<string, List<string>>(comparer);
+        foreach (var (joint, edges) in joints)
         {
             foreach (var edge in edges)
             {
@@ -92,19 +94,19 @@ internal static class DovetailDependencyParser
             }
         }
 
-        var results = ImmutableArray.CreateBuilder<(INamedTypeSymbol, ImmutableArray<INamedTypeSymbol>)>();
-        var state = new Dictionary<INamedTypeSymbol, int>(comparer); // 0/absent = unvisited, 1 = in-progress, 2 = done
-        var stack = new List<INamedTypeSymbol>();
-        var reported = new HashSet<INamedTypeSymbol>(comparer);
+        var results = ImmutableArray.CreateBuilder<(string, ImmutableArray<string>)>();
+        var state = new Dictionary<string, int>(comparer); // 0/absent = unvisited, 1 = in-progress, 2 = done
+        var stack = new List<string>();
+        var reported = new HashSet<string>(comparer);
 
-        foreach (var joint in graph.Select(g => g.Joint))
+        foreach (var (joint, _) in joints)
         {
             if (!state.ContainsKey(joint)) Visit(joint);
         }
 
         return results.ToImmutable();
 
-        void Visit(INamedTypeSymbol node)
+        void Visit(string node)
         {
             state[node] = 1;
             stack.Add(node);
@@ -118,7 +120,7 @@ internal static class DovetailDependencyParser
                         if (successorState == 1)
                         {
                             var cycleStart = stack.FindIndex(x => comparer.Equals(x, successor));
-                            var cycleBuilder = ImmutableArray.CreateBuilder<INamedTypeSymbol>(stack.Count - cycleStart + 1);
+                            var cycleBuilder = ImmutableArray.CreateBuilder<string>(stack.Count - cycleStart + 1);
                             for (var i = cycleStart; i < stack.Count; i++) cycleBuilder.Add(stack[i]);
                             cycleBuilder.Add(successor);
                             var cycle = cycleBuilder.MoveToImmutable();

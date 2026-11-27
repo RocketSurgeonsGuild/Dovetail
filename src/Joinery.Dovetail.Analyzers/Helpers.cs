@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -49,25 +48,31 @@ internal static class Helpers
         }
     }
 
-    public static CompilationUnitSyntax AddSharedTrivia(this CompilationUnitSyntax source)
-    {
-        return source
-              .WithLeadingTrivia(
-                   Trivia(NullableDirectiveTrivia(Token(SyntaxKind.EnableKeyword), true)),
-                   Trivia(
-                       PragmaWarningDirectiveTrivia(Token(SyntaxKind.DisableKeyword), true)
-                          .WithErrorCodes(SeparatedList(List(DisabledWarnings.Value)))
-                   )
-               )
-              .WithTrailingTrivia(
-                   Trivia(
-                       PragmaWarningDirectiveTrivia(Token(SyntaxKind.RestoreKeyword), true)
-                          .WithErrorCodes(SeparatedList(List(DisabledWarnings.Value)))
-                   ),
-                   Trivia(NullableDirectiveTrivia(Token(SyntaxKind.RestoreKeyword), true)),
-                   CarriageReturnLineFeed
-               );
-    }
+    /// <summary>The warnings every generated file disables. Declared before the trivia built from it, which reads it while initializing.</summary>
+    private static readonly string[] _disabledWarnings =
+    [
+        "CA1002",
+        "CA1034",
+        "CA1822",
+        "CS0105",
+        "CS1573",
+        "CS8602",
+        "CS8603",
+        "CS8618",
+        "CS8669",
+    ];
+
+    /// <summary>The directives at the top of every generated file: nullable annotations on, and the shared warnings off.</summary>
+    public static SyntaxTriviaList SharedHeaderTrivia { get; } = TriviaList(
+        SyntaxLayout.NullableDirective(SyntaxKind.EnableKeyword),
+        SyntaxLayout.PragmaWarningDirective(SyntaxKind.DisableKeyword, _disabledWarnings)
+    );
+
+    /// <summary>The directives at the end of every generated file, which undo <see cref="SharedHeaderTrivia" />.</summary>
+    public static SyntaxTriviaList SharedFooterTrivia { get; } = TriviaList(
+        SyntaxLayout.PragmaWarningDirective(SyntaxKind.RestoreKeyword, _disabledWarnings),
+        SyntaxLayout.NullableDirective(SyntaxKind.RestoreKeyword)
+    );
 
     public static bool IsOpenGenericType(this INamedTypeSymbol type) => type.IsGenericType && ( type.IsUnboundGenericType || type.TypeArguments.All(z => z.TypeKind == TypeKind.TypeParameter) );
 
@@ -225,37 +230,25 @@ internal static class Helpers
     }
 
 
-    internal static AttributeListSyntax CompilerGeneratedAttributes =
+    /// <summary>The attributes on every generated type.</summary>
+    internal static AttributeListSyntax CompilerGeneratedAttributes { get; } =
         AttributeList(
-            SeparatedList(
-                [
-                    Attribute(ParseName("System.CodeDom.Compiler.GeneratedCode"))
-                       .WithArgumentList(
-                            AttributeArgumentList(
-                                SeparatedList(
-                                    [
-                                        AttributeArgument(
-                                            LiteralExpression(
-                                                SyntaxKind.StringLiteralExpression,
-                                                Literal(AssemblyInfo.Project.AssemblyName)
-                                            )
-                                        ),
-                                        AttributeArgument(
-                                            LiteralExpression(
-                                                SyntaxKind.StringLiteralExpression,
-                                                Literal(AssemblyInfo.Attributes.FileVersion)
-                                            )
-                                        ),
-                                    ]
-                                )
+            SyntaxLayout.CommaSeparated(
+                Attribute(ParseName("System.CodeDom.Compiler.GeneratedCode"))
+                   .WithArgumentList(
+                        AttributeArgumentList(
+                            SyntaxLayout.CommaSeparated(
+                                AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Project.AssemblyName))),
+                                AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Attributes.FileVersion)))
                             )
-                        ),
-                    Attribute(ParseName("System.Runtime.CompilerServices.CompilerGenerated")),
-                    Attribute(ParseName("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage")),
-                ]
+                        )
+                    ),
+                Attribute(ParseName("System.Runtime.CompilerServices.CompilerGenerated")),
+                Attribute(ParseName("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"))
             )
         );
 
+    /// <summary>An <c>[assembly: AssemblyMetadata(key, value)]</c> attribute on a line of its own.</summary>
     internal static AttributeListSyntax AddAssemblyAttribute(string key, string? value)
     {
         return AttributeList(
@@ -263,85 +256,19 @@ internal static class Helpers
                     Attribute(QualifiedName(QualifiedName(IdentifierName("System"), IdentifierName("Reflection")), IdentifierName("AssemblyMetadata")))
                        .WithArgumentList(
                             AttributeArgumentList(
-                                SeparatedList(
-                                    [
-                                        AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(key))),
-                                        AttributeArgument(
-                                            value is null
-                                                ? LiteralExpression(SyntaxKind.NullLiteralExpression)
-                                                : LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
-                                        ),
-                                    ]
+                                SyntaxLayout.CommaSeparated(
+                                    AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(key))),
+                                    AttributeArgument(
+                                        value is null
+                                            ? LiteralExpression(SyntaxKind.NullLiteralExpression)
+                                            : LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
+                                    )
                                 )
                             )
                         )
                 )
             )
-           .WithTarget(AttributeTargetSpecifier(Token(SyntaxKind.AssemblyKeyword)));
+           .WithTarget(AttributeTargetSpecifier(Token(SyntaxKind.AssemblyKeyword), SyntaxLayout.SpaceAfter(SyntaxKind.ColonToken)))
+           .OnLine(0);
     }
-
-    internal static SyntaxTrivia GetXmlSummary(string text)
-    {
-        return Trivia(
-            DocumentationCommentTrivia(
-                SyntaxKind.SingleLineDocumentationCommentTrivia,
-                List<XmlNodeSyntax>(
-                    [
-                        XmlText()
-                           .WithTextTokens(
-                                TokenList(XmlTextLiteral(TriviaList(DocumentationCommentExterior("///")), " ", " ", TriviaList()))
-                            ),
-                        XmlExampleElement(
-                                SingletonList<XmlNodeSyntax>(
-                                    XmlText()
-                                       .WithTextTokens(
-                                            TokenList(
-                                                XmlNewLine,
-                                                XmlTextLiteral(
-                                                    TriviaList(DocumentationCommentExterior("    ///")),
-                                                    $" {text}",
-                                                    $" {text}",
-                                                    TriviaList()
-                                                ),
-                                                XmlNewLine,
-                                                XmlTextLiteral(
-                                                    TriviaList(DocumentationCommentExterior("    ///")),
-                                                    " ",
-                                                    " ",
-                                                    TriviaList()
-                                                )
-                                            )
-                                        )
-                                )
-                            )
-                           .WithStartTag(XmlElementStartTag(XmlName(Identifier("summary"))))
-                           .WithEndTag(XmlElementEndTag(XmlName(Identifier("summary")))),
-                        XmlText().WithTextTokens(TokenList(XmlNewLine)),
-                    ]
-                )
-            )
-        );
-    }
-
-
-
-
-    private static readonly string[] _disabledWarnings =
-    [
-        "CA1002",
-        "CA1034",
-        "CA1822",
-        "CS0105",
-        "CS1573",
-        "CS8602",
-        "CS8603",
-        "CS8618",
-        "CS8669",
-    ];
-
-    private static readonly Lazy<ImmutableArray<ExpressionSyntax>> DisabledWarnings = new(
-        () => [.. _disabledWarnings.Select(z => (ExpressionSyntax)IdentifierName(z))]
-    );
-
-    private static readonly SyntaxToken XmlNewLine = XmlTextNewLine(TriviaList(), "\n", "\n", TriviaList());
 }

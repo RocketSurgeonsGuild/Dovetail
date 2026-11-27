@@ -34,14 +34,14 @@ internal record DovetailConfigurationData(string Property, string Namespace, str
         );
     }
 
-    public SyntaxList<AttributeListSyntax> ToAttributes()
-    {
-        return [
-            .. GetType()
-               .GetProperties()
-               .Select(z => Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{z.Name}", z.GetValue(this) as string))
-        ];
-    }
+    /// <summary>The <c>Dovetail.{Property}.*</c> assembly metadata that tells referencing assemblies about this configuration.</summary>
+    public SyntaxList<AttributeListSyntax> ToAttributes() =>
+    [
+        Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{nameof(Property)}", Property),
+        Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{nameof(Namespace)}", Namespace),
+        Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{nameof(ClassName)}", ClassName),
+        Helpers.AddAssemblyAttribute($"Dovetail.{Property}.{nameof(MethodName)}", MethodName),
+    ];
 
     public override string ToString() => $"{( Namespace is { Length: > 0 } ? $"{Namespace}." : "" )}{ClassName}.{MethodName}";
 

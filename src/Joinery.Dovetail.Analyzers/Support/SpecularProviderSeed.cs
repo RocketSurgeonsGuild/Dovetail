@@ -32,16 +32,14 @@ internal static class SpecularProviderSeed
     private const string GeneratedProviderInstanceName = "global::SpecularProvider.Instance";
 
     /// <summary>
-    ///     Whether the assembly gets a generated <c>SpecularProvider</c> that the seeding can name.
+    ///     Whether the compilation references the runtime package that defines <c>Specular.ISpecularProvider</c>. The assembly gets a
+    ///     generated <c>SpecularProvider</c> that the seeding can name when this is true and the <c>SpecularEmitProvider</c> MSBuild
+    ///     property, which Specular reads as a boolean that defaults to <see langword="true" />, isn't false. A library that sets it to
+    ///     <see langword="false" /> generates no provider and keeps receiving the application's through the context.
     /// </summary>
     /// <param name="compilation">The compilation the generated code is added to.</param>
-    /// <param name="emitsProvider">
-    ///     The <c>SpecularEmitProvider</c> MSBuild property, which Specular reads as a boolean that defaults to <see langword="true" />.
-    ///     A library that sets it to <see langword="false" /> generates no provider and keeps receiving the application's through the context.
-    /// </param>
-    public static bool IsAvailable(Compilation compilation, bool emitsProvider) =>
-        emitsProvider
-     && compilation.GetTypeByMetadataName(ProviderInterfaceMetadataName) is { TypeKind: TypeKind.Interface, DeclaredAccessibility: Accessibility.Public, };
+    public static bool HasProviderInterface(Compilation compilation) =>
+        compilation.GetTypeByMetadataName(ProviderInterfaceMetadataName) is { TypeKind: TypeKind.Interface, DeclaredAccessibility: Accessibility.Public, };
 
     /// <summary>
     ///     Adds the provider to the builder the generated <c>Imports</c> creates, unless it was already added.
@@ -76,8 +74,12 @@ internal static class SpecularProviderSeed
     /// <param name="compilationUnit">The generated <c>Imports</c> file.</param>
     public static CompilationUnitSyntax AllowNameConflict(CompilationUnitSyntax compilationUnit) =>
         compilationUnit
-           .WithLeadingTrivia(compilationUnit.GetLeadingTrivia().Add(Trivia(PragmaWarningDirectiveTrivia(Token(SyntaxKind.DisableKeyword), true).WithErrorCodes(NameConflictWarning))))
-           .WithTrailingTrivia(compilationUnit.GetTrailingTrivia().Insert(0, Trivia(PragmaWarningDirectiveTrivia(Token(SyntaxKind.RestoreKeyword), true).WithErrorCodes(NameConflictWarning))));
+           .WithLeadingTrivia(compilationUnit.GetLeadingTrivia().Insert(0, SyntaxLayout.PragmaWarningDirective(SyntaxKind.DisableKeyword, NameConflictWarning)))
+           .WithEndOfFileToken(
+                compilationUnit.EndOfFileToken.WithLeadingTrivia(
+                    compilationUnit.EndOfFileToken.LeadingTrivia.Insert(0, SyntaxLayout.PragmaWarningDirective(SyntaxKind.RestoreKeyword, NameConflictWarning))
+                )
+            );
 
-    private static SeparatedSyntaxList<ExpressionSyntax> NameConflictWarning => SingletonSeparatedList<ExpressionSyntax>(IdentifierName("CS0436"));
+    private const string NameConflictWarning = "CS0436";
 }

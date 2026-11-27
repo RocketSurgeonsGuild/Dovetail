@@ -1,189 +1,213 @@
-using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Joinery.Dovetail.Helpers;
+using static Joinery.Dovetail.SyntaxLayout;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Joinery.Dovetail.Support;
 
 internal static class ExportDovetails
 {
+    /// <summary>
+    ///     What the exports need to know about a joint, read from its symbol in the pipeline's transform. It holds no symbol, so an
+    ///     edit elsewhere leaves it equal and the exports file isn't generated again.
+    /// </summary>
+    /// <param name="Name">The joint's name, which the cycle diagnostic names it by.</param>
+    /// <param name="TypeName">The joint's display string, which the generated code names it by.</param>
+    /// <param name="MetadataName">The joint's metadata name, which orders the exports.</param>
+    /// <param name="Location">Where the joint is declared, for its diagnostics.</param>
+    /// <param name="Rejection">Why the joint is left out of the exports, or <see langword="null" /> when it is exported.</param>
+    /// <param name="Factory">The factory that creates the joint when its constructor takes parameters, or <see langword="null" /> to create it with <c>new</c>.</param>
+    /// <param name="HostType">The host type the joint declares, or <see langword="null" /> when it declares none.</param>
+    /// <param name="Category">The category the joint declares, or <see langword="null" /> for <c>Application</c>.</param>
+    /// <param name="Edges">The joint's dependencies.</param>
+    /// <param name="Issues">The malformed dependency attributes on the joint.</param>
+    public sealed record ExportedJoint(
+        string Name,
+        string TypeName,
+        string MetadataName,
+        Location? Location,
+        DiagnosticDescriptor? Rejection,
+        string? Factory,
+        string? HostType,
+        string? Category,
+        EquatableArray<DovetailDependencyParser.DependencyEdge> Edges,
+        EquatableArray<DovetailDependencyParser.DependencyIssue> Issues
+    );
+
+    /// <summary>Reads what the exports need to know about <paramref name="convention" />.</summary>
+    public static ExportedJoint Describe(INamedTypeSymbol convention)
+    {
+        var typeName = convention.ToDisplayString();
+        var location = convention.Locations.FirstOrDefault();
+
+        // Only the constructors the generated code can call count: a private one is there for something else to use.
+        var (callableConstructorCount, callableConstructor) = CallableConstructor(convention);
+        var rejection = callableConstructorCount > 1
+            ? Diagnostics.DovetailHasToManyConstructors
+            // Left out of the exports like any other joint that is reported, so nothing else fails to compile because of it.
+            : callableConstructorCount == 0 && convention.InstanceConstructors.Length > 0
+                ? Diagnostics.DovetailHasNoCallableConstructor
+                : convention.IsGenericType
+                    ? Diagnostics.DovetailCannotBeGeneric
+                    : null;
+        if (rejection is { }) return new(convention.Name, typeName, convention.MetadataName, location, rejection, null, null, null, default, default);
+
+        var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
+        return new(
+            convention.Name,
+            typeName,
+            convention.MetadataName,
+            location,
+            null,
+            Factory(typeName, callableConstructor),
+            GetDeclaredHostType(convention),
+            GetDeclaredCategory(convention),
+            edges.ToEquatableArray(),
+            issues.ToEquatableArray()
+        );
+    }
+
     public static void HandleDovetailExports(SourceProductionContext context, Request request)
     {
-        (var msBuildConfig, var conventions, var hasConfigurationOptions) = request;
-        if (!conventions.Any() && !hasConfigurationOptions) return;
+        (var msBuildConfig, var joints, var hasConfigurationOptions) = request;
+        if (joints.Count == 0 && !hasConfigurationOptions) return;
 
-        var helperClassBody = Block();
+        // The class sits in the namespace when there is one; its method one level in, and the method's statements one more.
+        var classDepth = msBuildConfig.ExportConfiguration is { Namespace.Length: > 0 } ? 1 : 0;
+        var statementDepth = classDepth + 2;
+
+        var statements = new List<StatementSyntax>();
         if (hasConfigurationOptions)
         {
             // First, so options are bound from configuration before other joints configure them in code.
-            helperClassBody = helperClassBody.AddStatements(
-                YieldStatement(
-                    SyntaxKind.YieldReturnStatement,
-                    ObjectCreationExpression(IdentifierName("DovetailJointMetadata"))
-                       .WithArgumentList(
-                            ArgumentList(
-                                SeparatedList(
-                                    new[]
-                                    {
-                                        Argument(ObjectCreationExpression(IdentifierName(OptionaryJoint.JointClassName)).WithArgumentList(ArgumentList())),
-                                        Argument(_hostTypeUndefined),
-                                        Argument(_categoryApplication),
-                                    }
-                                )
-                            )
+            statements.Add(
+                YieldReturn(
+                        NewObject(
+                            IdentifierName("DovetailJointMetadata"),
+                            Argument(NewObject(IdentifierName(OptionaryJoint.JointClassName))),
+                            Argument(_hostTypeUndefined),
+                            Argument(_categoryApplication)
                         )
-                )
+                    )
+                   .OnLine(statementDepth)
             );
         }
 
-        var dependencyGraph = ImmutableArray.CreateBuilder<(INamedTypeSymbol Joint, ImmutableArray<DovetailDependencyParser.DependencyEdge> Edges)>();
+        var dependencyGraph = new List<(string Joint, IEnumerable<DovetailDependencyParser.DependencyEdge> Edges)>();
+        var jointsByName = new Dictionary<string, ExportedJoint>(StringComparer.Ordinal);
 
-        foreach (var convention in conventions)
+        foreach (var joint in joints)
         {
-            // Only the constructors the generated code can call count: a private one is there for something else to use.
-            var (callableConstructorCount, callableConstructor) = CallableConstructor(convention);
-            if (callableConstructorCount > 1)
+            if (joint.Rejection is { } rejection)
             {
-                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.DovetailHasToManyConstructors, convention.Locations.FirstOrDefault()));
+                context.ReportDiagnostic(
+                    rejection == Diagnostics.DovetailHasNoCallableConstructor
+                        ? Diagnostic.Create(rejection, joint.Location, joint.TypeName)
+                        : Diagnostic.Create(rejection, joint.Location)
+                );
                 continue;
             }
 
-            // Left out of the exports like any other joint that is reported, so nothing else fails to compile because of it.
-            if (callableConstructorCount == 0 && convention.InstanceConstructors.Length > 0)
+            foreach (var (location, descriptor) in joint.Issues)
             {
-                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.DovetailHasNoCallableConstructor, convention.Locations.FirstOrDefault(), convention.ToDisplayString()));
-                continue;
+                context.ReportDiagnostic(Diagnostic.Create(descriptor, location ?? joint.Location));
             }
 
-            if (convention.IsGenericType)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(Diagnostics.DovetailCannotBeGeneric, convention.Locations.FirstOrDefault()));
-                continue;
-            }
+            dependencyGraph.Add((joint.TypeName, joint.Edges));
+            jointsByName[joint.TypeName] = joint;
 
-            var createDovetail = NewDovetail(convention, callableConstructor);
-
+            var createDovetail = joint.Factory is { } factory ? ParseExpression(factory) : NewObject(ParseName(joint.TypeName));
             // What the joint declares wins; only a joint that declares nothing takes the project's default.
-            var hostType = GetDeclaredHostType(convention) ?? ( msBuildConfig.IsTestProject ? _hostTypeUnitTestHost : _hostTypeUndefined );
-            var conventionCategory = GetDeclaredCategory(convention);
+            var hostType = joint.HostType is { } declaredHostType
+                ? HostTypeExpression(declaredHostType)
+                : msBuildConfig.IsTestProject
+                    ? _hostTypeUnitTestHost
+                    : _hostTypeUndefined;
 
-            var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
-            foreach (var (location, descriptor) in issues)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(descriptor, location ?? convention.Locations.FirstOrDefault()));
-            }
-
-            dependencyGraph.Add((convention, edges));
-
-            var metadataArguments = ArgumentList(SeparatedList(new[] { Argument(createDovetail), Argument(hostType), Argument(conventionCategory), }));
+            var metadataArguments = new[] { Argument(createDovetail), Argument(hostType), Argument(CategoryExpression(joint.Category)), };
             // A joint that needs its constructor parameters resolved is a factory, which has its own entry point rather than a
             // constructor overload; see DovetailJointMetadata.
-            ExpressionSyntax withDependencies = createDovetail is LambdaExpressionSyntax
+            ExpressionSyntax withDependencies = joint.Factory is { }
                 ? InvocationExpression(
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailJointMetadata"), IdentifierName("FromFactory"))
                     )
-                   .WithArgumentList(metadataArguments)
-                : ObjectCreationExpression(IdentifierName("DovetailJointMetadata")).WithArgumentList(metadataArguments);
+                   .WithArgumentList(ArgumentList(CommaSeparated(metadataArguments)))
+                : NewObject(IdentifierName("DovetailJointMetadata"), metadataArguments);
 
-            foreach (var edge in edges)
+            foreach (var edge in joint.Edges)
             {
                 var direction = edge.Direction == DovetailDependencyParser.DependencyKind.DependsOn ? _dependencyDirectionDependsOn : _dependencyDirectionDependentOf;
                 withDependencies = InvocationExpression(
-                        MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            withDependencies,
-                            IdentifierName("WithDependency")
-                        )
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, withDependencies, IdentifierName("WithDependency"))
                     )
-                   .WithArgumentList(
-                        ArgumentList(
-                            SeparatedList(
-                                new[]
-                                {
-                                    Argument(direction),
-                                    Argument(TypeOfExpression(ParseName(edge.Target.ToDisplayString()))),
-                                }
-                            )
-                        )
-                    );
+                   .WithArgumentList(ArgumentList(CommaSeparated(Argument(direction), Argument(TypeOfExpression(ParseName(edge.Target))))));
             }
 
-
-            helperClassBody = helperClassBody.AddStatements(
-                YieldStatement(
-                    SyntaxKind.YieldReturnStatement,
-                    withDependencies
-                )
-            );
+            statements.Add(YieldReturn(withDependencies).OnLine(statementDepth));
         }
 
         // Every joint may have been left out, and an iterator without a yield is not a valid method.
-        if (helperClassBody.Statements.Count == 0) helperClassBody = helperClassBody.AddStatements(YieldStatement(SyntaxKind.YieldBreakStatement));
+        if (statements.Count == 0) statements.Add(YieldBreak().OnLine(statementDepth));
 
-        foreach (var (joint, cycle) in DovetailDependencyParser.DetectCycles(dependencyGraph.ToImmutable()))
+        foreach (var (joint, cycle) in DovetailDependencyParser.DetectCycles(dependencyGraph))
         {
-            var chain = string.Join(" -> ", cycle.Select(c => c.Name));
-            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.CircularJointDependency, joint.Locations.FirstOrDefault(), joint.Name, chain));
+            var chain = string.Join(" -> ", cycle.Select(c => jointsByName[c].Name));
+            var declaration = jointsByName[joint];
+            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.CircularJointDependency, declaration.Location, declaration.Name, chain));
         }
+
+        var exportsMethod = MethodDeclaration(
+                GenericName(Identifier("IEnumerable"))
+                   .WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList<TypeSyntax>(IdentifierName("IDovetailJointMetadata"))))
+                   .WithTrailingTrivia(Space),
+                msBuildConfig.ExportConfiguration.MethodName
+            )
+           .WithModifiers(Modifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword))
+           .WithParameterList(ParameterList())
+           .WithBody(BlockAt(classDepth + 1, statements))
+           .Member(classDepth + 1, "The conventions exports from this assembly");
 
         var helperClass =
             ClassDeclaration(msBuildConfig.ExportConfiguration.ClassName)
-               .WithAttributeLists(
-                    SingletonList(
-                        CompilerGeneratedAttributes
-                           .WithLeadingTrivia(GetXmlSummary("The class defined for exporting conventions from this assembly"))
-                    )
-                )
-               .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword), Token(SyntaxKind.PartialKeyword)))
+               .WithAttributeLists(SingletonList(CompilerGeneratedAttributes))
+               .WithModifiers(Modifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword))
+               .WithKeyword(SpaceAfter(SyntaxKind.ClassKeyword))
+               .WithOpenBraceToken(OpenBrace(classDepth))
                .WithMembers(
-                    List(
-                        [
-                        MethodDeclaration(
-                                GenericName(Identifier("IEnumerable"))
-                                   .WithTypeArgumentList(
-                                        TypeArgumentList(SingletonSeparatedList<TypeSyntax>(IdentifierName("IDovetailJointMetadata")))
-                                    ),
-                                msBuildConfig.ExportConfiguration.MethodName
-                            )
-                           .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword)))
-                           .WithParameterList(ParameterList())
-                           .WithBody(helperClassBody)
-                           .WithLeadingTrivia(GetXmlSummary("The conventions exports from this assembly")),
-                        .. hasConfigurationOptions ? new[] { OptionaryJoint.Declaration(msBuildConfig.RootNamespace) } : [],
-                        ]
-                    )
-                );
+                    Members(hasConfigurationOptions ? [exportsMethod, OptionaryJoint.Declaration(msBuildConfig.RootNamespace, classDepth + 1)] : [exportsMethod])
+                )
+               .WithCloseBraceToken(CloseBrace(classDepth))
+               .Member(classDepth, "The class defined for exporting conventions from this assembly");
 
         var cu = CompilationUnit()
                 .WithUsings(
                      List(
-                         new[]
-                         {
-                             UsingDirective(ParseName("System")),
-                             UsingDirective(ParseName("System.Collections.Generic")),
-                             UsingDirective(ParseName("Microsoft.Extensions.DependencyInjection")),
-                             UsingDirective(ParseName("Joinery.Dovetail")),
-                             UsingDirective(ParseName("Joinery.Dovetail.Infrastructure")),
-                         }
+                         [
+                             Using("System").WithLeadingTrivia(SharedHeaderTrivia),
+                             Using("System.Collections.Generic"),
+                             Using("Microsoft.Extensions.DependencyInjection"),
+                             Using("Joinery.Dovetail"),
+                             Using("Joinery.Dovetail.Infrastructure"),
+                         ]
                      )
                  )
-                .AddSharedTrivia()
                 // Without the Dovetail.Export.* metadata, referencing assemblies don't import these joints; the class is still
                 // emitted so this assembly's own Imports keeps picking them up.
-                .WithAttributeLists(msBuildConfig.ExportAssembly ? msBuildConfig.ExportConfiguration.ToAttributes() : default);
+                .WithAttributeLists(msBuildConfig.ExportAssembly ? msBuildConfig.ExportConfiguration.ToAttributes() : default)
+                .WithMembers(
+                     SingletonList<MemberDeclarationSyntax>(
+                         msBuildConfig.ExportConfiguration is { Namespace.Length: > 0 } data
+                             ? InNamespace(data.Namespace, helperClass)
+                             : helperClass
+                     )
+                 )
+                .WithEndOfFileToken(EndOfFile(SharedFooterTrivia))
+                .SeparateUsings();
 
-        cu = cu.AddMembers(
-            msBuildConfig.ExportConfiguration is { Namespace.Length: > 0 } data
-             ? NamespaceDeclaration(ParseName(data.Namespace)).AddMembers(helperClass) : helperClass
-        );
-
-        context.AddSource(
-            "Exported_Dovetails.g.cs",
-            cu.NormalizeWhitespace().SyntaxTree.GetRoot().GetText(Encoding.UTF8)
-        );
+        context.AddSource("Exported_Dovetails.g.cs", cu.GetText(Encoding.UTF8));
     }
 
     /// <summary>
@@ -192,7 +216,7 @@ internal static class ExportDovetails
     ///     then <c>[DovetailHostType]</c>. All of them are inherited, so the attributes on base classes count, and the
     ///     nearest declaration wins.
     /// </summary>
-    private static MemberAccessExpressionSyntax? GetDeclaredHostType(INamedTypeSymbol joint)
+    private static string? GetDeclaredHostType(INamedTypeSymbol joint)
     {
         var attributes = new List<AttributeData>();
         for (var type = joint; type is not null; type = type.BaseType)
@@ -208,9 +232,9 @@ internal static class ExportDovetails
             switch (attribute.AttributeClass?.ToDisplayString())
             {
                 case LiveJointAttributeName:
-                    return HostTypeExpression("Live");
+                    return "Live";
                 case UnitTestJointAttributeName:
-                    return HostTypeExpression("UnitTest");
+                    return "UnitTest";
                 default:
                     break;
             }
@@ -222,7 +246,7 @@ internal static class ExportDovetails
             if (attribute.ConstructorArguments is not [{ Kind: TypedConstantKind.Enum, Type: INamedTypeSymbol enumType, Value: { } value }]) continue;
 
             // The generator doesn't reference Dovetail, so find the member the constructor argument names in the enum itself.
-            if (EnumMemberName(enumType, value) is { } name) return HostTypeExpression(name);
+            if (EnumMemberName(enumType, value) is { } name) return name;
         }
 
         return null;
@@ -261,11 +285,11 @@ internal static class ExportDovetails
     );
 
     /// <summary>
-    ///     The category the joint declares with <c>[DovetailCategory]</c>, or <c>Application</c> when it declares none. This mirrors
+    ///     The category the joint declares with <c>[DovetailCategory]</c>, or <see langword="null" /> when it declares none. This mirrors
     ///     what <c>DovetailContextBuilder</c> reads from the joint's type at runtime: the attribute is inherited from base classes (not
     ///     from interfaces, which attribute lookup on a type never reads) and the nearest declaration wins.
     /// </summary>
-    private static ExpressionSyntax GetDeclaredCategory(INamedTypeSymbol joint)
+    private static string? GetDeclaredCategory(INamedTypeSymbol joint)
     {
         for (var type = joint; type is not null; type = type.BaseType)
         {
@@ -276,11 +300,11 @@ internal static class ExportDovetails
                 // The constructor takes a string, which the compiler has already folded to its value, whether it was written as
                 // a literal, a constant such as DovetailCategory.Core or an expression of constants. An attribute that has no usable
                 // value (null, or an argument that doesn't bind) declares nothing.
-                if (attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Primitive, Value: string category }]) return CategoryExpression(category);
+                if (attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Primitive, Value: string category }]) return category;
             }
         }
 
-        return _categoryApplication;
+        return null;
     }
 
     /// <summary>
@@ -288,9 +312,9 @@ internal static class ExportDovetails
     ///     takes, so a category without a constant of its own is written as its string literal. The well-known ones use their
     ///     constants, which is how a joint without the attribute has always been written.
     /// </summary>
-    private static ExpressionSyntax CategoryExpression(string category) => category switch
+    private static ExpressionSyntax CategoryExpression(string? category) => category switch
     {
-        ApplicationCategory => _categoryApplication,
+        null or ApplicationCategory => _categoryApplication,
         CoreCategory => _categoryCore,
         _ => LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(category)),
     };
@@ -303,20 +327,29 @@ internal static class ExportDovetails
     private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
 
     /// <summary>
-    ///     The expression that gives <c>DovetailJointMetadata</c> its joint. A joint that needs nothing is created right there. A
-    ///     joint with constructor parameters is handed over as a factory instead: the exported method has no parameters and no
-    ///     context to read from, so the parameters are resolved when the context builder that ends up holding the metadata creates
-    ///     the joint, from its properties (see <c>DovetailJointMetadata</c>).
+    ///     The factory that gives <c>DovetailJointMetadata</c> its joint, or <see langword="null" /> when the joint is created right
+    ///     there with <c>new</c>, because it needs nothing (or is a struct that declares no constructor). A joint with constructor
+    ///     parameters is handed over as a factory instead: the exported method has no parameters and no context to read from, so the
+    ///     parameters are resolved when the context builder that ends up holding the metadata creates the joint, from its properties
+    ///     (see <c>DovetailJointMetadata</c>).
     /// </summary>
-    private static ExpressionSyntax NewDovetail(INamedTypeSymbol convention, IMethodSymbol? constructor)
+    private static string? Factory(string typeName, IMethodSymbol? constructor)
     {
-        var typeName = convention.ToDisplayString();
-        // A joint with no constructor to find (a struct that declares none) or none that takes anything is created right here.
-        if (constructor is not { Parameters.Length: > 0 }) return ObjectCreationExpression(ParseName(typeName), ArgumentList(), null);
+        if (constructor is not { Parameters.Length: > 0 }) return null;
 
         var arguments = constructor.Parameters.Select(parameter => ResolveParameter(typeName, parameter));
-        return ParseExpression($"static {JointFactoryParameter} => new {typeName}({string.Join(", ", arguments)})");
+        return $"static {JointFactoryParameter} => new {typeName}({string.Join(", ", arguments)})";
     }
+
+    private static ObjectCreationExpressionSyntax NewObject(TypeSyntax type, params IEnumerable<ArgumentSyntax> arguments) =>
+        ObjectCreationExpression(SpaceAfter(SyntaxKind.NewKeyword), type, ArgumentList(CommaSeparated(arguments)), null);
+
+    private static YieldStatementSyntax YieldReturn(ExpressionSyntax expression) =>
+        YieldStatement(SyntaxKind.YieldReturnStatement, expression)
+           .WithYieldKeyword(SpaceAfter(SyntaxKind.YieldKeyword))
+           .WithReturnOrBreakKeyword(SpaceAfter(SyntaxKind.ReturnKeyword));
+
+    private static YieldStatementSyntax YieldBreak() => YieldStatement(SyntaxKind.YieldBreakStatement).WithYieldKeyword(SpaceAfter(SyntaxKind.YieldKeyword));
 
     /// <summary>
     ///     Whether the generated code, which lives in the exporting assembly, can call the constructor. That is every instance
@@ -338,7 +371,7 @@ internal static class ExportDovetails
         // Looked up by the type as declared. For a nullable value type that is Nullable<T>, which is what Set<int?>() stores it under.
         var parameterType = parameter.Type.WithNullableAnnotation(NullableAnnotation.None);
         var isNullableValueType = parameterType is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T };
-        // Spelled out because the formatter that lays out the generated file puts a space between the ? and a ) that follows it.
+        // Spelled out as System.Nullable<T> rather than T?, which is how the generated code has always written it.
         var type = isNullableValueType && parameterType is INamedTypeSymbol { TypeArguments: [var underlying] }
             ? $"System.Nullable<{underlying.ToDisplayString()}>"
             : parameterType.ToDisplayString();
@@ -416,8 +449,5 @@ internal static class ExportDovetails
         IdentifierName("DependentOf")
     );
 
-    public record Request(
-        MsBuildConfig BuildConfig,
-        ImmutableArray<INamedTypeSymbol> ExportedDovetails,
-        bool HasConfigurationOptions);
+    public record Request(MsBuildConfig BuildConfig, EquatableArray<ExportedJoint> ExportedDovetails, bool HasConfigurationOptions);
 }
