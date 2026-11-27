@@ -1,9 +1,9 @@
 # Joinery.Dovetail.Mermaid
 
 - Package: `Joinery.Dovetail.Mermaid`
-- Version: `0.8.2-pr.14`
+- Version: `0.8.2-pr.21`
 - Target framework: `net10.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail.Mermaid)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/tree/Branch.pull-486-merge.Sha.b51ecc9cc1febb416c6effe463d8a84a06a200c5/src/Joinery.Dovetail.Mermaid)
 - NuGet: [Joinery.Dovetail.Mermaid](https://www.nuget.org/packages/Joinery.Dovetail.Mermaid)
 
 ## Namespaces

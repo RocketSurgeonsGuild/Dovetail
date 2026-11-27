@@ -15,7 +15,7 @@ Extension methods for applying HostCreated parts.
 - Name: `ApplyHostCreated(THost, IDovetailContext, CancellationToken)`
 - Modifiers: `extension`
 - Returns: `ValueTask`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.HostCreated.g.cs#L51-L52)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.b51ecc9cc1febb416c6effe463d8a84a06a200c5/src/Joinery.Dovetail/obj/Release/net10.0/DovetailJoint.HostCreated.g.cs#L51-L52)
 
 Applies the registered HostCreated parts.
 

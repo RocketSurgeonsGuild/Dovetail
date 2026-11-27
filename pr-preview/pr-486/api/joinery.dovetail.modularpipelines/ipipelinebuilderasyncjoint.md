@@ -2,10 +2,10 @@
 
 - Kind: `interface`
 - Package: [Joinery.Dovetail.ModularPipelines](/Dovetail/pr-preview/pr-486/api/joinery.dovetail.modularpipelines.md)
-- Version: `0.8.2-pr.14`
+- Version: `0.8.2-pr.21`
 - Namespace: `Joinery.Dovetail.Joints`
 - Target framework: `net11.0`
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail.ModularPipelines/obj/Release/net11.0/IPipelineBuilderAsyncJoint.cs)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.b51ecc9cc1febb416c6effe463d8a84a06a200c5/src/Joinery.Dovetail.ModularPipelines/obj/Release/net11.0/IPipelineBuilderAsyncJoint.cs)
 - Implements: `IDovetailJoint`
 
 Async part interface for PipelineBuilder. Implements the `Infrastructure.IDovetailJoint`

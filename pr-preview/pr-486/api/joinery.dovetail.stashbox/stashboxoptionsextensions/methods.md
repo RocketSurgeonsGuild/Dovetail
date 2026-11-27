@@ -15,7 +15,7 @@ Extension members for accessing [StashboxOptions](/Dovetail/pr-preview/pr-486/ap
 - Name: `get_StashboxOptions(IDovetailContext)`
 - Modifiers: `static`
 - Returns: [StashboxOptions](/Dovetail/pr-preview/pr-486/api/joinery.dovetail.stashbox/stashboxoptions.md)
-- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.1faa3d8c1fb998da38c062158c5a17b8390b25fa/src/Joinery.Dovetail.Stashbox/StashboxOptionsExtensions.cs#L14)
+- Source: [GitHub](https://github.com/RocketSurgeonsGuild/Dovetail/blob/Branch.pull-486-merge.Sha.b51ecc9cc1febb416c6effe463d8a84a06a200c5/src/Joinery.Dovetail.Stashbox/StashboxOptionsExtensions.cs#L14)
 
 ```csharp
 public static class StashboxOptionsExtensions
