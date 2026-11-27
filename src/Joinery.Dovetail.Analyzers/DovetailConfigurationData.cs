@@ -19,19 +19,40 @@ internal record DovetailConfigurationData(string Property, string Namespace, str
         );
     }
 
-    public static DovetailConfigurationData? FromAssemblyAttributes(IAssemblySymbol assemblySymbol, string propertyPrefix)
+    /// <summary>
+    ///     The export configuration an assembly advertises with its <c>Dovetail.Export.*</c> assembly metadata, or
+    ///     <see langword="null" /> when it advertises none. This runs for every reference on every compilation, so it walks the
+    ///     attributes once and allocates nothing for an assembly without the metadata, which is nearly all of them.
+    /// </summary>
+    public static DovetailConfigurationData? FromExportMetadata(IAssemblySymbol assemblySymbol)
     {
-        var prefix = $"Dovetail.{propertyPrefix}.";
-        var attributes = assemblySymbol.GetAssemblyMetadataAttributes(z => z.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-        return attributes.Count == 0
-            ? null
-            : new(
-            propertyPrefix,
-            attributes.TryGetValue($"{prefix}{nameof(Namespace)}", out var ns) && ns is { Value: string namespaceValue } ? namespaceValue : "##??NOT DEFINED??##",
-            attributes.TryGetValue($"{prefix}{nameof(ClassName)}", out var className) && className is { Value: string classValue } ? classValue : "##??NOT DEFINED??##",
-            attributes.TryGetValue($"{prefix}{nameof(MethodName)}", out var methodName) && methodName is { Value: string methodNameValue } ? methodNameValue : "##??NOT DEFINED??##"
-        );
+        var found = false;
+        // AssemblyMetadata allows repeated keys (Dovetail's own configuration schema fragments repeat theirs); the first wins.
+        TypedConstant? namespaceValue = null, classNameValue = null, methodNameValue = null;
+        foreach (var attribute in assemblySymbol.GetAttributes())
+        {
+            if (attribute is not { AttributeClass.MetadataName: "AssemblyMetadataAttribute", ConstructorArguments: [{ Value: string { Length: > 0 } key }, var value] })
+                continue;
+            if (!key.StartsWith(ExportMetadataPrefix, StringComparison.OrdinalIgnoreCase)) continue;
+
+            found = true;
+            if (string.Equals(key, ExportNamespaceKey, StringComparison.Ordinal)) namespaceValue ??= value;
+            else if (string.Equals(key, ExportClassNameKey, StringComparison.Ordinal)) classNameValue ??= value;
+            else if (string.Equals(key, ExportMethodNameKey, StringComparison.Ordinal)) methodNameValue ??= value;
+        }
+
+        return found
+            ? new("Export", ValueOrUndefined(namespaceValue), ValueOrUndefined(classNameValue), ValueOrUndefined(methodNameValue))
+            : null;
+
+        static string ValueOrUndefined(TypedConstant? value) => value is { Value: string text } ? text : NotDefined;
     }
+
+    private const string NotDefined = "##??NOT DEFINED??##";
+    private const string ExportMetadataPrefix = "Dovetail.Export.";
+    private const string ExportNamespaceKey = ExportMetadataPrefix + nameof(Namespace);
+    private const string ExportClassNameKey = ExportMetadataPrefix + nameof(ClassName);
+    private const string ExportMethodNameKey = ExportMetadataPrefix + nameof(MethodName);
 
     /// <summary>Writes the <c>Dovetail.{Property}.*</c> assembly metadata that tells referencing assemblies about this configuration.</summary>
     public SourceWriter WriteAttributes(SourceWriter writer) =>

@@ -1,6 +1,5 @@
 using Joinery.Dovetail.Support;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 // ReSharper disable UnusedVariable
@@ -30,7 +29,7 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                            .AnalyzerConfigOptionsProvider
                            .Combine(exportConfiguration)
                            .Combine(importConfiguration)
-                           .Select((provider, _) => new MsBuildConfig(
+                           .Select(static (provider, _) => new MsBuildConfig(
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("DovetailMetadata", x => bool.TryParse(x, out var v) && v),
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("DovetailAssignExternal", x => bool.TryParse(x, out var v) && v),
                                        provider.Left.Left.GlobalOptions.GetBuildProperty("IsTestProject", x => bool.TryParse(x, out var v) && v),
@@ -48,12 +47,13 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                             )
                            .WithTrackingName("dovetail:msbuild");
 
-        // Each joint is described in the transform, so the pipeline holds equatable models rather than symbols: an edit that
-        // doesn't touch a joint leaves the collected models equal, and the exports aren't generated again.
+        // Each joint is described in the transform, so the pipeline holds equatable models rather than symbols or locations: an
+        // edit that doesn't change a joint, even one in the joint's own file, leaves the collected models equal, and the exports
+        // aren't generated again. DovetailJointAnalyzer reports what is wrong with a joint.
         var exportedDovetails = context
                                .SyntaxProvider
                                .ForAttributeWithMetadataName(
-                                    "Joinery.Dovetail.Attributes.DovetailExportAttribute",
+                                    JointChecks.ExportAttributeMetadataName,
                                     static (node, _) => node is TypeDeclarationSyntax,
                                     static (syntaxContext, _) => ExportDovetails.Describe((INamedTypeSymbol)syntaxContext.TargetSymbol)
                                 )
@@ -67,55 +67,26 @@ public class DovetailAttributesGenerator : IIncrementalGenerator
                                .Select(static (compilation, _) => ImportDovetails.ReferencedExports.From(compilation))
                                .WithTrackingName("dovetail:referenced_exports");
 
-        // The generated code uses C# 12 syntax (collection expressions). The analyzer reaches projects that only reference
-        // Dovetail transitively, so rather than break a project pinned to an older LangVersion, emit nothing and say why.
-        var languageVersion = context
-                             .ParseOptionsProvider
-                             .Select((options, _) => options is CSharpParseOptions csharp ? csharp.LanguageVersion : LanguageVersion.Latest)
-                             .WithTrackingName("dovetail:language_version");
-        var supportedLanguageVersion = languageVersion.Select((version, _) => version >= LanguageVersion.CSharp12);
-
         // Optionary's generator emits the registration method whenever Optionary is referenced; when this assembly declares an
         // [Optionary] type, the exports list a joint that calls it. Found here rather than read from Optionary's generator.
         var hasConfigurationOptions = OptionaryJoint.HasDeclarations(context);
 
         context.RegisterSourceOutput(
-            languageVersion,
-            static (productionContext, version) =>
-            {
-                if (version < LanguageVersion.CSharp12)
-                {
-                    productionContext.ReportDiagnostic(Diagnostic.Create(Diagnostics.UnsupportedLanguageVersion, Location.None, version.ToDisplayString()));
-                }
-            }
-        );
-
-        context.RegisterSourceOutput(
             msBuildConfig
                .Combine(exportedDovetails)
-               .Combine(hasConfigurationOptions)
-               .Combine(supportedLanguageVersion),
-            static (productionContext, tuple) =>
-            {
-                if (!tuple.Right) return;
-                ExportDovetails.HandleDovetailExports(productionContext, new(tuple.Left.Left.Left, tuple.Left.Left.Right, tuple.Left.Right));
-            }
+               .Combine(hasConfigurationOptions),
+            static (productionContext, tuple) => ExportDovetails.HandleDovetailExports(productionContext, new(tuple.Left.Left, tuple.Left.Right, tuple.Right))
         );
 
         context.RegisterSourceOutput(
             referencedExports
                .Combine(exportedDovetails.Select(static (z, _) => z.Count > 0))
                .Combine(msBuildConfig)
-               .Combine(hasConfigurationOptions)
-               .Combine(supportedLanguageVersion),
-            static (productionContext, tuple) =>
-            {
-                if (!tuple.Right) return;
-                ImportDovetails.HandleDovetailImports(
-                    productionContext,
-                    new(tuple.Left.Left.Right, tuple.Left.Left.Left.Left, tuple.Left.Left.Left.Right, tuple.Left.Right)
-                );
-            }
+               .Combine(hasConfigurationOptions),
+            static (productionContext, tuple) => ImportDovetails.HandleDovetailImports(
+                productionContext,
+                new(tuple.Left.Right, tuple.Left.Left.Left, tuple.Left.Left.Right, tuple.Right)
+            )
         );
     }
 }

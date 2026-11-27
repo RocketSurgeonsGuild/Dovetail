@@ -1,4 +1,18 @@
 ﻿{
+  AnalyzerDiagnostics: {
+    Joinery.Dovetail.DovetailJointAnalyzer: [
+      {
+        Id: DT0004,
+        Title: Symbol could not be handled,
+        Severity: Warning,
+        WarningLevel: 1,
+        Location: Input0.cs: (9,5)-(9,19),
+        MessageFormat: The indicated symbol could not be handled correctly,
+        Message: The indicated symbol could not be handled correctly,
+        Category: Dovetail
+      }
+    ]
+  },
   FinalDiagnostics: [
     {
       Id: DT0004,
@@ -28,18 +42,7 @@
     }
   ],
   GeneratorDiagnostics: {
-    Joinery.Dovetail.DovetailAttributesGenerator: [
-      {
-        Id: DT0004,
-        Title: Symbol could not be handled,
-        Severity: Warning,
-        WarningLevel: 1,
-        Location: Input0.cs: (9,5)-(9,19),
-        MessageFormat: The indicated symbol could not be handled correctly,
-        Message: The indicated symbol could not be handled correctly,
-        Category: Dovetail
-      }
-    ]
+    Joinery.Dovetail.DovetailAttributesGenerator: []
   },
   GlobalOptions: {
     build_property.DovetailExportClassName: Exports,

@@ -10,6 +10,7 @@
   <Folder Name="/benchmarks/">
     <File Path="Directory.Build.props" />
     <File Path="Directory.Build.targets" />
+    <Project Path="benchmarks/Analyzers.Benchmarks/Analyzers.Benchmarks.csproj" />
     <Project Path="benchmarks/Hosting.Benchmarks/Hosting.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/config/">

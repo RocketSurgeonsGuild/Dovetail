@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 
 namespace Joinery.Dovetail.Analyzers.Tests;
@@ -76,25 +75,6 @@ public class AssemblyRoleTests() : GeneratorTest()
         await GeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").Should().Contain("Exports.Rivet()");
         // ...but only the Dovetail.Export.* metadata makes referencing assemblies import them.
         await exports.Contains("\"Dovetail.Export.ClassName\"", StringComparison.Ordinal).Should().BeEqualTo(advertised);
-    }
-
-    [Test]
-    [Arguments(LanguageVersion.CSharp11, false)]
-    [Arguments(LanguageVersion.CSharp12, true)]
-    [Arguments(LanguageVersion.Preview, true)]
-    public async Task Generates_Nothing_Below_CSharp12_And_Says_Why(LanguageVersion languageVersion, bool generated)
-    {
-        var result = await WithSharedDeps()
-                          .WithLanguageVersion(languageVersion)
-                          .AddSources(ExportedJoint)
-                          .Build()
-                          .GenerateAsync(TestContext.CancellationToken);
-
-        await HasGeneratedSource(result, "Imported_Assembly_Dovetails.g.cs").Should().BeEqualTo(generated);
-        await HasGeneratedSource(result, "Exported_Dovetails.g.cs").Should().BeEqualTo(generated);
-        await result.Results[typeof(DovetailAttributesGenerator)].Diagnostics.Any(z => z.Id == "DT0006").Should().BeEqualTo(!generated);
-        // Either way the project still compiles: what's generated from C# 12 on is valid there, and nothing is generated before it.
-        await result.FinalDiagnostics.Where(z => z.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
     }
 
     private static bool HasGeneratedSource(GeneratorTestResults result, string hintName) =>

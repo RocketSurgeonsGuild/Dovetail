@@ -1,28 +1,6 @@
 ﻿{
-  FinalDiagnostics: [
-    {
-      Id: DT0005,
-      Title: Circular joint dependency,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: Input0.cs: (13,19)-(13,20),
-      MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
-      Message: Joint 'B' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
-      Category: Dovetail
-    },
-    {
-      Id: DT0005,
-      Title: Circular joint dependency,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: Input0.cs: (9,19)-(9,20),
-      MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
-      Message: Joint 'A' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
-      Category: Dovetail
-    }
-  ],
-  GeneratorDiagnostics: {
-    Joinery.Dovetail.DovetailAttributesGenerator: [
+  AnalyzerDiagnostics: {
+    Joinery.Dovetail.DovetailJointAnalyzer: [
       {
         Id: DT0005,
         Title: Circular joint dependency,
@@ -31,7 +9,10 @@
         Location: Input0.cs: (13,19)-(13,20),
         MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
         Message: Joint 'B' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
-        Category: Dovetail
+        Category: Dovetail,
+        CustomTags: [
+          CompilationEnd
+        ]
       },
       {
         Id: DT0005,
@@ -41,9 +22,43 @@
         Location: Input0.cs: (9,19)-(9,20),
         MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
         Message: Joint 'A' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
-        Category: Dovetail
+        Category: Dovetail,
+        CustomTags: [
+          CompilationEnd
+        ]
       }
     ]
+  },
+  FinalDiagnostics: [
+    {
+      Id: DT0005,
+      Title: Circular joint dependency,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: Input0.cs: (13,19)-(13,20),
+      MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
+      Message: Joint 'B' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
+      Category: Dovetail,
+      CustomTags: [
+        CompilationEnd
+      ]
+    },
+    {
+      Id: DT0005,
+      Title: Circular joint dependency,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: Input0.cs: (9,19)-(9,20),
+      MessageFormat: Joint '{0}' participates in a circular dependency chain ({1}) and cannot be ordered,
+      Message: Joint 'A' participates in a circular dependency chain (A -> B -> A) and cannot be ordered,
+      Category: Dovetail,
+      CustomTags: [
+        CompilationEnd
+      ]
+    }
+  ],
+  GeneratorDiagnostics: {
+    Joinery.Dovetail.DovetailAttributesGenerator: []
   },
   GlobalOptions: {
     build_property.DovetailExportClassName: Exports,

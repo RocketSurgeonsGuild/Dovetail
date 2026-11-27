@@ -12,10 +12,32 @@ internal static class ImportDovetails
     /// </summary>
     public sealed record ReferencedExports(EquatableArray<string> ExportMethods, bool HasSpecularProviderInterface)
     {
-        public static ReferencedExports From(Compilation compilation) => new(
-            compilation.GetDovetailReferences().Select(reference => reference.ToString()).ToEquatableArray(),
-            SpecularProviderSeed.HasProviderInterface(compilation)
-        );
+        /// <summary>
+        ///     Reads the references in one pass. It runs on every compilation, which is every edit, so an assembly without Dovetail's
+        ///     metadata (nearly all of them) costs a look at its attributes and nothing else.
+        /// </summary>
+        public static ReferencedExports From(Compilation compilation)
+        {
+            List<DovetailConfigurationData>? exports = null;
+            var hasSpecularProviderInterface = false;
+            foreach (var reference in compilation.References)
+            {
+                if (compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol assembly) continue;
+                if (!hasSpecularProviderInterface && SpecularProviderSeed.DefinesProviderInterface(assembly)) hasSpecularProviderInterface = true;
+                if (DovetailConfigurationData.FromExportMetadata(assembly) is { } export) ( exports ??= [] ).Add(export);
+            }
+
+            if (exports is null) return new(default, hasSpecularProviderInterface);
+
+            exports.Sort();
+            var methods = new string[exports.Count];
+            for (var i = 0; i < methods.Length; i++)
+            {
+                methods[i] = exports[i].ToString();
+            }
+
+            return new(new([.. methods]), hasSpecularProviderInterface);
+        }
     }
 
     public static void HandleDovetailImports(SourceProductionContext context, Request request)

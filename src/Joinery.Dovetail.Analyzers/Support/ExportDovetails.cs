@@ -8,62 +8,42 @@ namespace Joinery.Dovetail.Support;
 internal static class ExportDovetails
 {
     /// <summary>
-    ///     What the exports need to know about a joint, read from its symbol in the pipeline's transform. It holds no symbol, so an
-    ///     edit elsewhere leaves it equal and the exports file isn't generated again.
+    ///     What the exports need to know about a joint, read from its symbol in the pipeline's transform. It holds no symbol and no
+    ///     location, so an edit that doesn't change the joint (one that only moves it, say) leaves it equal and the exports file
+    ///     isn't generated again. What is wrong with a joint is reported by <see cref="DovetailJointAnalyzer" />.
     /// </summary>
-    /// <param name="Name">The joint's name, which the cycle diagnostic names it by.</param>
     /// <param name="TypeName">The joint's display string, which the generated code names it by.</param>
     /// <param name="MetadataName">The joint's metadata name, which orders the exports.</param>
-    /// <param name="Location">Where the joint is declared, for its diagnostics.</param>
-    /// <param name="Rejection">Why the joint is left out of the exports, or <see langword="null" /> when it is exported.</param>
+    /// <param name="Rejected">Whether the joint is left out of the exports; see <see cref="JointChecks.Rejection" />.</param>
     /// <param name="Factory">The factory that creates the joint when its constructor takes parameters, or <see langword="null" /> to create it with <c>new</c>.</param>
     /// <param name="HostType">The host type the joint declares, or <see langword="null" /> when it declares none.</param>
     /// <param name="Category">The category the joint declares, or <see langword="null" /> for <c>Application</c>.</param>
     /// <param name="Edges">The joint's dependencies.</param>
-    /// <param name="Issues">The malformed dependency attributes on the joint.</param>
     public sealed record ExportedJoint(
-        string Name,
         string TypeName,
         string MetadataName,
-        Location? Location,
-        DiagnosticDescriptor? Rejection,
+        bool Rejected,
         string? Factory,
         string? HostType,
         string? Category,
-        EquatableArray<DovetailDependencyParser.DependencyEdge> Edges,
-        EquatableArray<DovetailDependencyParser.DependencyIssue> Issues
+        EquatableArray<DovetailDependencyParser.DependencyEdge> Edges
     );
 
     /// <summary>Reads what the exports need to know about <paramref name="convention" />.</summary>
     public static ExportedJoint Describe(INamedTypeSymbol convention)
     {
         var typeName = convention.ToDisplayString();
-        var location = convention.Locations.FirstOrDefault();
+        if (JointChecks.Rejection(convention, out var constructor) is { }) return new(typeName, convention.MetadataName, true, null, null, null, default);
 
-        // Only the constructors the generated code can call count: a private one is there for something else to use.
-        var (callableConstructorCount, callableConstructor) = CallableConstructor(convention);
-        var rejection = callableConstructorCount > 1
-            ? Diagnostics.DovetailHasToManyConstructors
-            // Left out of the exports like any other joint that is reported, so nothing else fails to compile because of it.
-            : callableConstructorCount == 0 && convention.InstanceConstructors.Length > 0
-                ? Diagnostics.DovetailHasNoCallableConstructor
-                : convention.IsGenericType
-                    ? Diagnostics.DovetailCannotBeGeneric
-                    : null;
-        if (rejection is { }) return new(convention.Name, typeName, convention.MetadataName, location, rejection, null, null, null, default, default);
-
-        var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
+        var (hostType, category) = GetDeclaredHostTypeAndCategory(convention);
         return new(
-            convention.Name,
             typeName,
             convention.MetadataName,
-            location,
-            null,
-            Factory(typeName, callableConstructor),
-            GetDeclaredHostType(convention),
-            GetDeclaredCategory(convention),
-            edges.ToEquatableArray(),
-            issues.ToEquatableArray()
+            false,
+            Factory(typeName, constructor),
+            hostType,
+            category,
+            DovetailDependencyParser.ParseDependencies(convention).ToEquatableArray()
         );
     }
 
@@ -79,29 +59,11 @@ internal static class ExportDovetails
             statements.Add($"yield return new DovetailJointMetadata(new {OptionaryJoint.JointClassName}(), {HostTypeUndefined}, {CategoryApplication});");
         }
 
-        var dependencyGraph = new List<(string Joint, IEnumerable<DovetailDependencyParser.DependencyEdge> Edges)>();
-        var jointsByName = new Dictionary<string, ExportedJoint>(StringComparer.Ordinal);
         var statement = new StringBuilder();
 
         foreach (var joint in joints)
         {
-            if (joint.Rejection is { } rejection)
-            {
-                context.ReportDiagnostic(
-                    rejection == Diagnostics.DovetailHasNoCallableConstructor
-                        ? Diagnostic.Create(rejection, joint.Location, joint.TypeName)
-                        : Diagnostic.Create(rejection, joint.Location)
-                );
-                continue;
-            }
-
-            foreach (var (location, descriptor) in joint.Issues)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(descriptor, location ?? joint.Location));
-            }
-
-            dependencyGraph.Add((joint.TypeName, joint.Edges));
-            jointsByName[joint.TypeName] = joint;
+            if (joint.Rejected) continue;
 
             // What the joint declares wins; only a joint that declares nothing takes the project's default.
             var hostType = joint.HostType is { } declaredHostType
@@ -139,13 +101,6 @@ internal static class ExportDovetails
 
         // Every joint may have been left out, and an iterator without a yield is not a valid method.
         if (statements.Count == 0) statements.Add("yield break;");
-
-        foreach (var (joint, cycle) in DovetailDependencyParser.DetectCycles(dependencyGraph))
-        {
-            var chain = string.Join(" -> ", cycle.Select(c => jointsByName[c].Name));
-            var declaration = jointsByName[joint];
-            context.ReportDiagnostic(Diagnostic.Create(Diagnostics.CircularJointDependency, declaration.Location, declaration.Name, chain));
-        }
 
         var exportConfiguration = msBuildConfig.ExportConfiguration;
         var writer = new SourceWriter()
@@ -186,45 +141,47 @@ internal static class ExportDovetails
     }
 
     /// <summary>
-    ///     The host type the joint declares, or <see langword="null" /> when it declares none. This mirrors what
-    ///     <c>DovetailContextBuilder</c> reads from the joint's type at runtime: <c>[LiveJoint]</c> and <c>[UnitTestJoint]</c> first,
-    ///     then <c>[DovetailHostType]</c>. All of them are inherited, so the attributes on base classes count, and the
-    ///     nearest declaration wins.
+    ///     The host type and category the joint declares, each <see langword="null" /> when it declares none, read in one walk up its
+    ///     base classes. This mirrors what <c>DovetailContextBuilder</c> reads from the joint's type at runtime. All of the attributes
+    ///     are inherited, so the ones on base classes count (not those on interfaces, which attribute lookup on a type never reads),
+    ///     and the nearest declaration wins. For the host type, <c>[LiveJoint]</c> and <c>[UnitTestJoint]</c> anywhere win over
+    ///     <c>[DovetailHostType]</c>.
     /// </summary>
-    private static string? GetDeclaredHostType(INamedTypeSymbol joint)
+    private static (string? HostType, string? Category) GetDeclaredHostTypeAndCategory(INamedTypeSymbol joint)
     {
-        var attributes = new List<AttributeData>();
+        string? marker = null, declaredHostType = null, category = null;
         for (var type = joint; type is not null; type = type.BaseType)
         {
             foreach (var attribute in type.GetAttributes())
             {
-                attributes.Add(attribute);
+                if (attribute.AttributeClass is not { } attributeClass || !JointChecks.IsDovetailAttribute(attributeClass)) continue;
+                switch (attributeClass.Name)
+                {
+                    case LiveJointAttributeName:
+                        marker ??= "Live";
+                        break;
+                    case UnitTestJointAttributeName:
+                        marker ??= "UnitTest";
+                        break;
+                    // The generator doesn't reference Dovetail, so find the member the constructor argument names in the enum itself.
+                    case DovetailHostTypeAttributeName when declaredHostType is null
+                                                         && attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Enum, Type: INamedTypeSymbol enumType, Value: { } value }]:
+                        declaredHostType = EnumMemberName(enumType, value);
+                        break;
+                    // The constructor takes a string, which the compiler has already folded to its value, whether it was written as
+                    // a literal, a constant such as DovetailCategory.Core or an expression of constants. An attribute that has no
+                    // usable value (null, or an argument that doesn't bind) declares nothing.
+                    case DovetailCategoryAttributeName when category is null
+                                                         && attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Primitive, Value: string declared }]:
+                        category = declared;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
-        foreach (var attribute in attributes)
-        {
-            switch (attribute.AttributeClass?.ToDisplayString())
-            {
-                case LiveJointAttributeName:
-                    return "Live";
-                case UnitTestJointAttributeName:
-                    return "UnitTest";
-                default:
-                    break;
-            }
-        }
-
-        foreach (var attribute in attributes)
-        {
-            if (attribute.AttributeClass?.ToDisplayString() != DovetailHostTypeAttributeName) continue;
-            if (attribute.ConstructorArguments is not [{ Kind: TypedConstantKind.Enum, Type: INamedTypeSymbol enumType, Value: { } value }]) continue;
-
-            // The generator doesn't reference Dovetail, so find the member the constructor argument names in the enum itself.
-            if (EnumMemberName(enumType, value) is { } name) return name;
-        }
-
-        return null;
+        return (marker ?? declaredHostType, category);
     }
 
     /// <summary>The name of the member of <paramref name="enumType" /> whose value is <paramref name="value" />, if there is one.</summary>
@@ -233,44 +190,6 @@ internal static class ExportDovetails
         foreach (var member in enumType.GetMembers())
         {
             if (member is IFieldSymbol { HasConstantValue: true } field && Equals(field.ConstantValue, value)) return field.Name;
-        }
-
-        return null;
-    }
-
-    /// <summary>How many of the joint's constructors the generated code can call, and that constructor when there is exactly one.</summary>
-    private static (int Count, IMethodSymbol? Constructor) CallableConstructor(INamedTypeSymbol convention)
-    {
-        var count = 0;
-        IMethodSymbol? callable = null;
-        foreach (var constructor in convention.InstanceConstructors)
-        {
-            if (!CanBeCalled(constructor)) continue;
-            count++;
-            callable = constructor;
-        }
-
-        return (count, count == 1 ? callable : null);
-    }
-
-    /// <summary>
-    ///     The category the joint declares with <c>[DovetailCategory]</c>, or <see langword="null" /> when it declares none. This mirrors
-    ///     what <c>DovetailContextBuilder</c> reads from the joint's type at runtime: the attribute is inherited from base classes (not
-    ///     from interfaces, which attribute lookup on a type never reads) and the nearest declaration wins.
-    /// </summary>
-    private static string? GetDeclaredCategory(INamedTypeSymbol joint)
-    {
-        for (var type = joint; type is not null; type = type.BaseType)
-        {
-            foreach (var attribute in type.GetAttributes())
-            {
-                if (attribute.AttributeClass?.ToDisplayString() != DovetailCategoryAttributeName) continue;
-
-                // The constructor takes a string, which the compiler has already folded to its value, whether it was written as
-                // a literal, a constant such as DovetailCategory.Core or an expression of constants. An attribute that has no usable
-                // value (null, or an argument that doesn't bind) declares nothing.
-                if (attribute.ConstructorArguments is [{ Kind: TypedConstantKind.Primitive, Value: string category }]) return category;
-            }
         }
 
         return null;
@@ -290,10 +209,10 @@ internal static class ExportDovetails
 
     private const string ApplicationCategory = "Application";
     private const string CoreCategory = "Core";
-    private const string DovetailCategoryAttributeName = "Joinery.Dovetail.Attributes.DovetailCategoryAttribute";
-    private const string LiveJointAttributeName = "Joinery.Dovetail.Attributes.LiveJointAttribute";
-    private const string UnitTestJointAttributeName = "Joinery.Dovetail.Attributes.UnitTestJointAttribute";
-    private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
+    private const string DovetailCategoryAttributeName = "DovetailCategoryAttribute";
+    private const string LiveJointAttributeName = "LiveJointAttribute";
+    private const string UnitTestJointAttributeName = "UnitTestJointAttribute";
+    private const string DovetailHostTypeAttributeName = "DovetailHostTypeAttribute";
 
     /// <summary>
     ///     The factory that gives <c>DovetailJointMetadata</c> its joint, or <see langword="null" /> when the joint is created right
@@ -309,13 +228,6 @@ internal static class ExportDovetails
         var arguments = constructor.Parameters.Select(parameter => ResolveParameter(typeName, parameter));
         return $"static {JointFactoryParameter} => new {typeName}({string.Join(", ", arguments)})";
     }
-
-    /// <summary>
-    ///     Whether the generated code, which lives in the exporting assembly, can call the constructor. That is every instance
-    ///     constructor that is public or internal, and <c>protected internal</c> is internal to this assembly too.
-    /// </summary>
-    private static bool CanBeCalled(IMethodSymbol constructor) =>
-        constructor.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedOrInternal;
 
     /// <summary>The name of the <c>IServiceProvider</c> the joint factory receives, which is the context builder's properties.</summary>
     private const string JointFactoryParameter = "services";

@@ -52,9 +52,11 @@ Joinery.Dovetail.Sdk sets both as part of its host detection. Projects that don'
 Set either property in a project file to override its default.
 
 The generator runs in every project that references a Dovetail package, including projects that only reference one
-indirectly, for example through `Joinery.Dovetail.Hosting`. Its diagnostics (`DT0001` to `DT0005`, such as the error for a joint
-with more than one constructor, and `DT0017`, the error for a joint with no constructor it can be created with) apply there too. The code it generates needs C# 12 or later: in a project whose `LangVersion` is older, it
-generates nothing and reports warning `DT0006` instead.
+indirectly, for example through `Joinery.Dovetail.Hosting`. So does Dovetail's analyzer, which reports what is wrong with a joint:
+`DT0001` to `DT0005`, such as the error for a joint with more than one constructor, and `DT0017`, the error for a joint with no
+constructor it can be created with. The generator leaves such a joint out of the exports. `DT0005`, a circular dependency between
+joints, needs every joint of the project, so it is reported on build, and in the editor only when the IDE analyzes the whole
+solution. The code the generator writes needs C# 12 or later, which every supported .NET version has by default.
 
 ## Specular's provider
 
