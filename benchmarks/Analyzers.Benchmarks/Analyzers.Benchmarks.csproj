@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <!-- This project drives the generator itself; it neither imports nor exports joints. -->
+        <ImportDovetailAssembly>false</ImportDovetailAssembly>
+        <ExportDovetailAssembly>false</ExportDovetailAssembly>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchMarkDotNet" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Referenced as a library, not as an analyzer, so the benchmarks can create the generator and run it. -->
+        <ProjectReference Include="..\..\src\Joinery.Dovetail.Analyzers\Joinery.Dovetail.Analyzers.csproj" />
+        <!-- Its assembly is a reference of the compilation the generator runs over, for the Dovetail attributes. -->
+        <ProjectReference Include="..\..\src\Joinery.Dovetail\Joinery.Dovetail.csproj" />
+    </ItemGroup>
+</Project>
