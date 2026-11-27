@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using DiffEngine;
+using Microsoft.CodeAnalysis;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 
 namespace Joinery.Dovetail.Analyzers.Tests;
@@ -12,7 +13,7 @@ public static class ModuleInitializer
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void Init()
     {
-        VerifyGeneratorTextContext.Initialize(Customizers.Default);
+        VerifyGeneratorTextContext.Initialize(DiagnosticSeverity.Warning, Customizers.Default);
 
         DiffRunner.Disabled = true;
         DerivePathInfo(

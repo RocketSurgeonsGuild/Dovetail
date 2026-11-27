@@ -172,6 +172,7 @@ internal class Contrib4 : IDovetailJoint { }
         var result = await WithGenericSharedDeps()
                           .AddSources(
                                @"
+#nullable enable
 using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Infrastructure;
@@ -253,11 +254,12 @@ namespace Joinery.Dovetail.Tests
         var result = await WithGenericSharedDeps()
                           .AddSources(
                                @"
-using Microsoft.Extensions.Configuration;
+#nullable enable
 using Microsoft.Extensions.DependencyInjection;
 using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Infrastructure;
+using Joinery.Dovetail.Joints;
 using Rocket.Surgery.LaunchPad.Mapping;
 
 namespace Rocket.Surgery.LaunchPad.Mapping;
@@ -285,9 +287,8 @@ public class AutoMapperDovetail : IServiceJoint
     ///     Registers the specified context.
     /// </summary>
     /// <param name=""context"">The context.</param>
-    /// <param name=""configuration""></param>
     /// <param name=""services""></param>
-    public void Register(IDovetailContext context, IConfiguration configuration, IServiceCollection services)
+    public void Register(IDovetailContext context, IServiceCollection services)
     {
     }
 }
@@ -380,7 +381,6 @@ using Joinery.Dovetail;
 using Joinery.Dovetail.Attributes;
 using Joinery.Dovetail.Infrastructure;
 using Joinery.Dovetail.Tests;
-    [DovetailExport]
 
 namespace Joinery.Dovetail.Tests
 {

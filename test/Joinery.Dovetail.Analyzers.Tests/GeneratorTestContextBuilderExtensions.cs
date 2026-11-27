@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,6 +9,14 @@ namespace Joinery.Dovetail.Analyzers.Tests;
 
 internal static class GeneratorTestContextBuilderExtensions
 {
+    /// <summary>
+    ///     Suppresses CS1701 and CS1702 (assembly reference version unification), as the .NET SDK's default <c>NoWarn</c> does in
+    ///     a real build. The test compilations reference framework and package assemblies built against other versions.
+    /// </summary>
+    public static GeneratorTestContextBuilder WithSdkDefaultNoWarn(this GeneratorTestContextBuilder builder) => builder
+                                                                                                              .WithDiagnosticOption("CS1701", ReportDiagnostic.Suppress)
+                                                                                                              .WithDiagnosticOption("CS1702", ReportDiagnostic.Suppress);
+
     /// <summary>
     ///     The assemblies the code generated for <c>[DovetailConfiguration]</c> types uses: the binder and the options joint. Real
     ///     projects reference them through the framework and Dovetail's dependencies.

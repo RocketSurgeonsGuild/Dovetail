@@ -9,6 +9,7 @@ public abstract class GeneratorTest() : LoggerTest<TestRecord>(TestRecord.Create
     // compilations (which supply their own configuration) and by configuration-override tests.
     protected GeneratorTestContextBuilder Builder { get; } = GeneratorTestContextBuilder
                                                                          .Create()
+                                                                         .WithSdkDefaultNoWarn()
                                                                          .AddCommonReferences()
                                                                          .AddCommonGenerators()
                                                                          .AddDovetailConfiguration("", "");
