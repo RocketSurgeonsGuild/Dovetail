@@ -155,10 +155,10 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
                     float f = 1.5f, double d = 0.25, decimal m = 2.5m, char c = 'x', bool flag = true,
                     string text = "a \"quoted\" \\ value\n", string? nothing = null,
                     WidgetMode mode = WidgetMode.Fast, WidgetMode? maybeMode = WidgetMode.Fast, int? maybeNothing = null, int? maybeSome = 11,
-                    WidgetMarker marker = default, WidgetOptions? options = null
+                    WidgetMarker marker = default, WidgetOptions? options = null, WidgetMode belowZero = (WidgetMode)(-1)
                 )
                 {
-                    Arguments = [b, sb, s, us, ui, l, ul, f, d, m, c, flag, text, nothing, mode, maybeMode, maybeNothing, maybeSome, marker, options];
+                    Arguments = [b, sb, s, us, ui, l, ul, f, d, m, c, flag, text, nothing, mode, maybeMode, maybeNothing, maybeSome, marker, options, belowZero];
                 }
 
                 public object?[] Arguments { get; }
@@ -171,7 +171,7 @@ public class ExportedConstructorParameterTests() : GeneratorTest()
         await Assert.That((IEnumerable<object?>)joint.GetType().GetProperty("Arguments")!.GetValue(joint)!).IsEquivalentTo(new object?[]
             {
                 (byte)3, (sbyte)-4, (short)5, (ushort)6, 7u, -8L, 9UL, 1.5f, 0.25d, 2.5m, 'x', true, "a \"quoted\" \\ value\n", null,
-                WidgetMode.Fast, WidgetMode.Fast, null, 11, default(WidgetMarker), null,
+                WidgetMode.Fast, WidgetMode.Fast, null, 11, default(WidgetMarker), null, (WidgetMode)(-1),
             }, CollectionOrdering.Matching);
     }
 

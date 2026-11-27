@@ -19,7 +19,9 @@ internal static class ExportDovetails
     /// <param name="MetadataName">The joint's metadata name, which orders the exports.</param>
     /// <param name="Location">Where the joint is declared, for its diagnostics.</param>
     /// <param name="Rejection">Why the joint is left out of the exports, or <see langword="null" /> when it is exported.</param>
-    /// <param name="Factory">The factory that creates the joint when its constructor takes parameters, or <see langword="null" /> to create it with <c>new</c>.</param>
+    /// <param name="Parameters">
+    ///     How the joint's constructor parameters are resolved. A joint with any is created by a factory; one without is created with <c>new</c>.
+    /// </param>
     /// <param name="HostType">The host type the joint declares, or <see langword="null" /> when it declares none.</param>
     /// <param name="Category">The category the joint declares, or <see langword="null" /> for <c>Application</c>.</param>
     /// <param name="Edges">The joint's dependencies.</param>
@@ -30,7 +32,7 @@ internal static class ExportDovetails
         string MetadataName,
         Location? Location,
         DiagnosticDescriptor? Rejection,
-        string? Factory,
+        EquatableArray<JointParameter> Parameters,
         string? HostType,
         string? Category,
         EquatableArray<DovetailDependencyParser.DependencyEdge> Edges,
@@ -53,7 +55,7 @@ internal static class ExportDovetails
                 : convention.IsGenericType
                     ? Diagnostics.DovetailCannotBeGeneric
                     : null;
-        if (rejection is { }) return new(convention.Name, typeName, convention.MetadataName, location, rejection, null, null, null, default, default);
+        if (rejection is { }) return new(convention.Name, typeName, convention.MetadataName, location, rejection, default, null, null, default, default);
 
         var (edges, issues) = DovetailDependencyParser.ParseDependencies(convention);
         return new(
@@ -62,7 +64,7 @@ internal static class ExportDovetails
             convention.MetadataName,
             location,
             null,
-            Factory(typeName, callableConstructor),
+            Parameters(typeName, callableConstructor),
             GetDeclaredHostType(convention),
             GetDeclaredCategory(convention),
             edges.ToEquatableArray(),
@@ -119,7 +121,8 @@ internal static class ExportDovetails
             dependencyGraph.Add((joint.TypeName, joint.Edges));
             jointsByName[joint.TypeName] = joint;
 
-            var createDovetail = joint.Factory is { } factory ? ParseExpression(factory) : NewObject(ParseName(joint.TypeName));
+            var usesFactory = joint.Parameters.Count > 0;
+            ExpressionSyntax createDovetail = usesFactory ? FactoryLambda(joint.TypeName, joint.Parameters) : NewObject(ParseTypeName(joint.TypeName));
             // What the joint declares wins; only a joint that declares nothing takes the project's default.
             var hostType = joint.HostType is { } declaredHostType
                 ? HostTypeExpression(declaredHostType)
@@ -130,7 +133,7 @@ internal static class ExportDovetails
             var metadataArguments = new[] { Argument(createDovetail), Argument(hostType), Argument(CategoryExpression(joint.Category)), };
             // A joint that needs its constructor parameters resolved is a factory, which has its own entry point rather than a
             // constructor overload; see DovetailJointMetadata.
-            ExpressionSyntax withDependencies = joint.Factory is { }
+            ExpressionSyntax withDependencies = usesFactory
                 ? InvocationExpression(
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DovetailJointMetadata"), IdentifierName("FromFactory"))
                     )
@@ -326,20 +329,43 @@ internal static class ExportDovetails
     private const string UnitTestJointAttributeName = "Joinery.Dovetail.Attributes.UnitTestJointAttribute";
     private const string DovetailHostTypeAttributeName = "Joinery.Dovetail.Attributes.DovetailHostTypeAttribute";
 
-    /// <summary>
-    ///     The factory that gives <c>DovetailJointMetadata</c> its joint, or <see langword="null" /> when the joint is created right
-    ///     there with <c>new</c>, because it needs nothing (or is a struct that declares no constructor). A joint with constructor
-    ///     parameters is handed over as a factory instead: the exported method has no parameters and no context to read from, so the
-    ///     parameters are resolved when the context builder that ends up holding the metadata creates the joint, from its properties
-    ///     (see <c>DovetailJointMetadata</c>).
-    /// </summary>
-    private static string? Factory(string typeName, IMethodSymbol? constructor)
-    {
-        if (constructor is not { Parameters.Length: > 0 }) return null;
+    /// <summary>How the factory resolves one of the joint's constructor parameters.</summary>
+    /// <param name="Type">The parameter's type as the generated code names it, which is the type it is looked up by.</param>
+    /// <param name="IsNonNullableValueType">Whether the type is a value type that can't hold null, which is read as a nullable one.</param>
+    /// <param name="MissingMessage">The message thrown when there is no value and no default, or <see langword="null" /> when the parameter has a default.</param>
+    /// <param name="DefaultKind">What the parameter's default value is.</param>
+    /// <param name="DefaultValue">The default value, when <paramref name="DefaultKind" /> is <see cref="JointParameterDefault.Constant" />.</param>
+    public sealed record JointParameter(string Type, bool IsNonNullableValueType, string? MissingMessage, JointParameterDefault DefaultKind, object? DefaultValue);
 
-        var arguments = constructor.Parameters.Select(parameter => ResolveParameter(typeName, parameter));
-        return $"static {JointFactoryParameter} => new {typeName}({string.Join(", ", arguments)})";
+    public enum JointParameterDefault
+    {
+        /// <summary>A missing value is already the default: null for a reference type or a nullable value type.</summary>
+        Null,
+
+        /// <summary>The type's <c>default</c>, for a value type that can't hold null.</summary>
+        TypeDefault,
+
+        /// <summary>The constant the parameter declares.</summary>
+        Constant,
     }
+
+    /// <summary>
+    ///     How the factory that gives <c>DovetailJointMetadata</c> its joint resolves each constructor parameter, or nothing when the
+    ///     joint is created right there with <c>new</c>, because it needs nothing (or is a struct that declares no constructor). A joint
+    ///     with constructor parameters is handed over as a factory instead: the exported method has no parameters and no context to
+    ///     read from, so the parameters are resolved when the context builder that ends up holding the metadata creates the joint,
+    ///     from its properties (see <c>DovetailJointMetadata</c>).
+    /// </summary>
+    private static EquatableArray<JointParameter> Parameters(string typeName, IMethodSymbol? constructor) =>
+        constructor is { Parameters.Length: > 0 }
+            ? constructor.Parameters.Select(parameter => DescribeParameter(typeName, parameter)).ToEquatableArray()
+            : default;
+
+    /// <summary>The factory: <c>static services =&gt; new Joint(...)</c>, with each argument resolved from <c>services</c>.</summary>
+    private static SimpleLambdaExpressionSyntax FactoryLambda(string typeName, EquatableArray<JointParameter> parameters) =>
+        SimpleLambdaExpression(Parameter(Identifier(JointFactoryParameter)), NewObject(ParseTypeName(typeName), parameters.Select(parameter => Argument(ResolveParameter(parameter)))))
+           .WithModifiers(Modifiers(SyntaxKind.StaticKeyword))
+           .WithArrowToken(Spaced(SyntaxKind.EqualsGreaterThanToken));
 
     private static ObjectCreationExpressionSyntax NewObject(TypeSyntax type, params IEnumerable<ArgumentSyntax> arguments) =>
         ObjectCreationExpression(SpaceAfter(SyntaxKind.NewKeyword), type, ArgumentList(CommaSeparated(arguments)), null);
@@ -366,54 +392,110 @@ internal static class ExportDovetails
     ///     <c>ActivatorUtilities.CreateInstance</c> does for a joint added with <c>AppendJoint&lt;T&gt;()</c>: the parameter's default
     ///     value when there is no such property and the parameter has one, otherwise an <see cref="InvalidOperationException" />.
     /// </summary>
-    private static string ResolveParameter(string jointName, IParameterSymbol parameter)
+    private static JointParameter DescribeParameter(string jointName, IParameterSymbol parameter)
     {
         // Looked up by the type as declared. For a nullable value type that is Nullable<T>, which is what Set<int?>() stores it under.
         var parameterType = parameter.Type.WithNullableAnnotation(NullableAnnotation.None);
-        var isNullableValueType = parameterType is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T };
-        // Spelled out as System.Nullable<T> rather than T?, which is how the generated code has always written it.
-        var type = isNullableValueType && parameterType is INamedTypeSymbol { TypeArguments: [var underlying] }
-            ? $"System.Nullable<{underlying.ToDisplayString()}>"
-            : parameterType.ToDisplayString();
-
-        // GetService<T>() returns null for a missing value, which is what the fallbacks below key on. For a value type that can't hold
-        // null it would return default(T), which can't be told apart from a value that was set to it, and `?? throw` doesn't compile
-        // on it. Those are read as a Nullable<T> instead: the same cast GetService<T>() makes, with a nullable result.
-        var lookup = parameterType.IsValueType && !isNullableValueType
-            ? $"(System.Nullable<{type}>){JointFactoryParameter}.GetService(typeof({type}))"
-            : $"Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<{type}>({JointFactoryParameter})";
+        var isNullableValueType = parameterType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+        var type = parameterType.ToDisplayString();
+        var isNonNullableValueType = parameterType.IsValueType && !isNullableValueType;
 
         if (!parameter.HasExplicitDefaultValue)
         {
-            var message = $"Unable to resolve a value of type '{parameterType.ToDisplayString()}' for parameter '{parameter.Name}' of joint '{jointName}' from the Dovetail context. "
+            var message = $"Unable to resolve a value of type '{type}' for parameter '{parameter.Name}' of joint '{jointName}' from the Dovetail context. "
               + "Set it on the context builder before the joint is created, or give the parameter a default value.";
-            return $"{lookup} ?? throw new System.InvalidOperationException({SymbolDisplay.FormatLiteral(message, quote: true)})";
+            return new(type, isNonNullableValueType, message, JointParameterDefault.Null, null);
         }
 
-        // A missing value is already null, which is the default of a reference type or a nullable value type.
-        var defaultValue = DefaultValue(parameter, parameterType, type);
-        return defaultValue == "null" ? lookup : $"{lookup} ?? {defaultValue}";
+        return parameter.ExplicitDefaultValue switch
+        {
+            string or bool or char or sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal =>
+                new(type, isNonNullableValueType, null, JointParameterDefault.Constant, parameter.ExplicitDefaultValue),
+            // null, and anything the generator has no literal for, is the type's default: null for a reference type or a nullable
+            // value type, default for any other value type.
+            _ => new(type, isNonNullableValueType, null, isNonNullableValueType ? JointParameterDefault.TypeDefault : JointParameterDefault.Null, null),
+        };
+    }
+
+    /// <summary>The expression that resolves <paramref name="parameter" /> from the factory's <c>services</c>.</summary>
+    private static ExpressionSyntax ResolveParameter(JointParameter parameter)
+    {
+        var type = ParseTypeName(parameter.Type);
+        var services = IdentifierName(JointFactoryParameter);
+
+        // GetService<T>() returns null for a missing value, which is what the fallbacks below key on. For a value type that can't hold
+        // null it would return default(T), which can't be told apart from a value that was set to it, and `?? throw` doesn't compile
+        // on it. Those are read as a T? instead: the same cast GetService<T>() makes, with a nullable result.
+        ExpressionSyntax lookup = parameter.IsNonNullableValueType
+            ? CastExpression(
+                NullableType(type),
+                InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, services, IdentifierName("GetService")))
+                   .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(TypeOfExpression(type)))))
+            )
+            : InvocationExpression(
+                    MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        ParseName("Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions"),
+                        GenericName(Identifier("GetService")).WithTypeArgumentList(TypeArgumentList(SingletonSeparatedList(type)))
+                    )
+                )
+               .WithArgumentList(ArgumentList(SingletonSeparatedList(Argument(services))));
+
+        return  parameter.MissingMessage is { } message 
+            ?   Coalesce(
+                lookup,
+                ThrowExpression(
+                    SpaceAfter(SyntaxKind.ThrowKeyword),
+                    NewObject(ParseTypeName("System.InvalidOperationException"), Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(message))))
+                )
+            )  
+            : parameter.DefaultKind switch
+            {
+                JointParameterDefault.TypeDefault => Coalesce(lookup, LiteralExpression(SyntaxKind.DefaultLiteralExpression)),
+                JointParameterDefault.Constant => Coalesce(lookup, ConstantExpression(type, parameter.DefaultValue)),
+                JointParameterDefault.Null => throw new NotImplementedException(),
+                _ => lookup,
+            };
     }
 
     /// <summary>
     ///     The default value the parameter declares, as an expression typed by the parameter and not by the literal, so the numeric
-    ///     literals are cast to it.
+    ///     and character literals are cast to it. A negative number is parenthesized, so the cast reads as one for an enum too.
     /// </summary>
-    private static string DefaultValue(IParameterSymbol parameter, ITypeSymbol parameterType, string type)
+    private static ExpressionSyntax ConstantExpression(TypeSyntax type, object? value)
     {
-        return parameter.ExplicitDefaultValue switch
+        switch (value)
         {
-            string text => SymbolDisplay.FormatLiteral(text, quote: true),
-            bool flag => flag ? "true" : "false",
-            char character => $"({type}){SymbolDisplay.FormatLiteral(character, quote: true)}",
-            sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal =>
-                $"({type}){SymbolDisplay.FormatPrimitive(parameter.ExplicitDefaultValue, quoteStrings: false, useHexadecimalNumbers: false)}",
-            // null, and anything the generator has no literal for, is the type's default: null for a reference type or a nullable
-            // value type, default for any other value type.
-            _ when parameterType.IsValueType && parameterType.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T => "default",
-            _ => "null",
+            case string text:
+                return LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(text));
+            case bool flag:
+                return LiteralExpression(flag ? SyntaxKind.TrueLiteralExpression : SyntaxKind.FalseLiteralExpression);
+            case char character:
+                return CastExpression(type, LiteralExpression(SyntaxKind.CharacterLiteralExpression, Literal(character)));
+            default:
+                break;
+        }
+
+        var formatted = SymbolDisplay.FormatPrimitive(value!, quoteStrings: false, useHexadecimalNumbers: false) ?? "0";
+        var negative = formatted.StartsWith("-", StringComparison.Ordinal);
+        var digits = negative ? formatted[1..] : formatted;
+        var token = value switch
+        {
+            uint number => Literal(digits, number),
+            long number => Literal(digits, number),
+            ulong number => Literal(digits, number),
+            float number => Literal(digits, number),
+            double number => Literal(digits, number),
+            decimal number => Literal(digits, number),
+            _ => Literal(digits, Convert.ToInt32(value, System.Globalization.CultureInfo.InvariantCulture)),
         };
+        ExpressionSyntax literal = LiteralExpression(SyntaxKind.NumericLiteralExpression, token);
+        if (negative) literal = ParenthesizedExpression(PrefixUnaryExpression(SyntaxKind.UnaryMinusExpression, literal));
+        return CastExpression(type, literal);
     }
+
+    private static BinaryExpressionSyntax Coalesce(ExpressionSyntax left, ExpressionSyntax right) =>
+        BinaryExpression(SyntaxKind.CoalesceExpression, left, Spaced(SyntaxKind.QuestionQuestionToken), right);
 
     private static readonly ExpressionSyntax _categoryApplication = MemberAccessExpression(
         SyntaxKind.SimpleMemberAccessExpression,

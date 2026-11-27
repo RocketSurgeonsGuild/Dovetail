@@ -165,7 +165,6 @@ internal static class ImportDovetails
                .WithOpenBraceToken(OpenBrace(classDepth))
                .WithMembers(Members(members))
                .WithCloseBraceToken(CloseBrace(classDepth))
-               .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
                .Member(classDepth, "The class defined for importing Dovetail parts into this assembly");
 
         // An application that references Specular gets its provider in the context without setting it by hand.
@@ -179,7 +178,7 @@ internal static class ImportDovetails
                 .WithUsings(
                      List(
                          [
-                             Using("System"),
+                             Using("System").WithLeadingTrivia(SharedHeaderTrivia),
                              Using("System.Collections.Generic"),
                              Using("System.Runtime.Loader"),
                              Using("Microsoft.Extensions.DependencyInjection"),
@@ -197,7 +196,7 @@ internal static class ImportDovetails
                      )
                  )
                 .WithEndOfFileToken(EndOfFile(SharedFooterTrivia))
-                .SeparateUsings(SharedHeaderTrivia);
+                .SeparateUsings();
 
         if (seedsSpecularProvider) cu = SpecularProviderSeed.AllowNameConflict(cu);
 
