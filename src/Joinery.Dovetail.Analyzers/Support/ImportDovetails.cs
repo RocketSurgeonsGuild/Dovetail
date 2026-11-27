@@ -109,9 +109,7 @@ internal static class ImportDovetails
     /// <summary>The <c>DovetailHostType</c> values a build may pin; anything else (e.g. <c>Undefined</c>) leaves it to the host.</summary>
     private static readonly string[] PinnableHostTypes = ["Live", "UnitTest"];
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary>What the imports file is generated from.</summary>
     /// <param name="BuildConfig">The build properties.</param>
     /// <param name="References">What the imports need from the compilation.</param>
     /// <param name="HasExports">Whether this assembly exports any joint, so its own exports are imported too.</param>
